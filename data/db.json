@@ -1,0 +1,2415 @@
+{
+  "settings": {
+    "globalEditOpen": true,
+    "adminPassword": "DOMPSA675",
+    "modulesControl": {
+      "ac3": "aberto_edicao",
+      "ac4": "aberto_edicao",
+      "ac5": "aberto_edicao",
+      "ac6": "aberto_edicao",
+      "idiomas": "aberto_edicao"
+    },
+    "milestoneMode": "por_modulo"
+  },
+  "sentMilestones": [],
+  "milestonesLogs": [],
+  "students": [
+    {
+      "id": "202601",
+      "nomeDeGuerra": "Silva",
+      "matricula": "202601",
+      "senha": "202601",
+      "isPasswordChanged": false,
+      "situacao": "ativo",
+      "telefone": "+5521999990101",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 8.5,
+          "ac": 8,
+          "lateral1": 8,
+          "lateral2": 9,
+          "vertical": 8.5
+        },
+        "ac4": {
+          "aat": 7.8,
+          "ac": 8.5,
+          "lateral1": 8.5,
+          "lateral2": 8.5,
+          "vertical": 8
+        },
+        "ac5": {
+          "aat": 9,
+          "ac": 9,
+          "lateral1": 9,
+          "lateral2": 9,
+          "vertical": 9
+        },
+        "ac6": {
+          "aat": 8.2,
+          "ac": 8.3,
+          "lateral1": 8,
+          "lateral2": 8.5,
+          "vertical": 8.5
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.5,
+          "verticalIdiomas": 8
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:27.318Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Silva, Situação: inativo"
+        },
+        {
+          "dataHora": "2026-06-09T04:29:26.783Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Silva, Situação: ativo"
+        }
+      ]
+    },
+    {
+      "id": "202602",
+      "nomeDeGuerra": "Santos",
+      "matricula": "202602",
+      "senha": "202602",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990102",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 9.2,
+          "ac": 9,
+          "lateral1": 9,
+          "lateral2": 9.5,
+          "vertical": 9.2
+        },
+        "ac4": {
+          "aat": 8.5,
+          "ac": 9.2,
+          "lateral1": 9.2,
+          "lateral2": 9,
+          "vertical": 9
+        },
+        "ac5": {
+          "aat": 9.5,
+          "ac": 9.5,
+          "lateral1": 9.5,
+          "lateral2": 9.5,
+          "vertical": 9.5
+        },
+        "ac6": {
+          "aat": 8.8,
+          "ac": 9,
+          "lateral1": 9,
+          "lateral2": 9.2,
+          "vertical": 9
+        },
+        "idiomas": {
+          "lateralIdiomas": 9,
+          "verticalIdiomas": 9.2
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:25.358Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Santos, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202603",
+      "nomeDeGuerra": "Oliveira",
+      "matricula": "202603",
+      "senha": "202603",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990103",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 7,
+          "ac": 7.5,
+          "lateral1": 7.5,
+          "lateral2": 8,
+          "vertical": 7.5
+        },
+        "ac4": {
+          "aat": 6.8,
+          "ac": 7.2,
+          "lateral1": 7,
+          "lateral2": 7.5,
+          "vertical": 7
+        },
+        "ac5": {
+          "aat": 8,
+          "ac": 7.8,
+          "lateral1": 7.8,
+          "lateral2": 8,
+          "vertical": 7.8
+        },
+        "ac6": {
+          "aat": 7.5,
+          "ac": 7.5,
+          "lateral1": 7.5,
+          "lateral2": 7.5,
+          "vertical": 7.5
+        },
+        "idiomas": {
+          "lateralIdiomas": 7.8,
+          "verticalIdiomas": 7.5
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:23.524Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Oliveira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202604",
+      "nomeDeGuerra": "Souza",
+      "matricula": "202604",
+      "senha": "202604",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990104",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 8,
+          "ac": 8.2,
+          "lateral1": 8.5,
+          "lateral2": 8,
+          "vertical": 8
+        },
+        "ac4": {
+          "aat": 7.5,
+          "ac": 8,
+          "lateral1": 8,
+          "lateral2": 8.2,
+          "vertical": 8.2
+        },
+        "ac5": {
+          "aat": 8.5,
+          "ac": 8.5,
+          "lateral1": 8.5,
+          "lateral2": 8.5,
+          "vertical": 8.5
+        },
+        "ac6": {
+          "aat": 8,
+          "ac": 8.1,
+          "lateral1": 8,
+          "lateral2": 8,
+          "vertical": 8
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.2,
+          "verticalIdiomas": 8
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:21.621Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Souza, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202605",
+      "nomeDeGuerra": "Rodrigues",
+      "matricula": "202605",
+      "senha": "202605",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990105",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 9.5,
+          "ac": 9.6,
+          "lateral1": 9.5,
+          "lateral2": 9.8,
+          "vertical": 9.5
+        },
+        "ac4": {
+          "aat": 9,
+          "ac": 9.4,
+          "lateral1": 9.5,
+          "lateral2": 9.5,
+          "vertical": 9.6
+        },
+        "ac5": {
+          "aat": 9.8,
+          "ac": 9.7,
+          "lateral1": 9.8,
+          "lateral2": 9.8,
+          "vertical": 9.8
+        },
+        "ac6": {
+          "aat": 9.2,
+          "ac": 9.5,
+          "lateral1": 9.5,
+          "lateral2": 9.5,
+          "vertical": 9.5
+        },
+        "idiomas": {
+          "lateralIdiomas": 9.6,
+          "verticalIdiomas": 9.8
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:20.353Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Rodrigues, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202606",
+      "nomeDeGuerra": "Ferreira",
+      "matricula": "202606",
+      "senha": "202606",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990106",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 7.5,
+          "ac": 8,
+          "lateral1": 8,
+          "lateral2": 8,
+          "vertical": 8
+        },
+        "ac4": {
+          "aat": 7.2,
+          "ac": 7.8,
+          "lateral1": 7.8,
+          "lateral2": 7.8,
+          "vertical": 7.5
+        },
+        "ac5": {
+          "aat": 8.2,
+          "ac": 8.1,
+          "lateral1": 8,
+          "lateral2": 8.2,
+          "vertical": 8
+        },
+        "ac6": {
+          "aat": 7.8,
+          "ac": 7.9,
+          "lateral1": 8,
+          "lateral2": 7.8,
+          "vertical": 8
+        },
+        "idiomas": {
+          "lateralIdiomas": 8,
+          "verticalIdiomas": 7.8
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:18.964Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Ferreira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202607",
+      "nomeDeGuerra": "Alves",
+      "matricula": "202607",
+      "senha": "202607",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990107",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 8.2,
+          "ac": 8.4,
+          "lateral1": 8.2,
+          "lateral2": 8.5,
+          "vertical": 8.5
+        },
+        "ac4": {
+          "aat": 8,
+          "ac": 8.2,
+          "lateral1": 8.5,
+          "lateral2": 8.2,
+          "vertical": 8.2
+        },
+        "ac5": {
+          "aat": 8.6,
+          "ac": 8.8,
+          "lateral1": 8.8,
+          "lateral2": 8.6,
+          "vertical": 8.8
+        },
+        "ac6": {
+          "aat": 8.1,
+          "ac": 8.3,
+          "lateral1": 8.5,
+          "lateral2": 8.2,
+          "vertical": 8.3
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.5,
+          "verticalIdiomas": 8.5
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:16.134Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Alves, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202608",
+      "nomeDeGuerra": "Pereira",
+      "matricula": "202608",
+      "senha": "202608",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990108",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 6.5,
+          "ac": 7,
+          "lateral1": 7,
+          "lateral2": 7,
+          "vertical": 7
+        },
+        "ac4": {
+          "aat": 6.8,
+          "ac": 6.9,
+          "lateral1": 7,
+          "lateral2": 6.8,
+          "vertical": 6.8
+        },
+        "ac5": {
+          "aat": 7.5,
+          "ac": 7.3,
+          "lateral1": 7.2,
+          "lateral2": 7.5,
+          "vertical": 7.2
+        },
+        "ac6": {
+          "aat": 7,
+          "ac": 7.1,
+          "lateral1": 7,
+          "lateral2": 7.2,
+          "vertical": 7
+        },
+        "idiomas": {
+          "lateralIdiomas": 7.2,
+          "verticalIdiomas": 7
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:14.377Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Pereira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202609",
+      "nomeDeGuerra": "Costa",
+      "matricula": "202609",
+      "senha": "202609",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990109",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 8.8,
+          "ac": 8.7,
+          "lateral1": 8.8,
+          "lateral2": 8.8,
+          "vertical": 8.8
+        },
+        "ac4": {
+          "aat": 8.2,
+          "ac": 8.6,
+          "lateral1": 8.6,
+          "lateral2": 8.8,
+          "vertical": 8.5
+        },
+        "ac5": {
+          "aat": 9.1,
+          "ac": 8.9,
+          "lateral1": 9,
+          "lateral2": 9.1,
+          "vertical": 9
+        },
+        "ac6": {
+          "aat": 8.5,
+          "ac": 8.6,
+          "lateral1": 8.8,
+          "lateral2": 8.6,
+          "vertical": 8.6
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.8,
+          "verticalIdiomas": 8.8
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:10.125Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Costa, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202610",
+      "nomeDeGuerra": "Gomes",
+      "matricula": "202610",
+      "senha": "202610",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990110",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 7.8,
+          "ac": 8.2,
+          "lateral1": 8.2,
+          "lateral2": 8,
+          "vertical": 8.2
+        },
+        "ac4": {
+          "aat": 7.5,
+          "ac": 8,
+          "lateral1": 8,
+          "lateral2": 8,
+          "vertical": 7.8
+        },
+        "ac5": {
+          "aat": 8.4,
+          "ac": 8.3,
+          "lateral1": 8.2,
+          "lateral2": 8.4,
+          "vertical": 8.2
+        },
+        "ac6": {
+          "aat": 7.9,
+          "ac": 8,
+          "lateral1": 8,
+          "lateral2": 8.2,
+          "vertical": 8
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.2,
+          "verticalIdiomas": 8
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:31.300Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Gomes, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202611",
+      "nomeDeGuerra": "Martins",
+      "matricula": "202611",
+      "senha": "202611",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990111",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 8.5,
+          "ac": 8.8,
+          "lateral1": 8.8,
+          "lateral2": 8.5,
+          "vertical": 8.8
+        },
+        "ac4": {
+          "aat": 8,
+          "ac": 8.4,
+          "lateral1": 8.5,
+          "lateral2": 8.4,
+          "vertical": 8.4
+        },
+        "ac5": {
+          "aat": 8.8,
+          "ac": 8.9,
+          "lateral1": 8.8,
+          "lateral2": 9,
+          "vertical": 8.8
+        },
+        "ac6": {
+          "aat": 8.2,
+          "ac": 8.5,
+          "lateral1": 8.5,
+          "lateral2": 8.5,
+          "vertical": 8.5
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.8,
+          "verticalIdiomas": 8.6
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:32.691Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Martins, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202612",
+      "nomeDeGuerra": "Araujo",
+      "matricula": "202612",
+      "senha": "202612",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990112",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 9,
+          "ac": 9.2,
+          "lateral1": 9.2,
+          "lateral2": 9,
+          "vertical": 9.2
+        },
+        "ac4": {
+          "aat": 8.8,
+          "ac": 9,
+          "lateral1": 9,
+          "lateral2": 9.1,
+          "vertical": 9
+        },
+        "ac5": {
+          "aat": 9.4,
+          "ac": 9.3,
+          "lateral1": 9.2,
+          "lateral2": 9.4,
+          "vertical": 9.2
+        },
+        "ac6": {
+          "aat": 8.9,
+          "ac": 9.1,
+          "lateral1": 9,
+          "lateral2": 9.1,
+          "vertical": 9
+        },
+        "idiomas": {
+          "lateralIdiomas": 9.2,
+          "verticalIdiomas": 9
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:33.994Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Araujo, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202613",
+      "nomeDeGuerra": "Melo",
+      "matricula": "202613",
+      "senha": "202613",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990113",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 7.2,
+          "ac": 7.8,
+          "lateral1": 7.8,
+          "lateral2": 7.5,
+          "vertical": 7.5
+        },
+        "ac4": {
+          "aat": 7,
+          "ac": 7.5,
+          "lateral1": 7.5,
+          "lateral2": 7.5,
+          "vertical": 7.2
+        },
+        "ac5": {
+          "aat": 7.8,
+          "ac": 7.9,
+          "lateral1": 7.8,
+          "lateral2": 8,
+          "vertical": 7.8
+        },
+        "ac6": {
+          "aat": 7.4,
+          "ac": 7.6,
+          "lateral1": 7.5,
+          "lateral2": 7.8,
+          "vertical": 7.5
+        },
+        "idiomas": {
+          "lateralIdiomas": 7.6,
+          "verticalIdiomas": 7.5
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:34.948Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Melo, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202614",
+      "nomeDeGuerra": "Barbosa",
+      "matricula": "202614",
+      "senha": "202614",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "+5521999990114",
+      "statusLancamento": "confirmado",
+      "notas": {
+        "ac3": {
+          "aat": 8.3,
+          "ac": 8.5,
+          "lateral1": 8.5,
+          "lateral2": 8.5,
+          "vertical": 8.5
+        },
+        "ac4": {
+          "aat": 8,
+          "ac": 8.2,
+          "lateral1": 8.2,
+          "lateral2": 8.5,
+          "vertical": 8.2
+        },
+        "ac5": {
+          "aat": 8.7,
+          "ac": 8.6,
+          "lateral1": 8.5,
+          "lateral2": 8.8,
+          "vertical": 8.6
+        },
+        "ac6": {
+          "aat": 8.2,
+          "ac": 8.4,
+          "lateral1": 8.4,
+          "lateral2": 8.5,
+          "vertical": 8.4
+        },
+        "idiomas": {
+          "lateralIdiomas": 8.5,
+          "verticalIdiomas": 8.4
+        }
+      },
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:37.189Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Barbosa, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202615",
+      "nomeDeGuerra": "Ribeiro",
+      "matricula": "202615",
+      "senha": "202615",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:38.545Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Ribeiro, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202616",
+      "nomeDeGuerra": "Lima",
+      "matricula": "202616",
+      "senha": "202616",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:42.290Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Lima, Situação: inativo"
+        },
+        {
+          "dataHora": "2026-06-09T04:29:15.317Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Lima, Situação: ativo"
+        },
+        {
+          "dataHora": "2026-06-09T04:29:21.645Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Lima, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202617",
+      "nomeDeGuerra": "Carvalho",
+      "matricula": "202617",
+      "senha": "202617",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:45.563Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Carvalho, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202618",
+      "nomeDeGuerra": "Pinto",
+      "matricula": "202618",
+      "senha": "202618",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:46.502Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Pinto, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202619",
+      "nomeDeGuerra": "Teixeira",
+      "matricula": "202619",
+      "senha": "202619",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:49.038Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Teixeira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202620",
+      "nomeDeGuerra": "Correia",
+      "matricula": "202620",
+      "senha": "202620",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:50.530Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Correia, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202621",
+      "nomeDeGuerra": "Moreira",
+      "matricula": "202621",
+      "senha": "202621",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:53.270Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Moreira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202622",
+      "nomeDeGuerra": "Cardoso",
+      "matricula": "202622",
+      "senha": "202622",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:54.154Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Cardoso, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202623",
+      "nomeDeGuerra": "Cunha",
+      "matricula": "202623",
+      "senha": "202623",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:54.977Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Cunha, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202624",
+      "nomeDeGuerra": "Vieira",
+      "matricula": "202624",
+      "senha": "202624",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:55.760Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Vieira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202625",
+      "nomeDeGuerra": "Rocha",
+      "matricula": "202625",
+      "senha": "202625",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:57.168Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Rocha, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202626",
+      "nomeDeGuerra": "Castro",
+      "matricula": "202626",
+      "senha": "202626",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:57.991Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Castro, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202627",
+      "nomeDeGuerra": "Nascimento",
+      "matricula": "202627",
+      "senha": "202627",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:25:59.382Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Nascimento, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202628",
+      "nomeDeGuerra": "Cavalcanti",
+      "matricula": "202628",
+      "senha": "202628",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:01.006Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Cavalcanti, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202629",
+      "nomeDeGuerra": "Dias",
+      "matricula": "202629",
+      "senha": "202629",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:02.176Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Dias, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202630",
+      "nomeDeGuerra": "Nogueira",
+      "matricula": "202630",
+      "senha": "202630",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:14.092Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Nogueira, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202631",
+      "nomeDeGuerra": "Andrade",
+      "matricula": "202631",
+      "senha": "202631",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:14.888Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Andrade, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202632",
+      "nomeDeGuerra": "Camargo",
+      "matricula": "202632",
+      "senha": "202632",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:15.751Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Camargo, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202633",
+      "nomeDeGuerra": "Bernardes",
+      "matricula": "202633",
+      "senha": "202633",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:17.162Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Bernardes, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202634",
+      "nomeDeGuerra": "Fonseca",
+      "matricula": "202634",
+      "senha": "202634",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:18.253Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Fonseca, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "505325",
+      "nomeDeGuerra": "MENEZES",
+      "matricula": "505325",
+      "senha": "202635",
+      "isPasswordChanged": false,
+      "situacao": "ativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:24:23.227Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: MENEZES, Situação: ativo"
+        }
+      ]
+    },
+    {
+      "id": "202636",
+      "nomeDeGuerra": "Peixoto",
+      "matricula": "202636",
+      "senha": "202636",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:20.837Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Peixoto, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202637",
+      "nomeDeGuerra": "Ramos",
+      "matricula": "202637",
+      "senha": "202637",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:21.496Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Ramos, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202638",
+      "nomeDeGuerra": "Brandao",
+      "matricula": "202638",
+      "senha": "202638",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:23.139Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Brandao, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202639",
+      "nomeDeGuerra": "Rezende",
+      "matricula": "202639",
+      "senha": "202639",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:23.889Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Rezende, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202640",
+      "nomeDeGuerra": "Guimaraes",
+      "matricula": "202640",
+      "senha": "202640",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:25.955Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Guimaraes, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202641",
+      "nomeDeGuerra": "Marques",
+      "matricula": "202641",
+      "senha": "202641",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:26.849Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Marques, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202642",
+      "nomeDeGuerra": "Coelho",
+      "matricula": "202642",
+      "senha": "202642",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:28.152Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Coelho, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202643",
+      "nomeDeGuerra": "Machado",
+      "matricula": "202643",
+      "senha": "202643",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:28.975Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Machado, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "504325",
+      "nomeDeGuerra": "XAVIER",
+      "matricula": "504325",
+      "senha": "202644",
+      "isPasswordChanged": false,
+      "situacao": "ativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:23:34.334Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: XAVIER, Situação: ativo"
+        }
+      ]
+    },
+    {
+      "id": "202645",
+      "nomeDeGuerra": "Freitas",
+      "matricula": "202645",
+      "senha": "202645",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:32.000Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Freitas, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202646",
+      "nomeDeGuerra": "Borges",
+      "matricula": "202646",
+      "senha": "202646",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:32.626Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Borges, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202647",
+      "nomeDeGuerra": "Sales",
+      "matricula": "202647",
+      "senha": "202647",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:34.212Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Sales, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202648",
+      "nomeDeGuerra": "Campos",
+      "matricula": "202648",
+      "senha": "202648",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:34.775Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Campos, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202649",
+      "nomeDeGuerra": "Toledo",
+      "matricula": "202649",
+      "senha": "202649",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:35.362Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Toledo, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202650",
+      "nomeDeGuerra": "Prado",
+      "matricula": "202650",
+      "senha": "202650",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:36.000Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Prado, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202651",
+      "nomeDeGuerra": "Faria",
+      "matricula": "202651",
+      "senha": "202651",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:37.278Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Faria, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202652",
+      "nomeDeGuerra": "Antunes",
+      "matricula": "202652",
+      "senha": "202652",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:37.936Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Antunes, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202653",
+      "nomeDeGuerra": "Miranda",
+      "matricula": "202653",
+      "senha": "202653",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:38.824Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Miranda, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202654",
+      "nomeDeGuerra": "Medeiros",
+      "matricula": "202654",
+      "senha": "202654",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:43.522Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Medeiros, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202655",
+      "nomeDeGuerra": "Montenegro",
+      "matricula": "202655",
+      "senha": "202655",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:45.387Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Montenegro, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "202656",
+      "nomeDeGuerra": "Guerra",
+      "matricula": "202656",
+      "senha": "202656",
+      "isPasswordChanged": false,
+      "situacao": "inativo",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": [
+        {
+          "dataHora": "2026-06-09T04:26:46.676Z",
+          "usuarioAlterou": "Administrador",
+          "campo": "Cadastro de Usuário",
+          "valorAnterior": "Dados de cadastro originais",
+          "valorNovo": "Editado por Admin: Guerra, Situação: inativo"
+        }
+      ]
+    },
+    {
+      "id": "501325",
+      "nomeDeGuerra": "DANIEL",
+      "matricula": "501325",
+      "senha": "421735",
+      "isPasswordChanged": true,
+      "hasAccessed": true,
+      "situacao": "ativo",
+      "telefone": "5521979203803",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500125",
+      "nomeDeGuerra": "CARVALHO NETO",
+      "matricula": "500125",
+      "senha": "500125",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500225",
+      "nomeDeGuerra": "JUNKER",
+      "matricula": "500225",
+      "senha": "500225",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500325",
+      "nomeDeGuerra": "AVYLA",
+      "matricula": "500325",
+      "senha": "500325",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500425",
+      "nomeDeGuerra": "STORINO",
+      "matricula": "500425",
+      "senha": "500425",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500525",
+      "nomeDeGuerra": "ALCIMAR",
+      "matricula": "500525",
+      "senha": "500525",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500625",
+      "nomeDeGuerra": "ASAFE",
+      "matricula": "500625",
+      "senha": "500625",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500725",
+      "nomeDeGuerra": "PAULO RIBEIRO",
+      "matricula": "500725",
+      "senha": "500725",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500825",
+      "nomeDeGuerra": "AURELIO",
+      "matricula": "500825",
+      "senha": "500825",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "500925",
+      "nomeDeGuerra": "AVRECHACK",
+      "matricula": "500925",
+      "senha": "500925",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501025",
+      "nomeDeGuerra": "OLIVEIRA JUNIOR",
+      "matricula": "501025",
+      "senha": "501025",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501125",
+      "nomeDeGuerra": "CAMEJO",
+      "matricula": "501125",
+      "senha": "501125",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501225",
+      "nomeDeGuerra": "LEONARDO LESSA",
+      "matricula": "501225",
+      "senha": "501225",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501425",
+      "nomeDeGuerra": "TROMPIERI",
+      "matricula": "501425",
+      "senha": "501425",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501525",
+      "nomeDeGuerra": "FIORENZA",
+      "matricula": "501525",
+      "senha": "501525",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501625",
+      "nomeDeGuerra": "FILIETAZ",
+      "matricula": "501625",
+      "senha": "501625",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501725",
+      "nomeDeGuerra": "ABREU",
+      "matricula": "501725",
+      "senha": "501725",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501825",
+      "nomeDeGuerra": "GABRIEL CARDOSO",
+      "matricula": "501825",
+      "senha": "501825",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "501925",
+      "nomeDeGuerra": "SCHAST",
+      "matricula": "501925",
+      "senha": "501925",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502025",
+      "nomeDeGuerra": "TENREIRO",
+      "matricula": "502025",
+      "senha": "502025",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502125",
+      "nomeDeGuerra": "LEMOS",
+      "matricula": "502125",
+      "senha": "502125",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502225",
+      "nomeDeGuerra": "BORBA",
+      "matricula": "502225",
+      "senha": "502225",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502425",
+      "nomeDeGuerra": "ROBERTO",
+      "matricula": "502425",
+      "senha": "502425",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502525",
+      "nomeDeGuerra": "ESPINATO",
+      "matricula": "502525",
+      "senha": "502525",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502625",
+      "nomeDeGuerra": "LEANDRO SILVA",
+      "matricula": "502625",
+      "senha": "502625",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502725",
+      "nomeDeGuerra": "SAMUEL SANTOS",
+      "matricula": "502725",
+      "senha": "502725",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502825",
+      "nomeDeGuerra": "KELVIN",
+      "matricula": "502825",
+      "senha": "502825",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "502925",
+      "nomeDeGuerra": "DANIEL CABRAL",
+      "matricula": "502925",
+      "senha": "502925",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503025",
+      "nomeDeGuerra": "GABRIEL SANTOS",
+      "matricula": "503025",
+      "senha": "503025",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503125",
+      "nomeDeGuerra": "SAMPOL",
+      "matricula": "503125",
+      "senha": "503125",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503225",
+      "nomeDeGuerra": "MACARIO",
+      "matricula": "503225",
+      "senha": "503225",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503325",
+      "nomeDeGuerra": "LUCAS MOREIRA",
+      "matricula": "503325",
+      "senha": "503325",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503425",
+      "nomeDeGuerra": "FERNANDO SANTOS",
+      "matricula": "503425",
+      "senha": "503425",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503525",
+      "nomeDeGuerra": "SIMOES",
+      "matricula": "503525",
+      "senha": "503525",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503625",
+      "nomeDeGuerra": "DENIS",
+      "matricula": "503625",
+      "senha": "503625",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503725",
+      "nomeDeGuerra": "MAGALHAES",
+      "matricula": "503725",
+      "senha": "503725",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503825",
+      "nomeDeGuerra": "AIRES",
+      "matricula": "503825",
+      "senha": "503825",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "503925",
+      "nomeDeGuerra": "TORRES JUNIOR",
+      "matricula": "503925",
+      "senha": "503925",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504025",
+      "nomeDeGuerra": "JIQUIRI",
+      "matricula": "504025",
+      "senha": "504025",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504125",
+      "nomeDeGuerra": "GUSTAVO NUNES",
+      "matricula": "504125",
+      "senha": "504125",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504225",
+      "nomeDeGuerra": "ALMADO",
+      "matricula": "504225",
+      "senha": "504225",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504425",
+      "nomeDeGuerra": "RUAN GONCALVES",
+      "matricula": "504425",
+      "senha": "504425",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504525",
+      "nomeDeGuerra": "CAVATI",
+      "matricula": "504525",
+      "senha": "504525",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504625",
+      "nomeDeGuerra": "AMARAL",
+      "matricula": "504625",
+      "senha": "504625",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504725",
+      "nomeDeGuerra": "SEABRA",
+      "matricula": "504725",
+      "senha": "504725",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504825",
+      "nomeDeGuerra": "MACEDO",
+      "matricula": "504825",
+      "senha": "504825",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "504925",
+      "nomeDeGuerra": "ARRUDA",
+      "matricula": "504925",
+      "senha": "504925",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "505025",
+      "nomeDeGuerra": "CHAVES",
+      "matricula": "505025",
+      "senha": "505025",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "505125",
+      "nomeDeGuerra": "PAULO GOMES",
+      "matricula": "505125",
+      "senha": "505125",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "505225",
+      "nomeDeGuerra": "CLEITON BRITO",
+      "matricula": "505225",
+      "senha": "505225",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "505425",
+      "nomeDeGuerra": "LEITE",
+      "matricula": "505425",
+      "senha": "505425",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "505525",
+      "nomeDeGuerra": "GOES",
+      "matricula": "505525",
+      "senha": "505525",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    },
+    {
+      "id": "505625",
+      "nomeDeGuerra": "ANDREI BERNARDO",
+      "matricula": "505625",
+      "senha": "505625",
+      "isPasswordChanged": false,
+      "hasAccessed": false,
+      "situacao": "ativo",
+      "tipo_acesso": "aluno",
+      "turma": "Intendência - ESAO 2026",
+      "telefone": "",
+      "statusLancamento": "não_iniciado",
+      "notas": null,
+      "historico": []
+    }
+  ],
+  "whatsappLogs": []
+}
