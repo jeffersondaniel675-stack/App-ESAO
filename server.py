@@ -162,7 +162,7 @@ def read_db():
                 "status": s.get("situacao", "ativo"),
                 "whatsapp": s.get("telefone", ""),
                 "nome_sigiloso": s.get("nomeSigiloso", ""),
-                "primeiro_acesso": s.get("hasAccessed") is False,
+                "primeiro_acesso": not s.get("hasAccessed"),
                 "acesso_ativado": s.get("acessoAtivado", False) or bool(s.get("nomeSigiloso"))
             })
 
@@ -210,33 +210,40 @@ def read_db():
             if any(str(u.get("user_id")) == str(l.get("user_id")) for u in best_db["users"])
         ]
 
-    # Map back to dual students array
-    best_db["students"] = []
-    for u in best_db["users"]:
-        l = next((la for la in best_db["launches"] if str(la.get("user_id")) == str(u.get("user_id"))), None)
-        if not l:
-            l = {
-                "notas": None,
-                "status_lancamento": "não_iniciado",
-                "versao": 1,
-                "atualizado_em": datetime.datetime.utcnow().isoformat() + "Z"
-            }
-        best_db["students"].append({
-            "id": str(u.get("user_id")),
-            "nomeDeGuerra": u.get("nome_guerra"),
-            "matricula": u.get("matricula"),
-            "senha": u.get("senha_hash"),
-            "situacao": u.get("status"),
-            "telefone": u.get("whatsapp"),
-            "nomeSigiloso": u.get("nome_sigiloso", ""),
-            "hasAccessed": not u.get("primeiro_acesso", True),
-            "acessoAtivado": u.get("acesso_ativado", False) or bool(u.get("nome_sigiloso")),
-            "statusLancamento": l.get("status_lancamento"),
-            "notas": l.get("notas"),
-            "versao": l.get("versao", 1),
-            "atualizado_em": l.get("atualizado_em"),
-            "historico": []
-        })
+    # Map back to dual students array, but ONLY when students doesn't already exist
+    # (true legacy migration from the normalized tables). students is the canonical
+    # source of truth everywhere else (login, write_db, cálculo de notas); users/
+    # launches are a derived export that write_db() regenerates from students on
+    # every save and don't carry fields like historico. Rebuilding students from
+    # them unconditionally on every read_db() call silently wiped everyone's
+    # historico (hardcoded to []) and corrupted hasAccessed on every server restart.
+    if not best_db.get("students"):
+        best_db["students"] = []
+        for u in best_db["users"]:
+            l = next((la for la in best_db["launches"] if str(la.get("user_id")) == str(u.get("user_id"))), None)
+            if not l:
+                l = {
+                    "notas": None,
+                    "status_lancamento": "não_iniciado",
+                    "versao": 1,
+                    "atualizado_em": datetime.datetime.utcnow().isoformat() + "Z"
+                }
+            best_db["students"].append({
+                "id": str(u.get("user_id")),
+                "nomeDeGuerra": u.get("nome_guerra"),
+                "matricula": u.get("matricula"),
+                "senha": u.get("senha_hash"),
+                "situacao": u.get("status"),
+                "telefone": u.get("whatsapp"),
+                "nomeSigiloso": u.get("nome_sigiloso", ""),
+                "hasAccessed": not u.get("primeiro_acesso", True),
+                "acessoAtivado": u.get("acesso_ativado", False) or bool(u.get("nome_sigiloso")),
+                "statusLancamento": l.get("status_lancamento"),
+                "notas": l.get("notas"),
+                "versao": l.get("versao", 1),
+                "atualizado_em": l.get("atualizado_em"),
+                "historico": []
+            })
 
     # Write initial sync state to disk
     try:
