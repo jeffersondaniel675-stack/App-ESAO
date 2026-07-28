@@ -192,7 +192,7 @@ function readDb() {
       status: s.situacao || "ativo",
       whatsapp: s.telefone || "",
       nome_sigiloso: s.nomeSigiloso || "",
-      primeiro_acesso: s.hasAccessed === false,
+      primeiro_acesso: !s.hasAccessed,
       acesso_ativado: s.acessoAtivado || !!s.nomeSigiloso
     }));
   }
@@ -240,31 +240,40 @@ function readDb() {
     });
   }
 
-  // Populate compatibility db.students in-memory strictly from bestDb.users & bestDb.launches
-  bestDb.students = bestDb.users.map((u: any) => {
-    const l = bestDb.launches.find((la: any) => String(la.user_id) === String(u.user_id)) || {
-      notas: null,
-      status_lancamento: "não_iniciado",
-      versao: 1,
-      atualizado_em: new Date().toISOString()
-    };
-    return {
-      id: String(u.user_id),
-      nomeDeGuerra: u.nome_guerra,
-      matricula: u.matricula,
-      senha: u.senha_hash,
-      situacao: u.status,
-      telefone: u.whatsapp,
-      nomeSigiloso: u.nome_sigiloso || "",
-      hasAccessed: !u.primeiro_acesso,
-      acessoAtivado: u.acesso_ativado || !!u.nome_sigiloso,
-      statusLancamento: l.status_lancamento,
-      notas: l.notas,
-      versao: l.versao || 1,
-      atualizado_em: l.atualizado_em || new Date().toISOString(),
-      historico: []
-    };
-  });
+  // Populate compatibility db.students strictly from bestDb.users & bestDb.launches,
+  // but ONLY when students doesn't already exist (true legacy migration from the
+  // normalized tables). db.students is the canonical source of truth everywhere else
+  // (login, writeDb, cálculo de notas); users/launches are a derived export that
+  // writeDb() regenerates from students on every save and don't carry fields like
+  // historico. Rebuilding students from them unconditionally on every readDb() call
+  // silently wiped everyone's historico (hardcoded to []) and corrupted hasAccessed
+  // on every server restart.
+  if (!bestDb.students || !Array.isArray(bestDb.students) || bestDb.students.length === 0) {
+    bestDb.students = bestDb.users.map((u: any) => {
+      const l = bestDb.launches.find((la: any) => String(la.user_id) === String(u.user_id)) || {
+        notas: null,
+        status_lancamento: "não_iniciado",
+        versao: 1,
+        atualizado_em: new Date().toISOString()
+      };
+      return {
+        id: String(u.user_id),
+        nomeDeGuerra: u.nome_guerra,
+        matricula: u.matricula,
+        senha: u.senha_hash,
+        situacao: u.status,
+        telefone: u.whatsapp,
+        nomeSigiloso: u.nome_sigiloso || "",
+        hasAccessed: !u.primeiro_acesso,
+        acessoAtivado: u.acesso_ativado || !!u.nome_sigiloso,
+        statusLancamento: l.status_lancamento,
+        notas: l.notas,
+        versao: l.versao || 1,
+        atualizado_em: l.atualizado_em || new Date().toISOString(),
+        historico: []
+      };
+    });
+  }
 
   // Keep dual backups updated
   try {
