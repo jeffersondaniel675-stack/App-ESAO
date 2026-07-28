@@ -1,6 +1,0 @@
-{
-  "name": "Intendência - ESAO 2026",
-  "description": "Sistema privado para lançamento e acompanhamento individual de notas da turma Intendência - ESAO 2026.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

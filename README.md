@@ -1,20 +1,38 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Intendência - ESAO 2026
 
-# Run and deploy your AI Studio app
+Sistema privado para lançamento e acompanhamento individual de notas da turma Intendência - ESAO 2026.
 
-This contains everything you need to run your app locally.
+## Rodando localmente
 
-View your app in AI Studio: https://ai.studio/apps/f747dc10-2a7a-4b0e-aabf-e24e4aa5ee67
+**Pré-requisito:** Node.js 20 ou superior.
 
-## Run Locally
+1. Instale as dependências:
+   ```
+   npm install
+   ```
+2. Rode o sistema (frontend + backend juntos, em desenvolvimento):
+   ```
+   npm run dev
+   ```
+3. Acesse http://localhost:3000
 
-**Prerequisites:**  Node.js
+No Windows, quem preferir não usar o terminal pode usar o `INICIAR.bat` incluído no pacote de distribuição, que faz os mesmos passos com duplo clique.
 
+## Build de produção
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```
+npm run build
+npm run start
+```
+
+## Estrutura
+
+- `src/App.tsx` — interface (login, painel do aluno, painel administrativo).
+- `server.ts` — backend (Express): API, cálculo de notas, persistência.
+- `server.py` — implementação alternativa do mesmo backend em Python/Flask (não é usada pelos scripts do `package.json`).
+- `data/db.json` — base de dados do sistema (participantes, notas, configurações, histórico).
+
+## Login de teste
+
+- **Administrador:** `Cap Daniel` / senha `DOMPSA675`
+- **Aluno:** nome de guerra em maiúsculo / senha inicial = matrícula
