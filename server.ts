@@ -26,6 +26,50 @@ const DB_TMP_BAK_PATH = "/tmp/db_persistent_backup.json";
 
 let cachedDb: any = null;
 
+// Optional remote persistence (Upstash Redis REST API), for hosts whose local disk
+// doesn't survive restarts/deploys. Entirely inert when the env vars aren't set, so
+// local development keeps working exactly as before, file-only.
+const KV_URL = process.env.UPSTASH_REDIS_REST_URL;
+const KV_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const KV_ENABLED = !!(KV_URL && KV_TOKEN);
+const KV_KEY = "esao_db";
+
+async function kvGet(key: string): Promise<string | null> {
+  const res = await fetch(KV_URL!, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${KV_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(["GET", key]),
+  });
+  if (!res.ok) throw new Error(`KV GET failed: ${res.status}`);
+  const json: any = await res.json();
+  return json.result ?? null;
+}
+
+async function kvSet(key: string, value: string): Promise<void> {
+  const res = await fetch(KV_URL!, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${KV_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(["SET", key, value]),
+  });
+  if (!res.ok) throw new Error(`KV SET failed: ${res.status}`);
+}
+
+// Pulls the latest snapshot into the tmp-backup slot before the first readDb() call,
+// so the existing "pick the most complete candidate" logic below picks it up
+// automatically if it's more complete than whatever is on local disk.
+async function hydrateFromRemote() {
+  if (!KV_ENABLED) return;
+  try {
+    const remote = await kvGet(KV_KEY);
+    if (remote) {
+      fs.writeFileSync(DB_TMP_BAK_PATH, remote, "utf-8");
+      console.log("[KV] Hydrated local backup slot from remote database.");
+    }
+  } catch (err: any) {
+    console.error("[KV] Failed to hydrate from remote database:", err.message);
+  }
+}
+
 function getStudentsWithGradesCount(studentsList: any[]): number {
   if (!studentsList || !Array.isArray(studentsList)) return 0;
   return studentsList.filter((s: any) => s.notas !== null).length;
@@ -350,6 +394,10 @@ function writeDb(data: any) {
     if (data.students && data.students.length > 0) {
       fs.writeFileSync(DB_BAK_PATH, serialized, "utf-8");
       fs.writeFileSync(DB_TMP_BAK_PATH, serialized, "utf-8");
+    }
+
+    if (KV_ENABLED) {
+      kvSet(KV_KEY, serialized).catch((err: any) => console.error("[KV] Failed to sync database to remote:", err.message));
     }
   } catch (err) {
     console.error("Error writing db safely:", err);
@@ -2193,6 +2241,8 @@ app.post("/api/admin/restore-full-backup", (req, res) => {
 
 // SERVE VITE STATIC FILES & MIDDLEWARE
 async function startServer() {
+  await hydrateFromRemote();
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
