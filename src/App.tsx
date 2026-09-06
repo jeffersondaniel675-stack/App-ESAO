@@ -4476,6 +4476,16 @@ export default function App() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  {/* Cerimônia de escolha de OM: aplicação própria, fora do fluxo de notas */}
+                  <a
+                    href="/escolha-om/index.html"
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl text-xs font-semibold cursor-pointer transition-all"
+                  >
+                    <Award className="w-3.5 h-3.5" />
+                    <span>Escolha de OM</span>
+                  </a>
                   <button
                     onClick={fetchAdminData}
                     disabled={adminLoading}

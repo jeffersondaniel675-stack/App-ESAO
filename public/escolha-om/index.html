@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Escolha de OM — CAO/Log</title>
+<link rel="icon" href="brasoes/esao.png" />
+<link rel="stylesheet" href="estilo.css" />
+</head>
+<body>
+
+<!-- ══════════════════ CABEÇALHO / NAVEGAÇÃO ══════════════════ -->
+<header id="topo">
+  <div class="marca">
+    <img src="brasoes/esao.png" alt="EsAO" class="brasao" />
+    <div>
+      <strong>Escolha de Organização Militar</strong>
+      <span id="topo-sub">CAO/Log</span>
+    </div>
+  </div>
+  <nav id="abas">
+    <button data-view="prep" class="ativo">Preparação</button>
+    <button data-view="cerimonia">Cerimônia</button>
+    <button data-view="resultado">Resultado</button>
+  </nav>
+  <div class="acoes-topo">
+    <button id="btn-telao" class="btn btn-ouro" title="Abre o telão em outra janela para o projetor">Abrir telão</button>
+    <button id="btn-apresentar" class="btn" title="Telão nesta mesma janela (tela cheia)">Apresentar aqui</button>
+  </div>
+</header>
+
+<!-- ══════════════════ PREPARAÇÃO ══════════════════ -->
+<main id="view-prep" class="view">
+  <div class="sub-abas">
+    <button data-sub="alunos" class="ativo">Concludentes</button>
+    <button data-sub="vagas">Quadro de vagas</button>
+    <button data-sub="config">Configuração</button>
+  </div>
+
+  <!-- ---- Concludentes ---- -->
+  <section id="sub-alunos" class="sub-view">
+    <div class="barra">
+      <div class="barra-info">
+        <strong id="cont-alunos">0</strong> concludentes na ordem de classificação
+      </div>
+      <div class="barra-btns">
+        <button class="btn" id="al-add">Incluir</button>
+        <button class="btn" id="al-colar">Colar do Excel</button>
+        <button class="btn" id="al-renumerar">Renumerar 1…N</button>
+        <button class="btn btn-perigo" id="al-restaurar">Restaurar base original</button>
+      </div>
+    </div>
+    <p class="nota">
+      A ordem desta tabela é a ordem de chamada na cerimônia. A base que veio junto é a
+      <em>prévia</em> de classificação — substitua pela classificação final antes do dia.
+      Use as setas para acertar posições pontuais ou “Colar do Excel” para trocar a lista inteira.
+    </p>
+    <div class="tabela-wrap">
+      <table class="grade" id="tab-alunos">
+        <thead><tr>
+          <th style="width:70px">Cl</th><th style="width:52px"></th><th>Nome de guerra</th>
+          <th>Nome completo</th><th style="width:70px">Posto</th><th style="width:90px">Q/A/S</th>
+          <th style="width:120px">Idt</th><th style="width:90px">Turma</th><th style="width:110px"></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ---- Vagas ---- -->
+  <section id="sub-vagas" class="sub-view oculto">
+    <div class="barra">
+      <div class="barra-info">
+        <strong id="cont-vagas">0</strong> vagas em <strong id="cont-oms">0</strong> OM
+        <span id="aviso-vagas" class="aviso"></span>
+      </div>
+      <div class="barra-btns">
+        <button class="btn" id="vg-add">Incluir OM</button>
+        <button class="btn" id="vg-colar">Colar do Excel</button>
+        <button class="btn" id="vg-modelo-int">Carregar modelo INT</button>
+        <button class="btn" id="vg-modelo-qmb">Carregar modelo QMB</button>
+        <button class="btn btn-perigo" id="vg-limpar">Limpar</button>
+      </div>
+    </div>
+    <p class="nota">
+      Uma linha por OM. <strong>Qtd</strong> é o número de vagas naquela OM. O Comando Militar
+      de Área é deduzido da RM, mas pode ser corrigido à mão. Em <strong>Reserva</strong>,
+      amarre uma vaga nominal a um concludente: ela fica bloqueada para os demais.
+    </p>
+    <div class="tabela-wrap">
+      <table class="grade" id="tab-vagas">
+        <thead><tr>
+          <th>Organização Militar</th><th style="width:210px">Cidade-UF</th>
+          <th style="width:70px">RM</th><th style="width:100px">C Mil A</th>
+          <th style="width:70px">Qtd</th><th style="width:190px">Reserva nominal</th>
+          <th style="width:60px"></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ---- Configuração ---- -->
+  <section id="sub-config" class="sub-view oculto">
+    <div class="cartoes">
+      <div class="cartao">
+        <h3>Identificação da cerimônia</h3>
+        <label>Título <input id="cfg-titulo" type="text" /></label>
+        <label>Subtítulo <input id="cfg-subtitulo" type="text" /></label>
+        <label>Local <input id="cfg-local" type="text" /></label>
+        <label>Data <input id="cfg-data" type="text" placeholder="Rio de Janeiro, 00 de xxx de 2026" /></label>
+        <label>OM de origem (para o Rel DCEM) <input id="cfg-origem" type="text" /></label>
+        <label>Cidade da OM de origem <input id="cfg-origem-cidade" type="text" /></label>
+      </div>
+      <div class="cartao">
+        <h3>Condução</h3>
+        <label>Tempo de escolha (segundos, 0 desliga)
+          <input id="cfg-tempo" type="number" min="0" max="900" step="10" /></label>
+        <label class="linha"><input id="cfg-fotos" type="checkbox" /> Mostrar fotos no telão</label>
+        <label class="linha"><input id="cfg-media" type="checkbox" /> Mostrar média final no telão</label>
+        <label class="linha"><input id="cfg-som" type="checkbox" /> Sinal sonoro ao confirmar</label>
+        <label>Quantos “próximos” exibir
+          <input id="cfg-proximos" type="number" min="1" max="6" /></label>
+      </div>
+      <div class="cartao">
+        <h3>Sessão</h3>
+        <p class="nota">Tudo fica gravado neste navegador. Antes da cerimônia, exporte um backup;
+           se a máquina falhar, é só importar o arquivo em outro computador e seguir do ponto em que parou.</p>
+        <div class="barra-btns">
+          <button class="btn" id="cfg-exportar">Exportar sessão (.json)</button>
+          <button class="btn" id="cfg-importar">Importar sessão</button>
+          <button class="btn btn-perigo" id="cfg-zerar">Zerar escolhas</button>
+        </div>
+        <p class="nota" id="cfg-status"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ══════════════════ CERIMÔNIA (operador) ══════════════════ -->
+<main id="view-cerimonia" class="view oculto">
+  <div class="operador">
+    <!-- coluna esquerda: quem escolhe -->
+    <aside class="op-vez">
+      <div class="op-vez-topo">
+        <span class="etiqueta">Escolhendo agora</span>
+        <span id="op-progresso" class="progresso"></span>
+      </div>
+      <div id="op-cartao-aluno" class="cartao-aluno"></div>
+      <div id="op-cronometro" class="cronometro"></div>
+      <div class="op-botoes">
+        <button class="btn btn-ouro grande" id="op-confirmar" disabled>Confirmar escolha</button>
+        <div class="op-botoes-sec">
+          <button class="btn" id="op-desfazer">Desfazer</button>
+          <button class="btn" id="op-adiar">Adiar</button>
+          <button class="btn" id="op-ausente">Ausente</button>
+        </div>
+      </div>
+      <div class="op-proximos">
+        <span class="etiqueta">Na sequência</span>
+        <ol id="op-fila"></ol>
+      </div>
+    </aside>
+
+    <!-- coluna direita: vagas -->
+    <section class="op-vagas">
+      <div class="barra">
+        <input type="search" id="op-busca" placeholder="Buscar OM ou cidade…  (digite e pressione Enter para selecionar a primeira)" />
+        <div class="filtros" id="op-filtros"></div>
+      </div>
+      <div id="op-lista-vagas" class="lista-vagas"></div>
+      <div class="op-rodape">
+        <span id="op-resumo"></span>
+        <span class="atalhos">Enter confirma · Ctrl+Z desfaz · ↑↓ navega</span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ══════════════════ RESULTADO ══════════════════ -->
+<main id="view-resultado" class="view oculto">
+  <div class="barra nao-imprimir">
+    <div class="barra-info"><strong id="res-cont">0</strong> escolhas registradas</div>
+    <div class="barra-btns">
+      <button class="btn" data-res="quadro">Quadro final</button>
+      <button class="btn" data-res="dcem">Relação para o DCEM</button>
+      <button class="btn" data-res="om">Por OM</button>
+      <span class="separador"></span>
+      <button class="btn" id="res-csv">Baixar CSV</button>
+      <button class="btn" id="res-xls">Baixar Excel</button>
+      <button class="btn btn-ouro" id="res-imprimir">Imprimir</button>
+    </div>
+  </div>
+  <div id="res-conteudo" class="folha"></div>
+</main>
+
+<!-- ══════════════════ TELÃO ══════════════════ -->
+<div id="telao" class="oculto">
+  <header class="tl-topo">
+    <img src="brasoes/esao.png" alt="" class="tl-brasao" />
+    <div class="tl-titulo">
+      <h1 id="tl-titulo">Escolha de Organização Militar</h1>
+      <p id="tl-subtitulo">CAO/Log 2026 — Intendência</p>
+    </div>
+    <img src="brasoes/clog.png" alt="" class="tl-brasao" />
+  </header>
+
+  <div class="tl-corpo">
+    <section class="tl-vez">
+      <span class="tl-etiqueta">Escolhendo agora</span>
+      <div id="tl-aluno" class="tl-aluno"></div>
+      <div id="tl-cronometro" class="tl-cronometro"></div>
+      <div class="tl-proximos">
+        <span class="tl-etiqueta">Na sequência</span>
+        <ol id="tl-fila"></ol>
+      </div>
+    </section>
+
+    <section class="tl-quadro">
+      <div class="tl-quadro-topo">
+        <span class="tl-etiqueta">Quadro de vagas</span>
+        <span id="tl-contador" class="tl-contador"></span>
+      </div>
+      <div id="tl-vagas" class="tl-vagas"></div>
+    </section>
+  </div>
+
+  <footer class="tl-rodape">
+    <span class="tl-etiqueta">Últimas escolhas</span>
+    <div id="tl-ultimas" class="tl-ultimas"></div>
+  </footer>
+
+  <div id="tl-flash" class="tl-flash oculto">
+    <div class="tl-flash-caixa">
+      <div id="tl-flash-foto"></div>
+      <div class="tl-flash-texto">
+        <span id="tl-flash-cl" class="tl-flash-cl"></span>
+        <strong id="tl-flash-nome"></strong>
+        <span class="tl-flash-verbo">escolheu</span>
+        <em id="tl-flash-om"></em>
+        <span id="tl-flash-cidade"></span>
+      </div>
+    </div>
+  </div>
+
+  <button id="tl-sair" class="tl-sair" title="Sair do modo telão (Esc)">✕</button>
+</div>
+
+<!-- ══════════════════ CAIXA DE DIÁLOGO ══════════════════ -->
+<div id="modal" class="modal oculto">
+  <div class="modal-caixa">
+    <h3 id="modal-titulo"></h3>
+    <p id="modal-texto" class="nota"></p>
+    <textarea id="modal-area" spellcheck="false"></textarea>
+    <div class="modal-btns">
+      <button class="btn" id="modal-cancelar">Cancelar</button>
+      <button class="btn btn-ouro" id="modal-ok">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="arquivo-oculto" accept=".json" hidden />
+
+<script src="dados.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
