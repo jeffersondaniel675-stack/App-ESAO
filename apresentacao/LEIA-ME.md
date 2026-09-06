@@ -21,17 +21,18 @@ sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula n
 controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
 
-**Tipografia:** **IBM Plex Sans** no texto e **IBM Plex Mono** nas etiquetas e nos
-números (entretítulos, rótulos de cartão e de fase, cabeçalhos de tabela, valores
-dos gráficos, cronômetro e numeração dos slides). É uma escolha deliberadamente
-diferente da Inter que o `DESIGN.md` sugere como substituta da Saans: a Plex tem
-letra humanista, com desenho próprio, e não cai no ar de "grotesca padrão".
-A escala é grande de propósito — corpo em 24px sobre um palco de 1600px — porque
-o deck é lido do fundo de um auditório, não numa tela a 50cm.
+**Tipografia:** **Montserrat** em todo o deck — texto, títulos, etiquetas e números.
+Não há segunda família: a distinção entre etiqueta e texto vem do peso (600 contra
+400) e da cor, não de uma fonte diferente. Os números dos gráficos usam algarismos
+tabulares (`tnum`), então continuam alinhados em coluna.
 
-As duas fontes estão **embutidas no arquivo** em base64, então o deck não faz
-nenhuma requisição de rede e renderiza idêntico no auditório sem internet. É o que
-explica o arquivo ter ~270 KB.
+A escala é grande de propósito — corpo em 22px sobre um palco de 1600px — porque o
+deck é lido do fundo de um auditório. Como a Montserrat é mais larga e de altura-x
+maior que as fontes anteriores, os corpos foram ajustados em 1 a 2px para baixo e o
+espacejamento dos títulos ficou levemente negativo; o tamanho aparente é o mesmo.
+
+A fonte está **embutida no arquivo** em base64, então o deck não faz nenhuma
+requisição de rede e renderiza idêntico no auditório sem internet.
 
 Para voltar ao tema escuro anterior, basta trocar os tokens no bloco `:root` do
 início do arquivo — todo o resto é derivado deles.
