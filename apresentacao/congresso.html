@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apresentação de Congresso — TCC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   1. TOKENS  —  paleta "clean escuro"
+   Para trocar a cor de acento, mude --accent (e --accent-soft).
+   ============================================================ */
+:root{
+  --bg:#0e0f10;
+  --bg-2:#141516;
+  --surface:#1a1a19;
+  --surface-2:#212220;
+  --line:rgba(255,255,255,.10);
+  --line-strong:rgba(255,255,255,.20);
+
+  --ink:#ffffff;
+  --ink-2:#c3c2b7;
+  --ink-3:#8d8d85;
+
+  --accent:#3987e5;
+  --accent-soft:rgba(57,135,229,.14);
+
+  /* séries de gráfico (validadas para fundo escuro) */
+  --s1:#3987e5;
+  --s2:#d95926;
+  --s3:#199e70;
+
+  --sans:'Inter','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --serif:'Instrument Serif','Iowan Old Style','Palatino Linotype',Georgia,serif;
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --dur:640ms;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{ /* brilho ambiente sutil */
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1200px 700px at 12% -10%, rgba(57,135,229,.10), transparent 60%),
+    radial-gradient(900px 600px at 100% 110%, rgba(255,255,255,.04), transparent 60%);
+}
+
+/* ============================================================
+   2. PALCO 16:9  —  o slide tem 1600x900 e é escalado por JS,
+   então o layout fica idêntico em qualquer projetor.
+   ============================================================ */
+#stage{
+  position:fixed;left:50%;top:50%;width:1600px;height:900px;
+  transform:translate(-50%,-50%) scale(1);transform-origin:center center;
+  perspective:2200px;z-index:1;
+}
+.slide{
+  position:absolute;inset:0;padding:78px 104px 96px;
+  display:flex;flex-direction:column;justify-content:center;
+  background:var(--bg);
+  visibility:hidden;opacity:0;backface-visibility:hidden;
+  transform-style:preserve-3d;
+}
+.slide.active{visibility:visible;opacity:1;z-index:3;animation-duration:var(--dur);animation-timing-function:var(--ease);animation-fill-mode:both}
+.slide.leaving{visibility:visible;z-index:2;animation-duration:var(--dur);animation-timing-function:var(--ease);animation-fill-mode:both}
+.notes{display:none}
+
+/* ============================================================
+   3. TRANSIÇÕES DE SLIDE  (data-transition="...")
+   fade · slide · rise · zoom · flip · cube · blur · cover
+   swipe · iris · tilt · soft
+   Tecla T alterna uma transição global para todo o deck.
+   ============================================================ */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+@keyframes slideInR{from{opacity:.2;transform:translateX(64px)}to{opacity:1;transform:none}}
+@keyframes slideOutL{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-64px)}}
+@keyframes slideInL{from{opacity:.2;transform:translateX(-64px)}to{opacity:1;transform:none}}
+@keyframes slideOutR{from{opacity:1;transform:none}to{opacity:0;transform:translateX(64px)}}
+@keyframes riseIn{from{opacity:0;transform:translateY(70px)}to{opacity:1;transform:none}}
+@keyframes sinkOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-70px)}}
+@keyframes dropIn{from{opacity:0;transform:translateY(-70px)}to{opacity:1;transform:none}}
+@keyframes dropOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(70px)}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+@keyframes zoomOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(1.14)}}
+@keyframes zoomInBack{from{opacity:0;transform:scale(1.14)}to{opacity:1;transform:none}}
+@keyframes zoomOutBack{from{opacity:1;transform:none}to{opacity:0;transform:scale(.86)}}
+@keyframes flipIn{from{opacity:0;transform:rotateY(38deg) translateZ(-220px)}to{opacity:1;transform:none}}
+@keyframes flipOut{from{opacity:1;transform:none}to{opacity:0;transform:rotateY(-38deg) translateZ(-220px)}}
+@keyframes flipInB{from{opacity:0;transform:rotateY(-38deg) translateZ(-220px)}to{opacity:1;transform:none}}
+@keyframes flipOutB{from{opacity:1;transform:none}to{opacity:0;transform:rotateY(38deg) translateZ(-220px)}}
+@keyframes cubeIn{from{opacity:.3;transform:translateX(52%) rotateY(-58deg)}to{opacity:1;transform:none}}
+@keyframes cubeOut{from{opacity:1;transform:none}to{opacity:.3;transform:translateX(-52%) rotateY(58deg)}}
+@keyframes cubeInB{from{opacity:.3;transform:translateX(-52%) rotateY(58deg)}to{opacity:1;transform:none}}
+@keyframes cubeOutB{from{opacity:1;transform:none}to{opacity:.3;transform:translateX(52%) rotateY(-58deg)}}
+@keyframes blurIn{from{opacity:0;filter:blur(22px);transform:scale(1.05)}to{opacity:1;filter:blur(0);transform:none}}
+@keyframes blurOut{from{opacity:1;filter:blur(0)}to{opacity:0;filter:blur(22px)}}
+@keyframes coverIn{from{transform:translateY(102%)}to{transform:none}}
+@keyframes holdOut{from{opacity:1;transform:none}to{opacity:1;transform:scale(.94)}}
+@keyframes coverInB{from{transform:translateY(-102%)}to{transform:none}}
+@keyframes swipeIn{from{clip-path:inset(0 0 0 100%)}to{clip-path:inset(0 0 0 0)}}
+@keyframes swipeOut{from{clip-path:inset(0 0 0 0);opacity:1}to{clip-path:inset(0 100% 0 0);opacity:1}}
+@keyframes swipeInB{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes irisIn{from{clip-path:circle(0% at 50% 50%)}to{clip-path:circle(78% at 50% 50%)}}
+@keyframes irisOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.06)}}
+@keyframes tiltIn{from{opacity:0;transform:perspective(1400px) rotateX(14deg) translateY(90px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes tiltOut{from{opacity:1;transform:none}to{opacity:0;transform:perspective(1400px) rotateX(-12deg) translateY(-70px) scale(.96)}}
+@keyframes softIn{from{opacity:0;transform:scale(.985) translateY(18px)}to{opacity:1;transform:none}}
+@keyframes softOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(1.012) translateY(-14px)}}
+
+.dir-fwd .slide[data-transition="fade"].active{animation-name:fadeIn}
+.dir-fwd .slide[data-transition="fade"].leaving{animation-name:fadeOut}
+.dir-fwd .slide[data-transition="slide"].active{animation-name:slideInR}
+.dir-fwd .slide[data-transition="slide"].leaving{animation-name:slideOutL}
+.dir-fwd .slide[data-transition="rise"].active{animation-name:riseIn}
+.dir-fwd .slide[data-transition="rise"].leaving{animation-name:sinkOut}
+.dir-fwd .slide[data-transition="zoom"].active{animation-name:zoomIn}
+.dir-fwd .slide[data-transition="zoom"].leaving{animation-name:zoomOut}
+.dir-fwd .slide[data-transition="flip"].active{animation-name:flipIn}
+.dir-fwd .slide[data-transition="flip"].leaving{animation-name:flipOut}
+.dir-fwd .slide[data-transition="cube"].active{animation-name:cubeIn}
+.dir-fwd .slide[data-transition="cube"].leaving{animation-name:cubeOut}
+.dir-fwd .slide[data-transition="blur"].active{animation-name:blurIn}
+.dir-fwd .slide[data-transition="blur"].leaving{animation-name:blurOut}
+.dir-fwd .slide[data-transition="cover"].active{animation-name:coverIn}
+.dir-fwd .slide[data-transition="cover"].leaving{animation-name:holdOut}
+.dir-fwd .slide[data-transition="swipe"].active{animation-name:swipeIn}
+.dir-fwd .slide[data-transition="swipe"].leaving{animation-name:swipeOut}
+.dir-fwd .slide[data-transition="iris"].active{animation-name:irisIn}
+.dir-fwd .slide[data-transition="iris"].leaving{animation-name:irisOut}
+.dir-fwd .slide[data-transition="tilt"].active{animation-name:tiltIn}
+.dir-fwd .slide[data-transition="tilt"].leaving{animation-name:tiltOut}
+.dir-fwd .slide[data-transition="soft"].active{animation-name:softIn}
+.dir-fwd .slide[data-transition="soft"].leaving{animation-name:softOut}
+
+.dir-back .slide[data-transition="fade"].active{animation-name:fadeIn}
+.dir-back .slide[data-transition="fade"].leaving{animation-name:fadeOut}
+.dir-back .slide[data-transition="slide"].active{animation-name:slideInL}
+.dir-back .slide[data-transition="slide"].leaving{animation-name:slideOutR}
+.dir-back .slide[data-transition="rise"].active{animation-name:dropIn}
+.dir-back .slide[data-transition="rise"].leaving{animation-name:dropOut}
+.dir-back .slide[data-transition="zoom"].active{animation-name:zoomInBack}
+.dir-back .slide[data-transition="zoom"].leaving{animation-name:zoomOutBack}
+.dir-back .slide[data-transition="flip"].active{animation-name:flipInB}
+.dir-back .slide[data-transition="flip"].leaving{animation-name:flipOutB}
+.dir-back .slide[data-transition="cube"].active{animation-name:cubeInB}
+.dir-back .slide[data-transition="cube"].leaving{animation-name:cubeOutB}
+.dir-back .slide[data-transition="blur"].active{animation-name:blurIn}
+.dir-back .slide[data-transition="blur"].leaving{animation-name:blurOut}
+.dir-back .slide[data-transition="cover"].active{animation-name:coverInB}
+.dir-back .slide[data-transition="cover"].leaving{animation-name:holdOut}
+.dir-back .slide[data-transition="swipe"].active{animation-name:swipeInB}
+.dir-back .slide[data-transition="swipe"].leaving{animation-name:fadeOut}
+.dir-back .slide[data-transition="iris"].active{animation-name:irisIn}
+.dir-back .slide[data-transition="iris"].leaving{animation-name:irisOut}
+.dir-back .slide[data-transition="tilt"].active{animation-name:dropIn}
+.dir-back .slide[data-transition="tilt"].leaving{animation-name:dropOut}
+.dir-back .slide[data-transition="soft"].active{animation-name:softIn}
+.dir-back .slide[data-transition="soft"].leaving{animation-name:softOut}
+
+/* entrada escalonada dos elementos dentro do slide */
+@keyframes elIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.slide.active [data-anim]{animation:elIn 620ms var(--ease) both;animation-delay:calc(var(--i,0) * 70ms + 200ms)}
+.slide:not(.active) [data-anim]{opacity:0}
+
+@media (prefers-reduced-motion:reduce){
+  .slide.active,.slide.leaving{animation-name:fadeIn!important;animation-duration:220ms!important}
+  .slide.active [data-anim]{animation:none!important;opacity:1!important;transform:none!important}
+}
+</style>
+<style>
+/* ============================================================
+   4. TIPOGRAFIA E BLOCOS DE CONTEÚDO
+   ============================================================ */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:12px;
+  font-size:15px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 22px;
+}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);opacity:.6}
+
+h1{font-size:82px;line-height:1.02;letter-spacing:-.03em;font-weight:600;margin:0 0 26px}
+h2{font-size:56px;line-height:1.08;letter-spacing:-.025em;font-weight:600;margin:0 0 14px}
+h3{font-size:24px;line-height:1.25;letter-spacing:-.01em;font-weight:600;margin:0 0 10px}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
+.lead{font-size:26px;line-height:1.5;color:var(--ink-2);max-width:22ch;margin:0}
+.lead.wide{max-width:46ch}
+p{margin:0 0 18px;font-size:21px;line-height:1.55;color:var(--ink-2)}
+.small{font-size:17px;color:var(--ink-3);line-height:1.5}
+.rule{height:1px;background:var(--line);border:0;margin:30px 0}
+strong{color:var(--ink);font-weight:600}
+.hl{color:var(--accent);font-weight:600}
+
+.head{margin-bottom:38px}
+.head p{max-width:64ch}
+
+/* grades */
+.cols{display:grid;gap:44px;align-items:center}
+.c-2{grid-template-columns:1fr 1fr}
+.c-2a{grid-template-columns:1.15fr .85fr}
+.c-2b{grid-template-columns:.85fr 1.15fr}
+.c-3{grid-template-columns:repeat(3,1fr)}
+.c-4{grid-template-columns:repeat(4,1fr)}
+.gap-s{gap:22px}
+.stack{display:flex;flex-direction:column;gap:18px}
+
+/* cartões */
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:30px 30px 32px;position:relative;overflow:hidden;
+}
+.card .n{
+  font-size:14px;font-weight:700;letter-spacing:.14em;color:var(--accent);
+  display:block;margin-bottom:14px;
+}
+.card p{font-size:18px;margin:0;color:var(--ink-2)}
+.card.accent{background:linear-gradient(160deg,var(--accent-soft),transparent 70%),var(--surface);border-color:rgba(57,135,229,.35)}
+
+/* listas */
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.list li{display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:start;font-size:21px;line-height:1.5;color:var(--ink-2)}
+.list li .k{
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);font-size:15px;font-weight:700;
+  border:1px solid rgba(57,135,229,.3);
+}
+.list.check li .k{background:rgba(25,158,112,.14);color:var(--s3);border-color:rgba(25,158,112,.32)}
+.list.plain li{grid-template-columns:10px 1fr;gap:20px}
+.list.plain li .k{width:7px;height:7px;border-radius:50%;background:var(--accent);border:0;margin-top:14px}
+
+/* citação / destaque */
+.quote{
+  font-family:var(--serif);font-size:46px;line-height:1.25;color:var(--ink);
+  border-left:3px solid var(--accent);padding-left:36px;margin:0;max-width:26ch;
+}
+.quote cite{display:block;font-family:var(--sans);font-size:16px;font-style:normal;color:var(--ink-3);margin-top:22px;letter-spacing:.04em}
+
+/* linha do tempo */
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:30px;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:13px;height:1px;background:var(--line)}
+.tl{padding-right:26px;position:relative}
+.tl::before{content:"";position:absolute;left:0;top:7px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
+.tl .y{display:block;margin-top:38px;font-size:15px;letter-spacing:.12em;font-weight:700;color:var(--accent)}
+.tl h3{font-size:19px;margin:8px 0 8px}
+.tl p{font-size:15px;line-height:1.45}
+
+/* fluxo de etapas */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:20px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 20px;position:relative}
+.step .n{font-size:13px;letter-spacing:.14em;font-weight:700;color:var(--accent);display:block;margin-bottom:12px}
+.step h3{font-size:19px;margin-bottom:8px}
+.step p{font-size:15px;line-height:1.45;margin:0}
+.step::after{content:"";position:absolute;right:-11px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--line-strong);border-right:1.5px solid var(--line-strong);transform:translateY(-50%) rotate(45deg)}
+.step:last-child::after{display:none}
+
+/* tabela */
+table{width:100%;border-collapse:collapse;font-size:18px}
+th{
+  text-align:left;font-size:13px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;padding:0 18px 14px;border-bottom:1px solid var(--line);
+}
+td{padding:18px;color:var(--ink-2);border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+
+/* pílulas */
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{
+  border:1px solid var(--line);border-radius:999px;padding:9px 18px;
+  font-size:16px;color:var(--ink-2);background:var(--surface);
+}
+.pill.on{border-color:rgba(57,135,229,.45);background:var(--accent-soft);color:var(--ink)}
+
+/* ============================================================
+   5. DADOS: KPI + GRÁFICOS
+   Para mudar um valor, edite o --v (0 a 100) e o texto do rótulo.
+   ============================================================ */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px 28px}
+.kpi .v{font-size:60px;font-weight:600;letter-spacing:-.035em;line-height:1;color:var(--ink)}
+.kpi .v small{font-size:26px;font-weight:500;color:var(--ink-3);margin-left:4px}
+.kpi .l{margin-top:14px;font-size:16px;color:var(--ink-3);line-height:1.4}
+.kpi .d{margin-top:12px;font-size:14px;font-weight:600;color:var(--s3)}
+
+.chart{margin-top:8px}
+.chart .c-title{font-size:17px;color:var(--ink-2);margin-bottom:6px}
+.chart .c-sub{font-size:14px;color:var(--ink-3);margin-bottom:26px}
+.bars{display:flex;align-items:flex-end;gap:26px;height:330px;padding-top:34px;border-bottom:1px solid var(--line)}
+.bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative;text-align:center}
+.bar{
+  height:calc(var(--v) * 1%);background:var(--c,var(--s1));
+  border-radius:5px 5px 0 0;position:relative;transition:filter .18s ease;
+  transform-origin:bottom;animation:growB 900ms var(--ease) both;animation-delay:calc(var(--i,0)*70ms + 320ms);
+}
+@keyframes growB{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.slide:not(.active) .bar{animation:none}
+.bcol:hover .bar{filter:brightness(1.18)}
+.bar .v{position:absolute;top:-32px;left:0;right:0;font-size:17px;font-weight:600;color:var(--ink)}
+.bcol > .bar{width:112px;align-self:center}
+.bcol .lbl{margin-top:16px;font-size:15px;color:var(--ink-3);line-height:1.35}
+.group{display:flex;gap:2px;align-items:flex-end;height:100%;width:100%;max-width:180px;align-self:center}
+.group .bar{flex:1}
+.legend{display:flex;gap:26px;margin-bottom:22px}
+.legend span{display:inline-flex;align-items:center;gap:9px;font-size:16px;color:var(--ink-2)}
+.legend i{width:11px;height:11px;border-radius:3px;background:var(--c);display:inline-block}
+
+.hbars{display:flex;flex-direction:column;gap:18px;margin-top:10px}
+.hrow{display:grid;grid-template-columns:230px 1fr 62px;align-items:center;gap:20px}
+.hrow .lbl{font-size:17px;color:var(--ink-2);text-align:right}
+.htrack{height:24px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.hfill{height:100%;width:calc(var(--v) * 1%);background:var(--c,var(--s1));border-radius:6px;
+  transform-origin:left;animation:growH 900ms var(--ease) both;animation-delay:calc(var(--i,0)*70ms + 300ms)}
+@keyframes growH{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.slide:not(.active) .hfill{animation:none}
+.hrow .num{font-size:18px;font-weight:600;color:var(--ink)}
+
+/* ============================================================
+   6. ESPAÇOS PARA FOTO
+   → arraste uma imagem para o quadro, OU troque o conteúdo por
+     <img src="fotos/arquivo.jpg" alt="descrição">
+   ============================================================ */
+.photo{
+  position:relative;margin:0;border-radius:20px;overflow:hidden;
+  background:var(--surface-2);border:1.5px dashed var(--line-strong);
+  display:grid;place-items:center;min-height:180px;
+  background-size:cover;background-position:center;transition:border-color .2s ease,background-color .2s ease;
+}
+.photo.tall{aspect-ratio:3/4}
+.photo.wide{aspect-ratio:16/9}
+.photo.square{aspect-ratio:1/1}
+.photo.fill{position:absolute;inset:0;border-radius:0;border:0;margin:0}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo.over{border-color:var(--accent);background-color:var(--accent-soft)}
+.photo.filled{border-style:solid;border-color:var(--line)}
+.photo.filled .ph-hint{display:none}
+.ph-hint{text-align:center;color:var(--ink-3);padding:24px;pointer-events:none}
+.ph-hint .ic{
+  width:52px;height:52px;border-radius:14px;border:1px solid var(--line-strong);
+  display:grid;place-items:center;margin:0 auto 16px;font-size:22px;color:var(--ink-2)
+}
+.ph-hint b{display:block;font-size:16px;font-weight:500;color:var(--ink-2);margin-bottom:6px}
+.ph-hint span{font-size:13px;letter-spacing:.03em}
+.photo-cap{margin-top:12px;font-size:14px;color:var(--ink-3)}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.hero-photo{position:absolute;inset:0;z-index:0}
+.photo.fill .ph-hint{position:absolute;right:34px;bottom:104px;z-index:2;text-align:right;background:rgba(26,26,25,.72);border:1px dashed var(--line-strong);border-radius:14px;padding:18px 22px}
+.photo.fill .ph-hint .ic{margin:0 0 10px auto}
+.photo.fill .ph-hint{pointer-events:auto;cursor:pointer}
+.hero-photo::after{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(90deg,rgba(14,15,16,.96) 0%,rgba(14,15,16,.86) 42%,rgba(14,15,16,.45) 100%);
+}
+.slide.has-hero > *:not(.hero-photo){position:relative;z-index:2}
+</style>
+<style>
+/* ============================================================
+   7. INTERFACE DE APRESENTAÇÃO (fora do palco)
+   ============================================================ */
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);width:0;z-index:60;transition:width .45s var(--ease)}
+#chrome{
+  position:fixed;left:0;right:0;bottom:0;z-index:55;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 30px;font-size:13px;color:var(--ink-3);
+  background:linear-gradient(to top,rgba(14,15,16,.92),transparent);
+  pointer-events:none;letter-spacing:.05em;
+}
+#chrome b{color:var(--ink-2);font-weight:500}
+#chrome .right{display:flex;gap:22px;align-items:center;pointer-events:auto}
+#timer{font-variant-numeric:tabular-nums;letter-spacing:.08em}
+#timer.warn{color:#c98500}
+#timer.over{color:#e66767}
+#chrome kbd{
+  font-family:var(--sans);border:1px solid var(--line);border-radius:6px;
+  padding:3px 7px;font-size:11px;color:var(--ink-3);cursor:pointer;pointer-events:auto
+}
+#chrome kbd:hover{color:var(--ink);border-color:var(--line-strong)}
+
+.overlay{
+  position:fixed;inset:0;z-index:70;background:rgba(10,11,12,.88);
+  backdrop-filter:blur(16px);display:none;padding:60px;overflow:auto;
+  animation:fadeIn .22s ease both;
+}
+.overlay.open{display:block}
+.overlay h2{font-size:30px;margin-bottom:28px}
+.ov-inner{max-width:1080px;margin:0 auto}
+#menu ol{list-style:none;margin:0;padding:0;columns:2;column-gap:56px}
+#menu li{
+  break-inside:avoid;display:grid;grid-template-columns:38px 1fr;gap:14px;
+  padding:9px 12px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--ink-2);
+}
+#menu li:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+#menu li.cur{background:var(--accent-soft);color:var(--ink)}
+#menu li .no{color:var(--ink-3);font-variant-numeric:tabular-nums}
+#menu li.sec{margin-top:20px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);cursor:default;grid-template-columns:1fr}
+#menu li.sec:hover{background:none}
+#help .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 56px}
+#help .row{display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px;color:var(--ink-2)}
+#help .row kbd{
+  font-family:var(--sans);background:var(--surface);border:1px solid var(--line);
+  border-radius:6px;padding:4px 10px;font-size:13px;color:var(--ink);white-space:nowrap
+}
+
+#notes{
+  position:fixed;left:0;right:0;bottom:0;z-index:65;max-height:42vh;overflow:auto;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:26px 34px;transform:translateY(101%);transition:transform .35s var(--ease);
+}
+#notes.open{transform:none}
+#notes .t{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+#notes .body{font-size:19px;line-height:1.55;color:var(--ink-2);max-width:100ch}
+#notes .next{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:15px;color:var(--ink-3)}
+
+#black{position:fixed;inset:0;background:#000;z-index:80;display:none}
+#black.on{display:block}
+
+/* ============================================================
+   8. IMPRESSÃO / PDF  —  Ctrl+P gera um slide por página
+   ============================================================ */
+@media print{
+  @page{size:1600px 900px;margin:0}
+  body{overflow:visible;background:#fff}
+  body::before,#chrome,#progress,#notes,.overlay,#black{display:none!important}
+  #stage{position:static;transform:none!important;width:auto;height:auto}
+  .slide{
+    position:relative;visibility:visible!important;opacity:1!important;
+    animation:none!important;width:1600px;height:900px;page-break-after:always;
+  }
+  .slide [data-anim]{opacity:1!important;animation:none!important}
+  .bar,.hfill{animation:none!important;transform:none!important}
+}
+</style>
+</head>
+<body class="dir-fwd">
+
+<div id="progress"></div>
+
+<div id="stage">
+<style>
+  /* texto que você deve substituir aparece com sublinhado pontilhado */
+  .ph-text{text-decoration:underline dotted rgba(57,135,229,.55);text-decoration-thickness:1px;text-underline-offset:5px}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ico-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-6.5 6.5L7 15l-4 4"/></symbol></svg>
+
+<!-- ============================ 01 · CAPA ============================ -->
+<section class="slide has-hero" data-transition="fade" data-section="Abertura" data-title="Capa">
+  <figure class="photo fill hero-photo" data-photo="capa">
+    <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de abertura (tela cheia)</b><span>arraste a imagem aqui</span></div>
+  </figure>
+  <p class="eyebrow" data-anim><span class="ph-text">Nome do Congresso · Edição 2026</span></p>
+  <h1 data-anim>Digitalização<br>da gestão<span style="color:var(--accent)">.</span></h1>
+  <p class="lead wide" data-anim><span class="ph-text">Subtítulo do TCC: contribuições da tecnologia da informação para a eficiência dos processos administrativos.</span></p>
+  <hr class="rule" style="max-width:420px" data-anim>
+  <p class="small" data-anim>
+    <strong class="ph-text">Posto/Grad. Nome Completo</strong><br>
+    <span class="ph-text">Escola de Aperfeiçoamento de Oficiais — Intendência</span> · <span class="ph-text">Rio de Janeiro, 2026</span>
+  </p>
+  <aside class="notes">Abertura: dizer nome, unidade e, em uma frase, por que este tema importa AGORA. Não ler o slide. Combinar tempo total: 40 min (35 de fala + 5 de perguntas).</aside>
+</section>
+
+<!-- ============================ 02 · ROTEIRO ============================ -->
+<section class="slide" data-transition="rise" data-section="Abertura" data-title="Roteiro">
+  <div class="head" data-anim><p class="eyebrow">Roteiro</p><h2>O caminho da apresentação</h2></div>
+  <div class="cols c-4 gap-s">
+    <div class="card" data-anim><span class="n">01</span><h3>Introdução</h3><p>Contexto, problema, questões e objetivos da pesquisa.</p></div>
+    <div class="card" data-anim><span class="n">02</span><h3>Referencial</h3><p>Base teórica, estado da arte e a lacuna identificada.</p></div>
+    <div class="card" data-anim><span class="n">03</span><h3>Metodologia</h3><p>Desenho da pesquisa, instrumentos e amostra.</p></div>
+    <div class="card accent" data-anim><span class="n">04</span><h3>Resultados</h3><p>Achados, discussão, conclusões e recomendações.</p></div>
+  </div>
+  <p class="small" style="margin-top:34px" data-anim>Duração prevista: 35 minutos de exposição · 5 minutos para perguntas.</p>
+  <aside class="notes">Anunciar o percurso em 30 segundos. Sinalizar que os dados aparecem a partir do bloco 04 — isso segura a atenção.</aside>
+</section>
+
+<!-- ============================ 03 · DIVISOR ============================ -->
+<section class="slide" data-transition="cover" data-section="Introdução" data-title="Divisor · Introdução">
+  <p class="eyebrow" data-anim>Bloco 01</p>
+  <h1 class="serif" style="font-size:110px" data-anim>Introdução</h1>
+  <p class="lead wide" data-anim>De onde parte a pesquisa, o que exatamente ela pergunta e por que a resposta importa.</p>
+  <aside class="notes">Divisor: pausa de respiro. Uma frase só, e seguir.</aside>
+</section>
+
+<!-- ============================ 04 · CONTEXTO ============================ -->
+<section class="slide" data-transition="slide" data-section="Introdução" data-title="Contextualização">
+  <div class="cols c-2a">
+    <div>
+      <p class="eyebrow" data-anim>Contextualização</p>
+      <h2 data-anim>A gestão mudou de suporte</h2>
+      <p data-anim>A transformação digital deixou de ser um projeto de tecnologia para se tornar uma <strong>questão de gestão</strong>: muda o fluxo do processo, o perfil de quem executa e a forma como a decisão é tomada.</p>
+      <p data-anim><span class="ph-text">Descreva aqui, em dois ou três períodos, o cenário concreto que você observou: qual organização, quais processos, que volume, desde quando.</span></p>
+      <p class="small" data-anim><span class="ph-text">(Fonte: citar norma, relatório ou autor que sustenta o contexto.)</span></p>
+    </div>
+    <figure class="photo tall" data-photo="contexto">
+      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto do contexto</b><span>ambiente, seção, equipe ou sistema</span></div>
+    </figure>
+  </div>
+  <aside class="notes">Ancorar a plateia no mundo real antes de falar de teoria. Uma imagem concreta vale mais que a definição.</aside>
+</section>
+
+<!-- ============================ 05 · PROBLEMA ============================ -->
+<section class="slide" data-transition="zoom" data-section="Introdução" data-title="Problema de pesquisa">
+  <p class="eyebrow" data-anim>O problema</p>
+  <blockquote class="quote" data-anim>
+    <span class="ph-text">Enuncie aqui o problema em uma única frase — o desconforto real que a pesquisa ataca.</span>
+    <cite>Problema de pesquisa</cite>
+  </blockquote>
+  <div class="cols c-3 gap-s" style="margin-top:52px">
+    <div class="card" data-anim><span class="n">SINTOMA</span><p class="ph-text">Evidência 1 do problema (dado, prazo, retrabalho, custo).</p></div>
+    <div class="card" data-anim><span class="n">SINTOMA</span><p class="ph-text">Evidência 2 do problema.</p></div>
+    <div class="card" data-anim><span class="n">SINTOMA</span><p class="ph-text">Evidência 3 do problema.</p></div>
+  </div>
+  <aside class="notes">Slide-chave. Falar devagar. Se a banca só levar uma coisa desta apresentação, é esta frase.</aside>
+</section>
+
+<!-- ============================ 06 · QUESTÕES ============================ -->
+<section class="slide" data-transition="swipe" data-section="Introdução" data-title="Questões de pesquisa">
+  <div class="head" data-anim><p class="eyebrow">Questões de pesquisa</p><h2>O que precisa ser respondido</h2></div>
+  <div class="card accent" style="margin-bottom:28px" data-anim>
+    <span class="n">QUESTÃO PRINCIPAL</span>
+    <p style="font-size:26px;line-height:1.4;color:var(--ink)" class="ph-text">De que forma a adoção de soluções digitais afeta a eficiência dos processos de gestão na organização estudada?</p>
+  </div>
+  <ul class="list">
+    <li data-anim><span class="k">Q1</span><span class="ph-text">Questão norteadora 1.</span></li>
+    <li data-anim><span class="k">Q2</span><span class="ph-text">Questão norteadora 2.</span></li>
+    <li data-anim><span class="k">Q3</span><span class="ph-text">Questão norteadora 3.</span></li>
+  </ul>
+  <aside class="notes">As questões voltam no bloco de conclusão — avisar isso agora cria expectativa e fecha o arco.</aside>
+</section>
+
+<!-- ============================ 07 · OBJETIVOS ============================ -->
+<section class="slide" data-transition="tilt" data-section="Introdução" data-title="Objetivos">
+  <div class="cols c-2">
+    <div>
+      <p class="eyebrow" data-anim>Objetivo geral</p>
+      <p style="font-size:30px;line-height:1.4;color:var(--ink)" data-anim class="ph-text">Analisar a contribuição da digitalização para a eficiência dos processos de gestão na organização estudada.</p>
+      <hr class="rule">
+      <p class="small" data-anim>O objetivo geral responde à questão principal; os específicos, às norteadoras.</p>
+    </div>
+    <div>
+      <p class="eyebrow" data-anim>Objetivos específicos</p>
+      <ul class="list">
+        <li data-anim><span class="k">a</span><span class="ph-text">Descrever o processo atual e seus gargalos.</span></li>
+        <li data-anim><span class="k">b</span><span class="ph-text">Identificar as soluções digitais em uso.</span></li>
+        <li data-anim><span class="k">c</span><span class="ph-text">Comparar desempenho antes e depois da adoção.</span></li>
+        <li data-anim><span class="k">d</span><span class="ph-text">Propor recomendações aplicáveis.</span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Mostrar o alinhamento: cada objetivo específico nasce de uma questão e terá um resultado correspondente adiante.</aside>
+</section>
+
+<!-- ============================ 08 · JUSTIFICATIVA ============================ -->
+<section class="slide" data-transition="flip" data-section="Introdução" data-title="Justificativa">
+  <div class="head" data-anim><p class="eyebrow">Justificativa</p><h2>Por que esta pesquisa importa</h2></div>
+  <div class="cols c-3 gap-s">
+    <div class="card" data-anim><span class="n">RELEVÂNCIA ACADÊMICA</span><p class="ph-text">O que o trabalho acrescenta à literatura sobre o tema.</p></div>
+    <div class="card" data-anim><span class="n">RELEVÂNCIA INSTITUCIONAL</span><p class="ph-text">Que decisão ou norma o resultado pode apoiar.</p></div>
+    <div class="card" data-anim><span class="n">RELEVÂNCIA PRÁTICA</span><p class="ph-text">Quem, no dia a dia, passa a trabalhar melhor com isso.</p></div>
+  </div>
+  <aside class="notes">Três frentes, três frases. Não alongar — a justificativa convence pela objetividade.</aside>
+</section>
+
+<!-- ============================ 09 · DELIMITAÇÃO ============================ -->
+<section class="slide" data-transition="soft" data-section="Introdução" data-title="Delimitação">
+  <div class="head" data-anim><p class="eyebrow">Delimitação do estudo</p><h2>O que está — e o que não está — no escopo</h2></div>
+  <div class="cols c-2 gap-s">
+    <div class="card" data-anim>
+      <span class="n" style="color:var(--s3)">DENTRO DO ESCOPO</span>
+      <ul class="list check" style="margin-top:6px">
+        <li><span class="k">✓</span><span class="ph-text">Recorte temporal do estudo.</span></li>
+        <li><span class="k">✓</span><span class="ph-text">Recorte organizacional / unidades analisadas.</span></li>
+        <li><span class="k">✓</span><span class="ph-text">Processos observados.</span></li>
+      </ul>
+    </div>
+    <div class="card" data-anim>
+      <span class="n" style="color:var(--ink-3)">FORA DO ESCOPO</span>
+      <ul class="list plain" style="margin-top:6px">
+        <li><span class="k" style="background:var(--ink-3)"></span><span class="ph-text">O que a pesquisa deliberadamente não trata.</span></li>
+        <li><span class="k" style="background:var(--ink-3)"></span><span class="ph-text">Aspectos técnicos não avaliados.</span></li>
+        <li><span class="k" style="background:var(--ink-3)"></span><span class="ph-text">Generalizações não pretendidas.</span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Delimitar cedo desarma metade das perguntas difíceis da banca. Dizer com segurança, sem tom defensivo.</aside>
+</section>
+
+<!-- ============================ 10 · DIVISOR ============================ -->
+<section class="slide" data-transition="cover" data-section="Referencial" data-title="Divisor · Referencial">
+  <p class="eyebrow" data-anim>Bloco 02</p>
+  <h1 class="serif" style="font-size:110px" data-anim>Referencial teórico</h1>
+  <p class="lead wide" data-anim>Sobre quais ombros esta pesquisa se apoia — e onde a literatura ainda não chegou.</p>
+  <aside class="notes">Transição: "estabelecido o problema, vejamos o que já se sabe."</aside>
+</section>
+
+<!-- ============================ 11 · LINHA DO TEMPO ============================ -->
+<section class="slide" data-transition="slide" data-section="Referencial" data-title="Marcos da digitalização">
+  <div class="head" data-anim><p class="eyebrow">Evolução do campo</p><h2>Marcos da digitalização da gestão</h2></div>
+  <div class="timeline">
+    <div class="tl" data-anim><span class="y ph-text">FASE 1</span><h3 class="ph-text">Informatização</h3><p class="ph-text">Substituição do papel; o processo permanece igual.</p></div>
+    <div class="tl" data-anim><span class="y ph-text">FASE 2</span><h3 class="ph-text">Integração</h3><p class="ph-text">Sistemas conversam entre si; dados deixam de ser ilhas.</p></div>
+    <div class="tl" data-anim><span class="y ph-text">FASE 3</span><h3 class="ph-text">Automação</h3><p class="ph-text">Regras de negócio executadas pelo sistema.</p></div>
+    <div class="tl" data-anim><span class="y ph-text">FASE 4</span><h3 class="ph-text">Decisão orientada a dados</h3><p class="ph-text">Indicadores em tempo real orientam a escolha.</p></div>
+    <div class="tl" data-anim><span class="y ph-text">FASE 5</span><h3 class="ph-text">Transformação</h3><p class="ph-text">O próprio processo é redesenhado.</p></div>
+  </div>
+  <p class="small" style="margin-top:44px" data-anim>Adapte os rótulos ao modelo teórico que você adotou e cite o autor da classificação.</p>
+  <aside class="notes">Mostrar em que fase está a organização estudada — isso conecta a teoria ao caso.</aside>
+</section>
+
+<!-- ============================ 12 · CONCEITOS ============================ -->
+<section class="slide" data-transition="rise" data-section="Referencial" data-title="Conceitos-chave">
+  <div class="head" data-anim><p class="eyebrow">Conceitos-chave</p><h2>O vocabulário do trabalho</h2></div>
+  <div class="cols c-4 gap-s">
+    <div class="card" data-anim><span class="n">01</span><h3 class="ph-text">Conceito A</h3><p class="ph-text">Definição em uma frase, com o autor entre parênteses.</p></div>
+    <div class="card" data-anim><span class="n">02</span><h3 class="ph-text">Conceito B</h3><p class="ph-text">Definição em uma frase.</p></div>
+    <div class="card" data-anim><span class="n">03</span><h3 class="ph-text">Conceito C</h3><p class="ph-text">Definição em uma frase.</p></div>
+    <div class="card" data-anim><span class="n">04</span><h3 class="ph-text">Conceito D</h3><p class="ph-text">Definição em uma frase.</p></div>
+  </div>
+  <aside class="notes">Definir só o que será usado depois. Conceito que não reaparece nos resultados sai daqui.</aside>
+</section>
+
+<!-- ============================ 13 · MODELO TEÓRICO ============================ -->
+<section class="slide" data-transition="iris" data-section="Referencial" data-title="Modelo de análise">
+  <div class="head" data-anim><p class="eyebrow">Modelo de análise</p><h2>Como os conceitos se articulam</h2></div>
+  <div class="cols c-3 gap-s" style="align-items:stretch">
+    <div class="card" data-anim><span class="n">PILAR 1</span><h3 class="ph-text">Tecnologia</h3><p class="ph-text">Ferramentas, sistemas e infraestrutura disponíveis.</p></div>
+    <div class="card" data-anim><span class="n">PILAR 2</span><h3 class="ph-text">Processo</h3><p class="ph-text">Fluxo de trabalho, normas e controles.</p></div>
+    <div class="card" data-anim><span class="n">PILAR 3</span><h3 class="ph-text">Pessoas</h3><p class="ph-text">Competência digital, cultura e liderança.</p></div>
+  </div>
+  <div class="card accent" style="margin-top:22px;text-align:center" data-anim>
+    <span class="n">VARIÁVEL DEPENDENTE</span>
+    <p style="font-size:26px;color:var(--ink)" class="ph-text">Eficiência dos processos de gestão</p>
+  </div>
+  <aside class="notes">Este é o esqueleto da análise: cada pilar vira uma categoria na coleta e uma seção nos resultados.</aside>
+</section>
+
+<!-- ============================ 14 · TRABALHOS CORRELATOS ============================ -->
+<section class="slide" data-transition="fade" data-section="Referencial" data-title="Trabalhos correlatos">
+  <div class="head" data-anim><p class="eyebrow">Estado da arte</p><h2>O que já foi pesquisado</h2></div>
+  <table data-anim>
+    <thead><tr><th>Autor / Ano</th><th>Foco do estudo</th><th>Principal contribuição</th><th>Limite</th></tr></thead>
+    <tbody>
+      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
+      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
+      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
+      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">Não ler a tabela. Comentar apenas a coluna "Limite" — é ela que prepara o próximo slide.</aside>
+</section>
+
+<!-- ============================ 15 · LACUNA ============================ -->
+<section class="slide" data-transition="zoom" data-section="Referencial" data-title="Lacuna de pesquisa">
+  <p class="eyebrow" data-anim>Lacuna de pesquisa</p>
+  <blockquote class="quote" data-anim>
+    <span class="ph-text">Nenhum dos trabalhos anteriores examinou … no contexto de …</span>
+    <cite>É exatamente aqui que este trabalho se insere</cite>
+  </blockquote>
+  <aside class="notes">Momento de virada do bloco teórico. Frase curta, pausa, e seguir para a metodologia.</aside>
+</section>
+
+<!-- ============================ 16 · DIVISOR ============================ -->
+<section class="slide" data-transition="cover" data-section="Metodologia" data-title="Divisor · Metodologia">
+  <p class="eyebrow" data-anim>Bloco 03</p>
+  <h1 class="serif" style="font-size:110px" data-anim>Metodologia</h1>
+  <p class="lead wide" data-anim>Como a pesquisa foi construída para que o resultado seja verificável.</p>
+  <aside class="notes">Aqui a banca presta mais atenção. Ritmo mais lento, precisão nos termos.</aside>
+</section>
+
+<!-- ============================ 17 · CLASSIFICAÇÃO ============================ -->
+<section class="slide" data-transition="tilt" data-section="Metodologia" data-title="Classificação da pesquisa">
+  <div class="head" data-anim><p class="eyebrow">Classificação</p><h2>Natureza e abordagem</h2></div>
+  <div class="cols c-4 gap-s">
+    <div class="stack" data-anim><p class="small">Quanto à natureza</p><div class="pills"><span class="pill on">Aplicada</span><span class="pill">Básica</span></div></div>
+    <div class="stack" data-anim><p class="small">Quanto à abordagem</p><div class="pills"><span class="pill on">Qualitativa</span><span class="pill">Quantitativa</span><span class="pill">Mista</span></div></div>
+    <div class="stack" data-anim><p class="small">Quanto aos objetivos</p><div class="pills"><span class="pill">Exploratória</span><span class="pill on">Descritiva</span><span class="pill">Explicativa</span></div></div>
+    <div class="stack" data-anim><p class="small">Quanto aos procedimentos</p><div class="pills"><span class="pill on">Estudo de caso</span><span class="pill">Levantamento</span><span class="pill">Documental</span></div></div>
+  </div>
+  <p class="small" style="margin-top:40px" data-anim>Marque a pílula correta com a classe <code>on</code> e cite o autor da taxonomia adotada.</p>
+  <aside class="notes">Frase única por eixo, justificando a escolha. Evitar decorar definições — explicar por que couberam ao objeto.</aside>
+</section>
+
+<!-- ============================ 18 · DESENHO ============================ -->
+<section class="slide" data-transition="swipe" data-section="Metodologia" data-title="Desenho metodológico">
+  <div class="head" data-anim><p class="eyebrow">Desenho da pesquisa</p><h2>Do problema ao resultado, em cinco etapas</h2></div>
+  <div class="flow">
+    <div class="step" data-anim><span class="n">ETAPA 1</span><h3 class="ph-text">Revisão</h3><p class="ph-text">Levantamento bibliográfico e documental.</p></div>
+    <div class="step" data-anim><span class="n">ETAPA 2</span><h3 class="ph-text">Construção</h3><p class="ph-text">Elaboração e validação dos instrumentos.</p></div>
+    <div class="step" data-anim><span class="n">ETAPA 3</span><h3 class="ph-text">Coleta</h3><p class="ph-text">Aplicação em campo no período definido.</p></div>
+    <div class="step" data-anim><span class="n">ETAPA 4</span><h3 class="ph-text">Tratamento</h3><p class="ph-text">Categorização e análise dos dados.</p></div>
+    <div class="step" data-anim><span class="n">ETAPA 5</span><h3 class="ph-text">Discussão</h3><p class="ph-text">Confronto com o referencial e conclusões.</p></div>
+  </div>
+  <aside class="notes">Percorrer a régua com a mão, da esquerda para a direita. Detalhar apenas as etapas 2 e 3.</aside>
+</section>
+
+<!-- ============================ 19 · INSTRUMENTOS ============================ -->
+<section class="slide" data-transition="slide" data-section="Metodologia" data-title="Instrumentos de coleta">
+  <div class="cols c-2b">
+    <figure class="photo tall" data-photo="coleta">
+      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto da coleta</b><span>entrevista, visita ou aplicação do instrumento</span></div>
+    </figure>
+    <div>
+      <p class="eyebrow" data-anim>Instrumentos</p>
+      <h2 data-anim>Como os dados foram obtidos</h2>
+      <ul class="list" style="margin-top:26px">
+        <li data-anim><span class="k">01</span><span><strong class="ph-text">Questionário</strong> — <span class="ph-text">nº de itens, escala utilizada, forma de aplicação.</span></span></li>
+        <li data-anim><span class="k">02</span><span><strong class="ph-text">Entrevista</strong> — <span class="ph-text">tipo (estruturada/semiestruturada), duração média, perfil dos entrevistados.</span></span></li>
+        <li data-anim><span class="k">03</span><span><strong class="ph-text">Análise documental</strong> — <span class="ph-text">quais documentos, de que período.</span></span></li>
+      </ul>
+      <p class="small" style="margin-top:26px" data-anim>Validação: <span class="ph-text">pré-teste, juízes especialistas ou pesquisa-piloto.</span></p>
+    </div>
+  </div>
+  <aside class="notes">Mencionar a validação do instrumento — é um ponto que costuma render pergunta.</aside>
+</section>
+
+<!-- ============================ 20 · AMOSTRA ============================ -->
+<section class="slide" data-transition="rise" data-section="Metodologia" data-title="Universo e amostra">
+  <div class="head" data-anim><p class="eyebrow">Universo e amostra</p><h2>Quem participou da pesquisa</h2></div>
+  <div class="kpis">
+    <div class="kpi" data-anim><div class="v ph-text">120</div><div class="l">Universo da pesquisa</div></div>
+    <div class="kpi" data-anim><div class="v ph-text">86</div><div class="l">Respondentes válidos</div></div>
+    <div class="kpi" data-anim><div class="v ph-text">72<small>%</small></div><div class="l">Taxa de resposta</div></div>
+    <div class="kpi" data-anim><div class="v ph-text">9</div><div class="l">Entrevistas em profundidade</div></div>
+  </div>
+  <p class="small" style="margin-top:36px" data-anim>
+    Período de coleta: <span class="ph-text">mês/ano a mês/ano</span> · Critério de seleção: <span class="ph-text">descreva o critério</span> · Amostragem: <span class="ph-text">tipo</span>.
+  </p>
+  <aside class="notes">Números redondos, ditos com firmeza. Se a taxa de resposta for baixa, antecipar a explicação aqui.</aside>
+</section>
+
+<!-- ============================ 21 · DIVISOR ============================ -->
+<section class="slide" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
+  <p class="eyebrow" data-anim>Bloco 04</p>
+  <h1 class="serif" style="font-size:110px" data-anim>Resultados</h1>
+  <p class="lead wide" data-anim>O que os dados mostraram — e o que eles significam diante da teoria.</p>
+  <aside class="notes">Ponto alto da apresentação. Subir a energia da voz aqui.</aside>
+</section>
+
+<!-- ============================ 22 · PANORAMA ============================ -->
+<section class="slide" data-transition="zoom" data-section="Resultados" data-title="Panorama dos achados">
+  <div class="head" data-anim><p class="eyebrow">Panorama</p><h2>Quatro achados em números</h2></div>
+  <div class="kpis">
+    <div class="kpi" data-anim><div class="v ph-text">38<small>%</small></div><div class="l ph-text">Redução do tempo médio do processo</div><div class="d">↓ frente à linha de base</div></div>
+    <div class="kpi" data-anim><div class="v ph-text">2,4<small>×</small></div><div class="l ph-text">Aumento do volume tratado por servidor</div><div class="d">↑ no período analisado</div></div>
+    <div class="kpi" data-anim><div class="v ph-text">64<small>%</small></div><div class="l ph-text">Dos respondentes percebem ganho de controle</div></div>
+    <div class="kpi" data-anim><div class="v ph-text">3</div><div class="l ph-text">Gargalos críticos identificados</div></div>
+  </div>
+  <p class="small" style="margin-top:36px" data-anim>Troque cada número e cada legenda pelos seus dados. Um número por cartão — nunca dois.</p>
+  <aside class="notes">Dar 3 segundos de silêncio depois de mostrar os quatro números. Deixar a plateia ler.</aside>
+</section>
+
+<!-- ============================ 23 · RESULTADO 1 ============================ -->
+<section class="slide" data-transition="rise" data-section="Resultados" data-title="Resultado 1 · Distribuição">
+  <div class="cols c-2a">
+    <div class="chart" data-anim role="img" aria-label="Gráfico de barras: percentual por categoria — dados de exemplo">
+      <div class="c-title ph-text">Percepção de ganho por dimensão analisada</div>
+      <div class="c-sub">% de respondentes · <span class="ph-text">n = 86 · dados de exemplo, substituir</span></div>
+      <div class="bars">
+        <div class="bcol"><div class="bar" style="--v:72" title="Tecnologia — 72%"><span class="v">72%</span></div><div class="lbl ph-text">Tecnologia</div></div>
+        <div class="bcol"><div class="bar" style="--v:64" title="Processo — 64%"><span class="v">64%</span></div><div class="lbl ph-text">Processo</div></div>
+        <div class="bcol"><div class="bar" style="--v:51" title="Pessoas — 51%"><span class="v">51%</span></div><div class="lbl ph-text">Pessoas</div></div>
+        <div class="bcol"><div class="bar" style="--v:43" title="Controle — 43%"><span class="v">43%</span></div><div class="lbl ph-text">Controle</div></div>
+        <div class="bcol"><div class="bar" style="--v:29" title="Capacitação — 29%"><span class="v">29%</span></div><div class="lbl ph-text">Capacitação</div></div>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow" data-anim>Leitura do dado</p>
+      <h2 style="font-size:40px" data-anim class="ph-text">A dimensão humana ficou atrás da técnica</h2>
+      <p data-anim class="ph-text">Escreva aqui, em duas ou três linhas, o que o gráfico mostra e por que isso responde a uma das questões norteadoras.</p>
+      <hr class="rule">
+      <p class="small" data-anim>Cada barra é um valor: edite <code>--v</code> (0 a 100) e o rótulo.</p>
+    </div>
+  </div>
+  <aside class="notes">Regra de ouro: dizer a conclusão do gráfico ANTES de descrever o gráfico.</aside>
+</section>
+
+<!-- ============================ 24 · RESULTADO 2 ============================ -->
+<section class="slide" data-transition="swipe" data-section="Resultados" data-title="Resultado 2 · Antes e depois">
+  <div class="head" data-anim><p class="eyebrow">Resultado 2</p><h2>Desempenho antes e depois da digitalização</h2></div>
+  <div class="chart" data-anim role="img" aria-label="Barras agrupadas comparando antes e depois por processo — dados de exemplo">
+    <div class="legend">
+      <span style="--c:var(--s2)"><i></i>Antes</span>
+      <span style="--c:var(--s1)"><i></i>Depois</span>
+    </div>
+    <div class="bars">
+      <div class="bcol"><div class="group"><div class="bar" style="--v:88;--c:var(--s2)" title="Antes — 88"><span class="v">88</span></div><div class="bar" style="--v:54;--c:var(--s1)" title="Depois — 54"><span class="v">54</span></div></div><div class="lbl ph-text">Processo A</div></div>
+      <div class="bcol"><div class="group"><div class="bar" style="--v:76;--c:var(--s2)" title="Antes — 76"><span class="v">76</span></div><div class="bar" style="--v:41;--c:var(--s1)" title="Depois — 41"><span class="v">41</span></div></div><div class="lbl ph-text">Processo B</div></div>
+      <div class="bcol"><div class="group"><div class="bar" style="--v:69;--c:var(--s2)" title="Antes — 69"><span class="v">69</span></div><div class="bar" style="--v:47;--c:var(--s1)" title="Depois — 47"><span class="v">47</span></div></div><div class="lbl ph-text">Processo C</div></div>
+      <div class="bcol"><div class="group"><div class="bar" style="--v:61;--c:var(--s2)" title="Antes — 61"><span class="v">61</span></div><div class="bar" style="--v:58;--c:var(--s1)" title="Depois — 58"><span class="v">58</span></div></div><div class="lbl ph-text">Processo D</div></div>
+    </div>
+    <p class="small ph-text" style="margin-top:22px">Unidade: <span class="ph-text">dias de tramitação (quanto menor, melhor)</span> · dados de exemplo.</p>
+  </div>
+  <aside class="notes">Chamar atenção para o Processo D, onde o ganho foi pequeno — reconhecer o resultado fraco dá credibilidade.</aside>
+</section>
+
+<!-- ============================ 25 · RESULTADO 3 ============================ -->
+<section class="slide" data-transition="slide" data-section="Resultados" data-title="Resultado 3 · Ranking">
+  <div class="head" data-anim><p class="eyebrow">Resultado 3</p><h2>Principais entraves relatados</h2></div>
+  <div class="chart hbars" data-anim role="img" aria-label="Ranking horizontal de entraves relatados — dados de exemplo">
+    <div class="hrow"><div class="lbl ph-text">Falta de capacitação</div><div class="htrack"><div class="hfill" style="--v:78"></div></div><div class="num">78%</div></div>
+    <div class="hrow"><div class="lbl ph-text">Resistência à mudança</div><div class="htrack"><div class="hfill" style="--v:65"></div></div><div class="num">65%</div></div>
+    <div class="hrow"><div class="lbl ph-text">Sistemas não integrados</div><div class="htrack"><div class="hfill" style="--v:57"></div></div><div class="num">57%</div></div>
+    <div class="hrow"><div class="lbl ph-text">Infraestrutura de rede</div><div class="htrack"><div class="hfill" style="--v:44"></div></div><div class="num">44%</div></div>
+    <div class="hrow"><div class="lbl ph-text">Normas desatualizadas</div><div class="htrack"><div class="hfill" style="--v:31"></div></div><div class="num">31%</div></div>
+  </div>
+  <p class="small" style="margin-top:34px" data-anim>Ordene sempre do maior para o menor — o ranking se lê sozinho.</p>
+  <aside class="notes">Ligar o primeiro entrave à recomendação que virá no slide de contribuições.</aside>
+</section>
+
+<!-- ============================ 26 · EVIDÊNCIAS ============================ -->
+<section class="slide" data-transition="iris" data-section="Resultados" data-title="Evidências de campo">
+  <div class="head" data-anim><p class="eyebrow">Evidências de campo</p><h2>O que a pesquisa viu de perto</h2></div>
+  <div class="gallery">
+    <div data-anim>
+      <figure class="photo square" data-photo="ev1"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 1</b><span>arraste aqui</span></div></figure>
+      <p class="photo-cap ph-text">Legenda da foto 1.</p>
+    </div>
+    <div data-anim>
+      <figure class="photo square" data-photo="ev2"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 2</b><span>arraste aqui</span></div></figure>
+      <p class="photo-cap ph-text">Legenda da foto 2.</p>
+    </div>
+    <div data-anim>
+      <figure class="photo square" data-photo="ev3"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 3</b><span>arraste aqui</span></div></figure>
+      <p class="photo-cap ph-text">Legenda da foto 3.</p>
+    </div>
+  </div>
+  <aside class="notes">Falar 15 segundos por foto, no máximo. A imagem sustenta a fala; não é a fala.</aside>
+</section>
+
+<!-- ============================ 27 · DISCUSSÃO ============================ -->
+<section class="slide" data-transition="flip" data-section="Resultados" data-title="Discussão">
+  <div class="head" data-anim><p class="eyebrow">Discussão</p><h2>Os achados diante da teoria</h2></div>
+  <div class="cols c-2 gap-s">
+    <div class="card" data-anim>
+      <span class="n" style="color:var(--s3)">CONVERGE COM A LITERATURA</span>
+      <ul class="list plain" style="margin-top:8px">
+        <li><span class="k" style="background:var(--s3)"></span><span class="ph-text">Achado que confirma o que AUTOR (ANO) descreveu.</span></li>
+        <li><span class="k" style="background:var(--s3)"></span><span class="ph-text">Segundo ponto de convergência.</span></li>
+      </ul>
+    </div>
+    <div class="card" data-anim>
+      <span class="n" style="color:var(--s2)">DIVERGE OU AMPLIA</span>
+      <ul class="list plain" style="margin-top:8px">
+        <li><span class="k" style="background:var(--s2)"></span><span class="ph-text">Achado que contraria ou amplia a literatura.</span></li>
+        <li><span class="k" style="background:var(--s2)"></span><span class="ph-text">Segundo ponto de divergência — aqui mora a contribuição original.</span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">A divergência é o que torna o trabalho original. Defendê-la com o dado na mão, sem exagero.</aside>
+</section>
+
+<!-- ============================ 28 · DIVISOR ============================ -->
+<section class="slide" data-transition="cover" data-section="Conclusão" data-title="Divisor · Conclusão">
+  <p class="eyebrow" data-anim>Bloco 05</p>
+  <h1 class="serif" style="font-size:110px" data-anim>Conclusão</h1>
+  <p class="lead wide" data-anim>Voltando às perguntas do início — agora com resposta.</p>
+  <aside class="notes">Sinalizar o fechamento. A plateia se reorganiza quando percebe que a conclusão começou.</aside>
+</section>
+
+<!-- ============================ 29 · RESPOSTAS ============================ -->
+<section class="slide" data-transition="tilt" data-section="Conclusão" data-title="Respostas às questões">
+  <div class="head" data-anim><p class="eyebrow">Respostas</p><h2>Cada questão, uma conclusão</h2></div>
+  <ul class="list check">
+    <li data-anim><span class="k">✓</span><span><strong class="ph-text">Q1 —</strong> <span class="ph-text">Resposta em uma frase, apoiada no resultado correspondente.</span></span></li>
+    <li data-anim><span class="k">✓</span><span><strong class="ph-text">Q2 —</strong> <span class="ph-text">Resposta em uma frase.</span></span></li>
+    <li data-anim><span class="k">✓</span><span><strong class="ph-text">Q3 —</strong> <span class="ph-text">Resposta em uma frase.</span></span></li>
+  </ul>
+  <div class="card accent" style="margin-top:34px" data-anim>
+    <span class="n">RESPOSTA À QUESTÃO PRINCIPAL</span>
+    <p style="font-size:26px;line-height:1.4;color:var(--ink)" class="ph-text">A conclusão central do trabalho, em uma frase que espelha o problema enunciado no início.</p>
+  </div>
+  <aside class="notes">Fechar o arco: esta frase deve ecoar literalmente o slide do problema.</aside>
+</section>
+
+<!-- ============================ 30 · CONTRIBUIÇÕES ============================ -->
+<section class="slide" data-transition="rise" data-section="Conclusão" data-title="Contribuições">
+  <div class="head" data-anim><p class="eyebrow">Contribuições e recomendações</p><h2>O que fazer com este resultado</h2></div>
+  <div class="cols c-3 gap-s">
+    <div class="card" data-anim><span class="n">CURTO PRAZO</span><p class="ph-text">Medida imediata, de baixo custo, que a organização pode adotar já.</p></div>
+    <div class="card" data-anim><span class="n">MÉDIO PRAZO</span><p class="ph-text">Ajuste de processo ou norma decorrente dos achados.</p></div>
+    <div class="card accent" data-anim><span class="n">CONTRIBUIÇÃO ACADÊMICA</span><p class="ph-text">O que a pesquisa devolve à literatura da área.</p></div>
+  </div>
+  <aside class="notes">Recomendação precisa ser acionável: quem faz, o quê e em quanto tempo.</aside>
+</section>
+
+<!-- ============================ 31 · LIMITAÇÕES ============================ -->
+<section class="slide" data-transition="soft" data-section="Conclusão" data-title="Limitações e trabalhos futuros">
+  <div class="cols c-2 gap-s">
+    <div>
+      <p class="eyebrow" data-anim>Limitações</p>
+      <ul class="list plain" style="margin-top:18px">
+        <li data-anim><span class="k"></span><span class="ph-text">Limitação de escopo ou amostra.</span></li>
+        <li data-anim><span class="k"></span><span class="ph-text">Limitação de método ou de acesso a dados.</span></li>
+        <li data-anim><span class="k"></span><span class="ph-text">Limitação temporal.</span></li>
+      </ul>
+    </div>
+    <div>
+      <p class="eyebrow" data-anim>Trabalhos futuros</p>
+      <ul class="list" style="margin-top:18px">
+        <li data-anim><span class="k">→</span><span class="ph-text">Pesquisa que estende este recorte.</span></li>
+        <li data-anim><span class="k">→</span><span class="ph-text">Aplicação do modelo em outro contexto.</span></li>
+        <li data-anim><span class="k">→</span><span class="ph-text">Aprofundamento quantitativo do achado principal.</span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Assumir as limitações com naturalidade — reconhecê-las é sinal de domínio, não de fraqueza.</aside>
+</section>
+
+<!-- ============================ 32 · REFERÊNCIAS ============================ -->
+<section class="slide" data-transition="fade" data-section="Conclusão" data-title="Referências">
+  <div class="head" data-anim><p class="eyebrow">Referências</p><h2>Principais obras consultadas</h2></div>
+  <div style="columns:2;column-gap:60px;font-size:16px;line-height:1.55;color:var(--ink-2)" data-anim>
+    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título da obra em negrito</strong>. Cidade: Editora, ano.</p>
+    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. Título do artigo. <strong>Nome do periódico</strong>, v. 0, n. 0, p. 00-00, ano.</p>
+    <p class="ph-text" style="font-size:16px">BRASIL. <strong>Nome da norma/manual</strong>. Brasília, ano.</p>
+    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título da dissertação</strong>. Dissertação (Mestrado) — Instituição, ano.</p>
+    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título</strong>. Cidade: Editora, ano.</p>
+    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título</strong>. Cidade: Editora, ano.</p>
+  </div>
+  <p class="small" style="margin-top:30px" data-anim>Mantenha apenas as obras efetivamente citadas na fala. Padrão ABNT NBR 6023.</p>
+  <aside class="notes">Slide de passagem rápida. Serve à banca, não à plateia.</aside>
+</section>
+
+<!-- ============================ 33 · ENCERRAMENTO ============================ -->
+<section class="slide has-hero" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
+  <figure class="photo fill hero-photo" data-photo="fim">
+    <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de encerramento (tela cheia)</b><span>arraste a imagem aqui</span></div>
+  </figure>
+  <p class="eyebrow" data-anim>Obrigado</p>
+  <h1 data-anim>Perguntas?</h1>
+  <p class="lead wide ph-text" data-anim>Fico à disposição para questionamentos e sugestões.</p>
+  <hr class="rule" style="max-width:420px" data-anim>
+  <p class="small" data-anim>
+    <strong class="ph-text">Posto/Grad. Nome Completo</strong><br>
+    <span class="ph-text">e-mail@instituicao.mil.br</span> · <span class="ph-text">Organização Militar</span>
+  </p>
+  <aside class="notes">Deixar este slide no ar durante toda a rodada de perguntas. Repetir a pergunta antes de responder.</aside>
+</section>
+
+</div><!-- /#stage -->
+
+<div id="chrome">
+  <div><b id="secName">—</b></div>
+  <div class="right">
+    <span id="transName" title="Tecla T: trocar a transição de todo o deck"></span>
+    <span id="timer">00:00</span>
+    <kbd id="btnMenu" title="Índice (O)">Índice</kbd>
+    <kbd id="btnNotes" title="Roteiro de fala (N)">Notas</kbd>
+    <kbd id="btnHelp" title="Atalhos (H)">?</kbd>
+    <span><b id="cur">1</b> / <span id="tot">1</span></span>
+  </div>
+</div>
+
+<div id="black"></div>
+
+<div class="overlay" id="menu">
+  <div class="ov-inner">
+    <h2>Índice</h2>
+    <ol id="menuList"></ol>
+  </div>
+</div>
+
+<div class="overlay" id="help">
+  <div class="ov-inner">
+    <h2>Atalhos</h2>
+    <div class="grid">
+      <div>
+        <div class="row"><span>Próximo slide</span><kbd>→ · ↓ · Espaço · PgDn</kbd></div>
+        <div class="row"><span>Slide anterior</span><kbd>← · ↑ · PgUp</kbd></div>
+        <div class="row"><span>Primeiro / último</span><kbd>Home · End</kbd></div>
+        <div class="row"><span>Ir para o slide nº</span><kbd>digite o número + Enter</kbd></div>
+        <div class="row"><span>Índice de slides</span><kbd>O</kbd></div>
+        <div class="row"><span>Tela cheia</span><kbd>F</kbd></div>
+      </div>
+      <div>
+        <div class="row"><span>Roteiro de fala (notas)</span><kbd>N</kbd></div>
+        <div class="row"><span>Tela preta (pausa)</span><kbd>B</kbd></div>
+        <div class="row"><span>Trocar a transição de todo o deck</span><kbd>T</kbd></div>
+        <div class="row"><span>Zerar o cronômetro</span><kbd>R</kbd></div>
+        <div class="row"><span>Colocar foto</span><kbd>arraste a imagem sobre o quadro</kbd></div>
+        <div class="row"><span>Remover a foto do quadro</span><kbd>Alt + clique</kbd></div>
+      </div>
+    </div>
+    <p class="small" style="margin-top:30px">Exportar em PDF: <strong>Ctrl/Cmd + P</strong> → destino "Salvar como PDF" → layout paisagem, margens nenhuma, marcar "Gráficos de fundo".</p>
+  </div>
+</div>
+
+<div id="notes">
+  <div class="t">Roteiro de fala</div>
+  <div class="body" id="notesBody"></div>
+  <div class="next" id="notesNext"></div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var body   = document.body;
+  var stage  = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var idx = 0, startedAt = null, tick = null;
+
+  /* ---------- escala do palco 16:9 ---------- */
+  function fit(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  /* ---------- índices para a animação escalonada ---------- */
+  slides.forEach(function(sl){
+    sl.querySelectorAll('[data-anim]').forEach(function(el,i){ el.style.setProperty('--i', i); });
+    sl.querySelectorAll('.bar, .hfill').forEach(function(el,i){ el.style.setProperty('--i', i); });
+  });
+
+  /* ---------- transições ---------- */
+  var TRANS = ['auto','fade','slide','rise','zoom','flip','cube','blur','cover','swipe','iris','tilt','soft'];
+  var forced = 0;
+  slides.forEach(function(sl){ sl.dataset.orig = sl.dataset.transition || 'fade'; });
+  function applyTransition(){
+    var t = TRANS[forced];
+    slides.forEach(function(sl){ sl.dataset.transition = (t === 'auto') ? sl.dataset.orig : t; });
+    document.getElementById('transName').textContent = (t === 'auto') ? 'transições variadas' : 'transição: ' + t;
+  }
+
+  /* ---------- navegação ---------- */
+  function go(n, dir){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === idx && slides[idx].classList.contains('active')) return;
+    var prev = slides[idx];
+    body.classList.toggle('dir-fwd', dir >= 0);
+    body.classList.toggle('dir-back', dir < 0);
+    if (prev !== slides[n]) {
+      prev.classList.remove('active');
+      prev.classList.add('leaving');
+      clearTimeout(prev._t);
+      prev._t = setTimeout(function(){ prev.classList.remove('leaving'); }, 760);
+    }
+    idx = n;
+    slides[idx].classList.add('active');
+    sync();
+    startTimer();
+  }
+  function next(){ go(idx + 1, 1); }
+  function prev(){ go(idx - 1, -1); }
+
+  function sync(){
+    var sl = slides[idx];
+    document.getElementById('cur').textContent = idx + 1;
+    document.getElementById('secName').textContent = sl.dataset.section || '';
+    document.getElementById('progress').style.width = ((idx) / (slides.length - 1) * 100) + '%';
+    var note = sl.querySelector('.notes');
+    document.getElementById('notesBody').textContent = note ? note.textContent.trim() : 'Sem notas para este slide.';
+    var nx = slides[idx + 1];
+    document.getElementById('notesNext').textContent = nx ? ('A seguir · ' + (nx.dataset.title || '')) : 'Último slide.';
+    Array.prototype.forEach.call(document.querySelectorAll('#menuList li[data-go]'), function(li){
+      li.classList.toggle('cur', +li.dataset.go === idx);
+    });
+    history.replaceState(null, '', '#' + (idx + 1));
+  }
+
+  /* ---------- cronômetro ---------- */
+  function startTimer(){
+    if (startedAt) return;
+    startedAt = Date.now();
+    tick = setInterval(function(){
+      var s = Math.floor((Date.now() - startedAt) / 1000);
+      var el = document.getElementById('timer');
+      el.textContent = String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
+      el.classList.toggle('warn', s >= 35 * 60 && s < 40 * 60);
+      el.classList.toggle('over', s >= 40 * 60);
+    }, 500);
+  }
+  function resetTimer(){
+    clearInterval(tick); startedAt = null;
+    var el = document.getElementById('timer');
+    el.textContent = '00:00'; el.classList.remove('warn','over');
+  }
+
+  /* ---------- índice ---------- */
+  (function buildMenu(){
+    var list = document.getElementById('menuList'), sec = null;
+    slides.forEach(function(sl, i){
+      if (sl.dataset.section !== sec) {
+        sec = sl.dataset.section;
+        var h = document.createElement('li'); h.className = 'sec'; h.textContent = sec; list.appendChild(h);
+      }
+      var li = document.createElement('li');
+      li.dataset.go = i;
+      li.innerHTML = '<span class="no">' + String(i + 1).padStart(2,'0') + '</span><span></span>';
+      li.lastChild.textContent = sl.dataset.title || '';
+      li.addEventListener('click', function(){ closeOverlays(); go(i, i > idx ? 1 : -1); });
+      list.appendChild(li);
+    });
+    document.getElementById('tot').textContent = slides.length;
+  })();
+
+  /* ---------- sobreposições ---------- */
+  function toggle(id){
+    var el = document.getElementById(id), was = el.classList.contains('open');
+    closeOverlays();
+    if (!was) el.classList.add('open');
+  }
+  function closeOverlays(){
+    document.getElementById('menu').classList.remove('open');
+    document.getElementById('help').classList.remove('open');
+  }
+  document.getElementById('btnMenu').onclick  = function(){ toggle('menu'); };
+  document.getElementById('btnHelp').onclick  = function(){ toggle('help'); };
+  document.getElementById('btnNotes').onclick = function(){ document.getElementById('notes').classList.toggle('open'); };
+  ['menu','help'].forEach(function(id){
+    document.getElementById(id).addEventListener('click', function(e){ if (e.target.id === id) closeOverlays(); });
+  });
+
+  /* ---------- teclado ---------- */
+  var buf = '';
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (/^[0-9]$/.test(k)) { buf += k; return; }
+    if (k === 'Enter' && buf) { go(parseInt(buf,10) - 1, parseInt(buf,10) - 1 > idx ? 1 : -1); buf = ''; e.preventDefault(); return; }
+    buf = '';
+    switch (k) {
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown': next(); e.preventDefault(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': prev(); e.preventDefault(); break;
+      case 'Home': go(0, -1); e.preventDefault(); break;
+      case 'End': go(slides.length - 1, 1); e.preventDefault(); break;
+      case 'Escape': closeOverlays(); document.getElementById('notes').classList.remove('open'); break;
+      case 'f': case 'F':
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+        break;
+      case 'o': case 'O': toggle('menu'); break;
+      case 'h': case 'H': case '?': toggle('help'); break;
+      case 'n': case 'N': case 's': case 'S': document.getElementById('notes').classList.toggle('open'); break;
+      case 'b': case 'B': document.getElementById('black').classList.toggle('on'); break;
+      case 'r': case 'R': resetTimer(); break;
+      case 't': case 'T': forced = (forced + 1) % TRANS.length; applyTransition(); break;
+    }
+  });
+
+  /* ---------- clique e toque ---------- */
+  document.addEventListener('click', function(e){
+    if (e.target.closest('#chrome, .overlay, #notes')) return;
+    var ph = e.target.closest('.photo');
+    /* quadro vazio abre o seletor de arquivo; no quadro de tela cheia, só o selo */
+    if (ph && !ph.classList.contains('filled') &&
+        (!ph.classList.contains('fill') || e.target.closest('.ph-hint'))) return;
+    if (e.altKey) return;
+    next();
+  });
+  document.getElementById('black').addEventListener('click', function(){ this.classList.remove('on'); });
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
+  }, {passive:true});
+
+  /* ---------- fotos: arraste, clique e memória do navegador ---------- */
+  var store = {
+    get: function(k){ try { return localStorage.getItem('foto:' + k); } catch (err) { return null; } },
+    set: function(k,v){ try { localStorage.setItem('foto:' + k, v); } catch (err) {} },
+    del: function(k){ try { localStorage.removeItem('foto:' + k); } catch (err) {} }
+  };
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*'; input.style.display = 'none';
+  document.body.appendChild(input);
+  var target = null;
+
+  function setPhoto(fig, url, remember){
+    fig.style.backgroundImage = 'url("' + url + '")';
+    fig.classList.add('filled');
+    if (remember) store.set(fig.dataset.photo, url);
+  }
+  function clearPhoto(fig){
+    fig.style.backgroundImage = '';
+    fig.classList.remove('filled');
+    store.del(fig.dataset.photo);
+  }
+  function readFile(file, fig){
+    if (!file || !/^image\//.test(file.type)) return;
+    var r = new FileReader();
+    r.onload = function(){ setPhoto(fig, r.result, true); };
+    r.readAsDataURL(file);
+  }
+  input.addEventListener('change', function(){ if (target) readFile(input.files[0], target); input.value = ''; });
+
+  document.querySelectorAll('.photo[data-photo]').forEach(function(fig){
+    if (fig.querySelector('img')) fig.classList.add('filled');       /* já tem <img src="fotos/..."> */
+    var saved = store.get(fig.dataset.photo);
+    if (saved && !fig.querySelector('img')) setPhoto(fig, saved, false);
+
+    fig.addEventListener('dragover', function(e){ e.preventDefault(); fig.classList.add('over'); });
+    fig.addEventListener('dragleave', function(){ fig.classList.remove('over'); });
+    fig.addEventListener('drop', function(e){
+      e.preventDefault(); e.stopPropagation(); fig.classList.remove('over');
+      readFile(e.dataTransfer.files[0], fig);
+    });
+    fig.addEventListener('click', function(e){
+      if (e.altKey) { e.stopPropagation(); clearPhoto(fig); return; }
+      if (fig.classList.contains('filled')) return;                  /* deixa o clique avançar o slide */
+      if (fig.classList.contains('fill') && !e.target.closest('.ph-hint')) return;
+      e.stopPropagation(); target = fig; input.click();
+    });
+  });
+  ['dragover','drop'].forEach(function(ev){
+    document.addEventListener(ev, function(e){ e.preventDefault(); }, false);
+  });
+
+  /* ---------- início ---------- */
+  applyTransition();
+  var fromHash = parseInt((location.hash || '').replace('#',''), 10);
+  idx = (fromHash > 0 && fromHash <= slides.length) ? fromHash - 1 : 0;
+  slides[idx].classList.add('active');
+  sync();
+})();
+</script>
+</body>
+</html>
