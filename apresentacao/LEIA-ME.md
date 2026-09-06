@@ -121,7 +121,7 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 15–19 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 20–32 | Resultados | Divisor · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
 | 33–37 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Referências |
-| 38 | Encerramento | Perguntas |
+| 38 | Encerramento | Obrigado |
 
 ## Dados usados nos gráficos
 
