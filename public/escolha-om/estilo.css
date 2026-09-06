@@ -382,6 +382,45 @@ td.num input { text-align: center; }
 .folha td.c { text-align: center; }
 .folha .assinatura { height: 34px; }
 .folha .rodape-folha { margin-top: 26px; text-align: center; font-size: 12.5px; color: #333; line-height: 1.7; }
+/* Relação para o DCEM: mesma forma da aba "Rel DCEM" da planilha da escolha —
+   Times New Roman 11, tudo centralizado, um quadro de duas linhas por oficial
+   separado por um vão, e o número de ordem fora da moldura. */
+.folha table.dcem {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 11pt;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.folha table.dcem td {
+  border: 1px solid #000;
+  text-align: center;
+  vertical-align: middle;
+  height: 22.5pt;
+  padding: 2px 4px;
+  word-wrap: break-word;
+}
+.folha table.dcem .dcem-titulo td {
+  border: 0; border-bottom: 1px solid #000;
+  text-align: left; font-weight: bold; height: 31.5pt;
+}
+/* "ASSINATURA" mal cabe na coluna estreita da planilha: aperta o recuo em vez
+   de alargar a coluna, para não fugir das larguras do original. */
+.folha table.dcem .dcem-cab td { font-weight: bold; padding: 2px 1px; }
+/* "ASSINATURA" é mais larga que a coluna estreita do original; encolhe a
+   palavra em vez de alargar a coluna ou deixá-la partir no meio. */
+.folha table.dcem .cab-assin { font-size: .8em; white-space: nowrap; }
+.folha table.dcem .dcem-secao td { border: 0; text-align: left; font-weight: bold; }
+.folha table.dcem .dcem-vao td { border: 0; height: 5pt; }
+/* O posto fica sobre o A/Q/S, e a OM sobre a cidade: um quadro só, sem o filete
+   horizontal no meio (as células de Idt, nome e assinatura já vêm com rowspan). */
+.folha table.dcem .dcem-a td { border-bottom: 0; }
+.folha table.dcem .dcem-b td { border-top: 0; }
+.folha table.dcem .dcem-a td[rowspan] { border-bottom: 1px solid #000; }
+.folha table.dcem .forte { font-weight: bold; }
+.folha table.dcem td.fora {
+  border: 0; font-family: Arial, sans-serif; font-size: 9pt; color: #555; text-align: right;
+}
+
 .folha .grupo-om { margin-bottom: 16px; }
 .folha .grupo-om h4 { margin: 0 0 5px; font-size: 13px; border-bottom: 1px solid #bbb; padding-bottom: 3px; }
 .folha .grupo-om ul { margin: 0; padding-left: 20px; font-size: 12.5px; line-height: 1.6; }
@@ -393,7 +432,18 @@ td.num input { text-align: center; }
   .view { overflow: visible; padding: 0; }
   .folha { box-shadow: none; border-radius: 0; padding: 0; max-width: none; }
   .folha tr { break-inside: avoid; }
-  @page { margin: 14mm; }
+  @page { size: A4 portrait; margin: 13mm; }
+
+  /* A planilha da escolha imprime a relação do DCEM em A4 retrato a 64% e com
+     área de impressão de A até F — o número de ordem fica de fora. Aqui é a
+     mesma coisa: 11pt × 0,64 e a coluna do número escondida na impressão. */
+  .folha table.dcem { font-size: 7.05pt; }
+  .folha table.dcem td { height: 14.4pt; padding: 1px 3px; }
+  .folha table.dcem .dcem-titulo td { height: 20.2pt; }
+  .folha table.dcem .dcem-vao td { height: 3.2pt; }
+  .folha table.dcem td.fora { display: none; }
+  .folha table.dcem colgroup col:last-child { width: 0; }
+  .folha table.dcem .dcem-bloco { break-inside: avoid; page-break-inside: avoid; }
 }
 
 @media (max-width: 900px) {

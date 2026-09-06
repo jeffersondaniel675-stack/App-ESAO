@@ -53,6 +53,11 @@
         subtitulo: 'CAO/Log 2026 — Intendência',
         local: 'Escola de Aperfeiçoamento de Oficiais',
         data: '', origem: 'EsAO', origemCidade: 'Rio de Janeiro-RJ',
+        /* Textos da relação do DCEM, no teor da planilha da escolha. */
+        dcemTitulo: 'ALTERAÇÕES DE OFICIAIS',
+        dcemSecao1: ' - CLASSIFICAÇÃO POR CONCLUSÃO DE CURSO NO PAÍS',
+        dcemSecao2: 'f. Aperfeiçoamento de Oficiais de Intendência',
+        qmDcem: 'Int',
         tempo: 90, fotos: true, media: false, som: true, proximos: 3
       },
       alunos: alunos,
@@ -79,10 +84,21 @@
       var bruto = localStorage.getItem(CHAVE);
       if (bruto) {
         var s = JSON.parse(bruto);
-        if (s && s.alunos && s.vagas) return s;
+        if (s && s.alunos && s.vagas) return completar(s);
       }
     } catch (e) { /* armazenamento indisponível: segue com a base original */ }
     return estadoInicial();
+  }
+
+  /* Sessão gravada por uma versão anterior não tem os campos novos de
+     configuração; completa com os padrões sem mexer no que já foi ajustado. */
+  function completar(s) {
+    var padrao = estadoInicial().cfg;
+    s.cfg = s.cfg || {};
+    Object.keys(padrao).forEach(function (k) {
+      if (s.cfg[k] === undefined) s.cfg[k] = padrao[k];
+    });
+    return s;
   }
 
   var canal = null;
@@ -356,6 +372,10 @@
     por('#cfg-data', c.data);
     por('#cfg-origem', c.origem);
     por('#cfg-origem-cidade', c.origemCidade);
+    por('#cfg-dcem-titulo', c.dcemTitulo);
+    por('#cfg-dcem-secao1', c.dcemSecao1);
+    por('#cfg-dcem-secao2', c.dcemSecao2);
+    por('#cfg-qm-dcem', c.qmDcem);
     por('#cfg-tempo', c.tempo);
     por('#cfg-proximos', c.proximos);
     $('#cfg-fotos').checked = !!c.fotos;
@@ -366,7 +386,9 @@
   function ligarConfig() {
     var mapa = {
       '#cfg-titulo': 'titulo', '#cfg-subtitulo': 'subtitulo', '#cfg-local': 'local',
-      '#cfg-data': 'data', '#cfg-origem': 'origem', '#cfg-origem-cidade': 'origemCidade'
+      '#cfg-data': 'data', '#cfg-origem': 'origem', '#cfg-origem-cidade': 'origemCidade',
+      '#cfg-dcem-titulo': 'dcemTitulo', '#cfg-dcem-secao1': 'dcemSecao1',
+      '#cfg-dcem-secao2': 'dcemSecao2', '#cfg-qm-dcem': 'qmDcem'
     };
     Object.keys(mapa).forEach(function (sel) {
       $(sel).addEventListener('input', function () { estado.cfg[mapa[sel]] = $(sel).value; mudou(); });
@@ -665,18 +687,7 @@
         }).join('') + '</tbody></table>' + rodapeFolha();
 
     } else if (abaResultado === 'dcem') {
-      alvo.innerHTML =
-        '<h2>Alterações de Oficiais</h2><h3>Classificação por conclusão de curso — ' + esc(c.subtitulo) + '</h3>' +
-        '<table><thead><tr><th style="width:80px">Posto<br>A/Q/S</th><th style="width:110px">Idt</th>' +
-        '<th>Nome</th><th style="width:190px">OM de origem<br>Cidade-UF</th>' +
-        '<th style="width:190px">OM de destino<br>Cidade-UF</th><th style="width:150px">Assinatura</th></tr></thead><tbody>' +
-        linhas.map(function (l) {
-          return '<tr><td>' + esc(l.a.posto) + '<br>' + esc(l.a.qm) + '</td><td>' + esc(l.a.idt) + '</td>' +
-            '<td>' + esc(l.a.nome) + '</td>' +
-            '<td>' + esc(c.origem) + '<br>' + esc(c.origemCidade) + '</td>' +
-            '<td>' + esc(l.v.om) + '<br>' + esc(l.v.cidade) + '</td>' +
-            '<td class="assinatura"></td></tr>';
-        }).join('') + '</tbody></table>' + rodapeFolha();
+      alvo.innerHTML = htmlDcem(linhas);
 
     } else {
       var porOm = {};
@@ -695,14 +706,80 @@
     }
   }
 
+  /* ─────────────────── Relação para o DCEM ───────────────────
+     Reproduz a aba "Rel DCEM" da planilha da escolha: título com filete,
+     cabeçalho em duas linhas, as duas linhas de enquadramento sem moldura e,
+     para cada oficial, um quadro de duas linhas — posto sobre A/Q/S, Idt, nome
+     e assinatura ocupando as duas, OM sobre cidade nas colunas de origem e de
+     destino — separados por um vão, com o número de ordem fora da moldura.
+     As larguras de coluna são as da planilha (13 / 19,1 / 51,6 / 18,4 / 28,4 / 13). */
+
+  var LARG_DCEM = [13, 19.1, 51.6, 18.4, 28.4, 13];
+
+  function htmlDcem(linhas, paraExcel) {
+    var c = estado.cfg;
+    var total = LARG_DCEM.reduce(function (s, x) { return s + x; }, 0);
+    var cols = LARG_DCEM.map(function (w) {
+      return paraExcel
+        ? '<col style="width:' + Math.round(w * 7 + 5) + 'px" />'
+        : '<col style="width:' + (w / total * 100).toFixed(2) + '%" />';
+    }).join('') + '<col style="width:' + (paraExcel ? '42px' : '34px') + '" />';
+
+    var txt = paraExcel ? ' style="mso-number-format:\'\\@\'"' : '';
+    var linha = function (l, i) {
+      return '<tr class="dcem-a">' +
+          '<td>' + esc(l.a.posto) + '</td>' +
+          '<td rowspan="2"' + txt + '>' + esc(l.a.idt) + '</td>' +
+          '<td rowspan="2">' + esc(l.a.nome) + '</td>' +
+          '<td class="forte">' + esc(c.origem) + '</td>' +
+          '<td class="forte">' + esc(l.v.om) + '</td>' +
+          '<td rowspan="2"></td>' +
+          '<td class="fora">' + (i + 1) + '</td>' +
+        '</tr>' +
+        '<tr class="dcem-b">' +
+          '<td>' + esc(c.qmDcem || l.a.qm) + '</td>' +
+          '<td>' + esc(c.origemCidade) + '</td>' +
+          '<td>' + esc(l.v.cidade) + '</td>' +
+          '<td class="fora"></td>' +
+        '</tr>' +
+        '<tr class="dcem-vao"><td colspan="7"></td></tr>';
+    };
+    /* Cada oficial num <tbody> próprio: assim a quebra de página nunca corta o
+       quadro dele em duas folhas. O cabeçalho fica num tbody à parte, e não em
+       <thead>, porque na planilha ele também não se repete a cada página. */
+    var bloco = function (l, i) { return '<tbody class="dcem-bloco">' + linha(l, i) + '</tbody>'; };
+
+    var secao = function (t) {
+      return t ? '<tr class="dcem-secao"><td colspan="6">' + esc(t) + '</td><td class="fora"></td></tr>' : '';
+    };
+
+    return '<table class="dcem"><colgroup>' + cols + '</colgroup><tbody class="dcem-topo">' +
+      '<tr class="dcem-titulo"><td colspan="6">' + esc(c.dcemTitulo) + '</td><td class="fora"></td></tr>' +
+      '<tr class="dcem-cab">' +
+        '<td>POSTO</td><td rowspan="2">IDT</td><td rowspan="2">NOME</td>' +
+        '<td>OM ORIGEM</td><td>OM DESTINO</td>' +
+        '<td rowspan="2" class="cab-assin">ASSINATURA</td>' +
+        '<td class="fora"></td></tr>' +
+      '<tr class="dcem-cab"><td>A / Q / S</td><td>CIDADE-UF</td><td>CIDADE-UF</td><td class="fora"></td></tr>' +
+      secao(c.dcemSecao1) + secao(c.dcemSecao2) +
+      '<tr class="dcem-vao"><td colspan="7"></td></tr>' +
+      '</tbody>' + linhas.map(bloco).join('') +
+      '</table>';
+  }
+
   function rodapeFolha() {
     var d = estado.cfg.data;
     return '<div class="rodape-folha">' + (d ? esc(d) + '<br><br><br>' : '<br><br>') +
       '____________________________________<br>Coordenador da Cerimônia</div>';
   }
 
+  /* O BOM faz o Excel abrir o CSV em UTF-8; só vale para texto, por isso o
+     .xlsx desce pelo baixarBlob, sem prefixo nenhum. */
   function baixar(nome, conteudo, tipo) {
-    var blob = new Blob(['﻿' + conteudo], { type: tipo + ';charset=utf-8' });
+    baixarBlob(nome, new Blob(['﻿' + conteudo], { type: tipo + ';charset=utf-8' }));
+  }
+
+  function baixarBlob(nome, blob) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url; a.download = nome; document.body.appendChild(a); a.click();
@@ -721,11 +798,29 @@
     baixar('escolha-om.csv', csv, 'text/csv');
   }
 
+  /* A relação do DCEM é documento a ser remetido, então sai como .xlsx de
+     verdade — mesmas mesclagens, larguras, molduras e configuração de impressão
+     da aba de origem. Os outros quadros saem como tabela HTML com extensão .xls,
+     que o Excel abre e basta para conferência. */
   function exportarXls() {
-    var tabela = $('#res-conteudo').innerHTML;
+    if (abaResultado === 'dcem') {
+      var c = estado.cfg;
+      baixarBlob('rel-dcem.xlsx', window.gerarXlsxDcem({
+        titulo: c.dcemTitulo,
+        secao1: c.dcemSecao1,
+        secao2: c.dcemSecao2,
+        oficiais: linhasResultado().map(function (l) {
+          return {
+            posto: l.a.posto, qm: c.qmDcem || l.a.qm, idt: l.a.idt, nome: l.a.nome,
+            origem: c.origem, origemCidade: c.origemCidade, om: l.v.om, cidade: l.v.cidade
+          };
+        })
+      }));
+      return;
+    }
     var html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8" />' +
-      '<style>table{border-collapse:collapse}td,th{border:1px solid #999;padding:4px}</style></head><body>' +
-      tabela + '</body></html>';
+      '<style>table{border-collapse:collapse}td,th{border:1px solid #999;padding:4px}</style>' +
+      '</head><body>' + $('#res-conteudo').innerHTML + '</body></html>';
     baixar('escolha-om.xls', html, 'application/vnd.ms-excel');
   }
 
@@ -919,7 +1014,7 @@
         try {
           var s = JSON.parse(leitor.result);
           if (!s.alunos || !s.vagas) throw new Error('arquivo fora do formato');
-          estado = s; mudou();
+          estado = completar(s); mudou();
           $('#cfg-status').textContent = 'Sessão importada de ' + f.name + '.';
         } catch (e) { alert('Não consegui ler o arquivo: ' + e.message); }
       };

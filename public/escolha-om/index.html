@@ -113,6 +113,15 @@
         <label>Cidade da OM de origem <input id="cfg-origem-cidade" type="text" /></label>
       </div>
       <div class="cartao">
+        <h3>Relação para o DCEM</h3>
+        <p class="nota">Textos do cabeçalho da relação, no teor da planilha da escolha.</p>
+        <label>Título <input id="cfg-dcem-titulo" type="text" /></label>
+        <label>Enquadramento <input id="cfg-dcem-secao1" type="text" /></label>
+        <label>Alínea / curso <input id="cfg-dcem-secao2" type="text" /></label>
+        <label>Abreviatura A/Q/S na relação
+          <input id="cfg-qm-dcem" type="text" placeholder="Int" /></label>
+      </div>
+      <div class="cartao">
         <h3>Condução</h3>
         <label>Tempo de escolha (segundos, 0 desliga)
           <input id="cfg-tempo" type="number" min="0" max="900" step="10" /></label>
@@ -262,6 +271,7 @@
 <input type="file" id="arquivo-oculto" accept=".json" hidden />
 
 <script src="dados.js"></script>
+<script src="xlsx.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

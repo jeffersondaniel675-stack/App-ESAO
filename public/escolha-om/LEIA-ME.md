@@ -71,11 +71,35 @@ a OM escolhida, e some do quadro de vagas.
 A aba **Resultado** entrega três documentos, todos prontos para impressão:
 
 - **Quadro final** — classificação × OM de destino;
-- **Relação para o DCEM** — no formato de alterações de oficiais, com OM de
-  origem, OM de destino e espaço de assinatura;
+- **Relação para o DCEM** — reprodução da aba `Rel DCEM` da planilha da escolha;
 - **Por OM** — quem foi para cada Organização Militar.
 
 Também dá para baixar em CSV e em Excel.
+
+### A relação para o DCEM
+
+Sai na mesma forma da aba `Rel DCEM` da planilha da escolha:
+
+- título `ALTERAÇÕES DE OFICIAIS` com filete embaixo, mesclado de A a F;
+- cabeçalho em duas linhas — POSTO / A / Q / S, IDT, NOME, OM ORIGEM /
+  CIDADE-UF, OM DESTINO / CIDADE-UF, ASSINATURA;
+- as duas linhas de enquadramento sem moldura (`- CLASSIFICAÇÃO POR CONCLUSÃO
+  DE CURSO NO PAÍS` e a alínea do curso), editáveis em Configuração;
+- um quadro de duas linhas por oficial — posto sobre A/Q/S, OM sobre cidade nas
+  colunas de origem e de destino, e Idt, nome e assinatura mesclados nas duas —
+  separados por um vão, com o número de ordem fora da moldura;
+- Times New Roman 11, tudo centralizado, e as larguras de coluna do original
+  (13 / 19,1 / 51,6 / 18,4 / 28,4 / 13).
+
+**Baixar Excel** nessa aba gera um `.xlsx` de verdade, com as mesclagens, as
+molduras, as larguras e a mesma configuração de impressão do original: A4
+retrato a 64%, margens laterais de 1,3 cm e área de impressão de A até F — o
+número de ordem fica de fora, como na planilha. **Imprimir** sai igual, com a
+mesma redução, e nenhum quadro de oficial é partido entre duas folhas.
+
+A abreviatura do A/Q/S na relação é `Int` (o que está na planilha do DCEM), e
+não `Sv Int` da tabela de concludentes — são documentos diferentes. Dá para
+trocar em Configuração.
 
 ## Segurança da sessão
 
@@ -102,6 +126,7 @@ LEANDRO SILVA, SIMÕES, GUSTAVO NUNES, MENEZES e GÓES.
 | `index.html` | estrutura das telas                                          |
 | `estilo.css` | aparência, inclusive o layout do telão e a folha de impressão |
 | `app.js`     | regra da cerimônia, sincronização e relatórios               |
+| `xlsx.js`    | gerador do `.xlsx` da relação do DCEM                        |
 | `dados.js`   | base de concludentes e modelos de quadro de vagas            |
 | `fotos/`     | retratos                                                     |
 | `brasoes/`   | brasões da EsAO e do C Log                                   |
