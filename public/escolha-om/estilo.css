@@ -189,6 +189,11 @@ td.num input { text-align: center; }
 .cronometro.estourado { color: #e07c6e; animation: pisca 1s steps(2) infinite; }
 @keyframes pisca { 50% { opacity: .35; } }
 
+.alerta-vaga {
+  background: #33201d; border: 1px solid #6c332c; color: #e9b5ac;
+  border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.45;
+}
+
 .op-botoes { display: flex; flex-direction: column; gap: 8px; }
 .op-botoes-sec { display: flex; gap: 7px; }
 .op-botoes-sec .btn { flex: 1; }
@@ -291,6 +296,12 @@ td.num input { text-align: center; }
 }
 .tl-cronometro.alerta { color: #f0b45c; }
 .tl-cronometro.estourado { color: #e07c6e; animation: pisca 1s steps(2) infinite; }
+
+.tl-alerta {
+  background: #33201d; border: 1px solid #6c332c; color: #edc0b7;
+  border-radius: 10px; padding: 1.2vh 1.2vw; text-align: center;
+  font-size: clamp(12px, 1.05vw, 20px); line-height: 1.4;
+}
 
 .tl-proximos ol { margin: .6vh 0 0; padding-left: 1.4em; color: var(--texto-2); font-size: clamp(13px, 1.15vw, 22px); line-height: 1.65; }
 .tl-proximos ol strong { color: var(--texto); }

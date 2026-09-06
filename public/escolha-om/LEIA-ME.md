@@ -63,6 +63,10 @@ No painel do operador:
   alguma coisa) e **Ausente** o retira da chamada — dá para reativá-lo na
   Preparação, pelo botão ○ da linha dele.
 
+Se o chamado não tiver o que escolher — o quadro acabou, ou o que sobrou é
+reserva nominal de outro —, um aviso toma o lugar do cronômetro no painel e no
+telão, dizendo qual dos dois casos é e quantos ainda faltam.
+
 Cada escolha confirmada mostra no telão, por alguns segundos, o nome do oficial e
 a OM escolhida, e some do quadro de vagas.
 

@@ -186,6 +186,23 @@
     return true;
   }
 
+  /* Quando o chamado não tem o que escolher — quadro curto, ou o que sobrou é
+     reserva de outro — a tela precisa dizer isso com todas as letras: no meio
+     da cerimônia, uma lista toda apagada e um botão desligado não explicam
+     nada a quem está conduzindo. Devolve o aviso, ou vazio se há vaga. */
+  function semVagaPara(a) {
+    if (!a) return '';
+    var livres = estado.vagas.filter(function (v) { return podeEscolher(v, a.id); });
+    if (livres.length) return '';
+    if (totalRestante() > 0) {
+      return 'Não há vaga livre para este oficial: o que resta está reservado nominalmente a outros.';
+    }
+    var faltam = fila().length;
+    return 'Acabaram as vagas do quadro' +
+      (faltam ? ' — ainda ' + (faltam > 1 ? 'faltam ' + faltam + ' oficiais' : 'falta 1 oficial') +
+        ' por escolher.' : '.');
+  }
+
   /* ───────────────────── Ações da cerimônia ───────────────────── */
 
   function confirmarEscolha(vagaId) {
@@ -429,6 +446,10 @@
     var totalAtivos = estado.alunos.filter(function (x) { return x.status !== 'ausente'; }).length;
     $('#op-progresso').textContent = estado.escolhas.length + ' de ' + totalAtivos;
 
+    var aviso = semVagaPara(a);
+    $('#op-alerta').textContent = aviso;
+    $('#op-alerta').classList.toggle('oculto', !aviso);
+
     var ol = $('#op-fila');
     ol.innerHTML = f.slice(1, 1 + (estado.cfg.proximos || 3) + 2).map(function (x) {
       return '<li><strong>' + esc(x.guerra) + '</strong> <span style="color:var(--texto-3)">(' + x.cl + 'º)</span></li>';
@@ -551,6 +572,10 @@
         (estado.cfg.media && typeof a.media === 'number' ? ' · média ' + a.media.toFixed(3) : '') + '</div>';
     }
 
+    var aviso = semVagaPara(a);
+    $('#tl-alerta').textContent = aviso;
+    $('#tl-alerta').classList.toggle('oculto', !aviso);
+
     $('#tl-fila').innerHTML = f.slice(1, 1 + (estado.cfg.proximos || 3)).map(function (x) {
       return '<li><strong>' + esc(x.guerra) + '</strong></li>';
     }).join('') || '<li style="list-style:none;color:var(--texto-3)">—</li>';
@@ -626,9 +651,18 @@
 
   function tique() {
     var limite = estado.cfg.tempo || 0;
+    var a = daVez();
+    /* Marcar o tempo de quem não tem o que escolher só atrapalha: nesse caso o
+       aviso ocupa o lugar do cronômetro, em vez de somar mais uma linha. */
+    var travado = !!semVagaPara(a);
     var alvos = [$('#op-cronometro'), $('#tl-cronometro')].filter(Boolean);
-    if (!limite || !daVez()) {
-      alvos.forEach(function (el) { el.textContent = ''; el.className = el.id === 'tl-cronometro' ? 'tl-cronometro' : 'cronometro'; });
+    var base = function (el) { return el.id === 'tl-cronometro' ? 'tl-cronometro' : 'cronometro'; };
+
+    if (!limite || !a || travado) {
+      alvos.forEach(function (el) {
+        el.textContent = '';
+        el.className = base(el) + (travado ? ' oculto' : '');
+      });
       return;
     }
     var inicio = estado.inicioVez || Date.now();
@@ -638,7 +672,7 @@
     var estilo = restante < 0 ? ' estourado' : (restante <= 15 ? ' alerta' : '');
     alvos.forEach(function (el) {
       el.textContent = txt;
-      el.className = (el.id === 'tl-cronometro' ? 'tl-cronometro' : 'cronometro') + estilo;
+      el.className = base(el) + estilo;
     });
   }
   function fmtTempo(s) {
