@@ -61,36 +61,31 @@ sem internet e sem instalar nada. Aperte **F** para tela cheia e comece.
 
 O rodapé mostra o bloco atual, o cronômetro e o número do slide.
 
-## Colocando as fotos
+## As fotos
 
-Há **8 espaços de foto** prontos, marcados com moldura tracejada:
+As cinco fotos que você mandou já estão **dentro do arquivo**, em base64 — não
+dependem da pasta `fotos/` para aparecer. Os originais ficaram em `fotos/` caso
+você queira trocar alguma.
 
-| Slide | Espaço | O que entra |
+| Slide | Foto | Onde entrou |
 |---|---|---|
-| 1 | `capa` | abertura em tela cheia — salto, dobragem ou depósito |
-| 4 | `contexto` | ilustração da Logística 4.0 (pode ser a figura do próprio TCC) |
-| 5 | `dompsa` | Cia Dobragem, depósito ou suprimento pelo ar |
-| 19 | `coleta` | entrevista, visita técnica ou aplicação do formulário |
-| 31 | `ev1` `ev2` `ev3` | galeria: controle manual · depósito · dobragem/inspeção |
-| 38 | `fim` | encerramento em tela cheia |
+| 1 · Capa | `capa-c295-lancamento.jpg` | tela cheia, atrás do título |
+| 4 · Contextualização | `kc390-paraquedas-extracao.jpg` | quadro 16:9 na coluna direita |
+| 5 · O B DOMPSA e o Mat Aet | `carga-plataforma-paraquedas.jpg` | quadro 4:3 na coluna esquerda |
+| 19 · Instrumentos e análise | `recolhimento-pista.jpg` | quadro 4:3 na coluna esquerda |
+| 31 · Evidências de campo | `paraquedista-salto.jpg` | quadro quadrado, com o texto ao lado |
 
-Duas formas de preencher:
+**Falta a fonte de cada imagem.** As legendas terminam com "Fonte: informar",
+sublinhado em pontilhado. Em trabalho acadêmico a figura precisa de crédito —
+se as fotos são do B DOMPSA, da FAB ou de acervo pessoal, é isso que entra ali.
 
-**1. Arrastando (rápido, para testar)** — arraste a imagem do seu computador para
-cima da moldura. Ela entra na hora e fica guardada naquele navegador.
-`Alt + clique` sobre a foto remove.
+**Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
+`src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
+passa a depender da pasta ao lado).
 
-**2. No arquivo (definitivo, o que vai para o congresso)** — copie as imagens para
-a pasta `fotos/` e troque o conteúdo da moldura por uma tag de imagem:
-
-```html
-<figure class="photo tall" data-photo="dompsa">
-  <img src="fotos/dobragem.jpg" alt="Militares na dobragem de paraquedas">
-</figure>
-```
-
-Se preferir, **me mande as fotos que eu faço essa parte** — ligo cada arquivo ao
-seu quadro, ajusto o enquadramento e escrevo as legendas.
+**Para acrescentar mais fotos:** o slide 31 comporta uma galeria de três de novo,
+e o encerramento (slide 38) pode voltar a ter foto de fundo. Hoje ele é preto
+liso, de propósito — sem foto, funciona melhor do que com um espaço vazio.
 
 ## Editando o conteúdo
 

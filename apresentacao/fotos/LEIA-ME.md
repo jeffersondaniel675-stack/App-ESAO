@@ -1,12 +1,17 @@
-# Coloque aqui as fotos da apresentação
+# Fotos da apresentação
 
-Sugestão de nomes (qualquer nome funciona):
+As cinco fotos abaixo já estão embutidas em `congresso.html` (base64). Estes
+arquivos ficam aqui como originais, para consulta ou substituição.
 
-- `capa.jpg` — abertura em tela cheia: salto, dobragem ou depósito
-- `contexto.jpg` — slide 4, ilustração da Logística 4.0
-- `dompsa.jpg` — slide 5, Cia Dobragem / depósito / suprimento pelo ar
-- `coleta.jpg` — slide 19, entrevista ou aplicação do formulário
-- `ev1.jpg`, `ev2.jpg`, `ev3.jpg` — slide 31: controle manual · depósito · dobragem
-- `encerramento.jpg` — slide 38, tela final
+| Arquivo | Slide |
+|---|---|
+| `capa-c295-lancamento.jpg` | 1 · Capa, tela cheia |
+| `kc390-paraquedas-extracao.jpg` | 4 · Contextualização |
+| `carga-plataforma-paraquedas.jpg` | 5 · O B DOMPSA e o Mat Aet |
+| `recolhimento-pista.jpg` | 19 · Instrumentos e análise |
+| `paraquedista-salto.jpg` | 31 · Evidências de campo |
 
-Depois é só me avisar que eu ligo cada foto ao seu quadro no arquivo `congresso.html`.
+Falta o crédito de cada imagem — as legendas terminam com "Fonte: informar".
+
+Para trocar uma foto durante a apresentação, arraste a nova por cima do quadro;
+`Alt + clique` desfaz e traz a original de volta.
