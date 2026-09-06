@@ -18,10 +18,14 @@ O deck segue o `DESIGN.md` da raiz do repositório (linguagem Mobbin, instalada 
 **um único azul** (`#0066ff`) reservado ao sinal que pede decisão — no deck ele
 aparece só na barra "quanto maior, pior" do slide 22 e na legenda dela. Sem
 sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula nos
-controles, cantos de 24px nos cartões, Inter no lugar da Saans (652 → 650 nos
-títulos, 456 → 450 no texto, 300 nas entradas leves), sem versalete e sem
-espacejamento. Os divisores de bloco e o encerramento usam a inversão de
+controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
+
+**Tipografia:** **Geist** no texto e **Geist Mono** nas etiquetas e nos números
+(entretítulos, rótulos de cartão, cabeçalhos de tabela, valores dos gráficos,
+cronômetro e numeração dos slides). As duas estão **embutidas no arquivo** em
+base64 — o deck não faz nenhuma requisição de rede, então renderiza idêntico no
+auditório sem internet. Isso explica o arquivo ter ~200 KB.
 
 Para voltar ao tema escuro anterior, basta trocar os tokens no bloco `:root` do
 início do arquivo — todo o resto é derivado deles.
