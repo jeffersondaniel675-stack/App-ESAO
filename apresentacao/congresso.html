@@ -461,6 +461,14 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 #notes .next{margin-top:18px;padding-top:16px;border-top:1px solid var(--hairline);font-size:15px;font-weight:450;color:var(--muted)}
 
 #black{position:fixed;inset:0;background:#000;z-index:80;display:none}
+
+#toast{
+  position:fixed;left:50%;bottom:74px;transform:translate(-50%,16px);z-index:75;
+  background:var(--ink);color:#fff;border-radius:9999px;padding:14px 26px;
+  font-size:17px;font-weight:400;max-width:76ch;text-align:center;
+  opacity:0;pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease);
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 #black.on{display:block}
 
 /* ============================================================
@@ -1109,6 +1117,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 </div>
 
 <div id="black"></div>
+<div id="toast"></div>
 
 <div class="overlay" id="menu">
   <div class="ov-inner">
@@ -1127,7 +1136,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
         <div class="row"><span>Primeiro / último</span><kbd>Home · End</kbd></div>
         <div class="row"><span>Ir para o slide nº</span><kbd>digite o número + Enter</kbd></div>
         <div class="row"><span>Índice de slides</span><kbd>O</kbd></div>
-        <div class="row"><span>Tela cheia</span><kbd>F</kbd></div>
+        <div class="row"><span>Tela cheia</span><kbd>F · ou F11 no navegador</kbd></div>
       </div>
       <div>
         <div class="row"><span>Roteiro de fala (notas)</span><kbd>N</kbd></div>
@@ -1283,10 +1292,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
       case 'Home': go(0, -1); e.preventDefault(); break;
       case 'End': go(slides.length - 1, 1); e.preventDefault(); break;
       case 'Escape': closeOverlays(); document.getElementById('notes').classList.remove('open'); break;
-      case 'f': case 'F':
-        if (document.fullscreenElement) document.exitFullscreen();
-        else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
-        break;
+      case 'f': case 'F': toggleFull(); break;
       case 'o': case 'O': toggle('menu'); break;
       case 'h': case 'H': case '?': toggle('help'); break;
       case 'n': case 'N': case 's': case 'S': document.getElementById('notes').classList.toggle('open'); break;
@@ -1295,6 +1301,30 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
       case 't': case 'T': forced = (forced + 1) % TRANS.length; applyTransition(); break;
     }
   });
+
+  /* ---------- tela cheia ---------- */
+  var toastT = null;
+  function toast(msg){
+    var el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('on');
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ el.classList.remove('on'); }, 5200);
+  }
+  var BLOQUEADA = 'Tela cheia bloqueada aqui. Abra o deck em uma aba do navegador e use F11 (Windows) ou Ctrl+Cmd+F (Mac).';
+  function toggleFull(){
+    var d = document, el = d.documentElement;
+    var atual = d.fullscreenElement || d.webkitFullscreenElement;
+    if (atual) {
+      (d.exitFullscreen || d.webkitExitFullscreen || function(){}).call(d);
+      return;
+    }
+    var req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!req) { toast(BLOQUEADA); return; }
+    try {
+      var r = req.call(el);
+      if (r && r.catch) r.catch(function(){ toast(BLOQUEADA); });
+    } catch (err) { toast(BLOQUEADA); }
+  }
 
   /* ---------- clique e toque ---------- */
   document.addEventListener('click', function(e){
