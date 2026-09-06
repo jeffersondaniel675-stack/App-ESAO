@@ -45,6 +45,23 @@ Na aba **Preparação**:
 3. **Configuração** — título, data, tempo de escolha e o que aparece no telão.
    Exporte um backup da sessão antes de começar.
 
+Para tirar nomes da relação: o **✕** da linha exclui um, ou marque as caixas à
+esquerda e use **Excluir selecionados**. Quem sai leva junto a escolha que
+tenha feito, e a vaga volta para o quadro.
+
+### Prévias salvas
+
+Na versão publicada da ferramenta há uma aba **Prévias salvas**: uma base
+comum a todos que abrem o mesmo endereço. Cada prévia é um retrato completo
+daquele momento — relação de concludentes, quadro de vagas, escolhas e
+configuração — gravado com um nome, e qualquer um pode abrir, substituir ou
+excluir. Serve para montar e comparar cenários antes da cerimônia sem passar
+arquivo de mão em mão.
+
+Rodando pelo sistema ou pela pasta essa base não existe (ela pertence à página
+publicada); ali o equivalente é `Configuração → Exportar sessão`, que grava um
+arquivo com o mesmo conteúdo.
+
 O aviso no alto da aba de vagas compara o total de vagas com o de concludentes
 presentes e avisa se estiver faltando vaga.
 
@@ -102,6 +119,13 @@ retrato a 64%, margens laterais de 1,3 cm e área de impressão de A até F — 
 número de ordem fica de fora, como na planilha. **Imprimir** sai igual, com a
 mesma redução, e nenhum quadro de oficial é partido entre duas folhas.
 
+**Baixar PDF** desenha a folha diretamente, com a mesma geometria da impressão.
+Serve quando a impressão do navegador não está disponível — é o caso da versão
+publicada, onde a página não tem permissão de acionar a impressora — e também
+quando se quer o arquivo pronto para anexar. As outras duas abas geram PDF em
+paisagem. A biblioteca que desenha o PDF vem na própria pasta, então isso
+também funciona sem internet.
+
 A abreviatura do A/Q/S na relação é `Int` (o que está na planilha do DCEM), e
 não `Sv Int` da tabela de concludentes — são documentos diferentes. Dá para
 trocar em Configuração.
@@ -132,6 +156,7 @@ LEANDRO SILVA, SIMÕES, GUSTAVO NUNES, MENEZES e GÓES.
 | `estilo.css` | aparência, inclusive o layout do telão e a folha de impressão |
 | `app.js`     | regra da cerimônia, sincronização e relatórios               |
 | `xlsx.js`    | gerador dos arquivos `.xlsx`                                 |
+| `jspdf.umd.min.js` | biblioteca que desenha os PDF (vem junto, para funcionar sem rede) |
 | `dados.js`   | base de concludentes e modelos de quadro de vagas            |
 | `fotos/`     | retratos                                                     |
 | `brasoes/`   | brasões da EsAO e do C Log                                   |

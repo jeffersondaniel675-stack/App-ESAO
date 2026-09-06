@@ -34,6 +34,7 @@
   <div class="sub-abas">
     <button data-sub="alunos" class="ativo">Concludentes</button>
     <button data-sub="vagas">Quadro de vagas</button>
+    <button data-sub="previas">Prévias salvas</button>
     <button data-sub="config">Configuração</button>
   </div>
 
@@ -47,6 +48,7 @@
         <button class="btn" id="al-add">Incluir</button>
         <button class="btn" id="al-colar">Colar do Excel</button>
         <button class="btn" id="al-renumerar">Renumerar 1…N</button>
+        <button class="btn btn-perigo" id="al-excluir-sel" disabled>Excluir selecionados</button>
         <button class="btn btn-perigo" id="al-restaurar">Restaurar base original</button>
       </div>
     </div>
@@ -58,6 +60,7 @@
     <div class="tabela-wrap">
       <table class="grade" id="tab-alunos">
         <thead><tr>
+          <th style="width:38px"><input type="checkbox" id="al-marca-todos" title="Marcar todos" /></th>
           <th style="width:70px">Cl</th><th style="width:52px"></th><th>Nome de guerra</th>
           <th>Nome completo</th><th style="width:70px">Posto</th><th style="width:90px">Q/A/S</th>
           <th style="width:120px">Idt</th><th style="width:90px">Turma</th><th style="width:110px"></th>
@@ -98,6 +101,19 @@
         <tbody></tbody>
       </table>
     </div>
+  </section>
+
+  <!-- ---- Prévias salvas ---- -->
+  <section id="sub-previas" class="sub-view oculto">
+    <div class="barra">
+      <div class="barra-info"><strong id="cont-previas">—</strong> <span id="rot-previas">prévias</span></div>
+      <div class="barra-btns">
+        <button class="btn btn-ouro" id="pv-salvar">Salvar prévia atual</button>
+        <button class="btn" id="pv-recarregar">Recarregar lista</button>
+      </div>
+    </div>
+    <p class="nota" id="pv-explica"></p>
+    <div id="pv-lista" class="lista-previas"></div>
   </section>
 
   <!-- ---- Configuração ---- -->
@@ -198,6 +214,7 @@
       <span class="separador"></span>
       <button class="btn" id="res-csv">Baixar CSV</button>
       <button class="btn" id="res-xls">Baixar Excel</button>
+      <button class="btn" id="res-pdf">Baixar PDF</button>
       <button class="btn btn-ouro" id="res-imprimir">Imprimir</button>
     </div>
   </div>
@@ -262,6 +279,7 @@
   <div class="modal-caixa">
     <h3 id="modal-titulo"></h3>
     <p id="modal-texto" class="nota"></p>
+    <input type="text" id="modal-campo" class="oculto" />
     <textarea id="modal-area" spellcheck="false"></textarea>
     <div class="modal-btns">
       <button class="btn" id="modal-cancelar">Cancelar</button>
@@ -272,6 +290,9 @@
 
 <input type="file" id="arquivo-oculto" accept=".json" hidden />
 
+<!-- jsPDF vem junto na pasta, e não de um CDN, para que gerar o PDF continue
+     funcionando sem internet, como o resto da ferramenta. -->
+<script src="jspdf.umd.min.js"></script>
 <script src="dados.js"></script>
 <script src="xlsx.js"></script>
 <script src="app.js"></script>

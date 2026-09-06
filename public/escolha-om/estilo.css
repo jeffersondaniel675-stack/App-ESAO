@@ -378,6 +378,24 @@ td.num input { text-align: center; }
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; resize: vertical;
 }
 .modal-caixa textarea:focus { outline: 0; border-color: var(--ouro); }
+.modal-caixa input[type=text] {
+  width: 100%; background: var(--fundo); color: var(--texto);
+  border: 1px solid var(--linha-forte); border-radius: 8px; padding: 10px 12px; font-size: 15px;
+}
+.modal-caixa input[type=text]:focus { outline: 0; border-color: var(--ouro); }
+
+/* ─────────── Prévias salvas ─────────── */
+.lista-previas { display: flex; flex-direction: column; gap: 8px; max-width: 900px; }
+.previa {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: var(--fundo-2); border: 1px solid var(--linha);
+  border-radius: var(--raio); padding: 12px 14px;
+}
+.previa-txt { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 3px; }
+.previa-txt strong { font-size: 15px; }
+.previa-meta { font-size: 12.5px; color: var(--texto-2); }
+.previa-data { font-size: 12px; color: var(--texto-3); font-variant-numeric: tabular-nums; }
+.previa-btns { display: flex; gap: 6px; }
 .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
 /* ═══════════════ RESULTADO / IMPRESSÃO ═══════════════ */
@@ -417,9 +435,20 @@ td.num input { text-align: center; }
 /* "ASSINATURA" mal cabe na coluna estreita da planilha: aperta o recuo em vez
    de alargar a coluna, para não fugir das larguras do original. */
 .folha table.dcem .dcem-cab td { font-weight: bold; padding: 2px 1px; }
-/* "ASSINATURA" é mais larga que a coluna estreita do original; encolhe a
-   palavra em vez de alargar a coluna ou deixá-la partir no meio. */
-.folha table.dcem .cab-assin { font-size: .8em; white-space: nowrap; }
+/* "ASSINATURA" é mais larga que a coluna estreita do original. Com `nowrap`
+   ela transbordava a moldura em tela estreita, já que as colunas são
+   percentuais e o texto não. Encolhe um pouco e, se ainda não couber, quebra
+   na sílaba (assina-tura) em vez de vazar — a célula tem duas linhas de altura. */
+.folha table.dcem .cab-assin {
+  font-size: .8em;
+  hyphens: manual;
+  overflow-wrap: break-word;
+}
+
+/* Abaixo de certa largura a tabela deixa de ser legível espremida: passa a
+   rolar dentro da folha em vez de amassar as colunas. */
+.folha { overflow-x: auto; }
+.folha table.dcem { min-width: 640px; }
 .folha table.dcem .dcem-secao td { border: 0; text-align: left; font-weight: bold; }
 .folha table.dcem .dcem-vao td { border: 0; height: 5pt; }
 /* O posto fica sobre o A/Q/S, e a OM sobre a cidade: um quadro só, sem o filete
@@ -455,6 +484,8 @@ td.num input { text-align: center; }
   .folha table.dcem td.fora { display: none; }
   .folha table.dcem colgroup col:last-child { width: 0; }
   .folha table.dcem .dcem-bloco { break-inside: avoid; page-break-inside: avoid; }
+  .folha { overflow-x: visible; }
+  .folha table.dcem { min-width: 0; }
 }
 
 @media (max-width: 900px) {

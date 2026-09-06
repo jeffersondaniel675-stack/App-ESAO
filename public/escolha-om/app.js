@@ -258,6 +258,22 @@
 
   /* ═════════════════════════ PREPARAÇÃO ═════════════════════════ */
 
+  /* Exclusão de concludentes: tira da relação, da ordem de chamada e desfaz
+     a escolha de quem já tinha escolhido, devolvendo a vaga ao quadro. */
+  function excluirAlunos(ids) {
+    estado.alunos = estado.alunos.filter(function (a) { return ids.indexOf(a.id) < 0; });
+    estado.ordem = estado.ordem.filter(function (x) { return ids.indexOf(x) < 0; });
+    estado.escolhas = estado.escolhas.filter(function (e) { return ids.indexOf(e.alunoId) < 0; });
+    ids.forEach(function (id) { delete marcados[id]; });
+    mudou();
+  }
+
+  var marcados = {};
+
+  function idsMarcados() {
+    return Object.keys(marcados).filter(function (id) { return marcados[id] && aluno(id); });
+  }
+
   function desenharAlunos() {
     var tb = $('#tab-alunos tbody');
     if (!tb) return;
@@ -273,6 +289,7 @@
         : '<div class="retrato-vazio">—</div>';
 
       tr.innerHTML =
+        '<td><input type="checkbox" class="marca" ' + (marcados[id] ? 'checked' : '') + ' /></td>' +
         '<td class="num"><input data-campo="cl" type="number" value="' + a.cl + '" /></td>' +
         '<td>' + foto + '</td>' +
         '<td><input data-campo="guerra" value="' + esc(a.guerra) + '" /></td>' +
@@ -288,21 +305,28 @@
           '<button class="mini x" data-acao="remove" title="Excluir">✕</button>' +
         '</td>';
 
-      $$('input', tr).forEach(function (inp) {
+      $$('input[data-campo]', tr).forEach(function (inp) {
         inp.addEventListener('change', function () {
           var campo = inp.dataset.campo;
           a[campo] = campo === 'cl' ? (parseInt(inp.value, 10) || 0) : inp.value;
           mudou();
         });
       });
+      $('.marca', tr).addEventListener('change', function () {
+        marcados[id] = this.checked;
+        atualizarSelecao();
+      });
       $$('button', tr).forEach(function (b) {
         b.addEventListener('click', function () {
           var ac = b.dataset.acao;
           if (ac === 'remove') {
-            if (!confirm('Excluir ' + a.guerra + ' da relação?')) return;
-            estado.alunos = estado.alunos.filter(function (x) { return x.id !== id; });
-            estado.ordem = estado.ordem.filter(function (x) { return x !== id; });
-            estado.escolhas = estado.escolhas.filter(function (e) { return e.alunoId !== id; });
+            confirmar('Excluir ' + a.guerra + '?',
+              'Sai da relação de concludentes. Se já tiver escolhido, a vaga volta para o quadro.',
+              'Excluir', true).then(function (sim) {
+                if (!sim) return;
+                excluirAlunos([id]);
+              });
+            return;
           } else if (ac === 'ausente') {
             a.status = a.status === 'ausente' ? 'aguardando' : 'ausente';
           } else {
@@ -317,6 +341,17 @@
       tb.appendChild(tr);
     });
     $('#cont-alunos').textContent = estado.alunos.length;
+    atualizarSelecao();
+  }
+
+  function atualizarSelecao() {
+    var n = idsMarcados().length;
+    var botao = $('#al-excluir-sel');
+    if (!botao) return;
+    botao.disabled = !n;
+    botao.textContent = n ? 'Excluir ' + n + (n > 1 ? ' selecionados' : ' selecionado') : 'Excluir selecionados';
+    var todos = $('#al-marca-todos');
+    if (todos) todos.checked = n > 0 && n === estado.alunos.length;
   }
 
   function desenharVagas() {
@@ -352,10 +387,15 @@
         });
       });
       $('button', tr).addEventListener('click', function () {
-        if (tomadas(v.id) && !confirm('Já há escolha registrada nesta OM. Excluir mesmo assim?')) return;
-        estado.vagas = estado.vagas.filter(function (x) { return x.id !== v.id; });
-        estado.escolhas = estado.escolhas.filter(function (e) { return e.vagaId !== v.id; });
-        mudou();
+        var apagar = function () {
+          estado.vagas = estado.vagas.filter(function (x) { return x.id !== v.id; });
+          estado.escolhas = estado.escolhas.filter(function (e) { return e.vagaId !== v.id; });
+          mudou();
+        };
+        if (!tomadas(v.id)) return apagar();
+        confirmar('Excluir ' + v.om + '?',
+          'Já há escolha registrada nesta OM; ela será desfeita.', 'Excluir', true)
+          .then(function (sim) { if (sim) apagar(); });
       });
       tb.appendChild(tr);
     });
@@ -473,6 +513,8 @@
      imagem embutida (data:), que é como a versão de arquivo único carrega os
      retratos sem depender da pasta ao lado. */
   function urlFoto(nome) {
+    var embutidas = window.FOTOS_EMBUTIDAS;
+    if (embutidas && embutidas[nome]) return embutidas[nome];
     return /^data:/.test(nome) ? nome : 'fotos/' + nome;
   }
 
@@ -645,7 +687,11 @@
     }
     var w = window.open(location.pathname + '?telao=1', 'telaoEscolhaOM',
       'width=1280,height=760,menubar=no,toolbar=no');
-    if (!w) alert('O navegador bloqueou a janela do telão. Libere as janelas pop-up para este endereço ou use "Apresentar aqui".');
+    if (!w) {
+      informar('Janela do telão bloqueada',
+        'O navegador não deixou abrir a segunda janela. Libere as janelas pop-up para este ' +
+        'endereço, ou use <strong>Apresentar aqui</strong>, que põe o telão em tela cheia nesta mesma janela.');
+    }
   }
 
   function fecharTelao() {
@@ -799,7 +845,8 @@
       '<tr class="dcem-cab">' +
         '<td>POSTO</td><td rowspan="2">IDT</td><td rowspan="2">NOME</td>' +
         '<td>OM ORIGEM</td><td>OM DESTINO</td>' +
-        '<td rowspan="2" class="cab-assin">ASSINATURA</td>' +
+        /* hífen opcional: só aparece se a palavra precisar quebrar */
+        '<td rowspan="2" class="cab-assin">ASSINA&shy;TURA</td>' +
         '<td class="fora"></td></tr>' +
       '<tr class="dcem-cab"><td>A / Q / S</td><td>CIDADE-UF</td><td>CIDADE-UF</td><td class="fora"></td></tr>' +
       secao(c.dcemSecao1) + secao(c.dcemSecao2) +
@@ -849,7 +896,7 @@
   function avisar(texto) {
     var el = $('#cfg-status');
     if (el) el.textContent = texto;
-    else alert(texto);
+    else informar('Aviso', esc(texto));
   }
 
   function exportarCsv() {
@@ -910,18 +957,244 @@
     }));
   }
 
+  /* ══════════════════════ PDF ══════════════════════
+     A impressão do navegador nem sempre está liberada — dentro de uma página
+     publicada ela costuma ser bloqueada. O PDF é desenhado aqui, com a mesma
+     geometria da folha impressa: A4 retrato, margens de 1,3 cm, Times a 64%
+     de 11 pt, e o número de ordem fora da moldura, como na planilha. */
+
+  var MM = { pagina: [210, 297], margem: 13 };
+
+  function pdfDisponivel() { return !!(window.jspdf && window.jspdf.jsPDF); }
+
+  function gerarPdf() {
+    if (!pdfDisponivel()) {
+      return informar('Gerador de PDF indisponível',
+        'A biblioteca que desenha o PDF não carregou — normalmente é falta de rede. ' +
+        'Use <strong>Imprimir</strong> e escolha “Salvar como PDF”.');
+    }
+    var linhas = linhasResultado();
+    if (!linhas.length) return informar('Nada a gerar', 'Nenhuma escolha foi registrada ainda.');
+    var doc = (abaResultado === 'dcem') ? pdfDcem(linhas) : pdfQuadro(linhas);
+    var nome = abaResultado === 'dcem' ? 'rel-dcem.pdf'
+             : abaResultado === 'om' ? 'escolha-om-por-om.pdf' : 'escolha-om-quadro-final.pdf';
+    baixarBlob(nome, doc.output('blob'));
+  }
+
+  /* Encolhe o texto até caber na largura da célula, como o Excel faria. */
+  function textoNaCaixa(doc, txt, x, larg, y, tamanho) {
+    if (!txt) return;
+    var t = tamanho;
+    doc.setFontSize(t);
+    while (t > 3.5 && doc.getTextWidth(String(txt)) > larg - 1.4) {
+      t -= 0.25;
+      doc.setFontSize(t);
+    }
+    doc.text(String(txt), x + larg / 2, y, { align: 'center', baseline: 'middle' });
+    doc.setFontSize(tamanho);
+  }
+
+  function pdfDcem(linhas) {
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    var c = estado.cfg;
+    var larguraUtil = MM.pagina[0] - MM.margem * 2;
+    var soma = LARG_DCEM.reduce(function (s, w) { return s + w; }, 0);
+    var larg = LARG_DCEM.map(function (w) { return w / soma * larguraUtil; });
+    var xs = [], acc = MM.margem;
+    larg.forEach(function (w) { xs.push(acc); acc += w; });
+
+    var pt = 25.4 / 72;                 /* pontos para milímetros */
+    var corpo = 11 * 0.64;              /* 11 pt reduzidos a 64%, como no original */
+    var hLinha = 22.5 * 0.64 * pt;
+    var hVao = 3.75 * 0.64 * pt;
+    var fundo = MM.pagina[1] - MM.margem;
+    var y = MM.margem;
+
+    doc.setFont('times', 'normal');
+    doc.setLineWidth(0.15);
+
+    /* título com o filete embaixo */
+    doc.setFont('times', 'bold'); doc.setFontSize(corpo);
+    doc.text(c.dcemTitulo, MM.margem, y + 31.5 * 0.64 * pt / 2, { baseline: 'middle' });
+    y += 31.5 * 0.64 * pt;
+    doc.line(MM.margem, y, MM.margem + larguraUtil, y);
+
+    /* cabeçalho de duas linhas */
+    var cabeca = function () {
+      var topo = y;
+      [0, 3, 4].forEach(function (i) {
+        doc.rect(xs[i], topo, larg[i], hLinha);
+        doc.rect(xs[i], topo + hLinha, larg[i], hLinha);
+      });
+      [1, 2, 5].forEach(function (i) { doc.rect(xs[i], topo, larg[i], hLinha * 2); });
+      doc.setFont('times', 'bold');
+      var meio1 = topo + hLinha / 2, meio2 = topo + hLinha * 1.5, meioT = topo + hLinha;
+      textoNaCaixa(doc, 'POSTO', xs[0], larg[0], meio1, corpo);
+      textoNaCaixa(doc, 'A / Q / S', xs[0], larg[0], meio2, corpo);
+      textoNaCaixa(doc, 'IDT', xs[1], larg[1], meioT, corpo);
+      textoNaCaixa(doc, 'NOME', xs[2], larg[2], meioT, corpo);
+      textoNaCaixa(doc, 'OM ORIGEM', xs[3], larg[3], meio1, corpo);
+      textoNaCaixa(doc, 'CIDADE-UF', xs[3], larg[3], meio2, corpo);
+      textoNaCaixa(doc, 'OM DESTINO', xs[4], larg[4], meio1, corpo);
+      textoNaCaixa(doc, 'CIDADE-UF', xs[4], larg[4], meio2, corpo);
+      textoNaCaixa(doc, 'ASSINATURA', xs[5], larg[5], meioT, corpo);
+      y = topo + hLinha * 2;
+    };
+    cabeca();
+
+    /* enquadramento, fora da moldura */
+    doc.setFont('times', 'bold');
+    [c.dcemSecao1, c.dcemSecao2].forEach(function (t) {
+      if (!t) return;
+      doc.setFontSize(corpo);
+      doc.text(t, MM.margem, y + hLinha / 2, { baseline: 'middle' });
+      y += hLinha;
+    });
+    y += hVao;
+
+    linhas.forEach(function (l, i) {
+      if (y + hLinha * 2 > fundo) { doc.addPage(); y = MM.margem; cabeca(); y += hVao; }
+      var topo = y;
+      larg.forEach(function (w, k) { doc.rect(xs[k], topo, w, hLinha * 2); });
+      var meio1 = topo + hLinha / 2, meio2 = topo + hLinha * 1.5, meioT = topo + hLinha;
+
+      doc.setFont('times', 'normal');
+      textoNaCaixa(doc, l.a.posto, xs[0], larg[0], meio1, corpo);
+      textoNaCaixa(doc, c.qmDcem || l.a.qm, xs[0], larg[0], meio2, corpo);
+      textoNaCaixa(doc, l.a.idt, xs[1], larg[1], meioT, corpo);
+      textoNaCaixa(doc, l.a.nome, xs[2], larg[2], meioT, corpo);
+      textoNaCaixa(doc, c.origemCidade, xs[3], larg[3], meio2, corpo);
+      textoNaCaixa(doc, l.v.cidade, xs[4], larg[4], meio2, corpo);
+      doc.setFont('times', 'bold');
+      textoNaCaixa(doc, c.origem, xs[3], larg[3], meio1, corpo);
+      textoNaCaixa(doc, l.v.om, xs[4], larg[4], meio1, corpo);
+
+      /* número de ordem, fora do quadro, como a coluna H da planilha */
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(corpo * 0.85);
+      doc.setTextColor(110);
+      doc.text(String(i + 1), MM.margem + larguraUtil + 2, meio1, { baseline: 'middle' });
+      doc.setTextColor(0);
+
+      y = topo + hLinha * 2 + hVao;
+    });
+    return doc;
+  }
+
+  function pdfQuadro(linhas) {
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    var c = estado.cfg;
+    var larguraUtil = 297 - MM.margem * 2;
+    var porOm = abaResultado === 'om';
+
+    var cab = porOm
+      ? ['OM', 'Cidade-UF', 'C Mil A', 'Cl', 'Nome de guerra', 'Nome completo']
+      : ['Cl', 'Posto', 'Q/A/S', 'Idt', 'Nome de guerra', 'Nome completo', 'OM de destino', 'Cidade-UF'];
+    var pesos = porOm ? [22, 18, 10, 6, 18, 26] : [5, 7, 8, 11, 16, 25, 18, 14];
+    var dados = (porOm
+      ? linhas.slice().sort(function (a, b) {
+          return (a.v.om + a.v.cidade).localeCompare(b.v.om + b.v.cidade) || a.a.cl - b.a.cl;
+        }).map(function (l) {
+          return [l.v.om, l.v.cidade, l.v.cma, l.a.cl + 'º', l.a.guerra, l.a.nome];
+        })
+      : linhas.map(function (l) {
+          return [l.a.cl + 'º', l.a.posto, l.a.qm, l.a.idt, l.a.guerra, l.a.nome, l.v.om, l.v.cidade];
+        }));
+
+    var soma = pesos.reduce(function (s, w) { return s + w; }, 0);
+    var larg = pesos.map(function (w) { return w / soma * larguraUtil; });
+    var xs = [], acc = MM.margem;
+    larg.forEach(function (w) { xs.push(acc); acc += w; });
+
+    var hLinha = 6, corpo = 8, fundo = 210 - MM.margem, y = MM.margem;
+    doc.setLineWidth(0.15);
+
+    doc.setFont('times', 'bold'); doc.setFontSize(11);
+    doc.text(c.titulo + ' — ' + c.subtitulo, MM.margem + larguraUtil / 2, y + 3,
+      { align: 'center', baseline: 'middle' });
+    y += 10;
+
+    var cabeca = function () {
+      doc.setFont('times', 'bold');
+      cab.forEach(function (t, k) {
+        doc.rect(xs[k], y, larg[k], hLinha);
+        textoNaCaixa(doc, t, xs[k], larg[k], y + hLinha / 2, corpo);
+      });
+      y += hLinha;
+    };
+    cabeca();
+
+    doc.setFont('times', 'normal');
+    dados.forEach(function (linha) {
+      if (y + hLinha > fundo) { doc.addPage(); y = MM.margem; cabeca(); doc.setFont('times', 'normal'); }
+      linha.forEach(function (v, k) {
+        doc.rect(xs[k], y, larg[k], hLinha);
+        textoNaCaixa(doc, v, xs[k], larg[k], y + hLinha / 2, corpo);
+      });
+      y += hLinha;
+    });
+    return doc;
+  }
+
   /* ══════════════════════ IMPORTAÇÕES ══════════════════════ */
 
+  /* ─────────────────────── Caixas de diálogo ───────────────────────
+     `confirm` e `alert` do navegador não funcionam quando a aplicação roda
+     dentro de uma página publicada — a janela é bloqueada e a chamada volta
+     como se o usuário tivesse recusado, de modo que excluir um nome, limpar
+     o quadro ou zerar as escolhas simplesmente não acontecia. Tudo passa por
+     estas caixas próprias, que funcionam em qualquer ambiente.
+
+     Devolvem uma promessa: o texto digitado, '' numa confirmação simples, ou
+     null se a pessoa cancelou. */
+
+  function dialogo(op) {
+    return new Promise(function (resolve) {
+      var campo = $('#modal-campo'), area = $('#modal-area'), ok = $('#modal-ok');
+      $('#modal-titulo').textContent = op.titulo;
+      $('#modal-texto').innerHTML = op.texto || '';
+      $('#modal-texto').classList.toggle('oculto', !op.texto);
+
+      campo.classList.toggle('oculto', !op.campo);
+      area.classList.toggle('oculto', !op.area);
+      if (op.campo) { campo.value = op.campo.valor || ''; campo.placeholder = op.campo.dica || ''; }
+      if (op.area) area.value = op.area.valor || '';
+
+      ok.textContent = op.ok || 'Confirmar';
+      ok.classList.toggle('btn-perigo', !!op.perigo);
+      ok.classList.toggle('btn-ouro', !op.perigo);
+      $('#modal').classList.remove('oculto');
+      (op.campo ? campo : op.area ? area : ok).focus();
+
+      function fechar(valor) {
+        $('#modal').classList.add('oculto');
+        ok.onclick = null; $('#modal-cancelar').onclick = null; campo.onkeydown = null;
+        resolve(valor);
+      }
+      ok.onclick = function () {
+        fechar(op.campo ? campo.value : op.area ? area.value : '');
+      };
+      $('#modal-cancelar').onclick = function () { fechar(null); };
+      campo.onkeydown = function (ev) { if (ev.key === 'Enter') ok.click(); };
+      fecharDialogo = function () { fechar(null); };
+    });
+  }
+
+  var fecharDialogo = null;
+
+  function confirmar(titulo, texto, rotulo, perigo) {
+    return dialogo({ titulo: titulo, texto: texto, ok: rotulo || 'Confirmar', perigo: perigo })
+      .then(function (r) { return r !== null; });
+  }
+
+  function informar(titulo, texto) {
+    return dialogo({ titulo: titulo, texto: texto, ok: 'Entendi' });
+  }
+
   function abrirModal(titulo, texto, valor, aoAplicar) {
-    $('#modal-titulo').textContent = titulo;
-    $('#modal-texto').innerHTML = texto;
-    $('#modal-area').value = valor || '';
-    $('#modal').classList.remove('oculto');
-    $('#modal-area').focus();
-    $('#modal-ok').onclick = function () {
-      aoAplicar($('#modal-area').value);
-      $('#modal').classList.add('oculto');
-    };
+    dialogo({ titulo: titulo, texto: texto, area: { valor: valor }, ok: 'Aplicar' })
+      .then(function (r) { if (r !== null) aoAplicar(r); });
   }
 
   function celulas(linha) { return linha.split(/\t|;/).map(function (x) { return x.trim(); }); }
@@ -955,7 +1228,7 @@
         status: 'aguardando'
       });
     });
-    if (!novos.length) { alert('Não consegui ler nenhuma linha. Confira o formato.'); return; }
+    if (!novos.length) { informar('Nada foi lido', 'Não consegui reconhecer nenhuma linha. Confira se as colunas estão separadas por tabulação.'); return; }
     estado.alunos = novos;
     estado.ordem = novos.map(function (a) { return a.id; });
     estado.escolhas = estado.escolhas.filter(function (e) { return aluno(e.alunoId); });
@@ -977,7 +1250,7 @@
         qtd: isNaN(qtd) || qtd < 1 ? 1 : qtd, reserva: ''
       });
     });
-    if (!novas.length) { alert('Não consegui ler nenhuma linha. Confira o formato.'); return; }
+    if (!novas.length) { informar('Nada foi lido', 'Não consegui reconhecer nenhuma linha. Confira se as colunas estão separadas por tabulação.'); return; }
     /* Linhas repetidas da mesma OM viram quantidade, como no quadro original. */
     var juntas = [];
     novas.forEach(function (v) {
@@ -1000,6 +1273,203 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /* ═════════════════ BASE DE PRÉVIAS (compartilhada) ═════════════════
+     Quando a aplicação roda como página publicada, ela tem acesso a um
+     armazenamento próprio, comum a todos que abrem o mesmo endereço: é ali
+     que ficam as prévias — cada uma um retrato completo da sessão (relação,
+     quadro de vagas, escolhas e configuração), gravado com um nome.
+
+     Fora dali — rodando pelo sistema ou pela pasta — esse armazenamento não
+     existe, e a aba explica que o caminho é exportar a sessão em arquivo. */
+
+  var banco = null, bancoResolvido = false;
+
+  function comBanco() {
+    if (bancoResolvido) return Promise.resolve(banco);
+    if (!(window.claude && typeof window.claude.use === 'function')) {
+      bancoResolvido = true;
+      return Promise.resolve(null);
+    }
+    return window.claude.use('db').then(function (d) {
+      bancoResolvido = true; banco = d; return d;
+    }, function () { bancoResolvido = true; return null; });
+  }
+
+  function retrato() {
+    return {
+      cfg: estado.cfg, alunos: estado.alunos, vagas: estado.vagas,
+      ordem: estado.ordem, escolhas: estado.escolhas
+    };
+  }
+
+  function resumoPrevia() {
+    var ativos = estado.alunos.filter(function (a) { return a.status !== 'ausente'; }).length;
+    return { concludentes: estado.alunos.length, ativos: ativos,
+             vagas: totalVagas(), escolhas: estado.escolhas.length,
+             subtitulo: estado.cfg.subtitulo };
+  }
+
+  var previas = [];
+
+  function carregarPrevias() {
+    var lista = $('#pv-lista');
+    if (!lista) return;
+    comBanco().then(function (bd) {
+      if (!bd) return desenharPrevias(null);
+      return bd.collection('previas').orderBy('atualizadoEm', 'desc').limit(100).get()
+        .then(function (snap) {
+          previas = snap.docs.map(function (d) {
+            var c = d.data() || {};
+            return { id: d.id, nome: c.nome || '(sem nome)', atualizadoEm: c.atualizadoEm || '',
+                     criadoEm: c.criadoEm || '', resumo: c.resumo || {} };
+          });
+          desenharPrevias(previas);
+        });
+    }).catch(function (e) {
+      desenharPrevias(null, (e && e.code) || 'erro');
+    });
+  }
+
+  function desenharPrevias(lista, erro) {
+    var alvo = $('#pv-lista'), explica = $('#pv-explica');
+    if (!alvo) return;
+    $('#pv-salvar').disabled = !lista;
+
+    if (!lista) {
+      $('#cont-previas').textContent = '—';
+      $('#rot-previas').textContent = erro ? 'base indisponível' : 'base não disponível aqui';
+      explica.innerHTML = erro
+        ? 'Não consegui falar com a base de prévias (' + esc(erro) + '). Tente recarregar a lista.'
+        : 'A base compartilhada existe na versão publicada da ferramenta, onde todos que abrem ' +
+          'o mesmo endereço enxergam as mesmas prévias. Rodando pelo sistema ou pela pasta, o ' +
+          'caminho é <strong>Configuração → Exportar sessão</strong>, que grava um arquivo com o mesmo conteúdo.';
+      alvo.innerHTML = '';
+      return;
+    }
+
+    $('#cont-previas').textContent = lista.length;
+    $('#rot-previas').textContent = lista.length === 1 ? 'prévia salva' : 'prévias salvas';
+    explica.innerHTML = 'Cada prévia guarda a relação de concludentes, o quadro de vagas, as ' +
+      'escolhas e a configuração daquele momento. Todos que abrem este endereço veem e usam as mesmas prévias.';
+
+    if (!lista.length) {
+      alvo.innerHTML = '<p class="nota">Nenhuma prévia salva ainda. Monte a relação e o quadro ' +
+        'como quiser e use <strong>Salvar prévia atual</strong>.</p>';
+      return;
+    }
+
+    alvo.innerHTML = lista.map(function (p) {
+      var r = p.resumo || {};
+      return '<div class="previa" data-id="' + esc(p.id) + '">' +
+        '<div class="previa-txt">' +
+          '<strong>' + esc(p.nome) + '</strong>' +
+          '<span class="previa-meta">' + esc(r.subtitulo || '') +
+            (r.concludentes ? ' · ' + r.concludentes + ' concludentes' : '') +
+            (r.vagas ? ' · ' + r.vagas + ' vagas' : '') +
+            (r.escolhas ? ' · ' + r.escolhas + ' escolhas' : ' · sem escolhas') +
+          '</span>' +
+          '<span class="previa-data">' + esc(quando(p.atualizadoEm)) + '</span>' +
+        '</div>' +
+        '<div class="previa-btns">' +
+          '<button class="btn" data-acao="abrir">Abrir</button>' +
+          '<button class="btn" data-acao="substituir">Substituir</button>' +
+          '<button class="btn btn-perigo" data-acao="excluir">Excluir</button>' +
+        '</div></div>';
+    }).join('');
+
+    $$('.previa', alvo).forEach(function (el) {
+      var p = lista.filter(function (x) { return x.id === el.dataset.id; })[0];
+      $$('button', el).forEach(function (b) {
+        b.addEventListener('click', function () { acaoPrevia(b.dataset.acao, p); });
+      });
+    });
+  }
+
+  function quando(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric',
+                                       hour: '2-digit', minute: '2-digit' });
+  }
+
+  function acaoPrevia(acao, p) {
+    if (!p) return;
+    if (acao === 'abrir') {
+      confirmar('Abrir “' + p.nome + '”?',
+        'Substitui o que está aberto agora — relação, quadro de vagas, escolhas e configuração. ' +
+        'O que você tem na tela não é gravado automaticamente.', 'Abrir')
+        .then(function (sim) {
+          if (!sim) return;
+          comBanco().then(function (bd) {
+            return bd.doc('previas/' + p.id).get();
+          }).then(function (snap) {
+            if (!snap.exists) return informar('Prévia sumiu', 'Alguém a excluiu enquanto você olhava a lista.');
+            var corpo = snap.data();
+            var s;
+            try { s = JSON.parse(corpo.estado); } catch (e) { s = null; }
+            if (!s || !s.alunos || !s.vagas) return informar('Prévia ilegível', 'O conteúdo gravado não pôde ser lido.');
+            estado = completar(s);
+            estado.inicioVez = Date.now();
+            estado.flash = null;
+            marcados = {};
+            mudou();
+            avisarPrevia('Prévia “' + p.nome + '” aberta.');
+          }).catch(function (e) { falhaPrevia(e); });
+        });
+      return;
+    }
+
+    if (acao === 'substituir') {
+      confirmar('Substituir “' + p.nome + '”?',
+        'Grava por cima o que está na tela agora. O conteúdo anterior dessa prévia se perde.',
+        'Substituir', true).then(function (sim) {
+          if (!sim) return;
+          gravarPrevia(p.id, p.nome, p.criadoEm);
+        });
+      return;
+    }
+
+    confirmar('Excluir “' + p.nome + '”?', 'A prévia sai da base para todos.', 'Excluir', true)
+      .then(function (sim) {
+        if (!sim) return;
+        comBanco().then(function (bd) { return bd.doc('previas/' + p.id).delete(); })
+          .then(function () { avisarPrevia('Prévia excluída.'); carregarPrevias(); })
+          .catch(function (e) { falhaPrevia(e); });
+      });
+  }
+
+  function gravarPrevia(id, nome, criadoEm) {
+    var agora = new Date().toISOString();
+    var corpo = {
+      nome: nome, criadoEm: criadoEm || agora, atualizadoEm: agora,
+      resumo: resumoPrevia(), estado: JSON.stringify(retrato())
+    };
+    comBanco().then(function (bd) {
+      if (!bd) return;
+      return bd.doc('previas/' + id).set(corpo);
+    }).then(function () {
+      avisarPrevia('Prévia “' + nome + '” gravada.');
+      carregarPrevias();
+    }).catch(function (e) { falhaPrevia(e); });
+  }
+
+  function falhaPrevia(e) {
+    var c = (e && e.code) || 'erro';
+    if (c === 'quota_exceeded') {
+      return informar('Base cheia', 'A base atingiu o limite de prévias. Exclua alguma antes de gravar outra.');
+    }
+    if (c === 'invalid_argument') {
+      return informar('Prévia grande demais', 'O conteúdo passou do tamanho aceito por prévia.');
+    }
+    informar('Não deu para concluir', 'A base de prévias respondeu: ' + esc(c) + '.');
+  }
+
+  function avisarPrevia(texto) {
+    var el = $('#pv-explica');
+    if (el) el.textContent = texto;
+  }
+
   /* ══════════════════════ NAVEGAÇÃO / EVENTOS ══════════════════════ */
 
   var viewAtual = 'prep';
@@ -1014,7 +1484,8 @@
   }
 
   function mostrarSub(s) {
-    ['alunos', 'vagas', 'config'].forEach(function (x) {
+    if (s === 'previas') carregarPrevias();
+    ['alunos', 'vagas', 'previas', 'config'].forEach(function (x) {
       $('#sub-' + x).classList.toggle('oculto', x !== s);
     });
     $$('.sub-abas button').forEach(function (b) { b.classList.toggle('ativo', b.dataset.sub === s); });
@@ -1049,15 +1520,32 @@
                 turma: '', foto: '', idt: '', posto: 'Cap', qm: 'Sv Int', media: null, status: 'aguardando' };
       estado.alunos.push(a); estado.ordem.push(a.id); mudou();
     });
+    $('#al-marca-todos').addEventListener('change', function () {
+      var ligar = this.checked;
+      estado.alunos.forEach(function (a) { marcados[a.id] = ligar; });
+      desenharAlunos();
+    });
+    $('#al-excluir-sel').addEventListener('click', function () {
+      var ids = idsMarcados();
+      if (!ids.length) return;
+      var nomes = ids.map(function (id) { return aluno(id).guerra; });
+      confirmar('Excluir ' + ids.length + (ids.length > 1 ? ' concludentes?' : ' concludente?'),
+        esc(nomes.join(', ')) + '.<br>Saem da relação; escolhas que já tiverem feito são desfeitas.',
+        'Excluir', true).then(function (sim) { if (sim) excluirAlunos(ids); });
+    });
     $('#al-renumerar').addEventListener('click', function () {
       estado.ordem.forEach(function (id, i) { var a = aluno(id); if (a) a.cl = i + 1; });
       mudou();
     });
     $('#al-restaurar').addEventListener('click', function () {
-      if (!confirm('Recarregar a relação original de concludentes? As escolhas já registradas serão perdidas.')) return;
-      var novo = estadoInicial();
-      estado.alunos = novo.alunos; estado.ordem = novo.ordem; estado.escolhas = [];
-      estado.flash = null; mudou();
+      confirmar('Restaurar a base original?',
+        'Volta à relação de concludentes que acompanha o programa. As escolhas já registradas serão perdidas.',
+        'Restaurar', true).then(function (sim) {
+          if (!sim) return;
+          var novo = estadoInicial();
+          estado.alunos = novo.alunos; estado.ordem = novo.ordem; estado.escolhas = [];
+          estado.flash = null; mudou();
+        });
     });
     $('#al-colar').addEventListener('click', function () {
       abrirModal('Colar a relação de concludentes',
@@ -1082,8 +1570,34 @@
     $('#vg-modelo-int').addEventListener('click', function () { trocarModelo('INT'); });
     $('#vg-modelo-qmb').addEventListener('click', function () { trocarModelo('QMB'); });
     $('#vg-limpar').addEventListener('click', function () {
-      if (!confirm('Limpar todo o quadro de vagas?')) return;
-      estado.vagas = []; estado.escolhas = []; mudou();
+      confirmar('Limpar o quadro de vagas?',
+        'Remove todas as OM e desfaz as escolhas já registradas.', 'Limpar', true)
+        .then(function (sim) {
+          if (!sim) return;
+          estado.vagas = []; estado.escolhas = []; mudou();
+        });
+    });
+
+    /* — prévias — */
+    $('#pv-recarregar').addEventListener('click', carregarPrevias);
+    $('#pv-salvar').addEventListener('click', function () {
+      dialogo({
+        titulo: 'Salvar prévia',
+        texto: 'Grava o que está na tela — relação, quadro de vagas, escolhas e configuração — ' +
+               'na base compartilhada, com o nome que você der.',
+        campo: { valor: '', dica: 'Ex.: Prévia de 12 nov, quadro parcial' },
+        ok: 'Salvar'
+      }).then(function (nome) {
+        if (nome === null) return;
+        nome = nome.trim();
+        if (!nome) return informar('Falta o nome', 'Dê um nome à prévia para conseguir reconhecê-la depois.');
+        var repetida = previas.filter(function (p) { return p.nome === nome; })[0];
+        if (repetida) {
+          return confirmar('Já existe “' + nome + '”', 'Quer gravar por cima dela?', 'Substituir', true)
+            .then(function (sim) { if (sim) gravarPrevia(repetida.id, nome, repetida.criadoEm); });
+        }
+        gravarPrevia(novoId('pv').replace(/[^A-Za-z0-9_-]/g, ''), nome, null);
+      });
     });
 
     /* — configuração — */
@@ -1102,16 +1616,20 @@
           if (!s.alunos || !s.vagas) throw new Error('arquivo fora do formato');
           estado = completar(s); mudou();
           $('#cfg-status').textContent = 'Sessão importada de ' + f.name + '.';
-        } catch (e) { alert('Não consegui ler o arquivo: ' + e.message); }
+        } catch (e) { informar('Arquivo não reconhecido', 'Não consegui ler: ' + esc(e.message)); }
       };
       leitor.readAsText(f);
       this.value = '';
     });
     $('#cfg-zerar').addEventListener('click', function () {
-      if (!confirm('Apagar todas as escolhas já registradas? Os concludentes e as vagas permanecem.')) return;
-      estado.escolhas = []; estado.flash = null; estado.inicioVez = Date.now();
-      estado.alunos.forEach(function (a) { a.status = 'aguardando'; });
-      mudou();
+      confirmar('Zerar as escolhas?',
+        'Apaga tudo o que já foi escolhido e devolve as vagas ao quadro. Os concludentes e as vagas permanecem.',
+        'Zerar', true).then(function (sim) {
+          if (!sim) return;
+          estado.escolhas = []; estado.flash = null; estado.inicioVez = Date.now();
+          estado.alunos.forEach(function (a) { a.status = 'aguardando'; });
+          mudou();
+        });
     });
 
     /* — operador — */
@@ -1122,9 +1640,11 @@
     $('#op-adiar').addEventListener('click', adiar);
     $('#op-ausente').addEventListener('click', function () {
       var a = daVez();
-      if (a && confirm('Marcar ' + a.guerra + ' como ausente? Ele sai da chamada e pode voltar pela tela de Preparação.')) {
-        alternarAusente(a.id);
-      }
+      if (!a) return;
+      confirmar('Marcar ' + a.guerra + ' como ausente?',
+        'Sai da chamada e a fila segue para o próximo. Dá para trazê-lo de volta na aba ' +
+        'Preparação, pelo botão ○ da linha dele.', 'Marcar ausente')
+        .then(function (sim) { if (sim) alternarAusente(a.id); });
     });
     $('#op-busca').addEventListener('input', function () { busca = this.value; desenharOperador(); });
     $('#op-busca').addEventListener('keydown', function (ev) {
@@ -1137,17 +1657,30 @@
     $$('[data-res]').forEach(function (b) {
       b.addEventListener('click', function () { abaResultado = b.dataset.res; desenharResultado(); });
     });
-    $('#res-imprimir').addEventListener('click', function () { window.print(); });
+    $('#res-pdf').addEventListener('click', gerarPdf);
+    $('#res-imprimir').addEventListener('click', function () {
+      /* Onde a impressão do navegador não está liberada, a chamada é ignorada
+         em silêncio — então o PDF entra no lugar dela. */
+      try {
+        window.print();
+      } catch (e) {
+        gerarPdf();
+      }
+    });
     $('#res-csv').addEventListener('click', exportarCsv);
     $('#res-xls').addEventListener('click', exportarXls);
 
     /* — modal — */
-    $('#modal-cancelar').addEventListener('click', function () { $('#modal').classList.add('oculto'); });
+    /* Cancelar e Esc saem pelo mesmo caminho do diálogo, para que a promessa
+       que está esperando a resposta seja resolvida em vez de ficar pendurada. */
 
     /* — teclado — */
     document.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
-        if (!$('#modal').classList.contains('oculto')) { $('#modal').classList.add('oculto'); return; }
+        if (!$('#modal').classList.contains('oculto')) {
+          if (fecharDialogo) fecharDialogo();
+          return;
+        }
         if (!$('#telao').classList.contains('oculto')) { fecharTelao(); return; }
       }
       if (ehTelao) return;
@@ -1170,10 +1703,15 @@
   }
 
   function trocarModelo(qm) {
-    if (estado.escolhas.length && !confirm('Trocar o quadro de vagas apaga as escolhas já registradas. Continuar?')) return;
-    estado.vagas = vagasDoModelo(qm);
-    estado.escolhas = [];
-    mudou();
+    var trocar = function () {
+      estado.vagas = vagasDoModelo(qm);
+      estado.escolhas = [];
+      mudou();
+    };
+    if (!estado.escolhas.length) return trocar();
+    confirmar('Trocar o quadro de vagas?',
+      'Carregar o modelo ' + qm + ' apaga as escolhas já registradas.', 'Trocar', true)
+      .then(function (sim) { if (sim) trocar(); });
   }
 
   /* ══════════════════════ PARTIDA ══════════════════════ */
