@@ -321,6 +321,13 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 @keyframes growH{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .slide:not(.active) .hfill{animation:none}
 .hrow .num{font-size:18px;font-weight:600;color:var(--ink)}
+.hbars.wide .hrow{grid-template-columns:330px 1fr 84px}
+table.tight{font-size:16px}
+table.tight td{padding:14px}
+table.tight th{padding:0 14px 12px}
+.note{font-size:15px;color:var(--ink-3);line-height:1.5;margin-top:18px}
+.figframe{background:#f7f7f5;border-radius:16px;padding:18px;border:1px solid var(--line)}
+.figframe img{width:100%;display:block;border-radius:8px}
 
 /* ============================================================
    6. ESPAÇOS PARA FOTO
@@ -444,7 +451,7 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 
 <div id="stage">
 <style>
-  /* texto que você deve substituir aparece com sublinhado pontilhado */
+  /* texto que você ainda pode querer ajustar aparece com sublinhado pontilhado */
   .ph-text{text-decoration:underline dotted rgba(57,135,229,.55);text-decoration-thickness:1px;text-underline-offset:5px}
 </style>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ico-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-6.5 6.5L7 15l-4 4"/></symbol></svg>
@@ -452,219 +459,207 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 <!-- ============================ 01 · CAPA ============================ -->
 <section class="slide has-hero" data-transition="fade" data-section="Abertura" data-title="Capa">
   <figure class="photo fill hero-photo" data-photo="capa">
-    <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de abertura (tela cheia)</b><span>arraste a imagem aqui</span></div>
+    <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de abertura (tela cheia)</b><span>salto, dobragem ou depósito do B DOMPSA</span></div>
   </figure>
-  <p class="eyebrow" data-anim><span class="ph-text">Nome do Congresso · Edição 2026</span></p>
-  <h1 data-anim>Digitalização<br>da gestão<span style="color:var(--accent)">.</span></h1>
-  <p class="lead wide" data-anim><span class="ph-text">Subtítulo do TCC: contribuições da tecnologia da informação para a eficiência dos processos administrativos.</span></p>
-  <hr class="rule" style="max-width:420px" data-anim>
+  <p class="eyebrow" data-anim><span class="ph-text">Nome do Congresso · 2026</span></p>
+  <h1 style="font-size:66px;max-width:20ch" data-anim>IoT, <span class="serif" style="font-style:italic">Big Data</span> e inteligência artificial na gestão do material aeroterrestre</h1>
+  <p class="lead wide" data-anim>Um estudo aplicado ao Batalhão de Dobragem, Manutenção de Paraquedas e Suprimento pelo Ar (B DOMPSA).</p>
+  <hr class="rule" style="max-width:460px" data-anim>
   <p class="small" data-anim>
-    <strong class="ph-text">Posto/Grad. Nome Completo</strong><br>
-    <span class="ph-text">Escola de Aperfeiçoamento de Oficiais — Intendência</span> · <span class="ph-text">Rio de Janeiro, 2026</span>
+    <strong>Cap Jefferson Daniel Ferreira Martins</strong><br>
+    Orientador: Maj Thiago Rubens Braga Maciel<br>
+    Escola de Aperfeiçoamento de Oficiais — Curso de Logística · Rio de Janeiro, 2026
   </p>
-  <aside class="notes">Abertura: dizer nome, unidade e, em uma frase, por que este tema importa AGORA. Não ler o slide. Combinar tempo total: 40 min (35 de fala + 5 de perguntas).</aside>
+  <aside class="notes">Abertura em 40 segundos: quem sou, onde sirvo e por que este tema. Frase de entrada sugerida: "um paraquedas mal controlado não é um problema administrativo — é um problema de segurança de quem salta". Combinar o tempo: 35 min de exposição, 5 de perguntas.</aside>
 </section>
 
 <!-- ============================ 02 · ROTEIRO ============================ -->
 <section class="slide" data-transition="rise" data-section="Abertura" data-title="Roteiro">
   <div class="head" data-anim><p class="eyebrow">Roteiro</p><h2>O caminho da apresentação</h2></div>
   <div class="cols c-4 gap-s">
-    <div class="card" data-anim><span class="n">01</span><h3>Introdução</h3><p>Contexto, problema, questões e objetivos da pesquisa.</p></div>
-    <div class="card" data-anim><span class="n">02</span><h3>Referencial</h3><p>Base teórica, estado da arte e a lacuna identificada.</p></div>
-    <div class="card" data-anim><span class="n">03</span><h3>Metodologia</h3><p>Desenho da pesquisa, instrumentos e amostra.</p></div>
-    <div class="card accent" data-anim><span class="n">04</span><h3>Resultados</h3><p>Achados, discussão, conclusões e recomendações.</p></div>
+    <div class="card" data-anim><span class="n">01</span><h3>Introdução</h3><p>O B DOMPSA, o material Classe II e o problema de pesquisa.</p></div>
+    <div class="card" data-anim><span class="n">02</span><h3>Referencial</h3><p>Da Indústria 4.0 à Logística 4.0: IoT, <em>Big Data</em> e IA na doutrina.</p></div>
+    <div class="card" data-anim><span class="n">03</span><h3>Metodologia</h3><p>29 respostas ao formulário e 3 entrevistas com especialistas.</p></div>
+    <div class="card accent" data-anim><span class="n">04</span><h3>Resultados</h3><p>Diagnóstico, potencial percebido, barreiras e a proposta de POP.</p></div>
   </div>
-  <p class="small" style="margin-top:34px" data-anim>Duração prevista: 35 minutos de exposição · 5 minutos para perguntas.</p>
-  <aside class="notes">Anunciar o percurso em 30 segundos. Sinalizar que os dados aparecem a partir do bloco 04 — isso segura a atenção.</aside>
+  <p class="note" data-anim>35 minutos de exposição · 5 minutos para questionamentos.</p>
+  <aside class="notes">Anunciar o percurso em 30 segundos e avisar que os dados da pesquisa aparecem no bloco 04 — isso segura a atenção até lá.</aside>
 </section>
 
 <!-- ============================ 03 · DIVISOR ============================ -->
 <section class="slide" data-transition="cover" data-section="Introdução" data-title="Divisor · Introdução">
   <p class="eyebrow" data-anim>Bloco 01</p>
   <h1 class="serif" style="font-size:110px" data-anim>Introdução</h1>
-  <p class="lead wide" data-anim>De onde parte a pesquisa, o que exatamente ela pergunta e por que a resposta importa.</p>
-  <aside class="notes">Divisor: pausa de respiro. Uma frase só, e seguir.</aside>
+  <p class="lead wide" data-anim>De onde parte a pesquisa, o que ela pergunta e por que a resposta importa para a atividade aeroterrestre.</p>
+  <aside class="notes">Divisor: pausa curta, uma frase, seguir.</aside>
 </section>
 
 <!-- ============================ 04 · CONTEXTO ============================ -->
-<section class="slide" data-transition="slide" data-section="Introdução" data-title="Contextualização">
+<section class="slide" data-transition="slide" data-section="Introdução" data-title="Contexto · Logística 4.0">
   <div class="cols c-2a">
     <div>
       <p class="eyebrow" data-anim>Contextualização</p>
-      <h2 data-anim>A gestão mudou de suporte</h2>
-      <p data-anim>A transformação digital deixou de ser um projeto de tecnologia para se tornar uma <strong>questão de gestão</strong>: muda o fluxo do processo, o perfil de quem executa e a forma como a decisão é tomada.</p>
-      <p data-anim><span class="ph-text">Descreva aqui, em dois ou três períodos, o cenário concreto que você observou: qual organização, quais processos, que volume, desde quando.</span></p>
-      <p class="small" data-anim><span class="ph-text">(Fonte: citar norma, relatório ou autor que sustenta o contexto.)</span></p>
+      <h2 data-anim>A Quarta Revolução Industrial chegou à logística</h2>
+      <p data-anim>A Indústria 4.0 se caracteriza pela automação, pela digitalização e pela integração entre sistemas físicos e digitais. Aplicada à cadeia de suprimentos, deu origem à <strong>Logística 4.0</strong> — um paradigma que incorpora tecnologias avançadas para aprimorar a decisão, reduzir custos e otimizar processos.</p>
+      <p data-anim>Nas Forças Armadas, a Doutrina Militar Terrestre prevê uma logística compatível com operações de amplo espectro, com ênfase na incorporação de tecnologias que ampliem eficiência e integração.</p>
+      <p class="note" data-anim>PINTO (2022) · ROSÁRIO (2023) · COTER, EB70-MC-10.238 (2022)</p>
     </div>
     <figure class="photo tall" data-photo="contexto">
-      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto do contexto</b><span>ambiente, seção, equipe ou sistema</span></div>
+      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Imagem do contexto</b><span>pode ser a figura "A Logística 4.0" do TCC</span></div>
     </figure>
   </div>
-  <aside class="notes">Ancorar a plateia no mundo real antes de falar de teoria. Uma imagem concreta vale mais que a definição.</aside>
+  <aside class="notes">Não gastar mais de 1 minuto. É pano de fundo — o assunto de verdade começa no próximo slide.</aside>
 </section>
 
-<!-- ============================ 05 · PROBLEMA ============================ -->
+<!-- ============================ 05 · O B DOMPSA ============================ -->
+<section class="slide" data-transition="swipe" data-section="Introdução" data-title="O B DOMPSA e o Mat Aet">
+  <div class="cols c-2b">
+    <figure class="photo tall" data-photo="dompsa">
+      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto do B DOMPSA</b><span>Cia Dob, depósito ou suprimento pelo ar</span></div>
+    </figure>
+    <div>
+      <p class="eyebrow" data-anim>Objeto do estudo</p>
+      <h2 data-anim>O material aeroterrestre é Classe II — e é crítico</h2>
+      <p data-anim>O B DOMPSA é o principal condutor da Força Terrestre no suprimento pelo ar. Cabe a ele prover o material aeroterrestre pelas funções logísticas de <strong>suprimento, manutenção e transporte</strong>.</p>
+      <ul class="list plain" style="margin-top:8px">
+        <li data-anim><span class="k"></span><span>Alta variedade e volume de itens, o que dificulta o controle individualizado.</span></li>
+        <li data-anim><span class="k"></span><span>Vida útil, número de saltos e condições de armazenagem afetam diretamente a <strong>segurança do saltador</strong>.</span></li>
+        <li data-anim><span class="k"></span><span>Controle regulado por normas técnicas específicas, ainda apoiado em livros e fichas.</span></li>
+      </ul>
+      <p class="note" data-anim>EB70-MC-10.366 (2021) · Manual Técnico de Gestão do Material Aeroterrestre (2016)</p>
+    </div>
+  </div>
+  <aside class="notes">Aqui é onde a plateia civil ou de outra arma entende o objeto. Se houver tempo, contar em uma frase o que é a dobragem e por que 100 saltos importam.</aside>
+</section>
+
+<!-- ============================ 06 · PROBLEMA ============================ -->
 <section class="slide" data-transition="zoom" data-section="Introdução" data-title="Problema de pesquisa">
   <p class="eyebrow" data-anim>O problema</p>
-  <blockquote class="quote" data-anim>
-    <span class="ph-text">Enuncie aqui o problema em uma única frase — o desconforto real que a pesquisa ataca.</span>
+  <blockquote class="quote" style="max-width:38ch;font-size:38px" data-anim>
+    De que maneira a aplicação de tecnologias associadas à Logística 4.0 — IoT, <em>Big Data</em> e Inteligência Artificial — pode contribuir para o aprimoramento da gestão do material aeroterrestre (Classe II) e do controle de estoques no B DOMPSA?
     <cite>Problema de pesquisa</cite>
   </blockquote>
-  <div class="cols c-3 gap-s" style="margin-top:52px">
-    <div class="card" data-anim><span class="n">SINTOMA</span><p class="ph-text">Evidência 1 do problema (dado, prazo, retrabalho, custo).</p></div>
-    <div class="card" data-anim><span class="n">SINTOMA</span><p class="ph-text">Evidência 2 do problema.</p></div>
-    <div class="card" data-anim><span class="n">SINTOMA</span><p class="ph-text">Evidência 3 do problema.</p></div>
+  <div class="cols c-3 gap-s" style="margin-top:44px">
+    <div class="card" data-anim><span class="n">EVIDÊNCIA</span><p>Controle predominantemente manual: livros, fichas e planilhas paralelas.</p></div>
+    <div class="card" data-anim><span class="n">EVIDÊNCIA</span><p>Desequilíbrios de estoque — excedentes desnecessários e faltas críticas.</p></div>
+    <div class="card" data-anim><span class="n">EVIDÊNCIA</span><p>Escassez de estudos aplicados sobre Logística 4.0 no contexto do Mat Aet.</p></div>
   </div>
-  <aside class="notes">Slide-chave. Falar devagar. Se a banca só levar uma coisa desta apresentação, é esta frase.</aside>
+  <aside class="notes">Slide-chave. Ler a pergunta devagar, olhando para a banca. Se levarem uma única coisa da apresentação, é esta frase.</aside>
 </section>
 
-<!-- ============================ 06 · QUESTÕES ============================ -->
-<section class="slide" data-transition="swipe" data-section="Introdução" data-title="Questões de pesquisa">
-  <div class="head" data-anim><p class="eyebrow">Questões de pesquisa</p><h2>O que precisa ser respondido</h2></div>
-  <div class="card accent" style="margin-bottom:28px" data-anim>
-    <span class="n">QUESTÃO PRINCIPAL</span>
-    <p style="font-size:26px;line-height:1.4;color:var(--ink)" class="ph-text">De que forma a adoção de soluções digitais afeta a eficiência dos processos de gestão na organização estudada?</p>
-  </div>
+<!-- ============================ 07 · QUESTÕES ============================ -->
+<section class="slide" data-transition="tilt" data-section="Introdução" data-title="Questões de estudo">
+  <div class="head" data-anim><p class="eyebrow">Questões de estudo</p><h2>Quatro perguntas que orientaram o trabalho</h2></div>
   <ul class="list">
-    <li data-anim><span class="k">Q1</span><span class="ph-text">Questão norteadora 1.</span></li>
-    <li data-anim><span class="k">Q2</span><span class="ph-text">Questão norteadora 2.</span></li>
-    <li data-anim><span class="k">Q3</span><span class="ph-text">Questão norteadora 3.</span></li>
+    <li data-anim><span class="k">a</span><span>Como se estrutura, hoje, a gestão do Mat Aet no B DOMPSA, à luz dos manuais e normas técnicas em vigor?</span></li>
+    <li data-anim><span class="k">b</span><span>Quais são as principais limitações e desafios no controle e na distribuição do material aeroterrestre?</span></li>
+    <li data-anim><span class="k">c</span><span>De que maneira IoT, <em>Big Data</em> e IA têm sido aplicados à logística e à gestão de suprimentos em contextos civis e militares?</span></li>
+    <li data-anim><span class="k">d</span><span>Que medidas podem ser propostas para modernizar essa gestão, em consonância com a Logística 4.0 e a Doutrina Militar Terrestre?</span></li>
   </ul>
-  <aside class="notes">As questões voltam no bloco de conclusão — avisar isso agora cria expectativa e fecha o arco.</aside>
+  <p class="note" data-anim>As quatro voltam respondidas no bloco de conclusão.</p>
+  <aside class="notes">Avisar que elas voltam no fim — cria expectativa e fecha o arco da apresentação.</aside>
 </section>
 
-<!-- ============================ 07 · OBJETIVOS ============================ -->
-<section class="slide" data-transition="tilt" data-section="Introdução" data-title="Objetivos">
+<!-- ============================ 08 · OBJETIVOS ============================ -->
+<section class="slide" data-transition="flip" data-section="Introdução" data-title="Objetivos">
   <div class="cols c-2">
     <div>
       <p class="eyebrow" data-anim>Objetivo geral</p>
-      <p style="font-size:30px;line-height:1.4;color:var(--ink)" data-anim class="ph-text">Analisar a contribuição da digitalização para a eficiência dos processos de gestão na organização estudada.</p>
-      <hr class="rule">
-      <p class="small" data-anim>O objetivo geral responde à questão principal; os específicos, às norteadoras.</p>
+      <p style="font-size:27px;line-height:1.42;color:var(--ink)" data-anim>Analisar de que forma IoT, <em>Big Data</em> e IA podem ser aplicados à gestão do material aeroterrestre no B DOMPSA, com vistas ao aprimoramento do <strong>controle de estoques</strong>, da <strong>eficiência operacional</strong> e da <strong>disponibilidade</strong> dos recursos logísticos.</p>
     </div>
     <div>
       <p class="eyebrow" data-anim>Objetivos específicos</p>
-      <ul class="list">
-        <li data-anim><span class="k">a</span><span class="ph-text">Descrever o processo atual e seus gargalos.</span></li>
-        <li data-anim><span class="k">b</span><span class="ph-text">Identificar as soluções digitais em uso.</span></li>
-        <li data-anim><span class="k">c</span><span class="ph-text">Comparar desempenho antes e depois da adoção.</span></li>
-        <li data-anim><span class="k">d</span><span class="ph-text">Propor recomendações aplicáveis.</span></li>
+      <ul class="list" style="margin-top:6px">
+        <li data-anim><span class="k">a</span><span>Identificar o modelo atual de gestão do Mat Aet e os desafios de supervisão, controle e distribuição.</span></li>
+        <li data-anim><span class="k">b</span><span>Analisar experiências nacionais e internacionais que adotam tecnologias da Logística 4.0.</span></li>
+        <li data-anim><span class="k">c</span><span>Avaliar a viabilidade e o potencial de aplicação dessas tecnologias no contexto do B DOMPSA.</span></li>
       </ul>
     </div>
   </div>
-  <aside class="notes">Mostrar o alinhamento: cada objetivo específico nasce de uma questão e terá um resultado correspondente adiante.</aside>
+  <aside class="notes">Mostrar o alinhamento: cada objetivo específico tem um bloco de resultados correspondente mais à frente.</aside>
 </section>
 
-<!-- ============================ 08 · JUSTIFICATIVA ============================ -->
-<section class="slide" data-transition="flip" data-section="Introdução" data-title="Justificativa">
+<!-- ============================ 09 · JUSTIFICATIVA ============================ -->
+<section class="slide" data-transition="soft" data-section="Introdução" data-title="Justificativa">
   <div class="head" data-anim><p class="eyebrow">Justificativa</p><h2>Por que esta pesquisa importa</h2></div>
   <div class="cols c-3 gap-s">
-    <div class="card" data-anim><span class="n">RELEVÂNCIA ACADÊMICA</span><p class="ph-text">O que o trabalho acrescenta à literatura sobre o tema.</p></div>
-    <div class="card" data-anim><span class="n">RELEVÂNCIA INSTITUCIONAL</span><p class="ph-text">Que decisão ou norma o resultado pode apoiar.</p></div>
-    <div class="card" data-anim><span class="n">RELEVÂNCIA PRÁTICA</span><p class="ph-text">Quem, no dia a dia, passa a trabalhar melhor com isso.</p></div>
+    <div class="card" data-anim><span class="n">PRÁTICA</span><p>Tornar controle, manutenção e distribuição do Mat Aet mais eficientes e confiáveis — com reflexo direto na <strong>segurança das operações aeroterrestres</strong>.</p></div>
+    <div class="card" data-anim><span class="n">TEÓRICA</span><p>Contribuir com o debate ainda incipiente sobre tecnologias da Indústria 4.0 aplicadas à Logística Militar, à luz da sustentação preditiva.</p></div>
+    <div class="card accent" data-anim><span class="n">INSTITUCIONAL</span><p>Aderência ao Objetivo Estratégico do Exército nº 24 — <em>"Aperfeiçoar o Sistema Logístico Militar Terrestre"</em>.</p></div>
   </div>
-  <aside class="notes">Três frentes, três frases. Não alongar — a justificativa convence pela objetividade.</aside>
-</section>
-
-<!-- ============================ 09 · DELIMITAÇÃO ============================ -->
-<section class="slide" data-transition="soft" data-section="Introdução" data-title="Delimitação">
-  <div class="head" data-anim><p class="eyebrow">Delimitação do estudo</p><h2>O que está — e o que não está — no escopo</h2></div>
-  <div class="cols c-2 gap-s">
-    <div class="card" data-anim>
-      <span class="n" style="color:var(--s3)">DENTRO DO ESCOPO</span>
-      <ul class="list check" style="margin-top:6px">
-        <li><span class="k">✓</span><span class="ph-text">Recorte temporal do estudo.</span></li>
-        <li><span class="k">✓</span><span class="ph-text">Recorte organizacional / unidades analisadas.</span></li>
-        <li><span class="k">✓</span><span class="ph-text">Processos observados.</span></li>
-      </ul>
-    </div>
-    <div class="card" data-anim>
-      <span class="n" style="color:var(--ink-3)">FORA DO ESCOPO</span>
-      <ul class="list plain" style="margin-top:6px">
-        <li><span class="k" style="background:var(--ink-3)"></span><span class="ph-text">O que a pesquisa deliberadamente não trata.</span></li>
-        <li><span class="k" style="background:var(--ink-3)"></span><span class="ph-text">Aspectos técnicos não avaliados.</span></li>
-        <li><span class="k" style="background:var(--ink-3)"></span><span class="ph-text">Generalizações não pretendidas.</span></li>
-      </ul>
-    </div>
-  </div>
-  <aside class="notes">Delimitar cedo desarma metade das perguntas difíceis da banca. Dizer com segurança, sem tom defensivo.</aside>
+  <p class="note" data-anim>LUNDY (FM 4-0) · PAIVA (2023), Diretriz do Comandante do Exército, p. 32</p>
+  <aside class="notes">O OEE nº 24 é o argumento mais forte diante de uma banca militar. Guardá-lo para o final da fala deste slide.</aside>
 </section>
 
 <!-- ============================ 10 · DIVISOR ============================ -->
 <section class="slide" data-transition="cover" data-section="Referencial" data-title="Divisor · Referencial">
   <p class="eyebrow" data-anim>Bloco 02</p>
   <h1 class="serif" style="font-size:110px" data-anim>Referencial teórico</h1>
-  <p class="lead wide" data-anim>Sobre quais ombros esta pesquisa se apoia — e onde a literatura ainda não chegou.</p>
-  <aside class="notes">Transição: "estabelecido o problema, vejamos o que já se sabe."</aside>
+  <p class="lead wide" data-anim>Sobre quais ombros a pesquisa se apoia — e onde a literatura ainda não chegou.</p>
+  <aside class="notes">Transição: "estabelecido o problema, vejamos o que já se sabe".</aside>
 </section>
 
-<!-- ============================ 11 · LINHA DO TEMPO ============================ -->
-<section class="slide" data-transition="slide" data-section="Referencial" data-title="Marcos da digitalização">
-  <div class="head" data-anim><p class="eyebrow">Evolução do campo</p><h2>Marcos da digitalização da gestão</h2></div>
+<!-- ============================ 11 · DA 4.0 À LOG 4.0 ============================ -->
+<section class="slide" data-transition="slide" data-section="Referencial" data-title="Da Indústria 4.0 à Logística 4.0">
+  <div class="head" data-anim><p class="eyebrow">Evolução do campo</p><h2>Da Indústria 4.0 à Logística 4.0</h2></div>
   <div class="timeline">
-    <div class="tl" data-anim><span class="y ph-text">FASE 1</span><h3 class="ph-text">Informatização</h3><p class="ph-text">Substituição do papel; o processo permanece igual.</p></div>
-    <div class="tl" data-anim><span class="y ph-text">FASE 2</span><h3 class="ph-text">Integração</h3><p class="ph-text">Sistemas conversam entre si; dados deixam de ser ilhas.</p></div>
-    <div class="tl" data-anim><span class="y ph-text">FASE 3</span><h3 class="ph-text">Automação</h3><p class="ph-text">Regras de negócio executadas pelo sistema.</p></div>
-    <div class="tl" data-anim><span class="y ph-text">FASE 4</span><h3 class="ph-text">Decisão orientada a dados</h3><p class="ph-text">Indicadores em tempo real orientam a escolha.</p></div>
-    <div class="tl" data-anim><span class="y ph-text">FASE 5</span><h3 class="ph-text">Transformação</h3><p class="ph-text">O próprio processo é redesenhado.</p></div>
+    <div class="tl" data-anim><span class="y">ORIGEM</span><h3>Logística militar</h3><p>Nasce no planejamento e na condução das operações em campanha.</p></div>
+    <div class="tl" data-anim><span class="y">DIFUSÃO</span><h3>Meio empresarial</h3><p>Consolida-se como pilar da competitividade organizacional.</p></div>
+    <div class="tl" data-anim><span class="y">INDÚSTRIA 4.0</span><h3>Sistemas ciberfísicos</h3><p>Conectividade, automação e análise de dados em tempo real.</p></div>
+    <div class="tl" data-anim><span class="y">LOGÍSTICA 4.0</span><h3>Ciclo conectado</h3><p>Ganhos de eficiência e velocidade; decisão orientada por dados.</p></div>
+    <div class="tl" data-anim><span class="y">HORIZONTE</span><h3>Sustentação preditiva</h3><p>Sistemas que antecipam demandas e ajustam o apoio de forma proativa.</p></div>
   </div>
-  <p class="small" style="margin-top:44px" data-anim>Adapte os rótulos ao modelo teórico que você adotou e cite o autor da classificação.</p>
-  <aside class="notes">Mostrar em que fase está a organização estudada — isso conecta a teoria ao caso.</aside>
+  <p class="note" data-anim>SILVA e KAWAKAME · RADIVOJEVIĆ e MILOSAVLJEVIĆ (2019) · LUNDY (FM 4-0)</p>
+  <aside class="notes">Fechar dizendo em que ponto dessa linha está o B DOMPSA hoje — entre o registro manual e a informatização parcial.</aside>
 </section>
 
-<!-- ============================ 12 · CONCEITOS ============================ -->
-<section class="slide" data-transition="rise" data-section="Referencial" data-title="Conceitos-chave">
-  <div class="head" data-anim><p class="eyebrow">Conceitos-chave</p><h2>O vocabulário do trabalho</h2></div>
-  <div class="cols c-4 gap-s">
-    <div class="card" data-anim><span class="n">01</span><h3 class="ph-text">Conceito A</h3><p class="ph-text">Definição em uma frase, com o autor entre parênteses.</p></div>
-    <div class="card" data-anim><span class="n">02</span><h3 class="ph-text">Conceito B</h3><p class="ph-text">Definição em uma frase.</p></div>
-    <div class="card" data-anim><span class="n">03</span><h3 class="ph-text">Conceito C</h3><p class="ph-text">Definição em uma frase.</p></div>
-    <div class="card" data-anim><span class="n">04</span><h3 class="ph-text">Conceito D</h3><p class="ph-text">Definição em uma frase.</p></div>
-  </div>
-  <aside class="notes">Definir só o que será usado depois. Conceito que não reaparece nos resultados sai daqui.</aside>
-</section>
-
-<!-- ============================ 13 · MODELO TEÓRICO ============================ -->
-<section class="slide" data-transition="iris" data-section="Referencial" data-title="Modelo de análise">
-  <div class="head" data-anim><p class="eyebrow">Modelo de análise</p><h2>Como os conceitos se articulam</h2></div>
+<!-- ============================ 12 · OS TRÊS PILARES ============================ -->
+<section class="slide" data-transition="rise" data-section="Referencial" data-title="IoT, Big Data e IA">
+  <div class="head" data-anim><p class="eyebrow">Pilares tecnológicos</p><h2>As três tecnologias analisadas</h2></div>
   <div class="cols c-3 gap-s" style="align-items:stretch">
-    <div class="card" data-anim><span class="n">PILAR 1</span><h3 class="ph-text">Tecnologia</h3><p class="ph-text">Ferramentas, sistemas e infraestrutura disponíveis.</p></div>
-    <div class="card" data-anim><span class="n">PILAR 2</span><h3 class="ph-text">Processo</h3><p class="ph-text">Fluxo de trabalho, normas e controles.</p></div>
-    <div class="card" data-anim><span class="n">PILAR 3</span><h3 class="ph-text">Pessoas</h3><p class="ph-text">Competência digital, cultura e liderança.</p></div>
+    <div class="card" data-anim>
+      <span class="n">INTERNET DAS COISAS</span><h3>O material informa seu estado</h3>
+      <p>Conexão entre objetos, sensores e sistemas. Aplicada ao rastreamento de itens, ao monitoramento de condições de uso e ao acompanhamento do ciclo de vida dos ativos.</p>
+    </div>
+    <div class="card" data-anim>
+      <span class="n">BIG DATA</span><h3>Dado disperso vira informação</h3>
+      <p>Reúne, processa e analisa grandes volumes de dados. Permite identificar padrões, apoiar previsões e melhorar o controle de estoques.</p>
+    </div>
+    <div class="card" data-anim>
+      <span class="n">INTELIGÊNCIA ARTIFICIAL</span><h3>A decisão deixa de ser empírica</h3>
+      <p>Reconhece padrões e apoia análises preditivas: previsão de demanda, identificação de gargalos e priorização de manutenção e reposição.</p>
+    </div>
   </div>
-  <div class="card accent" style="margin-top:22px;text-align:center" data-anim>
-    <span class="n">VARIÁVEL DEPENDENTE</span>
-    <p style="font-size:26px;color:var(--ink)" class="ph-text">Eficiência dos processos de gestão</p>
-  </div>
-  <aside class="notes">Este é o esqueleto da análise: cada pilar vira uma categoria na coleta e uma seção nos resultados.</aside>
+  <p class="note" data-anim>ÖZTEMEL e GURSEV (2020) · LUO (2026) · SINGH (2026) · SANTOS et al. (2024)</p>
+  <aside class="notes">Uma frase por tecnologia. Amarrar cada uma a um problema concreto do batalhão — IoT ao paraquedas etiquetado, Big Data ao histórico de saltos, IA à reposição.</aside>
 </section>
 
-<!-- ============================ 14 · TRABALHOS CORRELATOS ============================ -->
-<section class="slide" data-transition="fade" data-section="Referencial" data-title="Trabalhos correlatos">
-  <div class="head" data-anim><p class="eyebrow">Estado da arte</p><h2>O que já foi pesquisado</h2></div>
+<!-- ============================ 13 · DOUTRINA ============================ -->
+<section class="slide" data-transition="fade" data-section="Referencial" data-title="Base doutrinária">
+  <div class="head" data-anim><p class="eyebrow">Base doutrinária e normativa</p><h2>O que a norma já determina</h2></div>
   <table data-anim>
-    <thead><tr><th>Autor / Ano</th><th>Foco do estudo</th><th>Principal contribuição</th><th>Limite</th></tr></thead>
+    <thead><tr><th>Documento</th><th>O que estabelece</th><th>Relação com a pesquisa</th></tr></thead>
     <tbody>
-      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
-      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
-      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
-      <tr><td class="ph-text">AUTOR (ANO)</td><td class="ph-text">Objeto estudado.</td><td class="ph-text">O que trouxe de novo.</td><td class="ph-text">O que não alcançou.</td></tr>
+      <tr><td>EB70-MC-10.238<br><span class="small">Logística Militar Terrestre</span></td><td>Logística compatível com operações de amplo espectro, com incorporação de tecnologia.</td><td>Fundamenta a modernização como exigência doutrinária, não como conveniência.</td></tr>
+      <tr><td>EB70-MC-10.366<br><span class="small">Suprimento pelo ar</span></td><td>Atribui ao B DOMPSA o provimento do Mat Aet por suprimento, manutenção e transporte.</td><td>Delimita o objeto e as funções logísticas analisadas.</td></tr>
+      <tr><td>Manual Técnico<br><span class="small">Gestão do Mat Aet (2016)</span></td><td>Procedimentos de inspeção, fichamento e controle administrativo.</td><td>Assegura conformidade, mas sem atualização em tempo real.</td></tr>
+      <tr><td>Diretriz do Cmt Ex<br><span class="small">OEE nº 24 (2023)</span></td><td>Aperfeiçoar o Sistema Logístico Militar Terrestre.</td><td>Alinha a proposta ao esforço institucional de transformação.</td></tr>
     </tbody>
   </table>
-  <aside class="notes">Não ler a tabela. Comentar apenas a coluna "Limite" — é ela que prepara o próximo slide.</aside>
+  <aside class="notes">Não ler a tabela. Comentar só a terceira coluna — é ela que sustenta a legitimidade da proposta.</aside>
 </section>
 
-<!-- ============================ 15 · LACUNA ============================ -->
+<!-- ============================ 14 · LACUNA ============================ -->
 <section class="slide" data-transition="zoom" data-section="Referencial" data-title="Lacuna de pesquisa">
   <p class="eyebrow" data-anim>Lacuna de pesquisa</p>
   <blockquote class="quote" data-anim>
-    <span class="ph-text">Nenhum dos trabalhos anteriores examinou … no contexto de …</span>
+    Apesar do avanço da literatura sobre Logística 4.0 e da existência de manuais que normatizam o Mat Aet, são escassos os estudos aplicados que examinam como IoT, <em>Big Data</em> e IA podem contribuir para o controle, a rastreabilidade e o apoio à decisão no contexto do B DOMPSA.
     <cite>É exatamente aqui que este trabalho se insere</cite>
   </blockquote>
-  <aside class="notes">Momento de virada do bloco teórico. Frase curta, pausa, e seguir para a metodologia.</aside>
+  <aside class="notes">Momento de virada do bloco teórico. Frase curta, pausa, seguir para a metodologia.</aside>
 </section>
 
-<!-- ============================ 16 · DIVISOR ============================ -->
+<!-- ============================ 15 · DIVISOR ============================ -->
 <section class="slide" data-transition="cover" data-section="Metodologia" data-title="Divisor · Metodologia">
   <p class="eyebrow" data-anim>Bloco 03</p>
   <h1 class="serif" style="font-size:110px" data-anim>Metodologia</h1>
@@ -672,189 +667,305 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
   <aside class="notes">Aqui a banca presta mais atenção. Ritmo mais lento, precisão nos termos.</aside>
 </section>
 
-<!-- ============================ 17 · CLASSIFICAÇÃO ============================ -->
-<section class="slide" data-transition="tilt" data-section="Metodologia" data-title="Classificação da pesquisa">
-  <div class="head" data-anim><p class="eyebrow">Classificação</p><h2>Natureza e abordagem</h2></div>
+<!-- ============================ 16 · DELINEAMENTO ============================ -->
+<section class="slide" data-transition="tilt" data-section="Metodologia" data-title="Delineamento da pesquisa">
+  <div class="head" data-anim><p class="eyebrow">Delineamento</p><h2>Classificação da pesquisa</h2></div>
   <div class="cols c-4 gap-s">
     <div class="stack" data-anim><p class="small">Quanto à natureza</p><div class="pills"><span class="pill on">Aplicada</span><span class="pill">Básica</span></div></div>
-    <div class="stack" data-anim><p class="small">Quanto à abordagem</p><div class="pills"><span class="pill on">Qualitativa</span><span class="pill">Quantitativa</span><span class="pill">Mista</span></div></div>
-    <div class="stack" data-anim><p class="small">Quanto aos objetivos</p><div class="pills"><span class="pill">Exploratória</span><span class="pill on">Descritiva</span><span class="pill">Explicativa</span></div></div>
-    <div class="stack" data-anim><p class="small">Quanto aos procedimentos</p><div class="pills"><span class="pill on">Estudo de caso</span><span class="pill">Levantamento</span><span class="pill">Documental</span></div></div>
+    <div class="stack" data-anim><p class="small">Quanto aos objetivos</p><div class="pills"><span class="pill on">Exploratória</span><span class="pill on">Descritiva</span><span class="pill">Explicativa</span></div></div>
+    <div class="stack" data-anim><p class="small">Quanto à abordagem</p><div class="pills"><span class="pill on">Qualitativa</span><span class="pill on">Quantitativa descritiva</span></div></div>
+    <div class="stack" data-anim><p class="small">Quanto aos procedimentos</p><div class="pills"><span class="pill on">Bibliográfica</span><span class="pill on">Documental</span><span class="pill on">Levantamento</span></div></div>
   </div>
-  <p class="small" style="margin-top:40px" data-anim>Marque a pílula correta com a classe <code>on</code> e cite o autor da taxonomia adotada.</p>
-  <aside class="notes">Frase única por eixo, justificando a escolha. Evitar decorar definições — explicar por que couberam ao objeto.</aside>
+  <hr class="rule">
+  <p data-anim><strong>Objeto formal:</strong> a gestão do material aeroterrestre no B DOMPSA, sob a perspectiva das contribuições da IoT, do <em>Big Data</em> e da IA. <strong>Recorte temporal:</strong> 2021 a 2026.</p>
+  <aside class="notes">Justificar em uma frase por eixo. Evitar decorar definições — explicar por que couberam ao objeto.</aside>
 </section>
 
-<!-- ============================ 18 · DESENHO ============================ -->
-<section class="slide" data-transition="swipe" data-section="Metodologia" data-title="Desenho metodológico">
-  <div class="head" data-anim><p class="eyebrow">Desenho da pesquisa</p><h2>Do problema ao resultado, em cinco etapas</h2></div>
-  <div class="flow">
-    <div class="step" data-anim><span class="n">ETAPA 1</span><h3 class="ph-text">Revisão</h3><p class="ph-text">Levantamento bibliográfico e documental.</p></div>
-    <div class="step" data-anim><span class="n">ETAPA 2</span><h3 class="ph-text">Construção</h3><p class="ph-text">Elaboração e validação dos instrumentos.</p></div>
-    <div class="step" data-anim><span class="n">ETAPA 3</span><h3 class="ph-text">Coleta</h3><p class="ph-text">Aplicação em campo no período definido.</p></div>
-    <div class="step" data-anim><span class="n">ETAPA 4</span><h3 class="ph-text">Tratamento</h3><p class="ph-text">Categorização e análise dos dados.</p></div>
-    <div class="step" data-anim><span class="n">ETAPA 5</span><h3 class="ph-text">Discussão</h3><p class="ph-text">Confronto com o referencial e conclusões.</p></div>
-  </div>
-  <aside class="notes">Percorrer a régua com a mão, da esquerda para a direita. Detalhar apenas as etapas 2 e 3.</aside>
-</section>
-
-<!-- ============================ 19 · INSTRUMENTOS ============================ -->
-<section class="slide" data-transition="slide" data-section="Metodologia" data-title="Instrumentos de coleta">
-  <div class="cols c-2b">
-    <figure class="photo tall" data-photo="coleta">
-      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto da coleta</b><span>entrevista, visita ou aplicação do instrumento</span></div>
-    </figure>
-    <div>
-      <p class="eyebrow" data-anim>Instrumentos</p>
-      <h2 data-anim>Como os dados foram obtidos</h2>
-      <ul class="list" style="margin-top:26px">
-        <li data-anim><span class="k">01</span><span><strong class="ph-text">Questionário</strong> — <span class="ph-text">nº de itens, escala utilizada, forma de aplicação.</span></span></li>
-        <li data-anim><span class="k">02</span><span><strong class="ph-text">Entrevista</strong> — <span class="ph-text">tipo (estruturada/semiestruturada), duração média, perfil dos entrevistados.</span></span></li>
-        <li data-anim><span class="k">03</span><span><strong class="ph-text">Análise documental</strong> — <span class="ph-text">quais documentos, de que período.</span></span></li>
-      </ul>
-      <p class="small" style="margin-top:26px" data-anim>Validação: <span class="ph-text">pré-teste, juízes especialistas ou pesquisa-piloto.</span></p>
-    </div>
-  </div>
-  <aside class="notes">Mencionar a validação do instrumento — é um ponto que costuma render pergunta.</aside>
-</section>
-
-<!-- ============================ 20 · AMOSTRA ============================ -->
-<section class="slide" data-transition="rise" data-section="Metodologia" data-title="Universo e amostra">
-  <div class="head" data-anim><p class="eyebrow">Universo e amostra</p><h2>Quem participou da pesquisa</h2></div>
+<!-- ============================ 17 · AMOSTRA ============================ -->
+<section class="slide" data-transition="rise" data-section="Metodologia" data-title="Amostra e coleta">
+  <div class="head" data-anim><p class="eyebrow">Amostra e coleta</p><h2>Quem participou da pesquisa</h2></div>
   <div class="kpis">
-    <div class="kpi" data-anim><div class="v ph-text">120</div><div class="l">Universo da pesquisa</div></div>
-    <div class="kpi" data-anim><div class="v ph-text">86</div><div class="l">Respondentes válidos</div></div>
-    <div class="kpi" data-anim><div class="v ph-text">72<small>%</small></div><div class="l">Taxa de resposta</div></div>
-    <div class="kpi" data-anim><div class="v ph-text">9</div><div class="l">Entrevistas em profundidade</div></div>
+    <div class="kpi" data-anim><div class="v">43</div><div class="l">Militares convidados a responder o formulário</div></div>
+    <div class="kpi" data-anim><div class="v">29</div><div class="l">Respostas válidas</div></div>
+    <div class="kpi" data-anim><div class="v">67,4<small>%</small></div><div class="l">Taxa de retorno</div></div>
+    <div class="kpi" data-anim><div class="v">3</div><div class="l">Entrevistas com especialistas</div></div>
   </div>
-  <p class="small" style="margin-top:36px" data-anim>
-    Período de coleta: <span class="ph-text">mês/ano a mês/ano</span> · Critério de seleção: <span class="ph-text">descreva o critério</span> · Amostragem: <span class="ph-text">tipo</span>.
-  </p>
-  <aside class="notes">Números redondos, ditos com firmeza. Se a taxa de resposta for baixa, antecipar a explicação aqui.</aside>
-</section>
-
-<!-- ============================ 21 · DIVISOR ============================ -->
-<section class="slide" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
-  <p class="eyebrow" data-anim>Bloco 04</p>
-  <h1 class="serif" style="font-size:110px" data-anim>Resultados</h1>
-  <p class="lead wide" data-anim>O que os dados mostraram — e o que eles significam diante da teoria.</p>
-  <aside class="notes">Ponto alto da apresentação. Subir a energia da voz aqui.</aside>
-</section>
-
-<!-- ============================ 22 · PANORAMA ============================ -->
-<section class="slide" data-transition="zoom" data-section="Resultados" data-title="Panorama dos achados">
-  <div class="head" data-anim><p class="eyebrow">Panorama</p><h2>Quatro achados em números</h2></div>
-  <div class="kpis">
-    <div class="kpi" data-anim><div class="v ph-text">38<small>%</small></div><div class="l ph-text">Redução do tempo médio do processo</div><div class="d">↓ frente à linha de base</div></div>
-    <div class="kpi" data-anim><div class="v ph-text">2,4<small>×</small></div><div class="l ph-text">Aumento do volume tratado por servidor</div><div class="d">↑ no período analisado</div></div>
-    <div class="kpi" data-anim><div class="v ph-text">64<small>%</small></div><div class="l ph-text">Dos respondentes percebem ganho de controle</div></div>
-    <div class="kpi" data-anim><div class="v ph-text">3</div><div class="l ph-text">Gargalos críticos identificados</div></div>
+  <div class="cols c-3 gap-s" style="margin-top:26px">
+    <div class="card" data-anim><span class="n">TEN QAO AZEVEDO</span><p>Criador do SisCAAeT, no Comando de Operações Especiais.</p></div>
+    <div class="card" data-anim><span class="n">CEL NESTOR LANA</span><p>Especialista DOMPSA e desenvolvedor de sistemas, no CDS do Exército.</p></div>
+    <div class="card" data-anim><span class="n">PROF. VICTOR SANTOS</span><p>Professor da disciplina Logística 4.0 na AMAN.</p></div>
   </div>
-  <p class="small" style="margin-top:36px" data-anim>Troque cada número e cada legenda pelos seus dados. Um número por cartão — nunca dois.</p>
-  <aside class="notes">Dar 3 segundos de silêncio depois de mostrar os quatro números. Deixar a plateia ler.</aside>
+  <aside class="notes">A taxa de retorno de 67,4% é alta para pesquisa desse tipo — vale dizer isso em voz alta, sustenta a validade da amostra.</aside>
 </section>
 
-<!-- ============================ 23 · RESULTADO 1 ============================ -->
-<section class="slide" data-transition="rise" data-section="Resultados" data-title="Resultado 1 · Distribuição">
-  <div class="cols c-2a">
-    <div class="chart" data-anim role="img" aria-label="Gráfico de barras: percentual por categoria — dados de exemplo">
-      <div class="c-title ph-text">Percepção de ganho por dimensão analisada</div>
-      <div class="c-sub">% de respondentes · <span class="ph-text">n = 86 · dados de exemplo, substituir</span></div>
-      <div class="bars">
-        <div class="bcol"><div class="bar" style="--v:72" title="Tecnologia — 72%"><span class="v">72%</span></div><div class="lbl ph-text">Tecnologia</div></div>
-        <div class="bcol"><div class="bar" style="--v:64" title="Processo — 64%"><span class="v">64%</span></div><div class="lbl ph-text">Processo</div></div>
-        <div class="bcol"><div class="bar" style="--v:51" title="Pessoas — 51%"><span class="v">51%</span></div><div class="lbl ph-text">Pessoas</div></div>
-        <div class="bcol"><div class="bar" style="--v:43" title="Controle — 43%"><span class="v">43%</span></div><div class="lbl ph-text">Controle</div></div>
-        <div class="bcol"><div class="bar" style="--v:29" title="Capacitação — 29%"><span class="v">29%</span></div><div class="lbl ph-text">Capacitação</div></div>
+<!-- ============================ 18 · PERFIL ============================ -->
+<section class="slide" data-transition="swipe" data-section="Metodologia" data-title="Perfil da amostra">
+  <div class="head" data-anim><p class="eyebrow">Perfil dos respondentes</p><h2>Experiência funcional concentrada no material</h2></div>
+  <div class="cols c-2 gap-s" style="align-items:start">
+    <div class="chart" data-anim role="img" aria-label="Setor de atuação dos 29 respondentes">
+      <div class="c-title">Setor de maior vínculo com o Mat Aet</div>
+      <div class="c-sub">n = 29 respondentes</div>
+      <div class="hbars">
+        <div class="hrow"><div class="lbl">Cia Dobragem</div><div class="htrack"><div class="hfill" style="--v:37.9"></div></div><div class="num">37,9%</div></div>
+        <div class="hrow"><div class="lbl">CSMMAet</div><div class="htrack"><div class="hfill" style="--v:31"></div></div><div class="num">31,0%</div></div>
+        <div class="hrow"><div class="lbl">CPLC</div><div class="htrack"><div class="hfill" style="--v:17.2"></div></div><div class="num">17,2%</div></div>
+        <div class="hrow"><div class="lbl">COS Aet</div><div class="htrack"><div class="hfill" style="--v:6.9"></div></div><div class="num">6,9%</div></div>
+        <div class="hrow"><div class="lbl">Cmt e Fisc Adm</div><div class="htrack"><div class="hfill" style="--v:6.9"></div></div><div class="num">6,9%</div></div>
       </div>
     </div>
     <div>
-      <p class="eyebrow" data-anim>Leitura do dado</p>
-      <h2 style="font-size:40px" data-anim class="ph-text">A dimensão humana ficou atrás da técnica</h2>
-      <p data-anim class="ph-text">Escreva aqui, em duas ou três linhas, o que o gráfico mostra e por que isso responde a uma das questões norteadoras.</p>
+      <ul class="list plain" style="margin-top:34px">
+        <li data-anim><span class="k"></span><span><strong>41,4%</strong> dos respondentes são capitães — o posto predominante.</span></li>
+        <li data-anim><span class="k"></span><span><strong>75,9%</strong> declararam 4 anos ou mais de experiência em atividades aeroterrestres.</span></li>
+        <li data-anim><span class="k"></span><span>Faixa de tempo mais frequente no B DOMPSA: <strong>3 a 5 anos</strong>.</span></li>
+        <li data-anim><span class="k"></span><span>Rotinas de maior vivência: controle de estoque, armazenagem, recebimento e movimentação.</span></li>
+      </ul>
+      <p class="note" data-anim>A base empírica é composta, majoritariamente, por militares que operam diretamente o controle e a circulação do material.</p>
+    </div>
+  </div>
+  <aside class="notes">O argumento aqui é de autoridade da amostra: quem respondeu é quem mexe no material todo dia.</aside>
+</section>
+
+<!-- ============================ 19 · INSTRUMENTOS ============================ -->
+<section class="slide" data-transition="slide" data-section="Metodologia" data-title="Instrumentos e análise">
+  <div class="cols c-2b">
+    <figure class="photo tall" data-photo="coleta">
+      <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto da coleta</b><span>entrevista, visita técnica ou aplicação do formulário</span></div>
+    </figure>
+    <div>
+      <p class="eyebrow" data-anim>Instrumentos e análise</p>
+      <h2 data-anim>Três fontes, uma triangulação</h2>
+      <ul class="list" style="margin-top:22px">
+        <li data-anim><span class="k">01</span><span><strong>Formulário eletrônico</strong> — questões fechadas em escala de 1 a 5 e questões abertas, organizadas pelas questões de estudo.</span></li>
+        <li data-anim><span class="k">02</span><span><strong>Entrevistas semiestruturadas</strong> — três especialistas em sistemas, gestão aeroterrestre e Logística 4.0.</span></li>
+        <li data-anim><span class="k">03</span><span><strong>Análise documental</strong> — manuais, normas técnicas e documentos institucionais.</span></li>
+      </ul>
       <hr class="rule">
-      <p class="small" data-anim>Cada barra é um valor: edite <code>--v</code> (0 a 100) e o rótulo.</p>
+      <p class="note" data-anim>Fechadas: frequências, percentuais e médias. Abertas e entrevistas: análise de conteúdo por eixos temáticos — eficiência, rastreabilidade, controle de estoques, integração, limitações e potencial tecnológico.</p>
     </div>
   </div>
-  <aside class="notes">Regra de ouro: dizer a conclusão do gráfico ANTES de descrever o gráfico.</aside>
+  <aside class="notes">Destacar a triangulação: nenhuma conclusão se apoia numa fonte só. É o ponto que mais rende pergunta de banca.</aside>
 </section>
 
-<!-- ============================ 24 · RESULTADO 2 ============================ -->
-<section class="slide" data-transition="swipe" data-section="Resultados" data-title="Resultado 2 · Antes e depois">
-  <div class="head" data-anim><p class="eyebrow">Resultado 2</p><h2>Desempenho antes e depois da digitalização</h2></div>
-  <div class="chart" data-anim role="img" aria-label="Barras agrupadas comparando antes e depois por processo — dados de exemplo">
+<!-- ============================ 20 · DIVISOR ============================ -->
+<section class="slide" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
+  <p class="eyebrow" data-anim>Bloco 04</p>
+  <h1 class="serif" style="font-size:110px" data-anim>Resultados</h1>
+  <p class="lead wide" data-anim>O que os 29 respondentes e os três especialistas revelaram.</p>
+  <aside class="notes">Ponto alto da apresentação. Subir a energia da voz aqui.</aside>
+</section>
+
+<!-- ============================ 21 · PANORAMA ============================ -->
+<section class="slide" data-transition="zoom" data-section="Resultados" data-title="Panorama dos achados">
+  <div class="head" data-anim><p class="eyebrow">Panorama</p><h2>O diagnóstico em quatro números</h2></div>
+  <div class="kpis">
+    <div class="kpi" data-anim><div class="v">4,17</div><div class="l">Dependência de registros manuais<br><span class="small">média na escala de 1 a 5</span></div><div class="d" style="color:#e66767">79,3% marcaram 4 ou 5</div></div>
+    <div class="kpi" data-anim><div class="v">2,86</div><div class="l">Rastreabilidade do material<br><span class="small">o indicador mais baixo da pesquisa</span></div></div>
+    <div class="kpi" data-anim><div class="v">3,21</div><div class="l">Avaliação do modelo de controle<br><span class="small">funcional, porém intermediário</span></div></div>
+    <div class="kpi" data-anim><div class="v">4,69</div><div class="l">Potencial percebido da IoT<br><span class="small">a maior média entre as tecnologias</span></div></div>
+  </div>
+  <p class="note" data-anim>O controle existe e funciona — mas convive com lentidão de atualização, registro manual e baixa rastreabilidade.</p>
+  <aside class="notes">Dar três segundos de silêncio depois de mostrar os quatro números. Deixar a plateia ler antes de falar.</aside>
+</section>
+
+<!-- ============================ 22 · DIAGNÓSTICO ============================ -->
+<section class="slide" data-transition="rise" data-section="Resultados" data-title="Diagnóstico do modelo atual">
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Diagnóstico do modelo atual de gestão</h2></div>
+  <div class="chart" data-anim role="img" aria-label="Médias das percepções sobre o modelo atual, escala de 1 a 5">
     <div class="legend">
-      <span style="--c:var(--s2)"><i></i>Antes</span>
-      <span style="--c:var(--s1)"><i></i>Depois</span>
+      <span style="--c:var(--s1)"><i></i>quanto maior, melhor</span>
+      <span style="--c:var(--s2)"><i></i>quanto maior, pior</span>
     </div>
+    <div class="hbars wide">
+      <div class="hrow"><div class="lbl">Dependência de registros manuais</div><div class="htrack"><div class="hfill" style="--v:83.4;--c:var(--s2)"></div></div><div class="num">4,17</div></div>
+      <div class="hrow"><div class="lbl">Integração entre setores</div><div class="htrack"><div class="hfill" style="--v:65.6"></div></div><div class="num">3,28</div></div>
+      <div class="hrow"><div class="lbl">Modelo de controle do B DOMPSA</div><div class="htrack"><div class="hfill" style="--v:64.2"></div></div><div class="num">3,21</div></div>
+      <div class="hrow"><div class="lbl">Rastreabilidade do material</div><div class="htrack"><div class="hfill" style="--v:57.2"></div></div><div class="num">2,86</div></div>
+    </div>
+    <p class="note">Médias em escala de 1 a 5 · n = 29. Além disso, <strong>48,3%</strong> relataram alta frequência de dificuldades na atualização do estoque.</p>
+  </div>
+  <aside class="notes">A leitura é esta: o único indicador acima de 4 é justamente o que não deveria estar — a dependência do papel. E o mais baixo é a rastreabilidade, que é exatamente o que a segurança do salto exige.</aside>
+</section>
+
+<!-- ============================ 23 · ETAPAS CRÍTICAS ============================ -->
+<section class="slide" data-transition="swipe" data-section="Resultados" data-title="Etapas críticas">
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Etapas de maior dificuldade</h2></div>
+  <div class="chart" data-anim role="img" aria-label="Percentual de respondentes que apontou cada etapa como a mais difícil">
+    <div class="c-sub">% dos 29 respondentes · questão de múltipla escolha</div>
     <div class="bars">
-      <div class="bcol"><div class="group"><div class="bar" style="--v:88;--c:var(--s2)" title="Antes — 88"><span class="v">88</span></div><div class="bar" style="--v:54;--c:var(--s1)" title="Depois — 54"><span class="v">54</span></div></div><div class="lbl ph-text">Processo A</div></div>
-      <div class="bcol"><div class="group"><div class="bar" style="--v:76;--c:var(--s2)" title="Antes — 76"><span class="v">76</span></div><div class="bar" style="--v:41;--c:var(--s1)" title="Depois — 41"><span class="v">41</span></div></div><div class="lbl ph-text">Processo B</div></div>
-      <div class="bcol"><div class="group"><div class="bar" style="--v:69;--c:var(--s2)" title="Antes — 69"><span class="v">69</span></div><div class="bar" style="--v:47;--c:var(--s1)" title="Depois — 47"><span class="v">47</span></div></div><div class="lbl ph-text">Processo C</div></div>
-      <div class="bcol"><div class="group"><div class="bar" style="--v:61;--c:var(--s2)" title="Antes — 61"><span class="v">61</span></div><div class="bar" style="--v:58;--c:var(--s1)" title="Depois — 58"><span class="v">58</span></div></div><div class="lbl ph-text">Processo D</div></div>
+      <div class="bcol"><div class="bar" style="--v:55.2" title="Controle de estoque — 55,2%"><span class="v">55,2%</span></div><div class="lbl">Controle de<br>estoque</div></div>
+      <div class="bcol"><div class="bar" style="--v:48.3" title="Integração de informações — 48,3%"><span class="v">48,3%</span></div><div class="lbl">Integração de<br>informações</div></div>
+      <div class="bcol"><div class="bar" style="--v:37.9" title="Inventário — 37,9%"><span class="v">37,9%</span></div><div class="lbl">Inventário</div></div>
+      <div class="bcol"><div class="bar" style="--v:20.7" title="Recebimento — 20,7%"><span class="v">20,7%</span></div><div class="lbl">Recebimento</div></div>
+      <div class="bcol"><div class="bar" style="--v:13.8" title="Armazenagem — 13,8%"><span class="v">13,8%</span></div><div class="lbl">Armazenagem</div></div>
+      <div class="bcol"><div class="bar" style="--v:10.3" title="Expedição e distribuição — 10,3%"><span class="v">10,3%</span></div><div class="lbl">Expedição/<br>distribuição</div></div>
+      <div class="bcol"><div class="bar" style="--v:10.3" title="Manutenção — 10,3%"><span class="v">10,3%</span></div><div class="lbl">Manutenção</div></div>
     </div>
-    <p class="small ph-text" style="margin-top:22px">Unidade: <span class="ph-text">dias de tramitação (quanto menor, melhor)</span> · dados de exemplo.</p>
   </div>
-  <aside class="notes">Chamar atenção para o Processo D, onde o ganho foi pequeno — reconhecer o resultado fraco dá credibilidade.</aside>
+  <p class="note" data-anim>A dificuldade não está no volume do material: está em <strong>registrar, consolidar e disponibilizar</strong> a informação sobre ele.</p>
+  <aside class="notes">Frase-chave deste slide: o gargalo é informacional, não físico. Ela costura o diagnóstico à proposta tecnológica.</aside>
 </section>
 
-<!-- ============================ 25 · RESULTADO 3 ============================ -->
-<section class="slide" data-transition="slide" data-section="Resultados" data-title="Resultado 3 · Ranking">
-  <div class="head" data-anim><p class="eyebrow">Resultado 3</p><h2>Principais entraves relatados</h2></div>
-  <div class="chart hbars" data-anim role="img" aria-label="Ranking horizontal de entraves relatados — dados de exemplo">
-    <div class="hrow"><div class="lbl ph-text">Falta de capacitação</div><div class="htrack"><div class="hfill" style="--v:78"></div></div><div class="num">78%</div></div>
-    <div class="hrow"><div class="lbl ph-text">Resistência à mudança</div><div class="htrack"><div class="hfill" style="--v:65"></div></div><div class="num">65%</div></div>
-    <div class="hrow"><div class="lbl ph-text">Sistemas não integrados</div><div class="htrack"><div class="hfill" style="--v:57"></div></div><div class="num">57%</div></div>
-    <div class="hrow"><div class="lbl ph-text">Infraestrutura de rede</div><div class="htrack"><div class="hfill" style="--v:44"></div></div><div class="num">44%</div></div>
-    <div class="hrow"><div class="lbl ph-text">Normas desatualizadas</div><div class="htrack"><div class="hfill" style="--v:31"></div></div><div class="num">31%</div></div>
+<!-- ============================ 24 · PROBLEMAS ============================ -->
+<section class="slide" data-transition="slide" data-section="Resultados" data-title="Problemas recorrentes">
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Principais problemas relatados</h2></div>
+  <div class="chart hbars wide" data-anim role="img" aria-label="Principais problemas da gestão do material, por percentual de menções">
+    <div class="hrow"><div class="lbl">Excesso de controles manuais</div><div class="htrack"><div class="hfill" style="--v:65.5"></div></div><div class="num">65,5%</div></div>
+    <div class="hrow"><div class="lbl">Risco de erro humano</div><div class="htrack"><div class="hfill" style="--v:51.7"></div></div><div class="num">51,7%</div></div>
+    <div class="hrow"><div class="lbl">Lentidão na atualização dos registros</div><div class="htrack"><div class="hfill" style="--v:48.3"></div></div><div class="num">48,3%</div></div>
+    <div class="hrow"><div class="lbl">Dificuldade de rastreabilidade</div><div class="htrack"><div class="hfill" style="--v:44.8"></div></div><div class="num">44,8%</div></div>
+    <div class="hrow"><div class="lbl">Falhas de integração entre setores</div><div class="htrack"><div class="hfill" style="--v:41.4"></div></div><div class="num">41,4%</div></div>
+    <div class="hrow"><div class="lbl">Dificuldade de localização de itens</div><div class="htrack"><div class="hfill" style="--v:17.2"></div></div><div class="num">17,2%</div></div>
+    <div class="hrow"><div class="lbl">Demora na tomada de decisão</div><div class="htrack"><div class="hfill" style="--v:13.8"></div></div><div class="num">13,8%</div></div>
   </div>
-  <p class="small" style="margin-top:34px" data-anim>Ordene sempre do maior para o menor — o ranking se lê sozinho.</p>
-  <aside class="notes">Ligar o primeiro entrave à recomendação que virá no slide de contribuições.</aside>
+  <p class="note" data-anim>19 dos 29 respondentes citaram o excesso de controles manuais · n = 29 · múltipla escolha</p>
+  <aside class="notes">Os cinco primeiros problemas são, todos, sintomas do mesmo mal: a informação não circula. Dizer isso explicitamente.</aside>
 </section>
 
-<!-- ============================ 26 · EVIDÊNCIAS ============================ -->
-<section class="slide" data-transition="iris" data-section="Resultados" data-title="Evidências de campo">
+<!-- ============================ 25 · POTENCIAL ============================ -->
+<section class="slide" data-transition="flip" data-section="Resultados" data-title="Potencial percebido">
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (c)</p><h2>Potencial percebido das tecnologias</h2></div>
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi" data-anim><div class="v">4,69</div><div class="l">Internet das Coisas<br><span class="small">média na escala de 1 a 5</span></div></div>
+    <div class="kpi" data-anim><div class="v">4,62</div><div class="l"><em>Big Data</em><br><span class="small">média na escala de 1 a 5</span></div></div>
+    <div class="kpi" data-anim><div class="v">4,62</div><div class="l">Inteligência Artificial<br><span class="small">média na escala de 1 a 5</span></div></div>
+  </div>
+  <div class="card accent" style="margin-top:26px" data-anim>
+    <span class="n">PERGUNTA GERAL</span>
+    <p style="font-size:26px;line-height:1.4;color:var(--ink)"><strong>75,9%</strong> dos respondentes atribuíram o <strong>nível máximo</strong> de avaliação à contribuição das tecnologias da Logística 4.0 para a gestão do material aeroterrestre.</p>
+  </div>
+  <aside class="notes">A percepção favorável é praticamente unânime. Isso importa porque adoção de tecnologia falha, quase sempre, por resistência — e aqui ela não aparece como principal barreira.</aside>
+</section>
+
+<!-- ============================ 26 · BENEFÍCIOS ============================ -->
+<section class="slide" data-transition="rise" data-section="Resultados" data-title="Aspectos mais beneficiados">
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (c)</p><h2>Onde a tecnologia traria mais benefício</h2></div>
+  <div class="chart hbars wide" data-anim role="img" aria-label="Aspectos que mais se beneficiariam das tecnologias da Logística 4.0">
+    <div class="hrow"><div class="lbl">Controle de estoque</div><div class="htrack"><div class="hfill" style="--v:92.6"></div></div><div class="num">92,6%</div></div>
+    <div class="hrow"><div class="lbl">Integração de informações</div><div class="htrack"><div class="hfill" style="--v:85.2"></div></div><div class="num">85,2%</div></div>
+    <div class="hrow"><div class="lbl">Inventário</div><div class="htrack"><div class="hfill" style="--v:74.1"></div></div><div class="num">74,1%</div></div>
+    <div class="hrow"><div class="lbl">Expedição e distribuição</div><div class="htrack"><div class="hfill" style="--v:70.4"></div></div><div class="num">70,4%</div></div>
+    <div class="hrow"><div class="lbl">Armazenagem</div><div class="htrack"><div class="hfill" style="--v:59.3"></div></div><div class="num">59,3%</div></div>
+    <div class="hrow"><div class="lbl">Recebimento</div><div class="htrack"><div class="hfill" style="--v:48.1"></div></div><div class="num">48,1%</div></div>
+    <div class="hrow"><div class="lbl">Manutenção</div><div class="htrack"><div class="hfill" style="--v:37"></div></div><div class="num">37,0%</div></div>
+  </div>
+  <p class="note" data-anim>n = 27 respostas válidas · múltipla escolha. As duas primeiras posições coincidem exatamente com as duas etapas apontadas como mais difíceis.</p>
+  <aside class="notes">Coincidência importante: o que dói é o que eles esperam que a tecnologia resolva. Sobreposição perfeita entre diagnóstico e expectativa.</aside>
+</section>
+
+<!-- ============================ 27 · BARREIRAS ============================ -->
+<section class="slide" data-transition="tilt" data-section="Resultados" data-title="Barreiras à adoção">
+  <div class="head" data-anim><p class="eyebrow">Viabilidade</p><h2>O que dificulta a adoção</h2></div>
+  <div class="chart hbars wide" data-anim role="img" aria-label="Fatores que dificultam a adoção das tecnologias da Logística 4.0">
+    <div class="hrow"><div class="lbl">Limitações orçamentárias</div><div class="htrack"><div class="hfill" style="--v:79.3;--c:var(--s2)"></div></div><div class="num">79,3%</div></div>
+    <div class="hrow"><div class="lbl">Falta de prioridade institucional</div><div class="htrack"><div class="hfill" style="--v:62.1;--c:var(--s2)"></div></div><div class="num">62,1%</div></div>
+    <div class="hrow"><div class="lbl">Falta de infraestrutura tecnológica</div><div class="htrack"><div class="hfill" style="--v:62.1;--c:var(--s2)"></div></div><div class="num">62,1%</div></div>
+    <div class="hrow"><div class="lbl">Resistência à mudança</div><div class="htrack"><div class="hfill" style="--v:48.3;--c:var(--s2)"></div></div><div class="num">48,3%</div></div>
+    <div class="hrow"><div class="lbl">Integração com sistemas existentes</div><div class="htrack"><div class="hfill" style="--v:48.3;--c:var(--s2)"></div></div><div class="num">48,3%</div></div>
+    <div class="hrow"><div class="lbl">Falta de capacitação do pessoal</div><div class="htrack"><div class="hfill" style="--v:34.5;--c:var(--s2)"></div></div><div class="num">34,5%</div></div>
+  </div>
+  <p class="note" data-anim>A adoção não depende só de <em>software</em> e <em>hardware</em>: exige planejamento, governança, qualificação e alinhamento estratégico.</p>
+  <aside class="notes">Reconhecer as barreiras dá credibilidade e prepara o terreno para a proposta gradual do POP. Não passar rápido por este slide.</aside>
+</section>
+
+<!-- ============================ 28 · SISCAAET ============================ -->
+<section class="slide" data-transition="iris" data-section="Resultados" data-title="Entrevista · SisCAAeT">
+  <div class="cols c-2a">
+    <div>
+      <p class="eyebrow" data-anim>Entrevista · Ten QAO Azevedo</p>
+      <h2 data-anim>O SisCAAeT prova que é possível</h2>
+      <p data-anim>Sistema desenvolvido no COPESP para apoiar a gestão de recursos humanos e materiais na atividade aeroterrestre: cadastro individualizado de paraquedas por número de série, histórico de uso e manutenção, emissão automatizada de documentos, relatórios gerenciais e <strong>alertas de vida útil vencida</strong>.</p>
+      <p class="note" data-anim><strong>Ganhos relatados:</strong> integração, simultaneidade, redução de inconsistências documentais e melhor controle da aptidão do efetivo empregado nos saltos.<br>
+      <strong>Limitações:</strong> alimentação manual de dados iniciais, dependência de conectividade e necessidade de suporte técnico.</p>
+    </div>
+    <div>
+      <blockquote class="quote" style="font-size:32px;max-width:24ch" data-anim>
+        O SisCAAeT pode ser considerado um "embrião" para a Logística 4.0 no Exército Brasileiro, por estabelecer os fundamentos digitais necessários.
+        <cite>Azevedo (2026)</cite>
+      </blockquote>
+    </div>
+  </div>
+  <aside class="notes">Esta é a evidência de viabilidade mais forte do trabalho: não é hipótese, é sistema rodando em contexto militar semelhante.</aside>
+</section>
+
+<!-- ============================ 29 · LANA ============================ -->
+<section class="slide" data-transition="blur" data-section="Resultados" data-title="Entrevista · Cel Lana">
+  <div class="cols c-2b">
+    <div>
+      <blockquote class="quote" style="font-size:32px;max-width:24ch" data-anim>
+        Um sistema informatizado permitiria auditorias perfeitas, garantindo que a revalidação após 100 saltos, por exemplo, fosse rigorosamente cumprida. A perfeição no controle de saltos e revalidações deve ser a busca constante da especialidade.
+        <cite>Lana (2026, p. 68-69)</cite>
+      </blockquote>
+    </div>
+    <div>
+      <p class="eyebrow" data-anim>Entrevista · Cel Nestor Lana</p>
+      <h2 data-anim>Do registro estático à evidência</h2>
+      <ul class="list plain" style="margin-top:18px">
+        <li data-anim><span class="k"></span><span>O controle atual não assegura <strong>auditoria completa</strong> de dobragem, inspeção e movimentação.</span></li>
+        <li data-anim><span class="k"></span><span>Funcionalidades essenciais: cadastro por número de série, <strong>etiquetas RFID</strong>, inventário automático e identificação do responsável por cada etapa.</span></li>
+        <li data-anim><span class="k"></span><span><strong>IoT</strong> no monitoramento ambiental dos depósitos — temperatura, umidade, salitre — com alerta automático.</span></li>
+        <li data-anim><span class="k"></span><span>Viável em estrutura institucional segura, desde que preservada a <strong>contingência manual</strong>.</span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">O ponto do Cel Lana eleva o problema de administrativo para operacional: controle falho significa material vencido em uso. Falar isso com peso.</aside>
+</section>
+
+<!-- ============================ 30 · SANTOS ============================ -->
+<section class="slide" data-transition="soft" data-section="Resultados" data-title="Entrevista · Prof. Santos">
+  <div class="head" data-anim><p class="eyebrow">Entrevista · Prof. Victor Santos</p><h2>Digitalizar não é transformar</h2></div>
+  <div class="cols c-2 gap-s">
+    <div class="card" data-anim>
+      <span class="n" style="color:var(--ink-3)">DIGITALIZAÇÃO PARCIAL</span>
+      <p style="font-size:20px">Substituir o papel por formulários digitais. Melhora a rotina administrativa, mas mantém <strong>ilhas de informação</strong> e não gera fonte única da verdade.</p>
+    </div>
+    <div class="card accent" data-anim>
+      <span class="n">TRANSFORMAÇÃO DIGITAL</span>
+      <p style="font-size:20px">Integração sistêmica, captura automática de dados, análise em tempo real e apoio efetivo à decisão. A rastreabilidade vira o <strong>"sistema nervoso"</strong> da cadeia.</p>
+    </div>
+  </div>
+  <p data-anim style="margin-top:26px">Sem dados integrados, o comandante decide por estimativa: ou mantém estoque excessivo por receio de falta, ou descobre a indisponibilidade <strong>no momento da missão</strong>.</p>
+  <p class="note" data-anim>Prioridades apontadas: identificação automática dos equipamentos · integração das bases de salto, manutenção e vida útil · capacitação dos operadores.</p>
+  <aside class="notes">Esta distinção é o que impede a banca de concluir que basta informatizar. Vale repetir a expressão "fonte única da verdade".</aside>
+</section>
+
+<!-- ============================ 31 · EVIDÊNCIAS ============================ -->
+<section class="slide" data-transition="cube" data-section="Resultados" data-title="Evidências de campo">
   <div class="head" data-anim><p class="eyebrow">Evidências de campo</p><h2>O que a pesquisa viu de perto</h2></div>
   <div class="gallery">
     <div data-anim>
-      <figure class="photo square" data-photo="ev1"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 1</b><span>arraste aqui</span></div></figure>
+      <figure class="photo square" data-photo="ev1"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 1</b><span>controle manual: livros e fichas</span></div></figure>
       <p class="photo-cap ph-text">Legenda da foto 1.</p>
     </div>
     <div data-anim>
-      <figure class="photo square" data-photo="ev2"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 2</b><span>arraste aqui</span></div></figure>
+      <figure class="photo square" data-photo="ev2"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 2</b><span>depósito e armazenagem do Mat Aet</span></div></figure>
       <p class="photo-cap ph-text">Legenda da foto 2.</p>
     </div>
     <div data-anim>
-      <figure class="photo square" data-photo="ev3"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 3</b><span>arraste aqui</span></div></figure>
+      <figure class="photo square" data-photo="ev3"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 3</b><span>dobragem ou inspeção de paraquedas</span></div></figure>
       <p class="photo-cap ph-text">Legenda da foto 3.</p>
     </div>
   </div>
-  <aside class="notes">Falar 15 segundos por foto, no máximo. A imagem sustenta a fala; não é a fala.</aside>
+  <aside class="notes">Quinze segundos por foto, no máximo. A imagem sustenta a fala; não é a fala.</aside>
 </section>
 
-<!-- ============================ 27 · DISCUSSÃO ============================ -->
-<section class="slide" data-transition="flip" data-section="Resultados" data-title="Discussão">
-  <div class="head" data-anim><p class="eyebrow">Discussão</p><h2>Os achados diante da teoria</h2></div>
-  <div class="cols c-2 gap-s">
-    <div class="card" data-anim>
-      <span class="n" style="color:var(--s3)">CONVERGE COM A LITERATURA</span>
-      <ul class="list plain" style="margin-top:8px">
-        <li><span class="k" style="background:var(--s3)"></span><span class="ph-text">Achado que confirma o que AUTOR (ANO) descreveu.</span></li>
-        <li><span class="k" style="background:var(--s3)"></span><span class="ph-text">Segundo ponto de convergência.</span></li>
-      </ul>
-    </div>
-    <div class="card" data-anim>
-      <span class="n" style="color:var(--s2)">DIVERGE OU AMPLIA</span>
-      <ul class="list plain" style="margin-top:8px">
-        <li><span class="k" style="background:var(--s2)"></span><span class="ph-text">Achado que contraria ou amplia a literatura.</span></li>
-        <li><span class="k" style="background:var(--s2)"></span><span class="ph-text">Segundo ponto de divergência — aqui mora a contribuição original.</span></li>
-      </ul>
-    </div>
-  </div>
-  <aside class="notes">A divergência é o que torna o trabalho original. Defendê-la com o dado na mão, sem exagero.</aside>
+<!-- ============================ 32 · SÍNTESE ============================ -->
+<section class="slide" data-transition="fade" data-section="Resultados" data-title="Síntese interpretativa">
+  <div class="head" data-anim><p class="eyebrow">Síntese interpretativa</p><h2>Do problema à tecnologia aplicável</h2></div>
+  <table class="tight" data-anim>
+    <thead><tr><th>Problema identificado</th><th>Base doutrinária</th><th>Tecnologia</th><th>Contribuição potencial</th></tr></thead>
+    <tbody>
+      <tr><td>Predominância de registros manuais</td><td>Manual Técnico de Gestão do Mat Aet</td><td>QR <em>Code</em>, RFID e sensores IoT</td><td>Automatiza a identificação, amplia a rastreabilidade e reduz falhas de lançamento.</td></tr>
+      <tr><td>Atualização lenta das informações</td><td>Doutrina de Logística Militar Terrestre</td><td>Base integrada de dados</td><td>Tempestividade: o registro passa a refletir a situação real do estoque.</td></tr>
+      <tr><td>Baixa integração entre setores</td><td>Conceitos de Logística 4.0</td><td><em>Big Data</em> e sistemas integrados</td><td>Consolida dados dispersos entre recebimento, controle, manutenção e distribuição.</td></tr>
+      <tr><td>Apoio limitado à decisão</td><td>Sustentação preditiva e gestão por dados</td><td>Inteligência Artificial</td><td>Prioriza manutenção, reposição e distribuição a partir de padrões e histórico.</td></tr>
+    </tbody>
+  </table>
+  <p class="note" data-anim>Elaborado pelo autor com base na pesquisa e no referencial teórico adotado (2026).</p>
+  <aside class="notes">Este é o slide que amarra tudo. Percorrer linha por linha, da esquerda para a direita, sem ler literalmente.</aside>
 </section>
 
-<!-- ============================ 28 · DIVISOR ============================ -->
+<!-- ============================ 33 · DIVISOR ============================ -->
 <section class="slide" data-transition="cover" data-section="Conclusão" data-title="Divisor · Conclusão">
   <p class="eyebrow" data-anim>Bloco 05</p>
   <h1 class="serif" style="font-size:110px" data-anim>Conclusão</h1>
@@ -862,84 +973,90 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
   <aside class="notes">Sinalizar o fechamento. A plateia se reorganiza quando percebe que a conclusão começou.</aside>
 </section>
 
-<!-- ============================ 29 · RESPOSTAS ============================ -->
-<section class="slide" data-transition="tilt" data-section="Conclusão" data-title="Respostas às questões">
-  <div class="head" data-anim><p class="eyebrow">Respostas</p><h2>Cada questão, uma conclusão</h2></div>
-  <ul class="list check">
-    <li data-anim><span class="k">✓</span><span><strong class="ph-text">Q1 —</strong> <span class="ph-text">Resposta em uma frase, apoiada no resultado correspondente.</span></span></li>
-    <li data-anim><span class="k">✓</span><span><strong class="ph-text">Q2 —</strong> <span class="ph-text">Resposta em uma frase.</span></span></li>
-    <li data-anim><span class="k">✓</span><span><strong class="ph-text">Q3 —</strong> <span class="ph-text">Resposta em uma frase.</span></span></li>
-  </ul>
-  <div class="card accent" style="margin-top:34px" data-anim>
-    <span class="n">RESPOSTA À QUESTÃO PRINCIPAL</span>
-    <p style="font-size:26px;line-height:1.4;color:var(--ink)" class="ph-text">A conclusão central do trabalho, em uma frase que espelha o problema enunciado no início.</p>
+<!-- ============================ 34 · RESPOSTA ============================ -->
+<section class="slide" data-transition="tilt" data-section="Conclusão" data-title="Resposta à questão central">
+  <div class="head" data-anim><p class="eyebrow">Resposta ao problema de pesquisa</p><h2>Quatro efeitos sobre a gestão do Mat Aet</h2></div>
+  <div class="cols c-4 gap-s">
+    <div class="card" data-anim><span class="n">01</span><h3>Rastreabilidade</h3><p>Visibilidade do ciclo de vida de cada item, do recebimento ao descarregamento.</p></div>
+    <div class="card" data-anim><span class="n">02</span><h3>Confiabilidade</h3><p>Registros auditáveis, com responsabilização por etapa executada.</p></div>
+    <div class="card" data-anim><span class="n">03</span><h3>Integração</h3><p>Fonte única de dados entre recebimento, controle, manutenção e distribuição.</p></div>
+    <div class="card accent" data-anim><span class="n">04</span><h3>Decisão</h3><p>Planejamento apoiado em histórico e tendência, não em percepção empírica.</p></div>
   </div>
-  <aside class="notes">Fechar o arco: esta frase deve ecoar literalmente o slide do problema.</aside>
+  <p data-anim style="margin-top:30px">A modernização proposta <strong>não se limita a digitalizar controles existentes</strong>: envolve a evolução para um modelo de gestão mais integrado, tempestivo e orientado por dados.</p>
+  <aside class="notes">Esta frase final precisa ecoar o slide do problema. É o fechamento do arco — dizer devagar.</aside>
 </section>
 
-<!-- ============================ 30 · CONTRIBUIÇÕES ============================ -->
-<section class="slide" data-transition="rise" data-section="Conclusão" data-title="Contribuições">
-  <div class="head" data-anim><p class="eyebrow">Contribuições e recomendações</p><h2>O que fazer com este resultado</h2></div>
-  <div class="cols c-3 gap-s">
-    <div class="card" data-anim><span class="n">CURTO PRAZO</span><p class="ph-text">Medida imediata, de baixo custo, que a organização pode adotar já.</p></div>
-    <div class="card" data-anim><span class="n">MÉDIO PRAZO</span><p class="ph-text">Ajuste de processo ou norma decorrente dos achados.</p></div>
-    <div class="card accent" data-anim><span class="n">CONTRIBUIÇÃO ACADÊMICA</span><p class="ph-text">O que a pesquisa devolve à literatura da área.</p></div>
+<!-- ============================ 35 · PROPOSTA ============================ -->
+<section class="slide" data-transition="rise" data-section="Conclusão" data-title="Proposta · POP em 4 fases">
+  <div class="head" data-anim><p class="eyebrow">Contribuição prática</p><h2>Um POP em doze etapas, implantado em quatro fases</h2></div>
+  <div class="flow" style="grid-template-columns:repeat(4,1fr)">
+    <div class="step" data-anim><span class="n">FASE 1 · BASE</span><h3>Cadastrar e identificar</h3><p>Ficha digital individual por item e etiqueta QR <em>Code</em> ou RFID, começando por paraquedas e equipamentos críticos.</p></div>
+    <div class="step" data-anim><span class="n">FASE 2 · ROTINA</span><h3>Registrar o ciclo</h3><p>Recebimento, localização física, movimentação interna e histórico técnico de inspeção, dobragem e manutenção.</p></div>
+    <div class="step" data-anim><span class="n">FASE 3 · CONTROLE</span><h3>Inventariar e auditar</h3><p>Inventário periódico contra a base digital, auditoria de inconsistências e painel de indicadores para o comando.</p></div>
+    <div class="step" data-anim><span class="n">FASE 4 · CONSOLIDAÇÃO</span><h3>Capacitar e expandir</h3><p>Treinamento dos operadores, registros físicos e digitais em paralelo na transição e expansão após o projeto-piloto.</p></div>
   </div>
-  <aside class="notes">Recomendação precisa ser acionável: quem faz, o quê e em quanto tempo.</aside>
+  <p class="note" data-anim>A proposta não substitui normas internas nem dispensa validação institucional: oferece uma sequência inicial de ações, testável em caráter piloto.</p>
+  <aside class="notes">Se a banca perguntar "e como se faz?", a resposta está aqui. Ter em mente as 12 etapas do apêndice, caso peçam detalhe.</aside>
 </section>
 
-<!-- ============================ 31 · LIMITAÇÕES ============================ -->
-<section class="slide" data-transition="soft" data-section="Conclusão" data-title="Limitações e trabalhos futuros">
+<!-- ============================ 36 · RECOMENDAÇÕES ============================ -->
+<section class="slide" data-transition="swipe" data-section="Conclusão" data-title="Limitações e trabalhos futuros">
   <div class="cols c-2 gap-s">
     <div>
-      <p class="eyebrow" data-anim>Limitações</p>
+      <p class="eyebrow" data-anim>Limitações da pesquisa</p>
       <ul class="list plain" style="margin-top:18px">
-        <li data-anim><span class="k"></span><span class="ph-text">Limitação de escopo ou amostra.</span></li>
-        <li data-anim><span class="k"></span><span class="ph-text">Limitação de método ou de acesso a dados.</span></li>
-        <li data-anim><span class="k"></span><span class="ph-text">Limitação temporal.</span></li>
+        <li data-anim><span class="k" style="background:var(--ink-3)"></span><span>Recorte concentrado no B DOMPSA, o que restringe a generalização.</span></li>
+        <li data-anim><span class="k" style="background:var(--ink-3)"></span><span>Número de participantes: 29 respondentes e 3 entrevistados.</span></li>
+        <li data-anim><span class="k" style="background:var(--ink-3)"></span><span>Caráter predominantemente qualitativo da investigação.</span></li>
       </ul>
     </div>
     <div>
       <p class="eyebrow" data-anim>Trabalhos futuros</p>
       <ul class="list" style="margin-top:18px">
-        <li data-anim><span class="k">→</span><span class="ph-text">Pesquisa que estende este recorte.</span></li>
-        <li data-anim><span class="k">→</span><span class="ph-text">Aplicação do modelo em outro contexto.</span></li>
-        <li data-anim><span class="k">→</span><span class="ph-text">Aprofundamento quantitativo do achado principal.</span></li>
+        <li data-anim><span class="k">→</span><span>Modelagem de um sistema aplicável ao B DOMPSA.</span></li>
+        <li data-anim><span class="k">→</span><span>Avaliação dos requisitos técnicos, orçamentários e institucionais de implantação.</span></li>
+        <li data-anim><span class="k">→</span><span>Integração entre rastreabilidade automatizada, manutenção preditiva e apoio à decisão.</span></li>
       </ul>
     </div>
   </div>
-  <aside class="notes">Assumir as limitações com naturalidade — reconhecê-las é sinal de domínio, não de fraqueza.</aside>
+  <p class="note" data-anim style="margin-top:34px">Ainda assim, os dados obtidos foram suficientes para sustentar o diagnóstico e indicar caminhos consistentes de modernização.</p>
+  <aside class="notes">Assumir as limitações com naturalidade — reconhecê-las é sinal de domínio, não de fraqueza. Emendar direto na frase final.</aside>
 </section>
 
-<!-- ============================ 32 · REFERÊNCIAS ============================ -->
+<!-- ============================ 37 · REFERÊNCIAS ============================ -->
 <section class="slide" data-transition="fade" data-section="Conclusão" data-title="Referências">
   <div class="head" data-anim><p class="eyebrow">Referências</p><h2>Principais obras consultadas</h2></div>
-  <div style="columns:2;column-gap:60px;font-size:16px;line-height:1.55;color:var(--ink-2)" data-anim>
-    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título da obra em negrito</strong>. Cidade: Editora, ano.</p>
-    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. Título do artigo. <strong>Nome do periódico</strong>, v. 0, n. 0, p. 00-00, ano.</p>
-    <p class="ph-text" style="font-size:16px">BRASIL. <strong>Nome da norma/manual</strong>. Brasília, ano.</p>
-    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título da dissertação</strong>. Dissertação (Mestrado) — Instituição, ano.</p>
-    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título</strong>. Cidade: Editora, ano.</p>
-    <p class="ph-text" style="font-size:16px">SOBRENOME, Nome. <strong>Título</strong>. Cidade: Editora, ano.</p>
+  <div style="columns:2;column-gap:56px;font-size:15px;line-height:1.5;color:var(--ink-2)" data-anim>
+    <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.238</strong>: Logística Militar Terrestre. Brasília: COTER, 2022.</p>
+    <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.366</strong>: Suprimento pelo ar. Brasília, 2021.</p>
+    <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>Manual Técnico de Gestão do Material Aeroterrestre</strong>. Brasília, 2016.</p>
+    <p style="font-size:15px">PAIVA, T. <strong>Diretriz do Comandante do Exército</strong>. Brasília, 2023.</p>
+    <p style="font-size:15px">PINTO, R. <strong>Logística 4.0</strong>. 2022.</p>
+    <p style="font-size:15px">ROSÁRIO, M. <strong>Logística 4.0 na AMAN</strong>. 2023.</p>
+    <p style="font-size:15px">LUO, X. <strong>Big Data</strong> in logistics management. 2026.</p>
+    <p style="font-size:15px">SINGH, R. <strong>Artificial intelligence</strong> in supply chains. 2026.</p>
+    <p style="font-size:15px">ÖZTEMEL, E.; GURSEV, S. Literature review of Industry 4.0. 2020.</p>
+    <p style="font-size:15px">SILVA, A.; KAWAKAME, M. <strong>Logística 4.0</strong>: da origem militar à cadeia conectada.</p>
+    <p style="font-size:15px">RADIVOJEVIĆ, G.; MILOSAVLJEVIĆ, L. The concept of Logistics 4.0. 2019.</p>
+    <p style="font-size:15px" class="ph-text">Complete com as demais obras efetivamente citadas na fala (ABNT NBR 6023).</p>
   </div>
-  <p class="small" style="margin-top:30px" data-anim>Mantenha apenas as obras efetivamente citadas na fala. Padrão ABNT NBR 6023.</p>
   <aside class="notes">Slide de passagem rápida. Serve à banca, não à plateia.</aside>
 </section>
 
-<!-- ============================ 33 · ENCERRAMENTO ============================ -->
+<!-- ============================ 38 · ENCERRAMENTO ============================ -->
 <section class="slide has-hero" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
   <figure class="photo fill hero-photo" data-photo="fim">
-    <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de encerramento (tela cheia)</b><span>arraste a imagem aqui</span></div>
+    <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de encerramento (tela cheia)</b><span>salto ou formatura do B DOMPSA</span></div>
   </figure>
   <p class="eyebrow" data-anim>Obrigado</p>
   <h1 data-anim>Perguntas?</h1>
-  <p class="lead wide ph-text" data-anim>Fico à disposição para questionamentos e sugestões.</p>
-  <hr class="rule" style="max-width:420px" data-anim>
+  <p class="lead wide" data-anim>Fico à disposição para questionamentos, críticas e sugestões.</p>
+  <hr class="rule" style="max-width:460px" data-anim>
   <p class="small" data-anim>
-    <strong class="ph-text">Posto/Grad. Nome Completo</strong><br>
-    <span class="ph-text">e-mail@instituicao.mil.br</span> · <span class="ph-text">Organização Militar</span>
+    <strong>Cap Jefferson Daniel Ferreira Martins</strong><br>
+    <span class="ph-text">e-mail institucional</span> · Escola de Aperfeiçoamento de Oficiais — Curso de Logística
   </p>
-  <aside class="notes">Deixar este slide no ar durante toda a rodada de perguntas. Repetir a pergunta antes de responder.</aside>
+  <aside class="notes">Deixar este slide no ar durante toda a rodada de perguntas. Repetir a pergunta antes de responder — dá tempo de pensar e garante que a plateia ouviu.</aside>
 </section>
 
 </div><!-- /#stage -->

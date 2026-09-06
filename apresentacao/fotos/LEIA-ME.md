@@ -2,10 +2,11 @@
 
 Sugestão de nomes (qualquer nome funciona):
 
-- `capa.jpg` — foto de abertura, tela cheia
-- `contexto.jpg` — slide 4, contextualização
-- `coleta.jpg` — slide 19, instrumentos de coleta
-- `evidencia-1.jpg`, `evidencia-2.jpg`, `evidencia-3.jpg` — slide 26, galeria
-- `encerramento.jpg` — slide 33, tela final
+- `capa.jpg` — abertura em tela cheia: salto, dobragem ou depósito
+- `contexto.jpg` — slide 4, ilustração da Logística 4.0
+- `dompsa.jpg` — slide 5, Cia Dobragem / depósito / suprimento pelo ar
+- `coleta.jpg` — slide 19, entrevista ou aplicação do formulário
+- `ev1.jpg`, `ev2.jpg`, `ev3.jpg` — slide 31: controle manual · depósito · dobragem
+- `encerramento.jpg` — slide 38, tela final
 
 Depois é só me avisar que eu ligo cada foto ao seu quadro no arquivo `congresso.html`.

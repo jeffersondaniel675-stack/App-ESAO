@@ -1,7 +1,15 @@
 # Apresentação de congresso — TCC
 
+**IoT, *Big Data* e inteligência artificial na gestão do material aeroterrestre no B DOMPSA**
+Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
+
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **33 slides** desenhados para ~40 minutos (35 de exposição + 5 de perguntas).
+São **38 slides** dimensionados para ~40 minutos (35 de exposição + 5 de perguntas).
+
+O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
+resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
+respostas foram reconferidas contra o CSV original, e os números batem com o texto
+defendido.
 
 ## Como abrir
 
@@ -24,21 +32,22 @@ sem internet e sem instalar nada. Aperte **F** para tela cheia e comece.
 | `B` | tela preta, para pausar sem desligar o projetor |
 | `F` | tela cheia |
 | `T` | troca a transição de todo o deck |
-| `R` | zera o cronômetro (ele avisa em amarelo aos 35 min e em vermelho aos 40) |
+| `R` | zera o cronômetro (amarelo aos 35 min, vermelho aos 40) |
 
 O rodapé mostra o bloco atual, o cronômetro e o número do slide.
 
 ## Colocando as fotos
 
-Há **7 espaços de foto** prontos, marcados com moldura tracejada:
+Há **8 espaços de foto** prontos, marcados com moldura tracejada:
 
 | Slide | Espaço | O que entra |
 |---|---|---|
-| 1 | `capa` | foto de abertura, tela cheia |
-| 4 | `contexto` | ambiente, seção ou equipe estudada |
-| 19 | `coleta` | entrevista, visita, aplicação do questionário |
-| 26 | `ev1` `ev2` `ev3` | galeria de evidências de campo |
-| 33 | `fim` | foto de encerramento, tela cheia |
+| 1 | `capa` | abertura em tela cheia — salto, dobragem ou depósito |
+| 4 | `contexto` | ilustração da Logística 4.0 (pode ser a figura do próprio TCC) |
+| 5 | `dompsa` | Cia Dobragem, depósito ou suprimento pelo ar |
+| 19 | `coleta` | entrevista, visita técnica ou aplicação do formulário |
+| 31 | `ev1` `ev2` `ev3` | galeria: controle manual · depósito · dobragem/inspeção |
+| 38 | `fim` | encerramento em tela cheia |
 
 Duas formas de preencher:
 
@@ -50,30 +59,28 @@ cima da moldura. Ela entra na hora e fica guardada naquele navegador.
 a pasta `fotos/` e troque o conteúdo da moldura por uma tag de imagem:
 
 ```html
-<figure class="photo tall" data-photo="contexto">
-  <img src="fotos/contexto.jpg" alt="Seção de suprimento durante o expediente">
+<figure class="photo tall" data-photo="dompsa">
+  <img src="fotos/dobragem.jpg" alt="Militares na dobragem de paraquedas">
 </figure>
 ```
 
 Se preferir, **me mande as fotos que eu faço essa parte** — ligo cada arquivo ao
-seu quadro, ajusto enquadramento e escrevo as legendas.
+seu quadro, ajusto o enquadramento e escrevo as legendas.
 
 ## Editando o conteúdo
 
-Abra `congresso.html` em qualquer editor de texto. Tudo que precisa ser trocado
-está **sublinhado com pontinhos azuis** na tela e marcado com `class="ph-text"`
-no código — é o seu roteiro de preenchimento.
+Abra `congresso.html` em qualquer editor de texto.
 
-- **Texto**: escreva por cima e apague a classe `ph-text`.
-- **Números dos cartões (KPI)**: troque o número dentro de `<div class="v">`.
-- **Barras dos gráficos**: cada barra tem `style="--v:72"` — esse número é a altura
-  em porcentagem (0 a 100). Troque também o rótulo e o valor exibido.
+- O que ainda depende de você aparece **sublinhado com pontinhos azuis** na tela e
+  marcado com `class="ph-text"` no código: o nome do congresso (slide 1), as legendas
+  das fotos (slide 31), o e-mail de contato (slide 38) e o fecho das referências.
+- **Números dos gráficos**: cada barra tem `style="--v:55.2"` — o número é o
+  comprimento da barra em porcentagem. Troque também o rótulo e o valor exibido ao lado.
 - **Notas de fala**: o texto dentro de `<aside class="notes">` de cada slide.
-- **Transição de um slide**: o atributo `data-transition` na tag `<section>`.
-  Valores possíveis: `fade`, `slide`, `rise`, `zoom`, `flip`, `cube`, `blur`,
-  `cover`, `swipe`, `iris`, `tilt`, `soft`.
-- **Cor de acento**: a variável `--accent` no início do arquivo. Trocar essa linha
-  muda o deck inteiro.
+- **Transição de um slide**: o atributo `data-transition` na tag `<section>`. Valores:
+  `fade`, `slide`, `rise`, `zoom`, `flip`, `cube`, `blur`, `cover`, `swipe`, `iris`,
+  `tilt`, `soft`.
+- **Cor de acento**: a variável `--accent` no início do arquivo muda o deck inteiro.
 
 ## Exportar em PDF (backup para levar no e-mail)
 
@@ -82,12 +89,23 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 
 ## Mapa dos slides
 
-| # | Bloco | Slide |
+| # | Bloco | Slides |
 |---|---|---|
 | 1–2 | Abertura | Capa · Roteiro |
-| 3–9 | Introdução | Divisor · Contextualização · Problema · Questões · Objetivos · Justificativa · Delimitação |
-| 10–15 | Referencial | Divisor · Marcos · Conceitos · Modelo de análise · Trabalhos correlatos · Lacuna |
-| 16–20 | Metodologia | Divisor · Classificação · Desenho · Instrumentos · Universo e amostra |
-| 21–27 | Resultados | Divisor · Panorama · Resultado 1 · Resultado 2 · Resultado 3 · Evidências · Discussão |
-| 28–32 | Conclusão | Divisor · Respostas · Contribuições · Limitações · Referências |
-| 33 | Encerramento | Perguntas |
+| 3–9 | Introdução | Divisor · Logística 4.0 · O B DOMPSA e o Mat Aet · Problema · Questões de estudo · Objetivos · Justificativa |
+| 10–14 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
+| 15–19 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
+| 20–32 | Resultados | Divisor · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
+| 33–37 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Referências |
+| 38 | Encerramento | Perguntas |
+
+## Dados usados nos gráficos
+
+Todos vindos do formulário (n = 29, taxa de retorno 67,4%):
+
+- **Médias 1–5:** registros manuais 4,17 · integração 3,28 · modelo de controle 3,21 · rastreabilidade 2,86
+- **Potencial percebido:** IoT 4,69 · *Big Data* 4,62 · IA 4,62 · 75,9% deram nota máxima à contribuição geral
+- **Etapas mais difíceis:** controle de estoque 55,2% · integração de informações 48,3% · inventário 37,9%
+- **Problemas:** controles manuais 65,5% · erro humano 51,7% · lentidão 48,3% · rastreabilidade 44,8%
+- **Mais beneficiados:** controle de estoque 92,6% · integração 85,2% · inventário 74,1% (n = 27)
+- **Barreiras:** orçamento 79,3% · prioridade institucional 62,1% · infraestrutura 62,1%
