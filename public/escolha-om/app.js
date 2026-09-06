@@ -268,7 +268,7 @@
       if (a.status === 'ausente') tr.style.opacity = '.45';
 
       var foto = a.foto
-        ? '<img class="retrato" src="fotos/' + esc(a.foto) + '" alt="" ' +
+        ? '<img class="retrato" src="' + esc(urlFoto(a.foto)) + '" alt="" ' +
           'onerror="__semFoto(this,\'—\',\'retrato-vazio\')" />'
         : '<div class="retrato-vazio">—</div>';
 
@@ -469,6 +469,13 @@
 
   /* A foto pode faltar (o carômetro não cobre a turma toda). Quando falta —
      ou quando o arquivo não carrega — entram as iniciais do nome de guerra. */
+  /* O campo `foto` guarda o nome do arquivo em fotos/, mas aceita também uma
+     imagem embutida (data:), que é como a versão de arquivo único carrega os
+     retratos sem depender da pasta ao lado. */
+  function urlFoto(nome) {
+    return /^data:/.test(nome) ? nome : 'fotos/' + nome;
+  }
+
   window.__semFoto = function (img, ini, classe) {
     var d = document.createElement('div');
     d.className = classe || 'sem-foto';
@@ -480,7 +487,7 @@
     if (!a) return '';
     var ini = iniciais(a);
     if (estado.cfg.fotos && a.foto) {
-      return '<img src="fotos/' + esc(a.foto) + '" alt="" ' +
+      return '<img src="' + esc(urlFoto(a.foto)) + '" alt="" ' +
         'onerror="__semFoto(this,\'' + esc(ini) + '\')" />';
     }
     return '<div class="sem-foto">' + esc(ini) + '</div>';
@@ -813,11 +820,36 @@
     baixarBlob(nome, new Blob(['﻿' + conteudo], { type: tipo + ';charset=utf-8' }));
   }
 
+  /* Servido como página publicada, o visualizador não deixa a própria página
+     baixar arquivo: ali a entrega passa pela capacidade `downloads`, que pede
+     confirmação ao usuário. Fora dela — no sistema ou na pasta — vale o
+     caminho normal do navegador. */
   function baixarBlob(nome, blob) {
+    if (window.claude && typeof window.claude.use === 'function') {
+      window.claude.use('downloads').then(function (downloads) {
+        if (!downloads) return ancora(nome, blob);
+        return downloads.save({ filename: nome, data: blob }).catch(function (e) {
+          if (e && e.code === 'declined') return;
+          avisar('Não foi possível entregar o arquivo (' + ((e && e.code) || 'erro') +
+            '). Rode a aplicação pelo sistema para baixar.');
+        });
+      }).catch(function () { ancora(nome, blob); });
+      return;
+    }
+    ancora(nome, blob);
+  }
+
+  function ancora(nome, blob) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url; a.download = nome; document.body.appendChild(a); a.click();
     setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  }
+
+  function avisar(texto) {
+    var el = $('#cfg-status');
+    if (el) el.textContent = texto;
+    else alert(texto);
   }
 
   function exportarCsv() {
@@ -832,18 +864,19 @@
     baixar('escolha-om.csv', csv, 'text/csv');
   }
 
-  /* A relação do DCEM é documento a ser remetido, então sai como .xlsx de
-     verdade — mesmas mesclagens, larguras, molduras e configuração de impressão
-     da aba de origem. Os outros quadros saem como tabela HTML com extensão .xls,
-     que o Excel abre e basta para conferência. */
+  /* Todos os quadros saem como .xlsx de verdade: a relação do DCEM na forma da
+     aba de origem, os demais como tabela simples. Um HTML com extensão .xls
+     abriria com ressalva e nem é formato aceito fora do navegador. */
   function exportarXls() {
+    var c = estado.cfg;
+    var linhas = linhasResultado();
+
     if (abaResultado === 'dcem') {
-      var c = estado.cfg;
       baixarBlob('rel-dcem.xlsx', window.gerarXlsxDcem({
         titulo: c.dcemTitulo,
         secao1: c.dcemSecao1,
         secao2: c.dcemSecao2,
-        oficiais: linhasResultado().map(function (l) {
+        oficiais: linhas.map(function (l) {
           return {
             posto: l.a.posto, qm: c.qmDcem || l.a.qm, idt: l.a.idt, nome: l.a.nome,
             origem: c.origem, origemCidade: c.origemCidade, om: l.v.om, cidade: l.v.cidade
@@ -852,10 +885,29 @@
       }));
       return;
     }
-    var html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8" />' +
-      '<style>table{border-collapse:collapse}td,th{border:1px solid #999;padding:4px}</style>' +
-      '</head><body>' + $('#res-conteudo').innerHTML + '</body></html>';
-    baixar('escolha-om.xls', html, 'application/vnd.ms-excel');
+
+    if (abaResultado === 'om') {
+      baixarBlob('escolha-om-por-om.xlsx', window.gerarXlsxTabela({
+        aba: 'Por OM', titulo: c.titulo + ' — ' + c.subtitulo,
+        larguras: [30, 22, 8, 12, 10, 26, 40],
+        cabecalho: ['OM', 'Cidade-UF', 'RM', 'C Mil A', 'Cl', 'Nome de guerra', 'Nome completo'],
+        linhas: linhas.slice().sort(function (a, b) {
+          return (a.v.om + a.v.cidade).localeCompare(b.v.om + b.v.cidade) || a.a.cl - b.a.cl;
+        }).map(function (l) {
+          return [l.v.om, l.v.cidade, l.v.rm, l.v.cma, l.a.cl + 'º', l.a.guerra, l.a.nome];
+        })
+      }));
+      return;
+    }
+
+    baixarBlob('escolha-om-quadro-final.xlsx', window.gerarXlsxTabela({
+      aba: 'Quadro final', titulo: c.titulo + ' — ' + c.subtitulo,
+      larguras: [8, 10, 12, 14, 26, 40, 30, 22],
+      cabecalho: ['Cl', 'Posto', 'Q/A/S', 'Idt', 'Nome de guerra', 'Nome completo', 'OM de destino', 'Cidade-UF'],
+      linhas: linhas.map(function (l) {
+        return [l.a.cl + 'º', l.a.posto, l.a.qm, l.a.idt, l.a.guerra, l.a.nome, l.v.om, l.v.cidade];
+      })
+    }));
   }
 
   /* ══════════════════════ IMPORTAÇÕES ══════════════════════ */

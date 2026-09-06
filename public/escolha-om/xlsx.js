@@ -218,9 +218,8 @@
     };
   }
 
-  window.gerarXlsxDcem = function (d) {
-    var aba = 'Rel DCEM';
-    var s = planilha(d);
+  /* Empacotamento comum: as duas saídas só diferem na planilha em si. */
+  function pacote(aba, sheetXml, areaImpressao) {
     return zip([
       { nome: '[Content_Types].xml', texto: CAB +
         '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
@@ -236,9 +235,11 @@
         '</Relationships>' },
       { nome: 'xl/workbook.xml', texto: CAB +
         '<workbook xmlns="' + NS + '" xmlns:r="' + NS_REL + '">' +
-        '<sheets><sheet name="' + aba + '" sheetId="1" r:id="rId1"/></sheets>' +
-        '<definedNames><definedName name="_xlnm.Print_Area" localSheetId="0">' +
-        "'" + aba + "'!$A$1:$F$" + s.ultima + '</definedName></definedNames>' +
+        '<sheets><sheet name="' + x(aba) + '" sheetId="1" r:id="rId1"/></sheets>' +
+        (areaImpressao
+          ? '<definedNames><definedName name="_xlnm.Print_Area" localSheetId="0">' +
+            "'" + x(aba) + "'!" + areaImpressao + '</definedName></definedNames>'
+          : '') +
         '</workbook>' },
       { nome: 'xl/_rels/workbook.xml.rels', texto: CAB +
         '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
@@ -246,7 +247,53 @@
         '<Relationship Id="rId2" Type="' + NS_REL + '/styles" Target="styles.xml"/>' +
         '</Relationships>' },
       { nome: 'xl/styles.xml', texto: estilos() },
-      { nome: 'xl/worksheets/sheet1.xml', texto: s.xml }
+      { nome: 'xl/worksheets/sheet1.xml', texto: sheetXml }
     ]);
+  }
+
+  window.gerarXlsxDcem = function (d) {
+    var s = planilha(d);
+    return pacote('Rel DCEM', s.xml, '$A$1:$F$' + s.ultima);
+  };
+
+  /* Saída simples para os demais quadros: cabeçalho em negrito emoldurado e
+     uma linha por registro, com as larguras que o chamador pedir. */
+  window.gerarXlsxTabela = function (d) {
+    var linhas = [], n = 0;
+    var celulas = function (valores, estilo) {
+      return valores.map(function (v, i) {
+        return celula(String.fromCharCode(65 + i), n, v, estilo);
+      }).join('');
+    };
+    if (d.titulo) {
+      n = 1;
+      linhas.push('<row r="1" ht="' + ALT_TITULO + '" customHeight="1">' +
+        celula('A', 1, d.titulo, E.TITULO) + '</row>');
+      n = 2;
+      linhas.push('<row r="2"/>');
+    }
+    n += 1;
+    linhas.push('<row r="' + n + '" ht="' + ALT_LINHA + '" customHeight="1">' +
+      celulas(d.cabecalho, E.CABECA) + '</row>');
+    d.linhas.forEach(function (l) {
+      n += 1;
+      linhas.push('<row r="' + n + '" ht="' + ALT_LINHA + '" customHeight="1">' +
+        celulas(l, E.MESCLA) + '</row>');
+    });
+    var ultimaCol = String.fromCharCode(65 + d.cabecalho.length - 1);
+    var cols = (d.larguras || []).map(function (w, i) {
+      return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>';
+    }).join('');
+    var xml = CAB + '<worksheet xmlns="' + NS + '" xmlns:r="' + NS_REL + '">' +
+      '<dimension ref="A1:' + ultimaCol + n + '"/>' +
+      '<sheetViews><sheetView workbookViewId="0" tabSelected="1"/></sheetViews>' +
+      '<sheetFormatPr defaultRowHeight="15"/>' +
+      (cols ? '<cols>' + cols + '</cols>' : '') +
+      '<sheetData>' + linhas.join('') + '</sheetData>' +
+      '<pageMargins left="0.511811024" right="0.511811024" top="0.787401575"' +
+      ' bottom="0.787401575" header="0.31496062" footer="0.31496062"/>' +
+      '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1"/>' +
+      '</worksheet>';
+    return pacote(d.aba || 'Planilha1', xml, '$A$1:$' + ultimaCol + '$' + n);
   };
 })();

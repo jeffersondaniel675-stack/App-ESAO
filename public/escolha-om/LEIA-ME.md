@@ -78,7 +78,8 @@ A aba **Resultado** entrega três documentos, todos prontos para impressão:
 - **Relação para o DCEM** — reprodução da aba `Rel DCEM` da planilha da escolha;
 - **Por OM** — quem foi para cada Organização Militar.
 
-Também dá para baixar em CSV e em Excel.
+Também dá para baixar em CSV e em Excel — os três saem como `.xlsx` de
+verdade, não como HTML de extensão trocada.
 
 ### A relação para o DCEM
 
@@ -130,7 +131,7 @@ LEANDRO SILVA, SIMÕES, GUSTAVO NUNES, MENEZES e GÓES.
 | `index.html` | estrutura das telas                                          |
 | `estilo.css` | aparência, inclusive o layout do telão e a folha de impressão |
 | `app.js`     | regra da cerimônia, sincronização e relatórios               |
-| `xlsx.js`    | gerador do `.xlsx` da relação do DCEM                        |
+| `xlsx.js`    | gerador dos arquivos `.xlsx`                                 |
 | `dados.js`   | base de concludentes e modelos de quadro de vagas            |
 | `fotos/`     | retratos                                                     |
 | `brasoes/`   | brasões da EsAO e do C Log                                   |
