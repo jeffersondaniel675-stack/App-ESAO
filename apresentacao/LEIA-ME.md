@@ -11,6 +11,21 @@ resultados e conclusão) e os gráficos usam os **dados reais do formulário** �
 respostas foram reconferidas contra o CSV original, e os números batem com o texto
 defendido.
 
+## Identidade visual
+
+O deck segue o `DESIGN.md` da raiz do repositório (linguagem Mobbin, instalada com
+`npx getdesign@latest add mobbin`): fundo branco de galeria, tipografia preta,
+**um único azul** (`#0066ff`) reservado ao sinal que pede decisão — no deck ele
+aparece só na barra "quanto maior, pior" do slide 22 e na legenda dela. Sem
+sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula nos
+controles, cantos de 24px nos cartões, Inter no lugar da Saans (652 → 650 nos
+títulos, 456 → 450 no texto, 300 nas entradas leves), sem versalete e sem
+espacejamento. Os divisores de bloco e o encerramento usam a inversão de
+polaridade do sistema: fundo preto, texto branco.
+
+Para voltar ao tema escuro anterior, basta trocar os tokens no bloco `:root` do
+início do arquivo — todo o resto é derivado deles.
+
 ## Como abrir
 
 Duplo clique em `congresso.html`. Abre em qualquer navegador (Chrome, Edge, Firefox),
@@ -80,7 +95,10 @@ Abra `congresso.html` em qualquer editor de texto.
 - **Transição de um slide**: o atributo `data-transition` na tag `<section>`. Valores:
   `fade`, `slide`, `rise`, `zoom`, `flip`, `cube`, `blur`, `cover`, `swipe`, `iris`,
   `tilt`, `soft`.
-- **Cor de acento**: a variável `--accent` no início do arquivo muda o deck inteiro.
+- **Cores**: os tokens no bloco `:root` do início do arquivo (`--canvas`, `--ink`,
+  `--accent`, `--canvas-soft`, `--hairline`) mudam o deck inteiro.
+- **Inversão de polaridade**: a classe `invert` na tag `<section>` deixa o slide
+  preto com texto branco. Está nos cinco divisores e no encerramento.
 
 ## Exportar em PDF (backup para levar no e-mail)
 

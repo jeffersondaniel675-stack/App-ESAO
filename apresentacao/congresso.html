@@ -6,34 +6,46 @@
 <title>Logística 4.0 no B DOMPSA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   1. TOKENS  —  paleta "clean escuro"
-   Para trocar a cor de acento, mude --accent (e --accent-soft).
+   1. TOKENS  —  linguagem visual Mobbin (ver DESIGN.md na raiz)
+   Galeria branca, monocromática. Um único azul de acento, reservado
+   para o sinal que pede decisão. Sem sombras: hierarquia por preenchimento.
    ============================================================ */
 :root{
-  --bg:#0e0f10;
-  --bg-2:#141516;
-  --surface:#1a1a19;
-  --surface-2:#212220;
-  --line:rgba(255,255,255,.10);
-  --line-strong:rgba(255,255,255,.20);
+  --canvas:#ffffff;
+  --canvas-soft:#f3f3f3;
+  --field:#f0f0f0;
+  --hairline-soft:#f0f0f0;
+  --hairline:#e0e0e0;
 
-  --ink:#ffffff;
-  --ink-2:#c3c2b7;
-  --ink-3:#8d8d85;
+  --ink:#141414;
+  --ink-soft:#262626;
+  --muted:#707070;
+  --faint:#adadad;
 
-  --accent:#3987e5;
-  --accent-soft:rgba(57,135,229,.14);
+  --accent:#0066ff;
 
-  /* séries de gráfico (validadas para fundo escuro) */
-  --s1:#3987e5;
-  --s2:#d95926;
-  --s3:#199e70;
+  /* apelidos usados pelos componentes */
+  --bg:var(--canvas);
+  --surface:var(--canvas);
+  --surface-2:var(--canvas-soft);
+  --line:var(--hairline-soft);
+  --line-strong:var(--hairline);
+  --ink-2:var(--muted);
+  --ink-3:var(--faint);
+  --accent-soft:var(--canvas-soft);
 
-  --sans:'Inter','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
-  --serif:'Instrument Serif','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  /* dados: tinta como série padrão; o azul marca o que pede decisão */
+  --s1:#141414;
+  --s2:#0066ff;
+  --s3:#707070;
+
+  --sans:'Inter','Helvetica Neue',-apple-system,'Segoe UI',Arial,sans-serif;
+
+  --r-sm:16px;
+  --r-md:24px;
 
   --ease:cubic-bezier(.22,.61,.36,1);
   --dur:640ms;
@@ -46,12 +58,7 @@ body{
   font-family:var(--sans);overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
-body::before{ /* brilho ambiente sutil */
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(1200px 700px at 12% -10%, rgba(57,135,229,.10), transparent 60%),
-    radial-gradient(900px 600px at 100% 110%, rgba(255,255,255,.04), transparent 60%);
-}
+/* sem gradientes na moldura: o sistema é liso, à moda de impresso */
 
 /* ============================================================
    2. PALCO 16:9  —  o slide tem 1600x900 e é escalado por JS,
@@ -65,7 +72,7 @@ body::before{ /* brilho ambiente sutil */
 .slide{
   position:absolute;inset:0;padding:78px 104px 96px;
   display:flex;flex-direction:column;justify-content:center;
-  background:var(--bg);
+  background:var(--canvas);color:var(--ink);
   visibility:hidden;opacity:0;backface-visibility:hidden;
   transform-style:preserve-3d;
 }
@@ -181,23 +188,21 @@ body::before{ /* brilho ambiente sutil */
    4. TIPOGRAFIA E BLOCOS DE CONTEÚDO
    ============================================================ */
 .eyebrow{
-  display:inline-flex;align-items:center;gap:12px;
-  font-size:15px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--accent);margin:0 0 22px;
+  display:block;font-size:15px;font-weight:600;letter-spacing:0;
+  color:var(--muted);margin:0 0 20px;
 }
-.eyebrow::before{content:"";width:34px;height:1px;background:var(--accent);opacity:.6}
 
-h1{font-size:82px;line-height:1.02;letter-spacing:-.03em;font-weight:600;margin:0 0 26px}
-h2{font-size:56px;line-height:1.08;letter-spacing:-.025em;font-weight:600;margin:0 0 14px}
-h3{font-size:24px;line-height:1.25;letter-spacing:-.01em;font-weight:600;margin:0 0 10px}
-.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
-.lead{font-size:26px;line-height:1.5;color:var(--ink-2);max-width:22ch;margin:0}
-.lead.wide{max-width:46ch}
-p{margin:0 0 18px;font-size:21px;line-height:1.55;color:var(--ink-2)}
-.small{font-size:17px;color:var(--ink-3);line-height:1.5}
-.rule{height:1px;background:var(--line);border:0;margin:30px 0}
+h1{font-size:80px;line-height:1;letter-spacing:0;font-weight:650;margin:0 0 26px;text-wrap:balance}
+h2{font-size:56px;line-height:1;letter-spacing:0;font-weight:650;margin:0 0 18px;text-wrap:balance}
+h3{font-size:24px;line-height:1.25;letter-spacing:0;font-weight:650;margin:0 0 10px}
+.serif{font-family:var(--sans);font-weight:650;letter-spacing:0}
+.lead{font-size:26px;font-weight:300;line-height:1.38;color:var(--muted);max-width:24ch;margin:0}
+.lead.wide{max-width:48ch}
+p{margin:0 0 18px;font-size:20px;font-weight:450;line-height:1.42;color:var(--muted)}
+.small{font-size:16px;font-weight:450;color:var(--muted);line-height:1.4}
+.rule{height:1px;background:var(--hairline);border:0;margin:30px 0}
 strong{color:var(--ink);font-weight:600}
-.hl{color:var(--accent);font-weight:600}
+.hl{color:var(--ink);font-weight:600}
 
 .head{margin-bottom:38px}
 .head p{max-width:64ch}
@@ -214,119 +219,118 @@ strong{color:var(--ink);font-weight:600}
 
 /* cartões */
 .card{
-  background:var(--surface);border:1px solid var(--line);border-radius:18px;
-  padding:30px 30px 32px;position:relative;overflow:hidden;
+  background:var(--canvas);border:1px solid var(--hairline-soft);border-radius:var(--r-md);
+  padding:28px 28px 30px;position:relative;overflow:hidden;
 }
 .card .n{
-  font-size:14px;font-weight:700;letter-spacing:.14em;color:var(--accent);
-  display:block;margin-bottom:14px;
+  font-size:13px;font-weight:600;letter-spacing:0;color:var(--muted);
+  display:block;margin-bottom:12px;
 }
-.card p{font-size:18px;margin:0;color:var(--ink-2)}
-.card.accent{background:linear-gradient(160deg,var(--accent-soft),transparent 70%),var(--surface);border-color:rgba(57,135,229,.35)}
+.card p{font-size:18px;font-weight:450;margin:0;color:var(--muted)}
+.card.accent{background:var(--canvas-soft);border-color:transparent}
 
 /* listas */
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
-.list li{display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:start;font-size:21px;line-height:1.5;color:var(--ink-2)}
+.list li{display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:start;font-size:20px;font-weight:450;line-height:1.42;color:var(--muted)}
 .list li .k{
-  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
-  background:var(--accent-soft);color:var(--accent);font-size:15px;font-weight:700;
-  border:1px solid rgba(57,135,229,.3);
+  width:38px;height:38px;border-radius:9999px;display:grid;place-items:center;
+  background:var(--canvas-soft);color:var(--ink);font-size:15px;font-weight:600;border:0;
 }
-.list.check li .k{background:rgba(25,158,112,.14);color:var(--s3);border-color:rgba(25,158,112,.32)}
+.list.check li .k{background:var(--ink);color:#fff}
 .list.plain li{grid-template-columns:10px 1fr;gap:20px}
-.list.plain li .k{width:7px;height:7px;border-radius:50%;background:var(--accent);border:0;margin-top:14px}
+.list.plain li .k{width:7px;height:7px;border-radius:50%;background:var(--ink);border:0;margin-top:14px}
 
 /* citação / destaque */
 .quote{
-  font-family:var(--serif);font-size:46px;line-height:1.25;color:var(--ink);
-  border-left:3px solid var(--accent);padding-left:36px;margin:0;max-width:26ch;
+  font-family:var(--sans);font-weight:300;font-size:44px;line-height:1.2;color:var(--ink);
+  border-left:2px solid var(--ink);padding-left:36px;margin:0;max-width:26ch;
 }
-.quote cite{display:block;font-family:var(--sans);font-size:16px;font-style:normal;color:var(--ink-3);margin-top:22px;letter-spacing:.04em}
+.quote cite{display:block;font-size:15px;font-weight:600;font-style:normal;color:var(--muted);margin-top:24px;letter-spacing:0}
 
 /* linha do tempo */
 .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:30px;position:relative}
 .timeline::before{content:"";position:absolute;left:0;right:0;top:13px;height:1px;background:var(--line)}
 .tl{padding-right:26px;position:relative}
-.tl::before{content:"";position:absolute;left:0;top:7px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
-.tl .y{display:block;margin-top:38px;font-size:15px;letter-spacing:.12em;font-weight:700;color:var(--accent)}
+.tl::before{content:"";position:absolute;left:0;top:7px;width:13px;height:13px;border-radius:50%;background:var(--canvas);border:2px solid var(--ink)}
+.tl .y{display:block;margin-top:38px;font-size:14px;letter-spacing:0;font-weight:600;color:var(--muted)}
 .tl h3{font-size:19px;margin:8px 0 8px}
-.tl p{font-size:15px;line-height:1.45}
+.tl p{font-size:15px;font-weight:450;line-height:1.42}
 
 /* fluxo de etapas */
 .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:20px}
-.step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 20px;position:relative}
-.step .n{font-size:13px;letter-spacing:.14em;font-weight:700;color:var(--accent);display:block;margin-bottom:12px}
+.step{background:var(--canvas);border:1px solid var(--hairline-soft);border-radius:var(--r-md);padding:24px 22px;position:relative}
+.step .n{font-size:13px;letter-spacing:0;font-weight:600;color:var(--muted);display:block;margin-bottom:12px}
 .step h3{font-size:19px;margin-bottom:8px}
-.step p{font-size:15px;line-height:1.45;margin:0}
-.step::after{content:"";position:absolute;right:-11px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--line-strong);border-right:1.5px solid var(--line-strong);transform:translateY(-50%) rotate(45deg)}
+.step p{font-size:15px;font-weight:450;line-height:1.42;margin:0}
+.step::after{content:"";position:absolute;right:-11px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--hairline);border-right:1.5px solid var(--hairline);transform:translateY(-50%) rotate(45deg)}
 .step:last-child::after{display:none}
 
 /* tabela */
 table{width:100%;border-collapse:collapse;font-size:18px}
 th{
-  text-align:left;font-size:13px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-3);font-weight:600;padding:0 18px 14px;border-bottom:1px solid var(--line);
+  text-align:left;font-size:13px;letter-spacing:0;
+  color:var(--muted);font-weight:600;padding:0 18px 14px;border-bottom:1px solid var(--hairline);
 }
-td{padding:18px;color:var(--ink-2);border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+td{padding:18px;font-weight:450;color:var(--muted);border-bottom:1px solid var(--hairline-soft);vertical-align:top;line-height:1.42}
 tbody tr:last-child td{border-bottom:0}
 td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 
 /* pílulas */
 .pills{display:flex;flex-wrap:wrap;gap:10px}
 .pill{
-  border:1px solid var(--line);border-radius:999px;padding:9px 18px;
-  font-size:16px;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--hairline);border-radius:9999px;padding:9px 18px;
+  font-size:16px;font-weight:600;color:var(--muted);background:var(--canvas);
 }
-.pill.on{border-color:rgba(57,135,229,.45);background:var(--accent-soft);color:var(--ink)}
+.pill.on{border-color:var(--ink);background:var(--ink);color:#fff}
 
 /* ============================================================
    5. DADOS: KPI + GRÁFICOS
    Para mudar um valor, edite o --v (0 a 100) e o texto do rótulo.
    ============================================================ */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px 28px}
-.kpi .v{font-size:60px;font-weight:600;letter-spacing:-.035em;line-height:1;color:var(--ink)}
-.kpi .v small{font-size:26px;font-weight:500;color:var(--ink-3);margin-left:4px}
-.kpi .l{margin-top:14px;font-size:16px;color:var(--ink-3);line-height:1.4}
-.kpi .d{margin-top:12px;font-size:14px;font-weight:600;color:var(--s3)}
+.kpi{background:var(--canvas-soft);border:0;border-radius:var(--r-md);padding:28px 26px}
+.kpi .v{font-size:60px;font-weight:650;letter-spacing:0;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:26px;font-weight:600;color:var(--muted);margin-left:4px}
+.kpi .l{margin-top:14px;font-size:16px;font-weight:450;color:var(--muted);line-height:1.4}
+.kpi .d{margin-top:12px;font-size:14px;font-weight:600;color:var(--muted)}
 
 .chart{margin-top:8px}
-.chart .c-title{font-size:17px;color:var(--ink-2);margin-bottom:6px}
-.chart .c-sub{font-size:14px;color:var(--ink-3);margin-bottom:26px}
-.bars{display:flex;align-items:flex-end;gap:26px;height:330px;padding-top:34px;border-bottom:1px solid var(--line)}
+.chart .c-title{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.chart .c-sub{font-size:14px;font-weight:450;color:var(--muted);margin-bottom:26px}
+.bars{display:flex;align-items:flex-end;gap:26px;height:330px;padding-top:34px;border-bottom:1px solid var(--hairline)}
 .bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative;text-align:center}
 .bar{
   height:calc(var(--v) * 1%);background:var(--c,var(--s1));
-  border-radius:5px 5px 0 0;position:relative;transition:filter .18s ease;
+  border-radius:8px 8px 0 0;position:relative;transition:opacity .18s ease;
   transform-origin:bottom;animation:growB 900ms var(--ease) both;animation-delay:calc(var(--i,0)*70ms + 320ms);
 }
 @keyframes growB{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .slide:not(.active) .bar{animation:none}
-.bcol:hover .bar{filter:brightness(1.18)}
-.bar .v{position:absolute;top:-32px;left:0;right:0;font-size:17px;font-weight:600;color:var(--ink)}
+.bcol:hover .bar{opacity:.82}
+.bar .v{position:absolute;top:-32px;left:0;right:0;font-size:17px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .bcol > .bar{width:112px;align-self:center}
-.bcol .lbl{margin-top:16px;font-size:15px;color:var(--ink-3);line-height:1.35}
+.bcol .lbl{margin-top:16px;font-size:15px;font-weight:450;color:var(--muted);line-height:1.35}
 .group{display:flex;gap:2px;align-items:flex-end;height:100%;width:100%;max-width:180px;align-self:center}
 .group .bar{flex:1}
 .legend{display:flex;gap:26px;margin-bottom:22px}
-.legend span{display:inline-flex;align-items:center;gap:9px;font-size:16px;color:var(--ink-2)}
-.legend i{width:11px;height:11px;border-radius:3px;background:var(--c);display:inline-block}
+.legend span{display:inline-flex;align-items:center;gap:9px;font-size:16px;font-weight:450;color:var(--muted)}
+.legend i{width:11px;height:11px;border-radius:9999px;background:var(--c);display:inline-block}
 
 .hbars{display:flex;flex-direction:column;gap:18px;margin-top:10px}
 .hrow{display:grid;grid-template-columns:230px 1fr 62px;align-items:center;gap:20px}
-.hrow .lbl{font-size:17px;color:var(--ink-2);text-align:right}
-.htrack{height:24px;background:var(--surface-2);border-radius:6px;overflow:hidden}
-.hfill{height:100%;width:calc(var(--v) * 1%);background:var(--c,var(--s1));border-radius:6px;
+.hrow .lbl{font-size:17px;font-weight:450;color:var(--muted);text-align:right}
+.htrack{height:24px;background:var(--canvas-soft);border-radius:9999px;overflow:hidden}
+.hfill{height:100%;width:calc(var(--v) * 1%);background:var(--c,var(--s1));border-radius:9999px;
   transform-origin:left;animation:growH 900ms var(--ease) both;animation-delay:calc(var(--i,0)*70ms + 300ms)}
 @keyframes growH{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .slide:not(.active) .hfill{animation:none}
-.hrow .num{font-size:18px;font-weight:600;color:var(--ink)}
+.hrow .num{font-size:18px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .hbars.wide .hrow{grid-template-columns:330px 1fr 84px}
 table.tight{font-size:16px}
 table.tight td{padding:14px}
 table.tight th{padding:0 14px 12px}
-.note{font-size:15px;color:var(--ink-3);line-height:1.5;margin-top:18px}
-.figframe{background:#f7f7f5;border-radius:16px;padding:18px;border:1px solid var(--line)}
+.note{font-size:15px;font-weight:450;color:var(--muted);line-height:1.45;margin-top:18px}
+.figframe{background:var(--canvas-soft);border-radius:var(--r-md);padding:18px;border:0}
 .figframe img{width:100%;display:block;border-radius:8px}
 
 /* ============================================================
@@ -335,8 +339,8 @@ table.tight th{padding:0 14px 12px}
      <img src="fotos/arquivo.jpg" alt="descrição">
    ============================================================ */
 .photo{
-  position:relative;margin:0;border-radius:20px;overflow:hidden;
-  background:var(--surface-2);border:1.5px dashed var(--line-strong);
+  position:relative;margin:0;border-radius:var(--r-md);overflow:hidden;
+  background:var(--canvas-soft);border:1.5px dashed var(--hairline);
   display:grid;place-items:center;min-height:180px;
   background-size:cover;background-position:center;transition:border-color .2s ease,background-color .2s ease;
 }
@@ -345,53 +349,73 @@ table.tight th{padding:0 14px 12px}
 .photo.square{aspect-ratio:1/1}
 .photo.fill{position:absolute;inset:0;border-radius:0;border:0;margin:0}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
-.photo.over{border-color:var(--accent);background-color:var(--accent-soft)}
-.photo.filled{border-style:solid;border-color:var(--line)}
+.photo.over{border-color:var(--accent);background-color:var(--field)}
+.photo.filled{border-style:solid;border-color:var(--hairline-soft)}
 .photo.filled .ph-hint{display:none}
-.ph-hint{text-align:center;color:var(--ink-3);padding:24px;pointer-events:none}
+.ph-hint{text-align:center;color:var(--faint);padding:24px;pointer-events:none}
 .ph-hint .ic{
-  width:52px;height:52px;border-radius:14px;border:1px solid var(--line-strong);
-  display:grid;place-items:center;margin:0 auto 16px;font-size:22px;color:var(--ink-2)
+  width:52px;height:52px;border-radius:var(--r-sm);border:1px solid var(--hairline);
+  display:grid;place-items:center;margin:0 auto 16px;font-size:22px;color:var(--muted)
 }
-.ph-hint b{display:block;font-size:16px;font-weight:500;color:var(--ink-2);margin-bottom:6px}
+.ph-hint b{display:block;font-size:16px;font-weight:600;color:var(--muted);margin-bottom:6px}
 .ph-hint span{font-size:13px;letter-spacing:.03em}
-.photo-cap{margin-top:12px;font-size:14px;color:var(--ink-3)}
+.photo-cap{margin-top:12px;font-size:14px;font-weight:450;color:var(--muted)}
 .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .hero-photo{position:absolute;inset:0;z-index:0}
-.photo.fill .ph-hint{position:absolute;right:34px;bottom:104px;z-index:2;text-align:right;background:rgba(26,26,25,.72);border:1px dashed var(--line-strong);border-radius:14px;padding:18px 22px}
+.photo.fill .ph-hint{position:absolute;right:34px;bottom:104px;z-index:2;text-align:right;background:var(--canvas-soft);border:1px dashed var(--hairline);border-radius:var(--r-sm);padding:18px 22px}
+.slide.invert .photo.fill .ph-hint{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.68)}
+.slide.invert .photo.fill .ph-hint b{color:rgba(255,255,255,.86)}
+.slide.invert .photo.fill .ph-hint .ic{border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.7)}
 .photo.fill .ph-hint .ic{margin:0 0 10px auto}
 .photo.fill .ph-hint{pointer-events:auto;cursor:pointer}
 .hero-photo::after{
   content:"";position:absolute;inset:0;z-index:1;
-  background:linear-gradient(90deg,rgba(14,15,16,.96) 0%,rgba(14,15,16,.86) 42%,rgba(14,15,16,.45) 100%);
+  background:linear-gradient(90deg,rgba(255,255,255,.97) 0%,rgba(255,255,255,.90) 42%,rgba(255,255,255,.42) 100%);
+}
+.slide.invert .hero-photo::after{
+  background:linear-gradient(90deg,rgba(20,20,20,.97) 0%,rgba(20,20,20,.90) 42%,rgba(20,20,20,.42) 100%);
 }
 .slide.has-hero > *:not(.hero-photo){position:relative;z-index:2}
+
+/* Inversão de polaridade — o "fim de página" do sistema, aqui usado
+   nos divisores de bloco e no encerramento. */
+.slide.invert{background:var(--ink);color:#fff}
+.slide.invert h1,.slide.invert h2,.slide.invert h3,.slide.invert strong{color:#fff}
+.slide.invert .eyebrow{color:rgba(255,255,255,.60)}
+.slide.invert p,.slide.invert .lead,.slide.invert .small,.slide.invert .note{color:rgba(255,255,255,.72)}
+.slide.invert .rule{background:rgba(255,255,255,.22)}
+.slide.invert .ph-text{text-decoration-color:rgba(255,255,255,.5)}
 </style>
 <style>
 /* ============================================================
    7. INTERFACE DE APRESENTAÇÃO (fora do palco)
    ============================================================ */
-#progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);width:0;z-index:60;transition:width .45s var(--ease)}
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--ink);width:0;z-index:60;transition:width .45s var(--ease)}
+body.on-invert #progress{background:#fff}
 #chrome{
   position:fixed;left:0;right:0;bottom:0;z-index:55;
   display:flex;align-items:center;justify-content:space-between;
-  padding:16px 30px;font-size:13px;color:var(--ink-3);
-  background:linear-gradient(to top,rgba(14,15,16,.92),transparent);
-  pointer-events:none;letter-spacing:.05em;
+  padding:16px 30px;font-size:13px;font-weight:450;color:var(--muted);
+  background:linear-gradient(to top,rgba(255,255,255,.94),rgba(255,255,255,0));
+  pointer-events:none;letter-spacing:0;
 }
-#chrome b{color:var(--ink-2);font-weight:500}
+body.on-invert #chrome{background:linear-gradient(to top,rgba(20,20,20,.94),rgba(20,20,20,0));color:rgba(255,255,255,.66)}
+#chrome b{color:var(--ink);font-weight:600}
+body.on-invert #chrome b{color:#fff}
 #chrome .right{display:flex;gap:22px;align-items:center;pointer-events:auto}
 #timer{font-variant-numeric:tabular-nums;letter-spacing:.08em}
 #timer.warn{color:#c98500}
 #timer.over{color:#e66767}
 #chrome kbd{
-  font-family:var(--sans);border:1px solid var(--line);border-radius:6px;
-  padding:3px 7px;font-size:11px;color:var(--ink-3);cursor:pointer;pointer-events:auto
+  font-family:var(--sans);border:1px solid var(--hairline);border-radius:9999px;
+  padding:3px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;pointer-events:auto
 }
-#chrome kbd:hover{color:var(--ink);border-color:var(--line-strong)}
+#chrome kbd:hover{color:var(--ink);border-color:var(--ink)}
+body.on-invert #chrome kbd{border-color:rgba(255,255,255,.30);color:rgba(255,255,255,.72)}
+body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 
 .overlay{
-  position:fixed;inset:0;z-index:70;background:rgba(10,11,12,.88);
+  position:fixed;inset:0;z-index:70;background:rgba(255,255,255,.94);color:var(--ink);
   backdrop-filter:blur(16px);display:none;padding:60px;overflow:auto;
   animation:fadeIn .22s ease both;
 }
@@ -401,29 +425,29 @@ table.tight th{padding:0 14px 12px}
 #menu ol{list-style:none;margin:0;padding:0;columns:2;column-gap:56px}
 #menu li{
   break-inside:avoid;display:grid;grid-template-columns:38px 1fr;gap:14px;
-  padding:9px 12px;border-radius:9px;cursor:pointer;font-size:16px;color:var(--ink-2);
+  padding:9px 14px;border-radius:9999px;cursor:pointer;font-size:16px;font-weight:450;color:var(--muted);
 }
-#menu li:hover{background:rgba(255,255,255,.06);color:var(--ink)}
-#menu li.cur{background:var(--accent-soft);color:var(--ink)}
+#menu li:hover{background:var(--canvas-soft);color:var(--ink)}
+#menu li.cur{background:var(--ink);color:#fff}
 #menu li .no{color:var(--ink-3);font-variant-numeric:tabular-nums}
-#menu li.sec{margin-top:20px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);cursor:default;grid-template-columns:1fr}
+#menu li.sec{margin-top:20px;font-size:13px;letter-spacing:0;font-weight:600;color:var(--muted);cursor:default;grid-template-columns:1fr}
 #menu li.sec:hover{background:none}
 #help .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 56px}
-#help .row{display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px;color:var(--ink-2)}
+#help .row{display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid var(--hairline-soft);font-size:16px;font-weight:450;color:var(--muted)}
 #help .row kbd{
-  font-family:var(--sans);background:var(--surface);border:1px solid var(--line);
-  border-radius:6px;padding:4px 10px;font-size:13px;color:var(--ink);white-space:nowrap
+  font-family:var(--sans);background:var(--canvas-soft);border:0;
+  border-radius:9999px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap
 }
 
 #notes{
   position:fixed;left:0;right:0;bottom:0;z-index:65;max-height:42vh;overflow:auto;
-  background:var(--surface);border-top:1px solid var(--line);
+  background:var(--canvas-soft);border-top:1px solid var(--hairline);
   padding:26px 34px;transform:translateY(101%);transition:transform .35s var(--ease);
 }
 #notes.open{transform:none}
-#notes .t{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
-#notes .body{font-size:19px;line-height:1.55;color:var(--ink-2);max-width:100ch}
-#notes .next{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:15px;color:var(--ink-3)}
+#notes .t{font-size:13px;letter-spacing:0;font-weight:600;color:var(--muted);margin-bottom:12px}
+#notes .body{font-size:19px;font-weight:450;line-height:1.5;color:var(--ink);max-width:100ch}
+#notes .next{margin-top:18px;padding-top:16px;border-top:1px solid var(--hairline);font-size:15px;font-weight:450;color:var(--muted)}
 
 #black{position:fixed;inset:0;background:#000;z-index:80;display:none}
 #black.on{display:block}
@@ -475,7 +499,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 02 · ROTEIRO ============================ -->
 <section class="slide" data-transition="rise" data-section="Abertura" data-title="Roteiro">
-  <div class="head" data-anim><p class="eyebrow">Roteiro</p><h2>O caminho da apresentação</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Roteiro</p><h2>O caminho da apresentação.</h2></div>
   <div class="cols c-4 gap-s">
     <div class="card" data-anim><span class="n">01</span><h3>Introdução</h3><p>O B DOMPSA, o material Classe II e o problema de pesquisa.</p></div>
     <div class="card" data-anim><span class="n">02</span><h3>Referencial</h3><p>Da Indústria 4.0 à Logística 4.0: IoT, <em>Big Data</em> e IA na doutrina.</p></div>
@@ -487,7 +511,7 @@ table.tight th{padding:0 14px 12px}
 </section>
 
 <!-- ============================ 03 · DIVISOR ============================ -->
-<section class="slide" data-transition="cover" data-section="Introdução" data-title="Divisor · Introdução">
+<section class="slide invert" data-transition="cover" data-section="Introdução" data-title="Divisor · Introdução">
   <p class="eyebrow" data-anim>Bloco 01</p>
   <h1 class="serif" style="font-size:110px" data-anim>Introdução</h1>
   <p class="lead wide" data-anim>De onde parte a pesquisa, o que ela pergunta e por que a resposta importa para a atividade aeroterrestre.</p>
@@ -499,7 +523,7 @@ table.tight th{padding:0 14px 12px}
   <div class="cols c-2a">
     <div>
       <p class="eyebrow" data-anim>Contextualização</p>
-      <h2 data-anim>A Quarta Revolução Industrial chegou à logística</h2>
+      <h2 data-anim>A Quarta Revolução Industrial chegou à logística.</h2>
       <p data-anim>A Indústria 4.0 se caracteriza pela automação, pela digitalização e pela integração entre sistemas físicos e digitais. Aplicada à cadeia de suprimentos, deu origem à <strong>Logística 4.0</strong> — um paradigma que incorpora tecnologias avançadas para aprimorar a decisão, reduzir custos e otimizar processos.</p>
       <p data-anim>Nas Forças Armadas, a Doutrina Militar Terrestre prevê uma logística compatível com operações de amplo espectro, com ênfase na incorporação de tecnologias que ampliem eficiência e integração.</p>
       <p class="note" data-anim>PINTO (2022) · ROSÁRIO (2023) · COTER, EB70-MC-10.238 (2022)</p>
@@ -519,7 +543,7 @@ table.tight th{padding:0 14px 12px}
     </figure>
     <div>
       <p class="eyebrow" data-anim>Objeto do estudo</p>
-      <h2 data-anim>O material aeroterrestre é Classe II — e é crítico</h2>
+      <h2 data-anim>O material aeroterrestre é Classe II — e é crítico.</h2>
       <p data-anim>O B DOMPSA é o principal condutor da Força Terrestre no suprimento pelo ar. Cabe a ele prover o material aeroterrestre pelas funções logísticas de <strong>suprimento, manutenção e transporte</strong>.</p>
       <ul class="list plain" style="margin-top:8px">
         <li data-anim><span class="k"></span><span>Alta variedade e volume de itens, o que dificulta o controle individualizado.</span></li>
@@ -540,16 +564,16 @@ table.tight th{padding:0 14px 12px}
     <cite>Problema de pesquisa</cite>
   </blockquote>
   <div class="cols c-3 gap-s" style="margin-top:44px">
-    <div class="card" data-anim><span class="n">EVIDÊNCIA</span><p>Controle predominantemente manual: livros, fichas e planilhas paralelas.</p></div>
-    <div class="card" data-anim><span class="n">EVIDÊNCIA</span><p>Desequilíbrios de estoque — excedentes desnecessários e faltas críticas.</p></div>
-    <div class="card" data-anim><span class="n">EVIDÊNCIA</span><p>Escassez de estudos aplicados sobre Logística 4.0 no contexto do Mat Aet.</p></div>
+    <div class="card" data-anim><span class="n">Evidência</span><p>Controle predominantemente manual: livros, fichas e planilhas paralelas.</p></div>
+    <div class="card" data-anim><span class="n">Evidência</span><p>Desequilíbrios de estoque — excedentes desnecessários e faltas críticas.</p></div>
+    <div class="card" data-anim><span class="n">Evidência</span><p>Escassez de estudos aplicados sobre Logística 4.0 no contexto do Mat Aet.</p></div>
   </div>
   <aside class="notes">Slide-chave. Ler a pergunta devagar, olhando para a banca. Se levarem uma única coisa da apresentação, é esta frase.</aside>
 </section>
 
 <!-- ============================ 07 · QUESTÕES ============================ -->
 <section class="slide" data-transition="tilt" data-section="Introdução" data-title="Questões de estudo">
-  <div class="head" data-anim><p class="eyebrow">Questões de estudo</p><h2>Quatro perguntas que orientaram o trabalho</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Questões de estudo</p><h2>Quatro perguntas que orientaram o trabalho.</h2></div>
   <ul class="list">
     <li data-anim><span class="k">a</span><span>Como se estrutura, hoje, a gestão do Mat Aet no B DOMPSA, à luz dos manuais e normas técnicas em vigor?</span></li>
     <li data-anim><span class="k">b</span><span>Quais são as principais limitações e desafios no controle e na distribuição do material aeroterrestre?</span></li>
@@ -581,18 +605,18 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 09 · JUSTIFICATIVA ============================ -->
 <section class="slide" data-transition="soft" data-section="Introdução" data-title="Justificativa">
-  <div class="head" data-anim><p class="eyebrow">Justificativa</p><h2>Por que esta pesquisa importa</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Justificativa</p><h2>Por que esta pesquisa importa.</h2></div>
   <div class="cols c-3 gap-s">
-    <div class="card" data-anim><span class="n">PRÁTICA</span><p>Tornar controle, manutenção e distribuição do Mat Aet mais eficientes e confiáveis — com reflexo direto na <strong>segurança das operações aeroterrestres</strong>.</p></div>
-    <div class="card" data-anim><span class="n">TEÓRICA</span><p>Contribuir com o debate ainda incipiente sobre tecnologias da Indústria 4.0 aplicadas à Logística Militar, à luz da sustentação preditiva.</p></div>
-    <div class="card accent" data-anim><span class="n">INSTITUCIONAL</span><p>Aderência ao Objetivo Estratégico do Exército nº 24 — <em>"Aperfeiçoar o Sistema Logístico Militar Terrestre"</em>.</p></div>
+    <div class="card" data-anim><span class="n">Prática</span><p>Tornar controle, manutenção e distribuição do Mat Aet mais eficientes e confiáveis — com reflexo direto na <strong>segurança das operações aeroterrestres</strong>.</p></div>
+    <div class="card" data-anim><span class="n">Teórica</span><p>Contribuir com o debate ainda incipiente sobre tecnologias da Indústria 4.0 aplicadas à Logística Militar, à luz da sustentação preditiva.</p></div>
+    <div class="card accent" data-anim><span class="n">Institucional</span><p>Aderência ao Objetivo Estratégico do Exército nº 24 — <em>"Aperfeiçoar o Sistema Logístico Militar Terrestre"</em>.</p></div>
   </div>
   <p class="note" data-anim>LUNDY (FM 4-0) · PAIVA (2023), Diretriz do Comandante do Exército, p. 32</p>
   <aside class="notes">O OEE nº 24 é o argumento mais forte diante de uma banca militar. Guardá-lo para o final da fala deste slide.</aside>
 </section>
 
 <!-- ============================ 10 · DIVISOR ============================ -->
-<section class="slide" data-transition="cover" data-section="Referencial" data-title="Divisor · Referencial">
+<section class="slide invert" data-transition="cover" data-section="Referencial" data-title="Divisor · Referencial">
   <p class="eyebrow" data-anim>Bloco 02</p>
   <h1 class="serif" style="font-size:110px" data-anim>Referencial teórico</h1>
   <p class="lead wide" data-anim>Sobre quais ombros a pesquisa se apoia — e onde a literatura ainda não chegou.</p>
@@ -601,13 +625,13 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 11 · DA 4.0 À LOG 4.0 ============================ -->
 <section class="slide" data-transition="slide" data-section="Referencial" data-title="Da Indústria 4.0 à Logística 4.0">
-  <div class="head" data-anim><p class="eyebrow">Evolução do campo</p><h2>Da Indústria 4.0 à Logística 4.0</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Evolução do campo</p><h2>Da Indústria 4.0 à Logística 4.0.</h2></div>
   <div class="timeline">
-    <div class="tl" data-anim><span class="y">ORIGEM</span><h3>Logística militar</h3><p>Nasce no planejamento e na condução das operações em campanha.</p></div>
-    <div class="tl" data-anim><span class="y">DIFUSÃO</span><h3>Meio empresarial</h3><p>Consolida-se como pilar da competitividade organizacional.</p></div>
-    <div class="tl" data-anim><span class="y">INDÚSTRIA 4.0</span><h3>Sistemas ciberfísicos</h3><p>Conectividade, automação e análise de dados em tempo real.</p></div>
-    <div class="tl" data-anim><span class="y">LOGÍSTICA 4.0</span><h3>Ciclo conectado</h3><p>Ganhos de eficiência e velocidade; decisão orientada por dados.</p></div>
-    <div class="tl" data-anim><span class="y">HORIZONTE</span><h3>Sustentação preditiva</h3><p>Sistemas que antecipam demandas e ajustam o apoio de forma proativa.</p></div>
+    <div class="tl" data-anim><span class="y">Origem</span><h3>Logística militar</h3><p>Nasce no planejamento e na condução das operações em campanha.</p></div>
+    <div class="tl" data-anim><span class="y">Difusão</span><h3>Meio empresarial</h3><p>Consolida-se como pilar da competitividade organizacional.</p></div>
+    <div class="tl" data-anim><span class="y">Indústria 4.0</span><h3>Sistemas ciberfísicos</h3><p>Conectividade, automação e análise de dados em tempo real.</p></div>
+    <div class="tl" data-anim><span class="y">Logística 4.0</span><h3>Ciclo conectado</h3><p>Ganhos de eficiência e velocidade; decisão orientada por dados.</p></div>
+    <div class="tl" data-anim><span class="y">Horizonte</span><h3>Sustentação preditiva</h3><p>Sistemas que antecipam demandas e ajustam o apoio de forma proativa.</p></div>
   </div>
   <p class="note" data-anim>SILVA e KAWAKAME · RADIVOJEVIĆ e MILOSAVLJEVIĆ (2019) · LUNDY (FM 4-0)</p>
   <aside class="notes">Fechar dizendo em que ponto dessa linha está o B DOMPSA hoje — entre o registro manual e a informatização parcial.</aside>
@@ -615,18 +639,18 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 12 · OS TRÊS PILARES ============================ -->
 <section class="slide" data-transition="rise" data-section="Referencial" data-title="IoT, Big Data e IA">
-  <div class="head" data-anim><p class="eyebrow">Pilares tecnológicos</p><h2>As três tecnologias analisadas</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Pilares tecnológicos</p><h2>As três tecnologias analisadas.</h2></div>
   <div class="cols c-3 gap-s" style="align-items:stretch">
     <div class="card" data-anim>
-      <span class="n">INTERNET DAS COISAS</span><h3>O material informa seu estado</h3>
+      <span class="n">Internet das Coisas</span><h3>O material informa seu estado</h3>
       <p>Conexão entre objetos, sensores e sistemas. Aplicada ao rastreamento de itens, ao monitoramento de condições de uso e ao acompanhamento do ciclo de vida dos ativos.</p>
     </div>
     <div class="card" data-anim>
-      <span class="n">BIG DATA</span><h3>Dado disperso vira informação</h3>
+      <span class="n">Big Data</span><h3>Dado disperso vira informação</h3>
       <p>Reúne, processa e analisa grandes volumes de dados. Permite identificar padrões, apoiar previsões e melhorar o controle de estoques.</p>
     </div>
     <div class="card" data-anim>
-      <span class="n">INTELIGÊNCIA ARTIFICIAL</span><h3>A decisão deixa de ser empírica</h3>
+      <span class="n">Inteligência artificial</span><h3>A decisão deixa de ser empírica</h3>
       <p>Reconhece padrões e apoia análises preditivas: previsão de demanda, identificação de gargalos e priorização de manutenção e reposição.</p>
     </div>
   </div>
@@ -636,7 +660,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 13 · DOUTRINA ============================ -->
 <section class="slide" data-transition="fade" data-section="Referencial" data-title="Base doutrinária">
-  <div class="head" data-anim><p class="eyebrow">Base doutrinária e normativa</p><h2>O que a norma já determina</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Base doutrinária e normativa</p><h2>O que a norma já determina.</h2></div>
   <table data-anim>
     <thead><tr><th>Documento</th><th>O que estabelece</th><th>Relação com a pesquisa</th></tr></thead>
     <tbody>
@@ -660,7 +684,7 @@ table.tight th{padding:0 14px 12px}
 </section>
 
 <!-- ============================ 15 · DIVISOR ============================ -->
-<section class="slide" data-transition="cover" data-section="Metodologia" data-title="Divisor · Metodologia">
+<section class="slide invert" data-transition="cover" data-section="Metodologia" data-title="Divisor · Metodologia">
   <p class="eyebrow" data-anim>Bloco 03</p>
   <h1 class="serif" style="font-size:110px" data-anim>Metodologia</h1>
   <p class="lead wide" data-anim>Como a pesquisa foi construída para que o resultado seja verificável.</p>
@@ -669,7 +693,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 16 · DELINEAMENTO ============================ -->
 <section class="slide" data-transition="tilt" data-section="Metodologia" data-title="Delineamento da pesquisa">
-  <div class="head" data-anim><p class="eyebrow">Delineamento</p><h2>Classificação da pesquisa</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Delineamento</p><h2>Classificação da pesquisa.</h2></div>
   <div class="cols c-4 gap-s">
     <div class="stack" data-anim><p class="small">Quanto à natureza</p><div class="pills"><span class="pill on">Aplicada</span><span class="pill">Básica</span></div></div>
     <div class="stack" data-anim><p class="small">Quanto aos objetivos</p><div class="pills"><span class="pill on">Exploratória</span><span class="pill on">Descritiva</span><span class="pill">Explicativa</span></div></div>
@@ -683,7 +707,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 17 · AMOSTRA ============================ -->
 <section class="slide" data-transition="rise" data-section="Metodologia" data-title="Amostra e coleta">
-  <div class="head" data-anim><p class="eyebrow">Amostra e coleta</p><h2>Quem participou da pesquisa</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Amostra e coleta</p><h2>Quem participou da pesquisa.</h2></div>
   <div class="kpis">
     <div class="kpi" data-anim><div class="v">43</div><div class="l">Militares convidados a responder o formulário</div></div>
     <div class="kpi" data-anim><div class="v">29</div><div class="l">Respostas válidas</div></div>
@@ -691,16 +715,16 @@ table.tight th{padding:0 14px 12px}
     <div class="kpi" data-anim><div class="v">3</div><div class="l">Entrevistas com especialistas</div></div>
   </div>
   <div class="cols c-3 gap-s" style="margin-top:26px">
-    <div class="card" data-anim><span class="n">TEN QAO AZEVEDO</span><p>Criador do SisCAAeT, no Comando de Operações Especiais.</p></div>
-    <div class="card" data-anim><span class="n">CEL NESTOR LANA</span><p>Especialista DOMPSA e desenvolvedor de sistemas, no CDS do Exército.</p></div>
-    <div class="card" data-anim><span class="n">PROF. VICTOR SANTOS</span><p>Professor da disciplina Logística 4.0 na AMAN.</p></div>
+    <div class="card" data-anim><span class="n">Ten QAO Azevedo</span><p>Criador do SisCAAeT, no Comando de Operações Especiais.</p></div>
+    <div class="card" data-anim><span class="n">Cel Nestor Lana</span><p>Especialista DOMPSA e desenvolvedor de sistemas, no CDS do Exército.</p></div>
+    <div class="card" data-anim><span class="n">Prof. Victor Santos</span><p>Professor da disciplina Logística 4.0 na AMAN.</p></div>
   </div>
   <aside class="notes">A taxa de retorno de 67,4% é alta para pesquisa desse tipo — vale dizer isso em voz alta, sustenta a validade da amostra.</aside>
 </section>
 
 <!-- ============================ 18 · PERFIL ============================ -->
 <section class="slide" data-transition="swipe" data-section="Metodologia" data-title="Perfil da amostra">
-  <div class="head" data-anim><p class="eyebrow">Perfil dos respondentes</p><h2>Experiência funcional concentrada no material</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Perfil dos respondentes</p><h2>Experiência funcional concentrada no material.</h2></div>
   <div class="cols c-2 gap-s" style="align-items:start">
     <div class="chart" data-anim role="img" aria-label="Setor de atuação dos 29 respondentes">
       <div class="c-title">Setor de maior vínculo com o Mat Aet</div>
@@ -734,7 +758,7 @@ table.tight th{padding:0 14px 12px}
     </figure>
     <div>
       <p class="eyebrow" data-anim>Instrumentos e análise</p>
-      <h2 data-anim>Três fontes, uma triangulação</h2>
+      <h2 data-anim>Três fontes, uma triangulação.</h2>
       <ul class="list" style="margin-top:22px">
         <li data-anim><span class="k">01</span><span><strong>Formulário eletrônico</strong> — questões fechadas em escala de 1 a 5 e questões abertas, organizadas pelas questões de estudo.</span></li>
         <li data-anim><span class="k">02</span><span><strong>Entrevistas semiestruturadas</strong> — três especialistas em sistemas, gestão aeroterrestre e Logística 4.0.</span></li>
@@ -748,7 +772,7 @@ table.tight th{padding:0 14px 12px}
 </section>
 
 <!-- ============================ 20 · DIVISOR ============================ -->
-<section class="slide" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
+<section class="slide invert" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
   <p class="eyebrow" data-anim>Bloco 04</p>
   <h1 class="serif" style="font-size:110px" data-anim>Resultados</h1>
   <p class="lead wide" data-anim>O que os 29 respondentes e os três especialistas revelaram.</p>
@@ -757,9 +781,9 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 21 · PANORAMA ============================ -->
 <section class="slide" data-transition="zoom" data-section="Resultados" data-title="Panorama dos achados">
-  <div class="head" data-anim><p class="eyebrow">Panorama</p><h2>O diagnóstico em quatro números</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Panorama</p><h2>O diagnóstico em quatro números.</h2></div>
   <div class="kpis">
-    <div class="kpi" data-anim><div class="v">4,17</div><div class="l">Dependência de registros manuais<br><span class="small">média na escala de 1 a 5</span></div><div class="d" style="color:#e66767">79,3% marcaram 4 ou 5</div></div>
+    <div class="kpi" data-anim><div class="v">4,17</div><div class="l">Dependência de registros manuais<br><span class="small">média na escala de 1 a 5</span></div><div class="d">79,3% marcaram 4 ou 5</div></div>
     <div class="kpi" data-anim><div class="v">2,86</div><div class="l">Rastreabilidade do material<br><span class="small">o indicador mais baixo da pesquisa</span></div></div>
     <div class="kpi" data-anim><div class="v">3,21</div><div class="l">Avaliação do modelo de controle<br><span class="small">funcional, porém intermediário</span></div></div>
     <div class="kpi" data-anim><div class="v">4,69</div><div class="l">Potencial percebido da IoT<br><span class="small">a maior média entre as tecnologias</span></div></div>
@@ -770,7 +794,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 22 · DIAGNÓSTICO ============================ -->
 <section class="slide" data-transition="rise" data-section="Resultados" data-title="Diagnóstico do modelo atual">
-  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Diagnóstico do modelo atual de gestão</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Diagnóstico do modelo atual de gestão.</h2></div>
   <div class="chart" data-anim role="img" aria-label="Médias das percepções sobre o modelo atual, escala de 1 a 5">
     <div class="legend">
       <span style="--c:var(--s1)"><i></i>quanto maior, melhor</span>
@@ -789,7 +813,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 23 · ETAPAS CRÍTICAS ============================ -->
 <section class="slide" data-transition="swipe" data-section="Resultados" data-title="Etapas críticas">
-  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Etapas de maior dificuldade</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Etapas de maior dificuldade.</h2></div>
   <div class="chart" data-anim role="img" aria-label="Percentual de respondentes que apontou cada etapa como a mais difícil">
     <div class="c-sub">% dos 29 respondentes · questão de múltipla escolha</div>
     <div class="bars">
@@ -808,7 +832,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 24 · PROBLEMAS ============================ -->
 <section class="slide" data-transition="slide" data-section="Resultados" data-title="Problemas recorrentes">
-  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Principais problemas relatados</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (a)</p><h2>Principais problemas relatados.</h2></div>
   <div class="chart hbars wide" data-anim role="img" aria-label="Principais problemas da gestão do material, por percentual de menções">
     <div class="hrow"><div class="lbl">Excesso de controles manuais</div><div class="htrack"><div class="hfill" style="--v:65.5"></div></div><div class="num">65,5%</div></div>
     <div class="hrow"><div class="lbl">Risco de erro humano</div><div class="htrack"><div class="hfill" style="--v:51.7"></div></div><div class="num">51,7%</div></div>
@@ -824,14 +848,14 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 25 · POTENCIAL ============================ -->
 <section class="slide" data-transition="flip" data-section="Resultados" data-title="Potencial percebido">
-  <div class="head" data-anim><p class="eyebrow">Objetivo específico (c)</p><h2>Potencial percebido das tecnologias</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (c)</p><h2>Potencial percebido das tecnologias.</h2></div>
   <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
     <div class="kpi" data-anim><div class="v">4,69</div><div class="l">Internet das Coisas<br><span class="small">média na escala de 1 a 5</span></div></div>
     <div class="kpi" data-anim><div class="v">4,62</div><div class="l"><em>Big Data</em><br><span class="small">média na escala de 1 a 5</span></div></div>
     <div class="kpi" data-anim><div class="v">4,62</div><div class="l">Inteligência Artificial<br><span class="small">média na escala de 1 a 5</span></div></div>
   </div>
   <div class="card accent" style="margin-top:26px" data-anim>
-    <span class="n">PERGUNTA GERAL</span>
+    <span class="n">Pergunta geral</span>
     <p style="font-size:26px;line-height:1.4;color:var(--ink)"><strong>75,9%</strong> dos respondentes atribuíram o <strong>nível máximo</strong> de avaliação à contribuição das tecnologias da Logística 4.0 para a gestão do material aeroterrestre.</p>
   </div>
   <aside class="notes">A percepção favorável é praticamente unânime. Isso importa porque adoção de tecnologia falha, quase sempre, por resistência — e aqui ela não aparece como principal barreira.</aside>
@@ -839,7 +863,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 26 · BENEFÍCIOS ============================ -->
 <section class="slide" data-transition="rise" data-section="Resultados" data-title="Aspectos mais beneficiados">
-  <div class="head" data-anim><p class="eyebrow">Objetivo específico (c)</p><h2>Onde a tecnologia traria mais benefício</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Objetivo específico (c)</p><h2>Onde a tecnologia traria mais benefício.</h2></div>
   <div class="chart hbars wide" data-anim role="img" aria-label="Aspectos que mais se beneficiariam das tecnologias da Logística 4.0">
     <div class="hrow"><div class="lbl">Controle de estoque</div><div class="htrack"><div class="hfill" style="--v:92.6"></div></div><div class="num">92,6%</div></div>
     <div class="hrow"><div class="lbl">Integração de informações</div><div class="htrack"><div class="hfill" style="--v:85.2"></div></div><div class="num">85,2%</div></div>
@@ -855,14 +879,14 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 27 · BARREIRAS ============================ -->
 <section class="slide" data-transition="tilt" data-section="Resultados" data-title="Barreiras à adoção">
-  <div class="head" data-anim><p class="eyebrow">Viabilidade</p><h2>O que dificulta a adoção</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Viabilidade</p><h2>O que dificulta a adoção.</h2></div>
   <div class="chart hbars wide" data-anim role="img" aria-label="Fatores que dificultam a adoção das tecnologias da Logística 4.0">
-    <div class="hrow"><div class="lbl">Limitações orçamentárias</div><div class="htrack"><div class="hfill" style="--v:79.3;--c:var(--s2)"></div></div><div class="num">79,3%</div></div>
-    <div class="hrow"><div class="lbl">Falta de prioridade institucional</div><div class="htrack"><div class="hfill" style="--v:62.1;--c:var(--s2)"></div></div><div class="num">62,1%</div></div>
-    <div class="hrow"><div class="lbl">Falta de infraestrutura tecnológica</div><div class="htrack"><div class="hfill" style="--v:62.1;--c:var(--s2)"></div></div><div class="num">62,1%</div></div>
-    <div class="hrow"><div class="lbl">Resistência à mudança</div><div class="htrack"><div class="hfill" style="--v:48.3;--c:var(--s2)"></div></div><div class="num">48,3%</div></div>
-    <div class="hrow"><div class="lbl">Integração com sistemas existentes</div><div class="htrack"><div class="hfill" style="--v:48.3;--c:var(--s2)"></div></div><div class="num">48,3%</div></div>
-    <div class="hrow"><div class="lbl">Falta de capacitação do pessoal</div><div class="htrack"><div class="hfill" style="--v:34.5;--c:var(--s2)"></div></div><div class="num">34,5%</div></div>
+    <div class="hrow"><div class="lbl">Limitações orçamentárias</div><div class="htrack"><div class="hfill" style="--v:79.3"></div></div><div class="num">79,3%</div></div>
+    <div class="hrow"><div class="lbl">Falta de prioridade institucional</div><div class="htrack"><div class="hfill" style="--v:62.1"></div></div><div class="num">62,1%</div></div>
+    <div class="hrow"><div class="lbl">Falta de infraestrutura tecnológica</div><div class="htrack"><div class="hfill" style="--v:62.1"></div></div><div class="num">62,1%</div></div>
+    <div class="hrow"><div class="lbl">Resistência à mudança</div><div class="htrack"><div class="hfill" style="--v:48.3"></div></div><div class="num">48,3%</div></div>
+    <div class="hrow"><div class="lbl">Integração com sistemas existentes</div><div class="htrack"><div class="hfill" style="--v:48.3"></div></div><div class="num">48,3%</div></div>
+    <div class="hrow"><div class="lbl">Falta de capacitação do pessoal</div><div class="htrack"><div class="hfill" style="--v:34.5"></div></div><div class="num">34,5%</div></div>
   </div>
   <p class="note" data-anim>A adoção não depende só de <em>software</em> e <em>hardware</em>: exige planejamento, governança, qualificação e alinhamento estratégico.</p>
   <aside class="notes">Reconhecer as barreiras dá credibilidade e prepara o terreno para a proposta gradual do POP. Não passar rápido por este slide.</aside>
@@ -873,7 +897,7 @@ table.tight th{padding:0 14px 12px}
   <div class="cols c-2a">
     <div>
       <p class="eyebrow" data-anim>Entrevista · Ten QAO Azevedo</p>
-      <h2 data-anim>O SisCAAeT prova que é possível</h2>
+      <h2 data-anim>O SisCAAeT prova que é possível.</h2>
       <p data-anim>Sistema desenvolvido no COPESP para apoiar a gestão de recursos humanos e materiais na atividade aeroterrestre: cadastro individualizado de paraquedas por número de série, histórico de uso e manutenção, emissão automatizada de documentos, relatórios gerenciais e <strong>alertas de vida útil vencida</strong>.</p>
       <p class="note" data-anim><strong>Ganhos relatados:</strong> integração, simultaneidade, redução de inconsistências documentais e melhor controle da aptidão do efetivo empregado nos saltos.<br>
       <strong>Limitações:</strong> alimentação manual de dados iniciais, dependência de conectividade e necessidade de suporte técnico.</p>
@@ -899,7 +923,7 @@ table.tight th{padding:0 14px 12px}
     </div>
     <div>
       <p class="eyebrow" data-anim>Entrevista · Cel Nestor Lana</p>
-      <h2 data-anim>Do registro estático à evidência</h2>
+      <h2 data-anim>Do registro estático à evidência.</h2>
       <ul class="list plain" style="margin-top:18px">
         <li data-anim><span class="k"></span><span>O controle atual não assegura <strong>auditoria completa</strong> de dobragem, inspeção e movimentação.</span></li>
         <li data-anim><span class="k"></span><span>Funcionalidades essenciais: cadastro por número de série, <strong>etiquetas RFID</strong>, inventário automático e identificação do responsável por cada etapa.</span></li>
@@ -913,14 +937,14 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 30 · SANTOS ============================ -->
 <section class="slide" data-transition="soft" data-section="Resultados" data-title="Entrevista · Prof. Santos">
-  <div class="head" data-anim><p class="eyebrow">Entrevista · Prof. Victor Santos</p><h2>Digitalizar não é transformar</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Entrevista · Prof. Victor Santos</p><h2>Digitalizar não é transformar.</h2></div>
   <div class="cols c-2 gap-s">
     <div class="card" data-anim>
-      <span class="n" style="color:var(--ink-3)">DIGITALIZAÇÃO PARCIAL</span>
+      <span class="n" style="color:var(--faint)">Digitalização parcial</span>
       <p style="font-size:20px">Substituir o papel por formulários digitais. Melhora a rotina administrativa, mas mantém <strong>ilhas de informação</strong> e não gera fonte única da verdade.</p>
     </div>
     <div class="card accent" data-anim>
-      <span class="n">TRANSFORMAÇÃO DIGITAL</span>
+      <span class="n">Transformação digital</span>
       <p style="font-size:20px">Integração sistêmica, captura automática de dados, análise em tempo real e apoio efetivo à decisão. A rastreabilidade vira o <strong>"sistema nervoso"</strong> da cadeia.</p>
     </div>
   </div>
@@ -931,7 +955,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 31 · EVIDÊNCIAS ============================ -->
 <section class="slide" data-transition="cube" data-section="Resultados" data-title="Evidências de campo">
-  <div class="head" data-anim><p class="eyebrow">Evidências de campo</p><h2>O que a pesquisa viu de perto</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Evidências de campo</p><h2>O que a pesquisa viu de perto.</h2></div>
   <div class="gallery">
     <div data-anim>
       <figure class="photo square" data-photo="ev1"><div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto 1</b><span>controle manual: livros e fichas</span></div></figure>
@@ -951,7 +975,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 32 · SÍNTESE ============================ -->
 <section class="slide" data-transition="fade" data-section="Resultados" data-title="Síntese interpretativa">
-  <div class="head" data-anim><p class="eyebrow">Síntese interpretativa</p><h2>Do problema à tecnologia aplicável</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Síntese interpretativa</p><h2>Do problema à tecnologia aplicável.</h2></div>
   <table class="tight" data-anim>
     <thead><tr><th>Problema identificado</th><th>Base doutrinária</th><th>Tecnologia</th><th>Contribuição potencial</th></tr></thead>
     <tbody>
@@ -966,7 +990,7 @@ table.tight th{padding:0 14px 12px}
 </section>
 
 <!-- ============================ 33 · DIVISOR ============================ -->
-<section class="slide" data-transition="cover" data-section="Conclusão" data-title="Divisor · Conclusão">
+<section class="slide invert" data-transition="cover" data-section="Conclusão" data-title="Divisor · Conclusão">
   <p class="eyebrow" data-anim>Bloco 05</p>
   <h1 class="serif" style="font-size:110px" data-anim>Conclusão</h1>
   <p class="lead wide" data-anim>Voltando às perguntas do início — agora com resposta.</p>
@@ -975,7 +999,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 34 · RESPOSTA ============================ -->
 <section class="slide" data-transition="tilt" data-section="Conclusão" data-title="Resposta à questão central">
-  <div class="head" data-anim><p class="eyebrow">Resposta ao problema de pesquisa</p><h2>Quatro efeitos sobre a gestão do Mat Aet</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Resposta ao problema de pesquisa</p><h2>Quatro efeitos sobre a gestão do Mat Aet.</h2></div>
   <div class="cols c-4 gap-s">
     <div class="card" data-anim><span class="n">01</span><h3>Rastreabilidade</h3><p>Visibilidade do ciclo de vida de cada item, do recebimento ao descarregamento.</p></div>
     <div class="card" data-anim><span class="n">02</span><h3>Confiabilidade</h3><p>Registros auditáveis, com responsabilização por etapa executada.</p></div>
@@ -988,12 +1012,12 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 35 · PROPOSTA ============================ -->
 <section class="slide" data-transition="rise" data-section="Conclusão" data-title="Proposta · POP em 4 fases">
-  <div class="head" data-anim><p class="eyebrow">Contribuição prática</p><h2>Um POP em doze etapas, implantado em quatro fases</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Contribuição prática</p><h2>Um POP em doze etapas, implantado em quatro fases.</h2></div>
   <div class="flow" style="grid-template-columns:repeat(4,1fr)">
-    <div class="step" data-anim><span class="n">FASE 1 · BASE</span><h3>Cadastrar e identificar</h3><p>Ficha digital individual por item e etiqueta QR <em>Code</em> ou RFID, começando por paraquedas e equipamentos críticos.</p></div>
-    <div class="step" data-anim><span class="n">FASE 2 · ROTINA</span><h3>Registrar o ciclo</h3><p>Recebimento, localização física, movimentação interna e histórico técnico de inspeção, dobragem e manutenção.</p></div>
-    <div class="step" data-anim><span class="n">FASE 3 · CONTROLE</span><h3>Inventariar e auditar</h3><p>Inventário periódico contra a base digital, auditoria de inconsistências e painel de indicadores para o comando.</p></div>
-    <div class="step" data-anim><span class="n">FASE 4 · CONSOLIDAÇÃO</span><h3>Capacitar e expandir</h3><p>Treinamento dos operadores, registros físicos e digitais em paralelo na transição e expansão após o projeto-piloto.</p></div>
+    <div class="step" data-anim><span class="n">Fase 1 · Base</span><h3>Cadastrar e identificar</h3><p>Ficha digital individual por item e etiqueta QR <em>Code</em> ou RFID, começando por paraquedas e equipamentos críticos.</p></div>
+    <div class="step" data-anim><span class="n">Fase 2 · Rotina</span><h3>Registrar o ciclo</h3><p>Recebimento, localização física, movimentação interna e histórico técnico de inspeção, dobragem e manutenção.</p></div>
+    <div class="step" data-anim><span class="n">Fase 3 · Controle</span><h3>Inventariar e auditar</h3><p>Inventário periódico contra a base digital, auditoria de inconsistências e painel de indicadores para o comando.</p></div>
+    <div class="step" data-anim><span class="n">Fase 4 · Consolidação</span><h3>Capacitar e expandir</h3><p>Treinamento dos operadores, registros físicos e digitais em paralelo na transição e expansão após o projeto-piloto.</p></div>
   </div>
   <p class="note" data-anim>A proposta não substitui normas internas nem dispensa validação institucional: oferece uma sequência inicial de ações, testável em caráter piloto.</p>
   <aside class="notes">Se a banca perguntar "e como se faz?", a resposta está aqui. Ter em mente as 12 etapas do apêndice, caso peçam detalhe.</aside>
@@ -1005,9 +1029,9 @@ table.tight th{padding:0 14px 12px}
     <div>
       <p class="eyebrow" data-anim>Limitações da pesquisa</p>
       <ul class="list plain" style="margin-top:18px">
-        <li data-anim><span class="k" style="background:var(--ink-3)"></span><span>Recorte concentrado no B DOMPSA, o que restringe a generalização.</span></li>
-        <li data-anim><span class="k" style="background:var(--ink-3)"></span><span>Número de participantes: 29 respondentes e 3 entrevistados.</span></li>
-        <li data-anim><span class="k" style="background:var(--ink-3)"></span><span>Caráter predominantemente qualitativo da investigação.</span></li>
+        <li data-anim><span class="k" style="background:var(--faint)"></span><span>Recorte concentrado no B DOMPSA, o que restringe a generalização.</span></li>
+        <li data-anim><span class="k" style="background:var(--faint)"></span><span>Número de participantes: 29 respondentes e 3 entrevistados.</span></li>
+        <li data-anim><span class="k" style="background:var(--faint)"></span><span>Caráter predominantemente qualitativo da investigação.</span></li>
       </ul>
     </div>
     <div>
@@ -1025,7 +1049,7 @@ table.tight th{padding:0 14px 12px}
 
 <!-- ============================ 37 · REFERÊNCIAS ============================ -->
 <section class="slide" data-transition="fade" data-section="Conclusão" data-title="Referências">
-  <div class="head" data-anim><p class="eyebrow">Referências</p><h2>Principais obras consultadas</h2></div>
+  <div class="head" data-anim><p class="eyebrow">Referências</p><h2>Principais obras consultadas.</h2></div>
   <div style="columns:2;column-gap:56px;font-size:15px;line-height:1.5;color:var(--ink-2)" data-anim>
     <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.238</strong>: Logística Militar Terrestre. Brasília: COTER, 2022.</p>
     <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.366</strong>: Suprimento pelo ar. Brasília, 2021.</p>
@@ -1044,7 +1068,7 @@ table.tight th{padding:0 14px 12px}
 </section>
 
 <!-- ============================ 38 · ENCERRAMENTO ============================ -->
-<section class="slide has-hero" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
+<section class="slide has-hero invert" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
   <figure class="photo fill hero-photo" data-photo="fim">
     <div class="ph-hint"><div class="ic"><svg width="24" height="24"><use href="#ico-img"/></svg></div><b>Foto de encerramento (tela cheia)</b><span>salto ou formatura do B DOMPSA</span></div>
   </figure>
@@ -1169,6 +1193,7 @@ table.tight th{padding:0 14px 12px}
     var sl = slides[idx];
     document.getElementById('cur').textContent = idx + 1;
     document.getElementById('secName').textContent = sl.dataset.section || '';
+    body.classList.toggle('on-invert', sl.classList.contains('invert'));
     document.getElementById('progress').style.width = ((idx) / (slides.length - 1) * 100) + '%';
     var note = sl.querySelector('.notes');
     document.getElementById('notesBody').textContent = note ? note.textContent.trim() : 'Sem notas para este slide.';
