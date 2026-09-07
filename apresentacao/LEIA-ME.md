@@ -57,10 +57,27 @@ sem internet e sem instalar nada. Aperte **F** para tela cheia e comece.
 | `N` | roteiro de fala (as notas de cada slide) |
 | `B` | tela preta, para pausar sem desligar o projetor |
 | `F` | tela cheia |
+| `E` | liga/desliga o modo foco (tópicos um a um) |
 | `T` | troca a transição de todo o deck |
 | `R` | zera o cronômetro (amarelo aos 35 min, vermelho aos 40) |
 
-O rodapé mostra o bloco atual, o cronômetro e o número do slide.
+O rodapé mostra o bloco atual, o tópico em que você está, o cronômetro e o número
+do slide.
+
+### Modo foco
+
+Nos slides com tópicos — listas, cartões, etapas e a linha do tempo — a seta
+avança **de tópico em tópico** antes de trocar de slide. Todos ficam na tela o
+tempo todo: o atual em preto cheio, os que você já explicou apagados pela metade,
+os que ainda vêm bem apagados. O rodapé mostra `2/4`, por exemplo.
+
+Voltando com a seta esquerda, você retrocede tópico a tópico; ao sair do primeiro,
+cai no **último tópico** do slide anterior, e não no começo dele.
+
+São 16 slides com tópicos. Os demais — gráficos, tabelas, fotos e divisores —
+passam inteiros, de uma vez.
+
+`E` desliga o modo, e aí cada seta troca de slide direto, como antes.
 
 ## As fotos
 
