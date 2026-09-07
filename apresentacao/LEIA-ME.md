@@ -21,6 +21,11 @@ sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula n
 controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
 
+**Esquemas:** os três cartões do slide 12 trazem um diagrama em SVG cada um —
+a etiqueta que transmite estado (IoT), os registros dispersos convergindo para uma
+base única (*Big Data*) e o histórico projetando o limite de vida útil (IA). São
+desenhos vetoriais, não fotos: escalam sem perder nitidez e não pesam no arquivo.
+
 **Fundo:** cinza-azulado claro (`#eef1f6`), com os cartões em branco por cima —
 eles agora se separam do fundo por preenchimento, não por um fio quase invisível.
 Os divisores e o encerramento seguem pretos.
@@ -135,8 +140,7 @@ uso). `deposito-slide.mp4` é o corte já pronto.
 Abra `congresso.html` em qualquer editor de texto.
 
 - O que ainda depende de você aparece **sublinhado com pontinhos azuis** na tela e
-  marcado com `class="ph-text"` no código: o nome do congresso (slide 1) e o fecho
-  das referências (slide 38).
+  marcado com `class="ph-text"` no código: hoje, só o fecho das referências.
 - **Números dos gráficos**: cada barra tem `style="--v:55.2"` — o número é o
   comprimento da barra em porcentagem. Troque também o rótulo e o valor exibido ao lado.
 - **Notas de fala**: o texto dentro de `<aside class="notes">` de cada slide.
