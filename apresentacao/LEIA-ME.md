@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **41 slides**.
+São **42 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -146,15 +146,16 @@ você queira trocar alguma.
 |---|---|---|
 | 1 · Capa | `capa-c295-lancamento.jpg` | tela cheia, atrás do título |
 | 4 · Contextualização | `kc390-paraquedas-extracao.jpg` | quadro 16:9 na coluna direita |
-| 5 · O B DOMPSA e o Mat Aet | `carga-plataforma-paraquedas.jpg` | quadro 4:3 na coluna esquerda |
-| 20 · Instrumentos e análise | `recolhimento-pista.jpg` | quadro 4:3 na coluna esquerda |
-| 33 · Evidências de campo | `paraquedista-salto.jpg` | quadro quadrado, com o texto ao lado |
+| 5 · O B DOMPSA e o Mat Aet | `deposito-prateleiras.jpg` | quadro 4:3 na coluna esquerda |
+| 20 · Instrumentos e análise | `dobragem-mesa.jpg` | quadro 4:3 na coluna esquerda |
+| 27 · O controle é uma prancheta | `plataforma-prancheta.jpg` | quadro 16:9, meia tela |
+| 34 · Evidências de campo | `inspecao-paraquedas.jpg` · `carga-hangar.jpg` · `paraquedista-salto.jpg` | galeria de três |
 | 3 · Divisor Introdução | `kc390-paraquedas-extracao.jpg` | fundo, sob véu preto |
 | 10 · Divisor Referencial | `capa-c295-lancamento.jpg` | fundo, sob véu preto |
-| 16 · Divisor Metodologia | `recolhimento-pista.jpg` | fundo, sob véu preto |
-| 21 · Divisor Resultados | `carga-plataforma-paraquedas.jpg` | fundo, sob véu preto |
-| 35 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
-| 41 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do mandamento e do contato |
+| 16 · Divisor Metodologia | `dobragem-mesa.jpg` | fundo, sob véu preto |
+| 21 · Divisor Resultados | `deposito-prateleiras.jpg` | fundo, sob véu preto |
+| 36 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
+| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do mandamento e do contato |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
@@ -235,11 +236,11 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 3–9 | Introdução | Divisor · Contexto · Logística 4.0 · O B DOMPSA e o Mat Aet · Problema · Questões de estudo · Objetivos · Justificativa |
 | 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · O recorte do estudo · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
 | 16–20 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
-| 21–34 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 35–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
-| 41 | Encerramento | 8º Mandamento, nome e contato |
+| 21–35 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · **A prancheta** · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
+| 36–41 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
+| 42 | Encerramento | 8º Mandamento, nome e contato |
 
-## O 8º Mandamento (slide 41)
+## O 8º Mandamento (slide 42)
 
 O deck fecha num slide só, preto, com o **8º Mandamento do Dobrador de Paraquedas**
 no alto e o seu nome e contato embaixo:
@@ -256,9 +257,19 @@ faz, falando.
 Vale ler o mandamento devagar e deixar o silêncio trabalhar. É a última coisa que
 a plateia lê, então é ela que fica.
 
+## O slide da prancheta (27)
+
+Depois do gráfico de problemas recorrentes, onde 65,5% citaram excesso de controle
+manual, entra um slide de uma frase só: a foto da plataforma sendo preparada na
+pista, com o militar registrando os itens numa prancheta, e ao lado **"O sistema de
+controle é uma prancheta. Ela funciona. Só não conversa com mais ninguém."**
+
+É o slide que transforma o número em imagem. Vale deixar a foto respirar dois
+segundos antes de falar.
+
 ## Contato no slide final
 
-O slide 41 traz, abaixo do mandamento:
+O slide 42 traz, abaixo do mandamento:
 
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
