@@ -81,13 +81,17 @@ conteúdo abaixo continua alinhado à esquerda, que é onde a leitura de tabela,
 gráfico e lista funciona. Nos slides que são só título (capa, divisores e
 encerramento) o bloco inteiro vai para o eixo central.
 
-**Transição:** o deck abre no efeito **`blur`**, em que o slide que sai desfoca e o
-que entra chega já em foco. `T` percorre as outras doze, e a última posição da
-tecla (`auto`) devolve a transição própria de cada slide, que continua guardada no
-arquivo.
+**Transição:** cada slide entra com a sua (`fade`, `rise`, `cover`, `zoom`, `tilt` e
+por aí), e `T` força uma só para o deck inteiro quando você quiser uniformizar.
 
-**O encerramento** não tem mais a palavra "Obrigado" na tela: fica só o nome, sobre
-a foto. O agradecimento é falado, e isso costuma soar melhor do que lido.
+**O desfoque agora é do modo foco, não da troca de slide.** Ao passar de tópico em
+tópico, o item da vez fica nítido, o que já passou fica levemente fora de foco e o
+que ainda vem fica bem borrado. É o mesmo efeito de profundidade de campo de uma
+lente: o olho da plateia vai direto para onde você está.
+
+**O encerramento** não tem mais a palavra "Obrigado" na tela: fica o nome e o
+contato, sobre a foto. O agradecimento é falado, e isso costuma soar melhor do que
+lido. Antes dele, como último slide de conteúdo, vem o **8º Mandamento**.
 
 ## Como abrir
 
@@ -110,7 +114,7 @@ sem internet e sem instalar nada. Aperte **F** para tela cheia e comece.
 | `B` | tela preta, para pausar sem desligar o projetor |
 | `F` | tela cheia |
 | `E` | liga/desliga o modo foco (tópicos um a um) |
-| `T` | troca a transição de todo o deck (abre no `blur`) |
+| `T` | força uma transição só para todo o deck |
 | `R` | zera o cronômetro (amarelo aos 35 min, vermelho aos 40) |
 
 O rodapé mostra o bloco atual, o tópico em que você está, o cronômetro e o número
@@ -149,7 +153,7 @@ você queira trocar alguma.
 | 16 · Divisor Metodologia | `recolhimento-pista.jpg` | fundo, sob véu preto |
 | 21 · Divisor Resultados | `carga-plataforma-paraquedas.jpg` | fundo, sob véu preto |
 | 35 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
-| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do nome |
+| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do nome e do contato |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
@@ -208,9 +212,11 @@ Abre em qualquer PowerPoint, sem depender de navegador. O que ele não tem: as
 transições, o modo foco e os atalhos — é uma cópia congelada, para o caso de o
 computador do auditório não cooperar com o HTML.
 
-Cada slide tem **transição**. Como o deck HTML abre no efeito `blur` e o PowerPoint
-não tem nada equivalente, os 42 slides entram com `fade`, que é o mais próximo
-disso no formato nativo.
+Cada slide tem **transição**, traduzida da versão HTML para o equivalente nativo do
+PowerPoint: `fade`, `push`, `cover`, `wipe`, `zoom`, `dissolve` e `circle`. Os
+divisores de bloco entram com `cover`, os slides de dado com `push`, e assim por
+diante, de modo que o ritmo do deck original se mantém. O desfoque do modo foco não
+existe no PowerPoint: lá cada slide aparece com todos os tópicos nítidos.
 
 O texto não é editável (cada slide é uma imagem). Se precisar corrigir algo,
 corrija no `congresso.html` e me peça o .pptx de novo.
@@ -229,26 +235,36 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · O recorte do estudo · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
 | 16–20 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 21–34 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 35–41 | Conclusão | Divisor · Resposta à questão central · **O 8º Mandamento** · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
-| 42 | Encerramento | Só o nome |
+| 35–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
+| 41–42 | Encerramento | O 8º Mandamento · Nome e contato |
 
-## O 8º Mandamento (slide 37)
+## O 8º Mandamento (slide 41)
 
-Entre a resposta à questão de pesquisa e a proposta de POP entra um slide preto,
-só com o **8º Mandamento do Dobrador de Paraquedas**:
+O último slide de conteúdo, logo antes do slide do nome, é preto e traz só o
+**8º Mandamento do Dobrador de Paraquedas**:
 
 > Verificarei tudo duas vezes. O "mais ou menos" me fará um criminoso em potencial.
 > Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
 
-Ele não está ali como enfeite. Numa plateia de congresso de logística, quase
+Ele não está ali como enfeite. Numa plateia de congresso de logística quase
 ninguém conhece esse texto, e ele explica em três linhas o que nenhum gráfico
 explica: por que rastreabilidade de Mat Aet não é assunto administrativo. A coluna
-da direita faz a ponte — o rigor de conferir duas vezes **o material** já é rotina
-no B DOMPSA; o de conferir duas vezes **a informação** sobre ele é que ainda não é.
-E é esse vão que o POP da página seguinte fecha.
+da direita faz a ponte: o rigor de conferir duas vezes **o material** já é rotina
+no B DOMPSA; o de conferir duas vezes **a informação** sobre ele é que ainda não é,
+e é esse vão que a pesquisa mediu e que o POP se propõe a fechar.
 
-Na fala, vale ler o mandamento devagar e deixar o silêncio trabalhar antes de virar
-para a proposta.
+Na fala, vale ler o mandamento devagar e deixar o silêncio trabalhar. É a última
+coisa que a plateia ouve antes do seu nome na tela, então é ela que fica.
+
+## Contato no slide final
+
+O slide 42 traz, abaixo do nome:
+
+- `jefferson.daniel675@gmail.com`
+- `(21) 97920-3803`
+
+Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
+é o tipo de coisa que só se descobre depois.
 
 ## Dados usados nos gráficos
 

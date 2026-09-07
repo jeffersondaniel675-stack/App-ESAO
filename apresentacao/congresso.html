@@ -211,10 +211,10 @@ body{
    destaque, os já explicados apagados em parte, os que ainda vêm
    mais apagados. Tecla E liga e desliga.
    ============================================================ */
-.slide.has-steps [data-step]{transition:opacity .3s var(--ease)}
-.slide.has-steps [data-step].is-future{opacity:.20!important}
-.slide.has-steps [data-step].is-past{opacity:.52!important}
-.slide.has-steps [data-step].is-current{opacity:1!important}
+.slide.has-steps [data-step]{transition:opacity .34s var(--ease),filter .34s var(--ease)}
+.slide.has-steps [data-step].is-future{opacity:.20!important;filter:blur(3.5px)}
+.slide.has-steps [data-step].is-past{opacity:.52!important;filter:blur(1.8px)}
+.slide.has-steps [data-step].is-current{opacity:1!important;filter:blur(0)}
 .slide.invert.has-steps [data-step].is-future{opacity:.30!important}
 .slide.invert.has-steps [data-step].is-past{opacity:.50!important}
 #stepInfo{font-variant-numeric:tabular-nums}
@@ -1202,23 +1202,6 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   <aside class="notes">Esta frase final precisa ecoar o slide do problema. É o fechamento do arco, dizer devagar.</aside>
 </section>
 
-<!-- ==================== 35 · O 8º MANDAMENTO ==================== -->
-<section class="slide invert" data-transition="soft" data-section="Conclusão" data-title="O 8º Mandamento">
-  <p class="eyebrow" data-anim>Mandamentos do Dobrador de Paraquedas</p>
-  <div class="cols c-2a" style="margin-top:22px">
-    <blockquote class="quote" style="max-width:26ch;font-size:46px" data-anim>
-      Verificarei tudo duas vezes. O &ldquo;mais ou menos&rdquo; me fará um criminoso em potencial. Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
-      <cite>8º Mandamento</cite>
-    </blockquote>
-    <div>
-      <p data-anim>O rigor já está na doutrina, e é anterior a qualquer tecnologia: conferir duas vezes <strong>o material</strong> é rotina no B DOMPSA há décadas.</p>
-      <p data-anim>Conferir duas vezes <strong>a informação</strong> sobre esse material, não. Ela ainda mora em livro, ficha e planilha, três lugares que ninguém consegue cruzar no mesmo instante.</p>
-      <p class="note" data-anim>É esse o vão que o POP da próxima página se propõe a fechar.</p>
-    </div>
-  </div>
-  <aside class="notes">Pausa antes da proposta. Ler o mandamento devagar e deixar o silêncio trabalhar. Numa plateia de logística, quase ninguém conhece esse texto, e ele explica em três linhas por que rastreabilidade de Mat Aet não é assunto administrativo. Emendar com a frase do slide: o POP é esse mandamento aplicado ao dado.</aside>
-</section>
-
 <!-- ============================ 35 · PROPOSTA ============================ -->
 <section class="slide" data-transition="rise" data-section="Conclusão" data-title="Proposta · POP em 4 fases">
   <div class="head" data-anim><p class="eyebrow">Contribuição prática</p><h2>Um POP em doze etapas, implantado em quatro fases.</h2></div>
@@ -1366,10 +1349,32 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   <aside class="notes">Slide de passagem rápida. Serve à banca, não à plateia.</aside>
 </section>
 
+<!-- ==================== 41 · O 8º MANDAMENTO ==================== -->
+<section class="slide invert" data-transition="soft" data-section="Encerramento" data-title="O 8º Mandamento">
+  <p class="eyebrow" data-anim>Mandamentos do Dobrador de Paraquedas</p>
+  <div class="cols c-2a" style="margin-top:22px">
+    <blockquote class="quote" style="max-width:26ch;font-size:46px" data-anim>
+      Verificarei tudo duas vezes. O &ldquo;mais ou menos&rdquo; me fará um criminoso em potencial. Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
+      <cite>8º Mandamento</cite>
+    </blockquote>
+    <div>
+      <p data-anim>O rigor já está na doutrina, e é anterior a qualquer tecnologia: conferir duas vezes <strong>o material</strong> é rotina no B DOMPSA há décadas.</p>
+      <p data-anim>Conferir duas vezes <strong>a informação</strong> sobre esse material, não. Ela ainda mora em livro, ficha e planilha, três lugares que ninguém consegue cruzar no mesmo instante.</p>
+      <p class="note" data-anim>É esse o vão que a pesquisa mediu e que o POP proposto se propõe a fechar.</p>
+    </div>
+  </div>
+  <aside class="notes">Último slide de conteúdo, e é o que fica na memória. Ler o mandamento devagar e deixar o silêncio trabalhar. Numa plateia de logística quase ninguém conhece esse texto, e ele explica em três linhas por que rastreabilidade de Mat Aet não é assunto administrativo. Fechar dizendo que o trabalho todo foi uma tentativa de estender esse rigor ao dado, e só então virar para o slide do nome.</aside>
+</section>
+
 <!-- ============================ 38 · ENCERRAMENTO ============================ -->
 <section class="slide invert has-hero center" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
   <figure class="photo fill hero-photo hero-open" data-photo="fecho" data-from="capa" style="--hero-pos:center 44%" aria-hidden="true"></figure>
-  <h1 style="font-size:64px;max-width:18ch;margin:0" data-anim>Cap Jefferson Daniel Ferreira Martins</h1>
+  <h1 style="font-size:58px;max-width:18ch;margin:0 0 24px" data-anim>Cap Jefferson Daniel Ferreira Martins</h1>
+  <hr class="rule" style="max-width:340px;margin-top:0" data-anim>
+  <p class="small" data-anim>
+    jefferson.daniel675@gmail.com<br>
+    (21) 97920-3803
+  </p>
   <aside class="notes">Sem palavra escrita na tela: o agradecimento é falado. Dizer o nome do congresso, agradecer a atenção e parar. O silêncio depois é do público, não seu.</aside>
 </section>
 
@@ -1454,7 +1459,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 
   /* ---------- transições ---------- */
   var TRANS = ['auto','fade','slide','rise','zoom','flip','cube','blur','cover','swipe','iris','tilt','soft'];
-  var forced = TRANS.indexOf('blur');   /* o deck abre no efeito blur; T percorre os demais */
+  var forced = 0;   /* transições próprias de cada slide; T percorre as demais */
   slides.forEach(function(sl){ sl.dataset.orig = sl.dataset.transition || 'fade'; });
   function applyTransition(){
     var t = TRANS[forced];
