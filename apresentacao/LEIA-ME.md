@@ -21,6 +21,10 @@ sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula n
 controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
 
+**Fundo:** cinza-azulado claro (`#eef1f6`), com os cartões em branco por cima —
+eles agora se separam do fundo por preenchimento, não por um fio quase invisível.
+Os divisores e o encerramento seguem pretos.
+
 **Tipografia:** **Montserrat** em todo o deck — texto, títulos, etiquetas e números.
 Não há segunda família: a distinção entre etiqueta e texto vem do peso (600 contra
 400) e da cor, não de uma fonte diferente. Os números dos gráficos usam algarismos
@@ -153,6 +157,11 @@ alta resolução num arquivo 16:9, com **as notas de fala em cada slide** (aba
 Abre em qualquer PowerPoint, sem depender de navegador. O que ele não tem: as
 transições, o modo foco e os atalhos — é uma cópia congelada, para o caso de o
 computador do auditório não cooperar com o HTML.
+
+Cada slide tem **transição**, traduzida da versão HTML para o equivalente nativo do
+PowerPoint: `fade`, `push`, `cover`, `wipe`, `zoom`, `dissolve` e `circle`. Os
+divisores de bloco entram com `cover`, os slides de dado com `push`, e assim por
+diante — o ritmo do deck original se mantém.
 
 O texto não é editável (cada slide é uma imagem). Se precisar corrigir algo,
 corrija no `congresso.html` e me peça o .pptx de novo.
