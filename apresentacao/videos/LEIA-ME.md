@@ -1,12 +1,13 @@
 # Vídeos do depósito de paraquedas
 
-| Arquivo | Duração | Uso |
+`deposito-slide.mp4` é o corte que está **embutido** no `congresso.html`
+(18 s, sem som, 640×1138, 2,2 MB), recortado do `deposito-3.mov`.
+
+Os `.mov` são os originais que você mandou, guardados aqui só como fonte para
+novos cortes — **o deck não depende desta pasta para funcionar**.
+
+| Arquivo | Duração | Conteúdo |
 |---|---|---|
-| `deposito-1.mov` | 25 s | **em uso** no slide 21, parando aos 20 s |
-| `deposito-2.mov` | 40 s | reserva |
-| `deposito-3.mov` | 40 s | reserva |
-
-Todos em H.264 + AAC, retrato (512×910). Ficam fora do `congresso.html` por causa
-do tamanho — **esta pasta precisa viajar junto com o HTML**.
-
-Para trocar o vídeo do slide, edite o `src` da tag `<video>` no slide 21.
+| `deposito-1.mov` | 25 s | entrada do Depósito Avançado, descarga de viatura, conferência |
+| `deposito-2.mov` | 40 s | CSMMAet: dobragem, prateleiras e inspeção de velame |
+| `deposito-3.mov` | 40 s | depósito: conjuntos numerados, prancheta, altímetros |

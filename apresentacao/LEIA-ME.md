@@ -108,29 +108,23 @@ liso, de propósito — sem foto, funciona melhor do que com um espaço vazio.
 ## O vídeo do depósito
 
 O **slide 21** abre o bloco de resultados com um vídeo do depósito, antes dos
-números. Ele toca sozinho, **sem som**, quando você chega no slide, e para
-sozinho aos 20 segundos. Clicar no vídeo (ou a tecla `V`) pausa e continua. Ao
-trocar de slide, ele para e volta ao início.
+números: prateleiras de conjuntos numerados um a um e um militar anotando em
+prancheta na frente deles.
 
-Ao contrário das fotos, **o vídeo não está embutido** no `congresso.html` — os três
-arquivos somam 58 MB, o que deixaria o deck pesado demais. Eles ficam em
-`videos/`, e o slide aponta para `videos/deposito-1.mov`.
+O clipe está **embutido no `congresso.html`** como os fotos e a fonte — 18 segundos,
+sem som, recortados do `deposito-3.mov` e recomprimidos para 2,2 MB. **Não depende
+da pasta `videos/`**: o arquivo HTML sozinho já toca o vídeo, inclusive pelo link do
+artifact.
 
-> **Leve a pasta inteira no pen drive.** Sem a pasta `videos/` ao lado, o slide
-> mostra um aviso preto no lugar do vídeo. O resto da apresentação continua
-> funcionando normalmente.
->
-> **O link do artifact não toca o vídeo** pelo mesmo motivo: lá só existe o
-> arquivo HTML.
+Ele toca sozinho ao chegar no slide e para no fim. Clicar no vídeo (ou a tecla `V`)
+pausa e continua; trocando de slide, ele para e volta ao início. Se o navegador não
+conseguir tocá-lo, aparece o quadro congelado da cena com um aviso — o slide nunca
+fica vazio.
 
-Os três vídeos estão na pasta: `deposito-1.mov` (25 s, o que está em uso),
-`deposito-2.mov` (40 s) e `deposito-3.mov` (40 s). Para trocar, mude o `src` do
-`<video>` no slide 21; para mudar onde ele para, o atributo `data-until`.
-
-**Não consegui abrir os vídeos para conferir o conteúdo** — o ambiente onde montei
-o deck não tem o decodificador H.264. Os arquivos estão em H.264 com áudio AAC, que
-é o formato que o Chrome e o Edge tocam sem problema, mas **teste no computador da
-apresentação** antes do dia.
+Os três originais continuam em `videos/`, apenas como fonte para novos cortes:
+`deposito-1.mov` (25 s, entrada do depósito e recebimento), `deposito-2.mov` (40 s,
+CSMMAet, dobragem e inspeção) e `deposito-3.mov` (40 s, o depósito — o que está em
+uso). `deposito-slide.mp4` é o corte já pronto.
 
 ## Editando o conteúdo
 
