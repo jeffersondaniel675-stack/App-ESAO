@@ -53,10 +53,11 @@ disputar com gráficos e tabelas. Nos slides pretos a mesma malha aparece em bra
 Tudo vem de dois tokens no `:root` (`--bg-art` e `--bg-art-inv`); para voltar ao
 fundo liso, basta apagá-los.
 
-Os **cinco divisores de bloco** e o **encerramento** têm foto de fundo, sob um véu
-preto: nos divisores a foto fica quase apagada e desfocada de propósito, porque ali
-quem manda é o título; no "Obrigado" ela aparece bem mais, é o lançamento de carga
-do C-105 que abre o deck — a capa e o fecho fazem par.
+A **capa**, os **cinco divisores de bloco** e o **encerramento** têm foto de fundo,
+desfocada e sob um véu que fecha no centro, exatamente onde o texto cai. Nos
+divisores a foto fica quase apagada, porque ali quem manda é o título; no
+encerramento ela aparece bem mais, é o lançamento de carga do C-105 que abre o
+deck, de modo que a capa e o fecho fazem par.
 
 **Tipografia:** **Montserrat** em todo o deck — texto, títulos, etiquetas e números.
 Não há segunda família: a distinção entre etiqueta e texto vem do peso (600 contra
@@ -74,6 +75,19 @@ requisição de rede e renderiza idêntico no auditório sem internet.
 
 Para voltar ao tema escuro anterior, basta trocar os tokens no bloco `:root` do
 início do arquivo — todo o resto é derivado deles.
+
+**Alinhamento:** os títulos e as etiquetas acima deles ficam **centralizados**, e o
+conteúdo abaixo continua alinhado à esquerda, que é onde a leitura de tabela,
+gráfico e lista funciona. Nos slides que são só título (capa, divisores e
+encerramento) o bloco inteiro vai para o eixo central.
+
+**Transição:** o deck abre no efeito **`blur`**, em que o slide que sai desfoca e o
+que entra chega já em foco. `T` percorre as outras doze, e a última posição da
+tecla (`auto`) devolve a transição própria de cada slide, que continua guardada no
+arquivo.
+
+**O encerramento** não tem mais a palavra "Obrigado" na tela: fica só o nome, sobre
+a foto. O agradecimento é falado, e isso costuma soar melhor do que lido.
 
 ## Como abrir
 
@@ -96,7 +110,7 @@ sem internet e sem instalar nada. Aperte **F** para tela cheia e comece.
 | `B` | tela preta, para pausar sem desligar o projetor |
 | `F` | tela cheia |
 | `E` | liga/desliga o modo foco (tópicos um a um) |
-| `T` | troca a transição de todo o deck |
+| `T` | troca a transição de todo o deck (abre no `blur`) |
 | `R` | zera o cronômetro (amarelo aos 35 min, vermelho aos 40) |
 
 O rodapé mostra o bloco atual, o tópico em que você está, o cronômetro e o número
@@ -135,7 +149,7 @@ você queira trocar alguma.
 | 16 · Divisor Metodologia | `recolhimento-pista.jpg` | fundo, sob véu preto |
 | 21 · Divisor Resultados | `carga-plataforma-paraquedas.jpg` | fundo, sob véu preto |
 | 35 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
-| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do "Obrigado" |
+| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do nome |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
@@ -194,10 +208,9 @@ Abre em qualquer PowerPoint, sem depender de navegador. O que ele não tem: as
 transições, o modo foco e os atalhos — é uma cópia congelada, para o caso de o
 computador do auditório não cooperar com o HTML.
 
-Cada slide tem **transição**, traduzida da versão HTML para o equivalente nativo do
-PowerPoint: `fade`, `push`, `cover`, `wipe`, `zoom`, `dissolve` e `circle`. Os
-divisores de bloco entram com `cover`, os slides de dado com `push`, e assim por
-diante — o ritmo do deck original se mantém.
+Cada slide tem **transição**. Como o deck HTML abre no efeito `blur` e o PowerPoint
+não tem nada equivalente, os 42 slides entram com `fade`, que é o mais próximo
+disso no formato nativo.
 
 O texto não é editável (cada slide é uma imagem). Se precisar corrigir algo,
 corrija no `congresso.html` e me peça o .pptx de novo.
@@ -217,7 +230,7 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 16–20 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 21–34 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
 | 35–41 | Conclusão | Divisor · Resposta à questão central · **O 8º Mandamento** · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
-| 42 | Encerramento | Obrigado |
+| 42 | Encerramento | Só o nome |
 
 ## O 8º Mandamento (slide 37)
 
