@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **41 slides**.
+São **42 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -135,7 +135,7 @@ você queira trocar alguma.
 | 16 · Divisor Metodologia | `recolhimento-pista.jpg` | fundo, sob véu preto |
 | 21 · Divisor Resultados | `carga-plataforma-paraquedas.jpg` | fundo, sob véu preto |
 | 35 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
-| 41 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do "Obrigado" |
+| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do "Obrigado" |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
@@ -216,8 +216,26 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · O recorte do estudo · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
 | 16–20 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 21–34 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 35–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
-| 41 | Encerramento | Obrigado |
+| 35–41 | Conclusão | Divisor · Resposta à questão central · **O 8º Mandamento** · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
+| 42 | Encerramento | Obrigado |
+
+## O 8º Mandamento (slide 37)
+
+Entre a resposta à questão de pesquisa e a proposta de POP entra um slide preto,
+só com o **8º Mandamento do Dobrador de Paraquedas**:
+
+> Verificarei tudo duas vezes. O "mais ou menos" me fará um criminoso em potencial.
+> Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
+
+Ele não está ali como enfeite. Numa plateia de congresso de logística, quase
+ninguém conhece esse texto, e ele explica em três linhas o que nenhum gráfico
+explica: por que rastreabilidade de Mat Aet não é assunto administrativo. A coluna
+da direita faz a ponte — o rigor de conferir duas vezes **o material** já é rotina
+no B DOMPSA; o de conferir duas vezes **a informação** sobre ele é que ainda não é.
+E é esse vão que o POP da página seguinte fecha.
+
+Na fala, vale ler o mandamento devagar e deixar o silêncio trabalhar antes de virar
+para a proposta.
 
 ## Dados usados nos gráficos
 
