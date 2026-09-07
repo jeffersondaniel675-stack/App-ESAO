@@ -46,15 +46,28 @@ desenhos vetoriais, não fotos: escalam sem perder nitidez e não pesam no arqui
 eles agora se separam do fundo por preenchimento, não por um fio quase invisível.
 Os divisores e o encerramento seguem pretos.
 
+Sobre esse fundo claro correm duas camadas discretas: uma **malha de pontos** de
+60 px e dois **halos suaves** — um azul no alto à direita, um cinza embaixo à
+esquerda. É textura, não desenho: dá profundidade à tela cheia do projetor sem
+disputar com gráficos e tabelas. Nos slides pretos a mesma malha aparece em branco.
+Tudo vem de dois tokens no `:root` (`--bg-art` e `--bg-art-inv`); para voltar ao
+fundo liso, basta apagá-los.
+
+Os **cinco divisores de bloco** e o **encerramento** têm foto de fundo, sob um véu
+preto: nos divisores a foto fica quase apagada e desfocada de propósito, porque ali
+quem manda é o título; no "Obrigado" ela aparece bem mais, é o lançamento de carga
+do C-105 que abre o deck — a capa e o fecho fazem par.
+
 **Tipografia:** **Montserrat** em todo o deck — texto, títulos, etiquetas e números.
 Não há segunda família: a distinção entre etiqueta e texto vem do peso (600 contra
 400) e da cor, não de uma fonte diferente. Os números dos gráficos usam algarismos
 tabulares (`tnum`), então continuam alinhados em coluna.
 
-A escala é grande de propósito — corpo em 22px sobre um palco de 1600px — porque o
-deck é lido do fundo de um auditório. Como a Montserrat é mais larga e de altura-x
-maior que as fontes anteriores, os corpos foram ajustados em 1 a 2px para baixo e o
-espacejamento dos títulos ficou levemente negativo; o tamanho aparente é o mesmo.
+A escala é grande de propósito — corpo em **28px** sobre um palco de 1600px — porque
+o deck é lido do fundo de um auditório. Todo o texto corrido, as tabelas, as legendas
+de gráfico e os rótulos subiram **2 pt (3px)** em relação à versão anterior; os
+títulos ficaram como estavam, para a hierarquia não achatar. O espacejamento dos
+títulos é levemente negativo, o que a Montserrat pede em corpo grande.
 
 A fonte está **embutida no arquivo** em base64, então o deck não faz nenhuma
 requisição de rede e renderiza idêntico no auditório sem internet.
@@ -115,24 +128,27 @@ você queira trocar alguma.
 | 1 · Capa | `capa-c295-lancamento.jpg` | tela cheia, atrás do título |
 | 4 · Contextualização | `kc390-paraquedas-extracao.jpg` | quadro 16:9 na coluna direita |
 | 5 · O B DOMPSA e o Mat Aet | `carga-plataforma-paraquedas.jpg` | quadro 4:3 na coluna esquerda |
-| 19 · Instrumentos e análise | `recolhimento-pista.jpg` | quadro 4:3 na coluna esquerda |
-| 32 · Evidências de campo | `paraquedista-salto.jpg` | quadro quadrado, com o texto ao lado |
-
-**Falta a fonte de cada imagem.** As legendas terminam com "Fonte: informar",
-sublinhado em pontilhado. Em trabalho acadêmico a figura precisa de crédito —
-se as fotos são do B DOMPSA, da FAB ou de acervo pessoal, é isso que entra ali.
+| 20 · Instrumentos e análise | `recolhimento-pista.jpg` | quadro 4:3 na coluna esquerda |
+| 33 · Evidências de campo | `paraquedista-salto.jpg` | quadro quadrado, com o texto ao lado |
+| 3 · Divisor Introdução | `kc390-paraquedas-extracao.jpg` | fundo, sob véu preto |
+| 10 · Divisor Referencial | `capa-c295-lancamento.jpg` | fundo, sob véu preto |
+| 16 · Divisor Metodologia | `recolhimento-pista.jpg` | fundo, sob véu preto |
+| 21 · Divisor Resultados | `carga-plataforma-paraquedas.jpg` | fundo, sob véu preto |
+| 35 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
+| 41 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do "Obrigado" |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
 passa a depender da pasta ao lado).
 
-**Para acrescentar mais fotos:** o slide 31 comporta uma galeria de três de novo,
-e o encerramento (slide 38) pode voltar a ter foto de fundo. Hoje ele é preto
-liso, de propósito — sem foto, funciona melhor do que com um espaço vazio.
+**Fotos de fundo (divisores e encerramento):** esses seis quadros não trazem imagem
+própria — eles **clonam** uma foto já embutida em outro slide, indicada no atributo
+`data-from`. É o que evita repetir 60 KB de base64 seis vezes. Arrastar uma foto por
+cima de qualquer um deles troca só aquele fundo; `Alt + clique` desfaz.
 
 ## O vídeo do depósito
 
-O **slide 21** abre o bloco de resultados com um vídeo do depósito, antes dos
+O **slide 22** abre o bloco de resultados com um vídeo do depósito, antes dos
 números: prateleiras de conjuntos numerados um a um e um militar anotando em
 prancheta na frente deles.
 
@@ -196,12 +212,12 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | # | Bloco | Slides |
 |---|---|---|
 | 1–2 | Abertura | Capa · Roteiro |
-| 3–9 | Introdução | Divisor · Logística 4.0 · O B DOMPSA e o Mat Aet · Problema · Questões de estudo · Objetivos · Justificativa |
-| 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
-| 15–19 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
-| 20–32 | Resultados | Divisor · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 34–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Referências |
-| 38 | Encerramento | Obrigado |
+| 3–9 | Introdução | Divisor · Contexto · Logística 4.0 · O B DOMPSA e o Mat Aet · Problema · Questões de estudo · Objetivos · Justificativa |
+| 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · O recorte do estudo · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
+| 16–20 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
+| 21–34 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
+| 35–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
+| 41 | Encerramento | Obrigado |
 
 ## Dados usados nos gráficos
 

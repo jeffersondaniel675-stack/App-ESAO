@@ -56,6 +56,20 @@
   --r-sm:16px;
   --r-md:24px;
 
+  /* --------------------------------------------------------------
+     Fundo dos slides: o branco continua sendo o padrão. Por cima
+     dele vão duas camadas discretas — uma malha de pontos e dois
+     halos suaves — que dão textura sem disputar com o conteúdo.
+     -------------------------------------------------------------- */
+  --bg-art:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23141414' fill-opacity='0.075'%3E%3Ccircle cx='0' cy='0' r='1.2'/%3E%3Ccircle cx='30' cy='30' r='1.2'/%3E%3Ccircle cx='60' cy='0' r='1.2'/%3E%3Ccircle cx='0' cy='60' r='1.2'/%3E%3Ccircle cx='60' cy='60' r='1.2'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(1100px 640px at 86% -12%, rgba(0,102,255,.085), rgba(0,102,255,0) 60%),
+    radial-gradient(880px 600px at -6% 106%, rgba(20,20,20,.055), rgba(20,20,20,0) 58%);
+  --bg-art-inv:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23ffffff' fill-opacity='0.09'%3E%3Ccircle cx='0' cy='0' r='1.2'/%3E%3Ccircle cx='30' cy='30' r='1.2'/%3E%3Ccircle cx='60' cy='0' r='1.2'/%3E%3Ccircle cx='0' cy='60' r='1.2'/%3E%3Ccircle cx='60' cy='60' r='1.2'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(1100px 640px at 86% -12%, rgba(0,102,255,.16), rgba(0,102,255,0) 60%),
+    radial-gradient(880px 600px at -6% 106%, rgba(255,255,255,.06), rgba(255,255,255,0) 58%);
+
   --ease:cubic-bezier(.22,.61,.36,1);
   --dur:640ms;
 }
@@ -81,7 +95,12 @@ body{
 .slide{
   position:absolute;inset:0;padding:78px 104px 96px;
   display:flex;flex-direction:column;justify-content:center;
-  background:var(--canvas);color:var(--ink);
+  color:var(--ink);
+  background-color:var(--canvas);
+  background-image:var(--bg-art);
+  background-repeat:repeat,no-repeat,no-repeat;
+  background-size:60px 60px,auto,auto;
+  background-position:0 0,center,center;
   visibility:hidden;opacity:0;backface-visibility:hidden;
   transform-style:preserve-3d;
 }
@@ -211,18 +230,18 @@ body{
    4. TIPOGRAFIA E BLOCOS DE CONTEÚDO
    ============================================================ */
 .eyebrow{
-  display:block;font-size:18px;font-weight:600;letter-spacing:0;
+  display:block;font-size:20px;font-weight:600;letter-spacing:0;
   color:var(--muted);margin:0 0 22px;
 }
 
 h1{font-size:86px;line-height:1.04;letter-spacing:-.03em;font-weight:600;margin:0 0 28px;text-wrap:balance}
 h2{font-size:61px;line-height:1.08;letter-spacing:-.025em;font-weight:600;margin:0 0 20px;text-wrap:balance}
-h3{font-size:27px;line-height:1.28;letter-spacing:-.015em;font-weight:600;margin:0 0 12px}
+h3{font-size:30px;line-height:1.28;letter-spacing:-.015em;font-weight:600;margin:0 0 12px}
 .serif{font-family:var(--sans);font-weight:600;letter-spacing:-.03em}
-.lead{font-size:32px;font-weight:300;line-height:1.38;letter-spacing:-.01em;color:var(--muted);max-width:26ch;margin:0}
+.lead{font-size:35px;font-weight:300;line-height:1.38;letter-spacing:-.01em;color:var(--muted);max-width:26ch;margin:0}
 .lead.wide{max-width:48ch}
-p{margin:0 0 20px;font-size:25px;font-weight:400;line-height:1.5;letter-spacing:-.005em;color:var(--muted)}
-.small{font-size:20px;font-weight:400;color:var(--muted);line-height:1.45}
+p{margin:0 0 20px;font-size:28px;font-weight:400;line-height:1.5;letter-spacing:-.005em;color:var(--muted)}
+.small{font-size:23px;font-weight:400;color:var(--muted);line-height:1.45}
 .rule{height:1px;background:var(--hairline);border:0;margin:30px 0}
 strong{color:var(--ink);font-weight:600}
 .hl{color:var(--ink);font-weight:600}
@@ -250,18 +269,18 @@ strong{color:var(--ink);font-weight:600}
 .dgm-wide text{font-family:var(--sans)}
 .dgm text{font-family:var(--sans);font-weight:500}
 .card .n{
-  font-size:14px;font-weight:600;letter-spacing:0;color:var(--muted);
+  font-size:16px;font-weight:600;letter-spacing:0;color:var(--muted);
   display:block;margin-bottom:14px;
 }
-.card p{font-size:21px;font-weight:400;line-height:1.5;margin:0;color:var(--muted)}
+.card p{font-size:24px;font-weight:400;line-height:1.5;margin:0;color:var(--muted)}
 .card.accent{background:var(--canvas-soft);border-color:transparent}
 
 /* listas */
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
-.list li{display:grid;grid-template-columns:52px 1fr;gap:20px;align-items:start;font-size:25px;font-weight:400;line-height:1.45;letter-spacing:-.005em;color:var(--muted)}
+.list li{display:grid;grid-template-columns:52px 1fr;gap:20px;align-items:start;font-size:28px;font-weight:400;line-height:1.45;letter-spacing:-.005em;color:var(--muted)}
 .list li .k{
   width:46px;height:46px;border-radius:9999px;display:grid;place-items:center;
-  background:var(--canvas-soft);color:var(--ink);font-size:18px;font-weight:600;border:0;
+  background:var(--canvas-soft);color:var(--ink);font-size:20px;font-weight:600;border:0;
 }
 .list.check li .k{background:var(--ink);color:#fff}
 .list.plain li{grid-template-columns:10px 1fr;gap:20px}
@@ -272,30 +291,30 @@ strong{color:var(--ink);font-weight:600}
   font-family:var(--sans);font-weight:300;font-size:46px;line-height:1.3;letter-spacing:-.02em;color:var(--ink);
   border-left:2px solid var(--ink);padding-left:36px;margin:0;max-width:26ch;
 }
-.quote cite{display:block;font-size:16px;font-weight:600;font-style:normal;color:var(--muted);margin-top:26px;letter-spacing:0}
+.quote cite{display:block;font-size:19px;font-weight:600;font-style:normal;color:var(--muted);margin-top:26px;letter-spacing:0}
 
 /* linha do tempo */
 .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:30px;position:relative}
 .timeline::before{content:"";position:absolute;left:0;right:0;top:13px;height:1px;background:var(--line)}
 .tl{padding-right:26px;position:relative}
 .tl::before{content:"";position:absolute;left:0;top:7px;width:13px;height:13px;border-radius:50%;background:var(--card);border:2px solid var(--ink)}
-.tl .y{display:block;margin-top:38px;font-size:15px;letter-spacing:0;font-weight:600;color:var(--muted)}
-.tl h3{font-size:21px;margin:10px 0 8px}
-.tl p{font-size:18px;font-weight:400;line-height:1.45}
+.tl .y{display:block;margin-top:38px;font-size:17px;letter-spacing:0;font-weight:600;color:var(--muted)}
+.tl h3{font-size:24px;margin:10px 0 8px}
+.tl p{font-size:21px;font-weight:400;line-height:1.45}
 
 /* fluxo de etapas */
 .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:20px}
 .step{background:var(--card);border:1px solid var(--hairline-soft);border-radius:var(--r-md);padding:24px 22px;position:relative}
-.step .n{font-size:14px;letter-spacing:0;font-weight:600;color:var(--muted);display:block;margin-bottom:12px}
-.step h3{font-size:21px;margin-bottom:10px}
-.step p{font-size:18px;font-weight:400;line-height:1.45;margin:0}
+.step .n{font-size:16px;letter-spacing:0;font-weight:600;color:var(--muted);display:block;margin-bottom:12px}
+.step h3{font-size:24px;margin-bottom:10px}
+.step p{font-size:21px;font-weight:400;line-height:1.45;margin:0}
 .step::after{content:"";position:absolute;right:-11px;top:50%;width:8px;height:8px;border-top:1.5px solid var(--hairline);border-right:1.5px solid var(--hairline);transform:translateY(-50%) rotate(45deg)}
 .step:last-child::after{display:none}
 
 /* tabela */
-table{width:100%;border-collapse:collapse;font-size:21px}
+table{width:100%;border-collapse:collapse;font-size:24px}
 th{
-  text-align:left;font-size:14px;letter-spacing:0;
+  text-align:left;font-size:16px;letter-spacing:0;
   color:var(--muted);font-weight:500;padding:0 18px 14px;border-bottom:1px solid var(--hairline);
 }
 td{padding:18px;font-weight:400;color:var(--muted);border-bottom:1px solid var(--hairline-soft);vertical-align:top;line-height:1.4}
@@ -306,7 +325,7 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 .pills{display:flex;flex-wrap:wrap;gap:10px}
 .pill{
   border:1px solid var(--hairline);border-radius:9999px;padding:9px 18px;
-  font-size:19px;font-weight:500;color:var(--muted);background:var(--card);
+  font-size:22px;font-weight:500;color:var(--muted);background:var(--card);
 }
 .pill.on{border-color:var(--ink);background:var(--ink);color:#fff}
 
@@ -318,12 +337,12 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 .kpi{background:var(--canvas-soft);border:0;border-radius:var(--r-md);padding:28px 26px}
 .kpi .v{font-size:68px;font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 .kpi .v small{font-size:31px;font-weight:600;color:var(--muted);margin-left:4px}
-.kpi .l{margin-top:16px;font-size:20px;font-weight:400;color:var(--muted);line-height:1.42}
-.kpi .d{margin-top:12px;font-size:17px;font-weight:600;color:var(--muted)}
+.kpi .l{margin-top:16px;font-size:23px;font-weight:400;color:var(--muted);line-height:1.42}
+.kpi .d{margin-top:12px;font-size:20px;font-weight:600;color:var(--muted)}
 
 .chart{margin-top:8px}
-.chart .c-title{font-size:22px;font-weight:600;color:var(--ink);margin-bottom:6px}
-.chart .c-sub{font-size:17px;font-weight:400;color:var(--muted);margin-bottom:26px}
+.chart .c-title{font-size:25px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.chart .c-sub{font-size:20px;font-weight:400;color:var(--muted);margin-bottom:26px}
 .bars{display:flex;align-items:flex-end;gap:26px;height:330px;padding-top:34px;border-bottom:1px solid var(--hairline)}
 .bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative;text-align:center}
 .bar{
@@ -334,29 +353,29 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 @keyframes growB{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .slide:not(.active) .bar{animation:none}
 .bcol:hover .bar{opacity:.82}
-.bar .v{position:absolute;top:-36px;left:0;right:0;font-size:20px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.bar .v{position:absolute;top:-36px;left:0;right:0;font-size:23px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 .bcol > .bar{width:112px;align-self:center}
-.bcol .lbl{margin-top:16px;font-size:18px;font-weight:400;color:var(--muted);line-height:1.38}
+.bcol .lbl{margin-top:16px;font-size:21px;font-weight:400;color:var(--muted);line-height:1.38}
 .group{display:flex;gap:2px;align-items:flex-end;height:100%;width:100%;max-width:180px;align-self:center}
 .group .bar{flex:1}
 .legend{display:flex;gap:26px;margin-bottom:22px}
-.legend span{display:inline-flex;align-items:center;gap:10px;font-size:19px;font-weight:400;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:10px;font-size:22px;font-weight:400;color:var(--muted)}
 .legend i{width:11px;height:11px;border-radius:9999px;background:var(--c);display:inline-block}
 
 .hbars{display:flex;flex-direction:column;gap:18px;margin-top:10px}
 .hrow{display:grid;grid-template-columns:270px 1fr 84px;align-items:center;gap:22px}
-.hrow .lbl{font-size:20px;font-weight:400;color:var(--muted);text-align:right}
+.hrow .lbl{font-size:23px;font-weight:400;color:var(--muted);text-align:right}
 .htrack{height:26px;background:var(--canvas-soft);border-radius:9999px;overflow:hidden}
 .hfill{height:100%;width:calc(var(--v) * 1%);background:var(--c,var(--s1));border-radius:9999px;
   transform-origin:left;animation:growH 900ms var(--ease) both;animation-delay:calc(var(--i,0)*70ms + 300ms)}
 @keyframes growH{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .slide:not(.active) .hfill{animation:none}
-.hrow .num{font-size:21px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.hrow .num{font-size:24px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 .hbars.wide .hrow{grid-template-columns:400px 1fr 100px}
-table.tight{font-size:19px}
+table.tight{font-size:22px}
 table.tight td{padding:14px}
 table.tight th{padding:0 14px 12px}
-.note{font-size:19px;font-weight:400;color:var(--muted);line-height:1.5;margin-top:20px}
+.note{font-size:22px;font-weight:400;color:var(--muted);line-height:1.5;margin-top:20px}
 .figframe{background:var(--canvas-soft);border-radius:var(--r-md);padding:18px;border:0}
 .imgframe{margin:0;background:var(--card);border-radius:var(--r-md);padding:16px;border:1px solid var(--hairline-soft)}
 .imgframe img{width:100%;height:auto;display:block;border-radius:10px}
@@ -402,10 +421,10 @@ table.tight th{padding:0 14px 12px}
 }
 .ph-hint b{display:block;font-size:17px;font-weight:600;color:var(--muted);margin-bottom:6px}
 .ph-hint span{font-size:13px;letter-spacing:.03em}
-.photo-cap{margin-top:12px;font-size:18px;font-weight:400;color:var(--muted)}
+.photo-cap{margin-top:12px;font-size:21px;font-weight:400;color:var(--muted)}
 .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .hero-photo{position:absolute;inset:0;z-index:0}
-.hero-photo img{object-position:center 42%}
+.hero-photo img{object-position:var(--hero-pos,center 42%)}
 .photo.fill .ph-hint{position:absolute;right:34px;bottom:104px;z-index:2;text-align:right;background:var(--canvas-soft);border:1px dashed var(--hairline);border-radius:var(--r-sm);padding:18px 22px}
 .slide.invert .photo.fill .ph-hint{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.68)}
 .slide.invert .photo.fill .ph-hint b{color:rgba(255,255,255,.86)}
@@ -420,10 +439,22 @@ table.tight th{padding:0 14px 12px}
   background:linear-gradient(90deg,rgba(20,20,20,.97) 0%,rgba(20,20,20,.94) 30%,rgba(20,20,20,.62) 46%,rgba(20,20,20,.14) 68%,rgba(20,20,20,0) 84%);
 }
 .slide.has-hero > *:not(.hero-photo){position:relative;z-index:2}
+/* nos divisores a foto é só atmosfera: o véu é mais fechado para o
+   título continuar sendo a única coisa que se lê de longe. */
+.slide.invert .hero-photo.hero-soft::after{
+  background:linear-gradient(90deg,rgba(20,20,20,.98) 0%,rgba(20,20,20,.96) 34%,rgba(20,20,20,.89) 64%,rgba(20,20,20,.80) 100%);
+}
+/* fora de foco de propósito: a foto do divisor é textura, não conteúdo —
+   e assim as imagens de menor resolução não denunciam a ampliação. */
+.hero-photo.hero-soft img{filter:saturate(.5) blur(1.5px);transform:scale(1.05)}
+/* no encerramento a foto aparece mais: é ela que preenche o slide. */
+.slide.invert .hero-photo.hero-open::after{
+  background:linear-gradient(90deg,rgba(20,20,20,.96) 0%,rgba(20,20,20,.90) 26%,rgba(20,20,20,.52) 50%,rgba(20,20,20,.18) 74%,rgba(20,20,20,.06) 100%);
+}
 
 /* Inversão de polaridade — o "fim de página" do sistema, aqui usado
    nos divisores de bloco e no encerramento. */
-.slide.invert{background:var(--ink);color:#fff}
+.slide.invert{background-color:var(--ink);background-image:var(--bg-art-inv);color:#fff}
 .slide.invert h1,.slide.invert h2,.slide.invert h3,.slide.invert strong{color:#fff}
 .slide.invert .eyebrow{color:rgba(255,255,255,.60)}
 .slide.invert p,.slide.invert .lead,.slide.invert .small,.slide.invert .note{color:rgba(255,255,255,.72)}
@@ -490,7 +521,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 }
 #notes.open{transform:none}
 #notes .t{font-size:13px;letter-spacing:0;font-weight:600;color:var(--muted);margin-bottom:12px}
-#notes .body{font-size:21px;font-weight:400;line-height:1.5;color:var(--ink);max-width:100ch}
+#notes .body{font-size:24px;font-weight:400;line-height:1.5;color:var(--ink);max-width:100ch}
 #notes .next{margin-top:18px;padding-top:16px;border-top:1px solid var(--hairline);font-size:15px;font-weight:450;color:var(--muted)}
 
 #black{position:fixed;inset:0;background:#000;z-index:80;display:none}
@@ -562,7 +593,8 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 </section>
 
 <!-- ============================ 03 · DIVISOR ============================ -->
-<section class="slide invert" data-transition="cover" data-section="Introdução" data-title="Divisor · Introdução">
+<section class="slide invert has-hero" data-transition="cover" data-section="Introdução" data-title="Divisor · Introdução">
+  <figure class="photo fill hero-photo hero-soft" data-photo="div-intro" data-from="contexto" style="--hero-pos:center 46%" aria-hidden="true"></figure>
   <p class="eyebrow" data-anim>Bloco 01</p>
   <h1 class="serif" style="font-size:110px" data-anim>Introdução</h1>
   <p class="lead wide" data-anim>De onde parte a pesquisa, o que ela pergunta e por que a resposta importa para a atividade aeroterrestre.</p>
@@ -646,7 +678,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   <div class="cols c-2">
     <div>
       <p class="eyebrow" data-anim>Objetivo geral</p>
-      <p style="font-size:27px;line-height:1.42;color:var(--ink)" data-anim>Analisar de que forma IoT, <em>Big Data</em> e IA podem ser aplicados à gestão do material aeroterrestre no B DOMPSA, com vistas ao aprimoramento do <strong>controle de estoques</strong>, da <strong>eficiência operacional</strong> e da <strong>disponibilidade</strong> dos recursos logísticos.</p>
+      <p style="font-size:30px;line-height:1.42;color:var(--ink)" data-anim>Analisar de que forma IoT, <em>Big Data</em> e IA podem ser aplicados à gestão do material aeroterrestre no B DOMPSA, com vistas ao aprimoramento do <strong>controle de estoques</strong>, da <strong>eficiência operacional</strong> e da <strong>disponibilidade</strong> dos recursos logísticos.</p>
     </div>
     <div>
       <p class="eyebrow" data-anim>Objetivos específicos</p>
@@ -673,7 +705,8 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 </section>
 
 <!-- ============================ 10 · DIVISOR ============================ -->
-<section class="slide invert" data-transition="cover" data-section="Referencial" data-title="Divisor · Referencial">
+<section class="slide invert has-hero" data-transition="cover" data-section="Referencial" data-title="Divisor · Referencial">
+  <figure class="photo fill hero-photo hero-soft" data-photo="div-ref" data-from="capa" style="--hero-pos:center 40%" aria-hidden="true"></figure>
   <p class="eyebrow" data-anim>Bloco 02</p>
   <h1 class="serif" style="font-size:110px" data-anim>Referencial teórico</h1>
   <p class="lead wide" data-anim>Sobre quais ombros a pesquisa se apoia — e onde a literatura ainda não chegou.</p>
@@ -799,7 +832,8 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 </section>
 
 <!-- ============================ 15 · DIVISOR ============================ -->
-<section class="slide invert" data-transition="cover" data-section="Metodologia" data-title="Divisor · Metodologia">
+<section class="slide invert has-hero" data-transition="cover" data-section="Metodologia" data-title="Divisor · Metodologia">
+  <figure class="photo fill hero-photo hero-soft" data-photo="div-met" data-from="coleta" style="--hero-pos:center 50%" aria-hidden="true"></figure>
   <p class="eyebrow" data-anim>Bloco 03</p>
   <h1 class="serif" style="font-size:110px" data-anim>Metodologia</h1>
   <p class="lead wide" data-anim>Como a pesquisa foi construída para que o resultado seja verificável.</p>
@@ -890,7 +924,8 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 </section>
 
 <!-- ============================ 20 · DIVISOR ============================ -->
-<section class="slide invert" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
+<section class="slide invert has-hero" data-transition="cover" data-section="Resultados" data-title="Divisor · Resultados">
+  <figure class="photo fill hero-photo hero-soft" data-photo="div-res" data-from="dompsa" style="--hero-pos:center 48%" aria-hidden="true"></figure>
   <p class="eyebrow" data-anim>Bloco 04</p>
   <h1 class="serif" style="font-size:110px" data-anim>Resultados</h1>
   <p class="lead wide" data-anim>O que os 29 respondentes e os três especialistas revelaram.</p>
@@ -993,7 +1028,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   </div>
   <div class="card accent" style="margin-top:26px" data-anim>
     <span class="n">Pergunta geral</span>
-    <p style="font-size:26px;line-height:1.4;color:var(--ink)"><strong>75,9%</strong> dos respondentes atribuíram o <strong>nível máximo</strong> de avaliação à contribuição das tecnologias da Logística 4.0 para a gestão do material aeroterrestre.</p>
+    <p style="font-size:29px;line-height:1.4;color:var(--ink)"><strong>75,9%</strong> dos respondentes atribuíram o <strong>nível máximo</strong> de avaliação à contribuição das tecnologias da Logística 4.0 para a gestão do material aeroterrestre.</p>
   </div>
   <aside class="notes">A percepção favorável é praticamente unânime. Isso importa porque adoção de tecnologia falha, quase sempre, por resistência — e aqui ela não aparece como principal barreira.</aside>
 </section>
@@ -1078,11 +1113,11 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   <div class="cols c-2 gap-s">
     <div class="card" data-anim>
       <span class="n" style="color:var(--faint)">Digitalização parcial</span>
-      <p style="font-size:20px">Substituir o papel por formulários digitais. Melhora a rotina administrativa, mas mantém <strong>ilhas de informação</strong> e não gera fonte única da verdade.</p>
+      <p style="font-size:23px">Substituir o papel por formulários digitais. Melhora a rotina administrativa, mas mantém <strong>ilhas de informação</strong> e não gera fonte única da verdade.</p>
     </div>
     <div class="card accent" data-anim>
       <span class="n">Transformação digital</span>
-      <p style="font-size:20px">Integração sistêmica, captura automática de dados, análise em tempo real e apoio efetivo à decisão. A rastreabilidade vira o <strong>"sistema nervoso"</strong> da cadeia.</p>
+      <p style="font-size:23px">Integração sistêmica, captura automática de dados, análise em tempo real e apoio efetivo à decisão. A rastreabilidade vira o <strong>"sistema nervoso"</strong> da cadeia.</p>
     </div>
   </div>
   <p data-anim style="margin-top:26px">Sem dados integrados, o comandante decide por estimativa: ou mantém estoque excessivo por receio de falta, ou descobre a indisponibilidade <strong>no momento da missão</strong>.</p>
@@ -1124,7 +1159,8 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 </section>
 
 <!-- ============================ 33 · DIVISOR ============================ -->
-<section class="slide invert" data-transition="cover" data-section="Conclusão" data-title="Divisor · Conclusão">
+<section class="slide invert has-hero" data-transition="cover" data-section="Conclusão" data-title="Divisor · Conclusão">
+  <figure class="photo fill hero-photo hero-soft" data-photo="div-con" data-from="ev1" style="--hero-pos:center 38%" aria-hidden="true"></figure>
   <p class="eyebrow" data-anim>Bloco 05</p>
   <h1 class="serif" style="font-size:110px" data-anim>Conclusão</h1>
   <p class="lead wide" data-anim>Voltando às perguntas do início — agora com resposta.</p>
@@ -1274,25 +1310,26 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 <!-- ============================ 38 · REFERÊNCIAS ============================ -->
 <section class="slide" data-transition="fade" data-section="Conclusão" data-title="Referências">
   <div class="head" data-anim><p class="eyebrow">Referências</p><h2>Principais obras consultadas.</h2></div>
-  <div style="columns:2;column-gap:56px;font-size:15px;line-height:1.5;color:var(--ink-2)" data-anim>
-    <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.238</strong>: Logística Militar Terrestre. Brasília: COTER, 2022.</p>
-    <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.366</strong>: Suprimento pelo ar. Brasília, 2021.</p>
-    <p style="font-size:15px">BRASIL. Exército Brasileiro. <strong>Manual Técnico de Gestão do Material Aeroterrestre</strong>. Brasília, 2016.</p>
-    <p style="font-size:15px">PAIVA, T. <strong>Diretriz do Comandante do Exército</strong>. Brasília, 2023.</p>
-    <p style="font-size:15px">PINTO, R. <strong>Logística 4.0</strong>. 2022.</p>
-    <p style="font-size:15px">ROSÁRIO, M. <strong>Logística 4.0 na AMAN</strong>. 2023.</p>
-    <p style="font-size:15px">LUO, X. <strong>Big Data</strong> in logistics management. 2026.</p>
-    <p style="font-size:15px">SINGH, R. <strong>Artificial intelligence</strong> in supply chains. 2026.</p>
-    <p style="font-size:15px">ÖZTEMEL, E.; GURSEV, S. Literature review of Industry 4.0. 2020.</p>
-    <p style="font-size:15px">SILVA, A.; KAWAKAME, M. <strong>Logística 4.0</strong>: da origem militar à cadeia conectada.</p>
-    <p style="font-size:15px">RADIVOJEVIĆ, G.; MILOSAVLJEVIĆ, L. The concept of Logistics 4.0. 2019.</p>
-    <p style="font-size:15px" class="ph-text">Complete com as demais obras efetivamente citadas na fala (ABNT NBR 6023).</p>
+  <div style="columns:2;column-gap:56px;font-size:17px;line-height:1.5;color:var(--ink-2)" data-anim>
+    <p style="font-size:17px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.238</strong>: Logística Militar Terrestre. Brasília: COTER, 2022.</p>
+    <p style="font-size:17px">BRASIL. Exército Brasileiro. <strong>EB70-MC-10.366</strong>: Suprimento pelo ar. Brasília, 2021.</p>
+    <p style="font-size:17px">BRASIL. Exército Brasileiro. <strong>Manual Técnico de Gestão do Material Aeroterrestre</strong>. Brasília, 2016.</p>
+    <p style="font-size:17px">PAIVA, T. <strong>Diretriz do Comandante do Exército</strong>. Brasília, 2023.</p>
+    <p style="font-size:17px">PINTO, R. <strong>Logística 4.0</strong>. 2022.</p>
+    <p style="font-size:17px">ROSÁRIO, M. <strong>Logística 4.0 na AMAN</strong>. 2023.</p>
+    <p style="font-size:17px">LUO, X. <strong>Big Data</strong> in logistics management. 2026.</p>
+    <p style="font-size:17px">SINGH, R. <strong>Artificial intelligence</strong> in supply chains. 2026.</p>
+    <p style="font-size:17px">ÖZTEMEL, E.; GURSEV, S. Literature review of Industry 4.0. 2020.</p>
+    <p style="font-size:17px">SILVA, A.; KAWAKAME, M. <strong>Logística 4.0</strong>: da origem militar à cadeia conectada.</p>
+    <p style="font-size:17px">RADIVOJEVIĆ, G.; MILOSAVLJEVIĆ, L. The concept of Logistics 4.0. 2019.</p>
+    <p style="font-size:17px" class="ph-text">Complete com as demais obras efetivamente citadas na fala (ABNT NBR 6023).</p>
   </div>
   <aside class="notes">Slide de passagem rápida. Serve à banca, não à plateia.</aside>
 </section>
 
 <!-- ============================ 38 · ENCERRAMENTO ============================ -->
-<section class="slide invert" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
+<section class="slide invert has-hero" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
+  <figure class="photo fill hero-photo hero-open" data-photo="fecho" data-from="capa" style="--hero-pos:center 44%" aria-hidden="true"></figure>
   <h1 data-anim>Obrigado.</h1>
   <hr class="rule" style="max-width:460px" data-anim>
   <p class="small" data-anim>
@@ -1660,6 +1697,18 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
     r.readAsDataURL(file);
   }
   input.addEventListener('change', function(){ if (target) readFile(input.files[0], target); input.value = ''; });
+
+  /* fotos de fundo reaproveitadas: em vez de embutir a mesma imagem duas
+     vezes, o quadro clona a que já veio no arquivo em outro slide. */
+  document.querySelectorAll('.photo[data-from]').forEach(function(fig){
+    if (fig.querySelector('img')) return;
+    var origem = document.querySelector('.photo[data-photo="' + fig.dataset.from + '"] img');
+    if (!origem) return;
+    var img = document.createElement('img');
+    img.src = origem.currentSrc || origem.src;
+    img.alt = '';
+    fig.insertBefore(img, fig.firstChild);
+  });
 
   document.querySelectorAll('.photo[data-photo]').forEach(function(fig){
     if (fig.querySelector('img')) fig.classList.add('filled');       /* já tem <img src="fotos/..."> */
