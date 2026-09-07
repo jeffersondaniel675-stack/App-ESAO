@@ -292,6 +292,7 @@ strong{color:var(--ink);font-weight:600}
   border-left:2px solid var(--ink);padding-left:36px;margin:0;max-width:26ch;
 }
 .quote cite{display:block;font-size:19px;font-weight:600;font-style:normal;color:var(--muted);margin-top:26px;letter-spacing:0}
+.quote.solta{border-left:0;padding-left:0}
 
 /* linha do tempo */
 .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:30px;position:relative}
@@ -441,22 +442,13 @@ table.tight th{padding:0 14px 12px}
 .slide.has-hero > *:not(.hero-photo){position:relative;z-index:2}
 /* slides de título: o bloco inteiro vai para o eixo central da tela. */
 .slide.center{align-items:center;text-align:center}
-.slide.center .lead,.slide.center p,.slide.center .rule{margin-left:auto;margin-right:auto}
+.slide.center .lead,.slide.center p,.slide.center .rule,.slide.center .quote{margin-left:auto;margin-right:auto}
 .slide.center .lead{max-width:34ch}
 /* com o texto no meio, o véu da foto deixa de vir da esquerda e passa a
    ser um halo central; a foto ainda aparece nas bordas. */
 .slide.center .hero-photo img{filter:saturate(.55) blur(3px);transform:scale(1.06)}
 .slide.center:not(.invert) .hero-photo::after{
   background:radial-gradient(105% 78% at 50% 50%,rgba(238,241,246,.95) 0%,rgba(238,241,246,.90) 42%,rgba(238,241,246,.62) 72%,rgba(238,241,246,.34) 100%);
-}
-.slide.invert.center .hero-photo::after,
-.slide.invert.center .hero-photo.hero-soft::after{
-  background:radial-gradient(102% 76% at 50% 50%,rgba(20,20,20,.93) 0%,rgba(20,20,20,.88) 44%,rgba(20,20,20,.62) 76%,rgba(20,20,20,.34) 100%);
-}
-/* no encerramento a foto pode aparecer mais, mas o nome vem sobre o
-   ponto mais escuro: o halo é apertado no centro e abre nas bordas. */
-.slide.invert.center .hero-photo.hero-open::after{
-  background:radial-gradient(78% 62% at 50% 48%,rgba(20,20,20,.92) 0%,rgba(20,20,20,.86) 40%,rgba(20,20,20,.46) 78%,rgba(20,20,20,.16) 100%);
 }
 /* nos divisores a foto é só atmosfera: o véu é mais fechado para o
    título continuar sendo a única coisa que se lê de longe. */
@@ -469,6 +461,17 @@ table.tight th{padding:0 14px 12px}
 /* no encerramento a foto aparece mais: é ela que preenche o slide. */
 .slide.invert .hero-photo.hero-open::after{
   background:linear-gradient(90deg,rgba(20,20,20,.96) 0%,rgba(20,20,20,.90) 26%,rgba(20,20,20,.52) 50%,rgba(20,20,20,.18) 74%,rgba(20,20,20,.06) 100%);
+}
+/* com o texto no eixo central, o véu deixa de vir da esquerda: vira um
+   halo que fecha no meio, exatamente onde o texto cai. */
+.slide.invert.center .hero-photo::after,
+.slide.invert.center .hero-photo.hero-soft::after{
+  background:radial-gradient(102% 76% at 50% 50%,rgba(20,20,20,.93) 0%,rgba(20,20,20,.88) 44%,rgba(20,20,20,.62) 76%,rgba(20,20,20,.34) 100%);
+}
+/* no encerramento a foto pode aparecer mais, mas o nome vem sobre o
+   ponto mais escuro: o halo é apertado no centro e abre nas bordas. */
+.slide.invert.center .hero-photo.hero-open::after{
+  background:radial-gradient(78% 62% at 50% 48%,rgba(20,20,20,.92) 0%,rgba(20,20,20,.86) 40%,rgba(20,20,20,.46) 78%,rgba(20,20,20,.16) 100%);
 }
 
 /* Inversão de polaridade — o "fim de página" do sistema, aqui usado
@@ -1349,33 +1352,20 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   <aside class="notes">Slide de passagem rápida. Serve à banca, não à plateia.</aside>
 </section>
 
-<!-- ==================== 41 · O 8º MANDAMENTO ==================== -->
-<section class="slide invert" data-transition="soft" data-section="Encerramento" data-title="O 8º Mandamento">
-  <p class="eyebrow" data-anim>Mandamentos do Dobrador de Paraquedas</p>
-  <div class="cols c-2a" style="margin-top:22px">
-    <blockquote class="quote" style="max-width:26ch;font-size:46px" data-anim>
-      Verificarei tudo duas vezes. O &ldquo;mais ou menos&rdquo; me fará um criminoso em potencial. Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
-      <cite>8º Mandamento</cite>
-    </blockquote>
-    <div>
-      <p data-anim>O rigor já está na doutrina, e é anterior a qualquer tecnologia: conferir duas vezes <strong>o material</strong> é rotina no B DOMPSA há décadas.</p>
-      <p data-anim>Conferir duas vezes <strong>a informação</strong> sobre esse material, não. Ela ainda mora em livro, ficha e planilha, três lugares que ninguém consegue cruzar no mesmo instante.</p>
-      <p class="note" data-anim>É esse o vão que a pesquisa mediu e que o POP proposto se propõe a fechar.</p>
-    </div>
-  </div>
-  <aside class="notes">Último slide de conteúdo, e é o que fica na memória. Ler o mandamento devagar e deixar o silêncio trabalhar. Numa plateia de logística quase ninguém conhece esse texto, e ele explica em três linhas por que rastreabilidade de Mat Aet não é assunto administrativo. Fechar dizendo que o trabalho todo foi uma tentativa de estender esse rigor ao dado, e só então virar para o slide do nome.</aside>
-</section>
-
-<!-- ============================ 38 · ENCERRAMENTO ============================ -->
-<section class="slide invert has-hero center" data-transition="zoom" data-section="Encerramento" data-title="Encerramento">
-  <figure class="photo fill hero-photo hero-open" data-photo="fecho" data-from="capa" style="--hero-pos:center 44%" aria-hidden="true"></figure>
-  <h1 style="font-size:58px;max-width:18ch;margin:0 0 24px" data-anim>Cap Jefferson Daniel Ferreira Martins</h1>
-  <hr class="rule" style="max-width:340px;margin-top:0" data-anim>
+<!-- ==================== 41 · ENCERRAMENTO ==================== -->
+<section class="slide invert has-hero center" data-transition="soft" data-section="Encerramento" data-title="Encerramento">
+  <figure class="photo fill hero-photo hero-soft" data-photo="fecho" data-from="capa" style="--hero-pos:center 44%" aria-hidden="true"></figure>
+  <blockquote class="quote solta" style="max-width:30ch;font-size:42px" data-anim>
+    Verificarei tudo duas vezes. O &ldquo;mais ou menos&rdquo; me fará um criminoso em potencial. Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
+    <cite>8º Mandamento do Dobrador de Paraquedas</cite>
+  </blockquote>
+  <hr class="rule" style="max-width:340px;background:rgba(255,255,255,.48)" data-anim>
   <p class="small" data-anim>
+    <strong>Cap Jefferson Daniel Ferreira Martins</strong><br>
     jefferson.daniel675@gmail.com<br>
     (21) 97920-3803
   </p>
-  <aside class="notes">Sem palavra escrita na tela: o agradecimento é falado. Dizer o nome do congresso, agradecer a atenção e parar. O silêncio depois é do público, não seu.</aside>
+  <aside class="notes">Ler o mandamento devagar e deixar o silêncio trabalhar. Numa plateia de logística quase ninguém conhece esse texto, e ele explica em três linhas por que rastreabilidade de Mat Aet não é assunto administrativo. Depois dele, só o agradecimento falado: dizer o nome do congresso, agradecer a atenção e parar. O silêncio que vem em seguida é do público, não seu.</aside>
 </section>
 
 </div><!-- /#stage -->

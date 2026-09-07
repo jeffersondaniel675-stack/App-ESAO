@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **42 slides**.
+São **41 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -89,9 +89,10 @@ tópico, o item da vez fica nítido, o que já passou fica levemente fora de foc
 que ainda vem fica bem borrado. É o mesmo efeito de profundidade de campo de uma
 lente: o olho da plateia vai direto para onde você está.
 
-**O encerramento** não tem mais a palavra "Obrigado" na tela: fica o nome e o
-contato, sobre a foto. O agradecimento é falado, e isso costuma soar melhor do que
-lido. Antes dele, como último slide de conteúdo, vem o **8º Mandamento**.
+**O encerramento** é um slide só: o **8º Mandamento do Dobrador de Paraquedas**, e
+embaixo dele o seu nome e o contato, sobre a foto do lançamento de carga. Não há a
+palavra "Obrigado" na tela — o agradecimento é falado, e isso costuma soar melhor
+do que lido.
 
 ## Como abrir
 
@@ -153,7 +154,7 @@ você queira trocar alguma.
 | 16 · Divisor Metodologia | `recolhimento-pista.jpg` | fundo, sob véu preto |
 | 21 · Divisor Resultados | `carga-plataforma-paraquedas.jpg` | fundo, sob véu preto |
 | 35 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
-| 42 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do nome e do contato |
+| 41 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do mandamento e do contato |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
@@ -236,30 +237,30 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 16–20 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 21–34 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
 | 35–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
-| 41–42 | Encerramento | O 8º Mandamento · Nome e contato |
+| 41 | Encerramento | 8º Mandamento, nome e contato |
 
 ## O 8º Mandamento (slide 41)
 
-O último slide de conteúdo, logo antes do slide do nome, é preto e traz só o
-**8º Mandamento do Dobrador de Paraquedas**:
+O deck fecha num slide só, preto, com o **8º Mandamento do Dobrador de Paraquedas**
+no alto e o seu nome e contato embaixo:
 
 > Verificarei tudo duas vezes. O "mais ou menos" me fará um criminoso em potencial.
 > Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
 
 Ele não está ali como enfeite. Numa plateia de congresso de logística quase
 ninguém conhece esse texto, e ele explica em três linhas o que nenhum gráfico
-explica: por que rastreabilidade de Mat Aet não é assunto administrativo. A coluna
-da direita faz a ponte: o rigor de conferir duas vezes **o material** já é rotina
-no B DOMPSA; o de conferir duas vezes **a informação** sobre ele é que ainda não é,
-e é esse vão que a pesquisa mediu e que o POP se propõe a fechar.
+explica: por que rastreabilidade de Mat Aet não é assunto administrativo. Não há
+comentário escrito ao lado, de propósito — a ligação com a pesquisa é você quem
+faz, falando.
 
-Na fala, vale ler o mandamento devagar e deixar o silêncio trabalhar. É a última
-coisa que a plateia ouve antes do seu nome na tela, então é ela que fica.
+Vale ler o mandamento devagar e deixar o silêncio trabalhar. É a última coisa que
+a plateia lê, então é ela que fica.
 
 ## Contato no slide final
 
-O slide 42 traz, abaixo do nome:
+O slide 41 traz, abaixo do mandamento:
 
+- **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
 - `(21) 97920-3803`
 
