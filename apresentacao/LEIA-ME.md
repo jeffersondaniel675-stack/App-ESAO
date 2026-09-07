@@ -144,6 +144,19 @@ Abra `congresso.html` em qualquer editor de texto.
 - **Inversão de polaridade**: a classe `invert` na tag `<section>` deixa o slide
   preto com texto branco. Está nos cinco divisores e no encerramento.
 
+## Backup em PowerPoint
+
+`congresso-backup.pptx` é o plano B: os mesmos 39 slides, cada um como imagem em
+alta resolução num arquivo 16:9, com **as notas de fala em cada slide** (aba
+"Anotações" do PowerPoint) e o **vídeo do depósito embutido** no slide 21.
+
+Abre em qualquer PowerPoint, sem depender de navegador. O que ele não tem: as
+transições, o modo foco e os atalhos — é uma cópia congelada, para o caso de o
+computador do auditório não cooperar com o HTML.
+
+O texto não é editável (cada slide é uma imagem). Se precisar corrigir algo,
+corrija no `congresso.html` e me peça o .pptx de novo.
+
 ## Exportar em PDF (backup para levar no e-mail)
 
 `Ctrl + P` (ou `Cmd + P`) → destino **Salvar como PDF** → layout **paisagem**,
