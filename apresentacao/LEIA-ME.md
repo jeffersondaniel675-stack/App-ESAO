@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **40 slides**.
+São **41 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -20,6 +20,13 @@ aparece só na barra "quanto maior, pior" do slide 22 e na legenda dela. Sem
 sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula nos
 controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
+
+**Continuidade:** o slide 39 anuncia o mestrado — predição de material aeroterrestre
+por IA apoiada em pesquisa operacional — com um **esboço** de painel desenhado em SVG:
+curva de consumo projetada com faixa de incerteza, reposição sugerida por item e a
+faixa de restrições da pesquisa operacional. O desenho traz a etiqueta "esboço" e a
+legenda diz que não representa sistema existente — importante, porque a plateia vai
+olhar para ele com olho técnico.
 
 **Figura do TCC:** o slide 12 usa a figura "A Logística 4.0" do próprio trabalho —
 as dez tecnologias em torno do núcleo digital — para justificar o recorte em IoT,
@@ -193,7 +200,7 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
 | 15–19 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 20–32 | Resultados | Divisor · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 33–37 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Referências |
+| 34–40 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Referências |
 | 38 | Encerramento | Obrigado |
 
 ## Dados usados nos gráficos
