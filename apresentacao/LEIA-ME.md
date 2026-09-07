@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **39 slides** dimensionados para ~40 minutos (35 de exposição + 5 de perguntas).
+São **39 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -131,8 +131,8 @@ uso). `deposito-slide.mp4` é o corte já pronto.
 Abra `congresso.html` em qualquer editor de texto.
 
 - O que ainda depende de você aparece **sublinhado com pontinhos azuis** na tela e
-  marcado com `class="ph-text"` no código: o nome do congresso (slide 1), as legendas
-  das fotos (slide 31), o e-mail de contato (slide 38) e o fecho das referências.
+  marcado com `class="ph-text"` no código: o nome do congresso (slide 1) e o fecho
+  das referências (slide 38).
 - **Números dos gráficos**: cada barra tem `style="--v:55.2"` — o número é o
   comprimento da barra em porcentagem. Troque também o rótulo e o valor exibido ao lado.
 - **Notas de fala**: o texto dentro de `<aside class="notes">` de cada slide.

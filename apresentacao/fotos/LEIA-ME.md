@@ -11,7 +11,5 @@ arquivos ficam aqui como originais, para consulta ou substituição.
 | `recolhimento-pista.jpg` | 19 · Instrumentos e análise |
 | `paraquedista-salto.jpg` | 31 · Evidências de campo |
 
-Falta o crédito de cada imagem — as legendas terminam com "Fonte: informar".
-
 Para trocar uma foto durante a apresentação, arraste a nova por cima do quadro;
 `Alt + clique` desfaz e traz a original de volta.
