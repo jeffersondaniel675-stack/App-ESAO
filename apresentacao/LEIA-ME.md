@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **39 slides**.
+São **40 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -20,6 +20,12 @@ aparece só na barra "quanto maior, pior" do slide 22 e na legenda dela. Sem
 sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula nos
 controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
+
+**Figura do TCC:** o slide 12 usa a figura "A Logística 4.0" do próprio trabalho —
+as dez tecnologias em torno do núcleo digital — para justificar o recorte em IoT,
+*Big Data* e IA. É a única imagem aproveitada do TCC: os gráficos do formulário já
+estão no deck como gráficos nativos, e os organogramas e as figuras de apoio não
+seriam legíveis projetados.
 
 **Esquemas:** o slide 36 abre a proposta com um antes e depois do caminho do dado —
 hoje item → livro e ficha → planilha → decisão só quando alguém consolida; com o POP
@@ -184,7 +190,7 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 |---|---|---|
 | 1–2 | Abertura | Capa · Roteiro |
 | 3–9 | Introdução | Divisor · Logística 4.0 · O B DOMPSA e o Mat Aet · Problema · Questões de estudo · Objetivos · Justificativa |
-| 10–14 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
+| 10–15 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
 | 15–19 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 20–32 | Resultados | Divisor · Panorama · Diagnóstico · Etapas críticas · Problemas · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
 | 33–37 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Referências |
