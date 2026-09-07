@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **38 slides** dimensionados para ~40 minutos (35 de exposição + 5 de perguntas).
+São **39 slides** dimensionados para ~40 minutos (35 de exposição + 5 de perguntas).
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -91,7 +91,7 @@ você queira trocar alguma.
 | 4 · Contextualização | `kc390-paraquedas-extracao.jpg` | quadro 16:9 na coluna direita |
 | 5 · O B DOMPSA e o Mat Aet | `carga-plataforma-paraquedas.jpg` | quadro 4:3 na coluna esquerda |
 | 19 · Instrumentos e análise | `recolhimento-pista.jpg` | quadro 4:3 na coluna esquerda |
-| 31 · Evidências de campo | `paraquedista-salto.jpg` | quadro quadrado, com o texto ao lado |
+| 32 · Evidências de campo | `paraquedista-salto.jpg` | quadro quadrado, com o texto ao lado |
 
 **Falta a fonte de cada imagem.** As legendas terminam com "Fonte: informar",
 sublinhado em pontilhado. Em trabalho acadêmico a figura precisa de crédito —
@@ -104,6 +104,33 @@ passa a depender da pasta ao lado).
 **Para acrescentar mais fotos:** o slide 31 comporta uma galeria de três de novo,
 e o encerramento (slide 38) pode voltar a ter foto de fundo. Hoje ele é preto
 liso, de propósito — sem foto, funciona melhor do que com um espaço vazio.
+
+## O vídeo do depósito
+
+O **slide 21** abre o bloco de resultados com um vídeo do depósito, antes dos
+números. Ele toca sozinho, **sem som**, quando você chega no slide, e para
+sozinho aos 20 segundos. Clicar no vídeo (ou a tecla `V`) pausa e continua. Ao
+trocar de slide, ele para e volta ao início.
+
+Ao contrário das fotos, **o vídeo não está embutido** no `congresso.html` — os três
+arquivos somam 58 MB, o que deixaria o deck pesado demais. Eles ficam em
+`videos/`, e o slide aponta para `videos/deposito-1.mov`.
+
+> **Leve a pasta inteira no pen drive.** Sem a pasta `videos/` ao lado, o slide
+> mostra um aviso preto no lugar do vídeo. O resto da apresentação continua
+> funcionando normalmente.
+>
+> **O link do artifact não toca o vídeo** pelo mesmo motivo: lá só existe o
+> arquivo HTML.
+
+Os três vídeos estão na pasta: `deposito-1.mov` (25 s, o que está em uso),
+`deposito-2.mov` (40 s) e `deposito-3.mov` (40 s). Para trocar, mude o `src` do
+`<video>` no slide 21; para mudar onde ele para, o atributo `data-until`.
+
+**Não consegui abrir os vídeos para conferir o conteúdo** — o ambiente onde montei
+o deck não tem o decodificador H.264. Os arquivos estão em H.264 com áudio AAC, que
+é o formato que o Chrome e o Edge tocam sem problema, mas **teste no computador da
+apresentação** antes do dia.
 
 ## Editando o conteúdo
 
