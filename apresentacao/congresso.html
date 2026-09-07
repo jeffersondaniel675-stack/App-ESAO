@@ -1301,63 +1301,88 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
       <p class="eyebrow" data-anim>Trabalhos futuros</p>
       <ul class="list" style="margin-top:18px">
         <li data-anim><span class="k">→</span><span>Modelagem de um sistema aplicável ao B DOMPSA.</span></li>
-        <li data-anim><span class="k">→</span><span>Requisitos técnicos, orçamentários e institucionais.</span></li>
+        <li data-anim><span class="k">→</span><span>Requisitos técnicos, orçamentários, institucionais e <strong>operacionais</strong>.</span></li>
         <li data-anim><span class="k">→</span><span>Rastreabilidade, manutenção preditiva e apoio à decisão.</span></li>
       </ul>
     </div>
   </div>
-  <p class="note" data-anim style="margin-top:34px">Ainda assim, bastaram para sustentar o diagnóstico.</p>
-  <aside class="notes">Assumir as limitações com naturalidade: reconhecê-las é sinal de domínio, não de fraqueza. Emendar direto na frase final.</aside>
+  <p class="note" data-anim style="margin-top:34px">O requisito operacional é condição, não detalhe: o sistema tem de ser <strong>resiliente a operações fora de sede</strong>, onde não há rede nem energia garantidas.</p>
+  <aside class="notes">Assumir as limitações com naturalidade: reconhecê-las é sinal de domínio, não de fraqueza. No requisito operacional, insistir: o B DOMPSA opera fora de sede, e um sistema que só funciona com rede e energia estáveis não serve. Ou ele trabalha off-line e sincroniza depois, ou não passa do depósito. É a diferença entre um sistema de escritório e um sistema de campanha.</aside>
 </section>
 
 <!-- ============================ 37 · CONTINUIDADE ============================ -->
-<section class="slide" data-transition="tilt" data-section="Conclusão" data-title="Continuidade da pesquisa">
-  <div class="head" data-anim><p class="eyebrow">Continuidade</p><h2>A pesquisa não para aqui.</h2></div>
-  <div class="cols c-2a">
-      <svg class="dgm-wide" viewBox="0 0 780 430" role="img" aria-label="Esboço de um painel de predição de material aeroterrestre: o consumo observado segue como projeção com faixa de incerteza, e ao lado a reposição sugerida por item, calculada sob restrições de orçamento, prazo de ressuprimento e estoque mínimo">
-        <rect x="1" y="1" width="778" height="428" rx="20" fill="var(--card)" stroke="var(--hairline)" stroke-width="1.4"/>
-        <text x="26" y="38" font-size="17" font-weight="600" fill="currentColor">Predição de material aeroterrestre</text>
-        <rect x="646" y="20" width="110" height="26" rx="13" fill="var(--canvas-soft)"/>
-        <text x="701" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">esboço</text>
-        <line x1="1" y1="62" x2="779" y2="62" stroke="var(--hairline-soft)" stroke-width="1.4"/>
+<!-- ==================== 41 · PROVA DE CONCEITO ==================== -->
+<section class="slide" data-transition="tilt" data-section="Conclusão" data-title="Prova de conceito">
+  <div class="head" data-anim><p class="eyebrow">Continuidade · prova de conceito sobre os insumos de 2022 a 2026</p><h2>Nenhum modelo superou a média histórica.</h2></div>
+  <table class="tight" style="font-variant-numeric:tabular-nums" data-anim>
+    <thead><tr><th>Modelo</th><th>MAE</th><th>RMSE</th><th>R²</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Média histórica</strong> <span class="small">referência</span></td><td>113,1</td><td>233,9</td><td>0,22</td></tr>
+      <tr><td>Regressão linear múltipla</td><td>132,3</td><td>231,7</td><td>0,24</td></tr>
+      <tr><td>Árvore de decisão</td><td>125,1</td><td>238,4</td><td>0,19</td></tr>
+      <tr><td>Floresta aleatória, 30 árvores</td><td>125,6</td><td>250,6</td><td>0,11</td></tr>
+    </tbody>
+  </table>
+  <p data-anim style="margin-top:26px;max-width:78ch">A regressão ganha por pouco no RMSE e no R². Perde no erro médio, e erra mais que a simples média histórica em <strong>27 dos 41 itens</strong>.</p>
+  <p class="note" data-anim>41 insumos das classes A e B da curva ABC · treino em 2024 e 2025, teste em 2026 · consumo médio de 157 unidades por item</p>
+  <aside class="notes">Resultado negativo, e apresentar como tal. Numa plateia técnica isso vale mais que um número inflado: mostra que o pipeline roda sobre dado real e que os critérios de avaliação foram aplicados sem maquiagem. O MAE de 113 equivale a 72 por cento do consumo médio do item, ou seja, o erro é da ordem de grandeza do próprio consumo. Dizer que é prova de conceito, não o modelo da dissertação.</aside>
+</section>
 
-        <text x="26" y="92" font-size="13" font-weight="600" fill="currentColor" opacity=".75">Consumo observado e projetado</text>
-        <line x1="60" y1="110" x2="60" y2="286" stroke="currentColor" stroke-width="1.2" opacity=".35"/>
-        <line x1="60" y1="286" x2="460" y2="286" stroke="currentColor" stroke-width="1.2" opacity=".35"/>
-        <path d="M270 214 L340 186 L400 160 L456 130 L456 196 L400 214 L340 226 L270 232 Z" fill="#0066ff" opacity=".14"/>
-        <polyline points="74,262 118,254 162,240 206,232 250,222 270,222" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-        <circle cx="118" cy="254" r="3.4" fill="currentColor"/><circle cx="162" cy="240" r="3.4" fill="currentColor"/>
-        <circle cx="206" cy="232" r="3.4" fill="currentColor"/><circle cx="250" cy="222" r="3.4" fill="currentColor"/>
-        <polyline points="270,222 340,206 400,187 456,163" fill="none" stroke="#0066ff" stroke-width="2.4" stroke-dasharray="6 5" stroke-linecap="round"/>
-        <line x1="270" y1="106" x2="270" y2="286" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4" opacity=".4"/>
-        <text x="270" y="102" text-anchor="middle" font-size="12" fill="currentColor" opacity=".7">hoje</text>
-        <text x="460" y="120" text-anchor="end" font-size="12" fill="#0066ff">faixa de incerteza</text>
-        <text x="74" y="306" font-size="12" fill="currentColor" opacity=".6">histórico</text>
-        <text x="456" y="306" text-anchor="end" font-size="12" fill="currentColor" opacity=".6">próximos trimestres</text>
-
-        <line x1="492" y1="86" x2="492" y2="300" stroke="var(--hairline-soft)" stroke-width="1.4"/>
-        <text x="516" y="92" font-size="13" font-weight="600" fill="currentColor" opacity=".75">Reposição sugerida</text>
-        <text x="516" y="128" font-size="14" fill="currentColor">Paraquedas principal</text>
-        <rect x="516" y="140" width="112" height="26" rx="13" fill="#0066ff"/>
-        <text x="572" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">+18 un · 60 d</text>
-        <text x="516" y="196" font-size="14" fill="currentColor">Paraquedas reserva</text>
-        <rect x="516" y="208" width="104" height="26" rx="13" fill="#0066ff"/>
-        <text x="568" y="226" text-anchor="middle" font-size="12" font-weight="600" fill="#fff">+6 un · 90 d</text>
-        <text x="516" y="264" font-size="14" fill="currentColor" opacity=".6">Capacete de salto</text>
-        <rect x="516" y="276" width="96" height="26" rx="13" fill="var(--canvas-soft)"/>
-        <text x="564" y="294" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor" opacity=".7">sem ação</text>
-
-        <rect x="26" y="336" width="728" height="72" rx="16" fill="var(--canvas-soft)"/>
-        <text x="48" y="366" font-size="13" font-weight="600" fill="currentColor">Pesquisa operacional</text>
-        <text x="48" y="390" font-size="13" fill="currentColor" opacity=".75">quanto e quando repor, dados o orçamento, o prazo de ressuprimento e o estoque mínimo de segurança</text>
-      </svg>
+<!-- ==================== 42 · POR QUE ERRA ==================== -->
+<section class="slide" data-transition="rise" data-section="Conclusão" data-title="Por que o modelo erra">
+  <div class="head" data-anim><p class="eyebrow">O diagnóstico do próprio modelo</p><h2>O histórico não anuncia o salto.</h2></div>
+  <svg class="dgm-wide" viewBox="0 0 1180 300" role="img" aria-label="Nos cinco insumos de maior consumo, a previsão do modelo fica sempre abaixo do consumo real; no lacre do reserva a distância é de 40 contra 1.010 unidades">
+    <g>
+      <circle cx="326" cy="15" r="6" fill="#0066ff"/>
+      <text x="340" y="20" font-size="14" font-weight="600" fill="#0066ff">previsto</text>
+      <circle cx="426" cy="15" r="6" fill="currentColor"/>
+      <text x="440" y="20" font-size="14" font-weight="600" fill="currentColor">consumo real</text>
+      <text x="292" y="57" text-anchor="end" font-size="15" fill="currentColor">Botão de pressão</text>
+      <line x1="739" y1="52" x2="1084" y2="52" stroke="currentColor" stroke-width="2" opacity=".22"/>
+      <circle cx="739" cy="52" r="8" fill="#0066ff"/>
+      <circle cx="1084" cy="52" r="8" fill="currentColor"/>
+      <text x="725" y="57" text-anchor="end" font-size="14" fill="#0066ff">576</text>
+      <text x="1098" y="57" font-size="14" font-weight="600" fill="currentColor">1.050</text>
+      <text x="292" y="103" text-anchor="end" font-size="15" fill="currentColor">Lacre do reserva</text>
+      <line x1="349" y1="98" x2="1055" y2="98" stroke="currentColor" stroke-width="2" opacity=".22"/>
+      <circle cx="349" cy="98" r="8" fill="#0066ff"/>
+      <circle cx="1055" cy="98" r="8" fill="currentColor"/>
+      <text x="335" y="103" text-anchor="end" font-size="14" fill="#0066ff">40</text>
+      <text x="1069" y="103" font-size="14" font-weight="600" fill="currentColor">1.010</text>
+      <text x="292" y="149" text-anchor="end" font-size="15" fill="currentColor">Arrebite</text>
+      <line x1="472" y1="144" x2="902" y2="144" stroke="currentColor" stroke-width="2" opacity=".22"/>
+      <circle cx="472" cy="144" r="8" fill="#0066ff"/>
+      <circle cx="902" cy="144" r="8" fill="currentColor"/>
+      <text x="458" y="149" text-anchor="end" font-size="14" fill="#0066ff">209</text>
+      <text x="916" y="149" font-size="14" font-weight="600" fill="currentColor">800</text>
+      <text x="292" y="195" text-anchor="end" font-size="15" fill="currentColor">Munhão</text>
+      <line x1="524" y1="190" x2="756" y2="190" stroke="currentColor" stroke-width="2" opacity=".22"/>
+      <circle cx="524" cy="190" r="8" fill="#0066ff"/>
+      <circle cx="756" cy="190" r="8" fill="currentColor"/>
+      <text x="510" y="195" text-anchor="end" font-size="14" fill="#0066ff">280</text>
+      <text x="770" y="195" font-size="14" font-weight="600" fill="currentColor">600</text>
+      <text x="292" y="241" text-anchor="end" font-size="15" fill="currentColor">Borracha de dobragem</text>
+      <line x1="430" y1="236" x2="634" y2="236" stroke="currentColor" stroke-width="2" opacity=".22"/>
+      <circle cx="430" cy="236" r="8" fill="#0066ff"/>
+      <circle cx="634" cy="236" r="8" fill="currentColor"/>
+      <text x="416" y="241" text-anchor="end" font-size="14" fill="#0066ff">151</text>
+      <text x="648" y="241" font-size="14" font-weight="600" fill="currentColor">432</text>
+      <line x1="320" y1="282" x2="1120" y2="282" stroke="currentColor" stroke-width="1" opacity=".18"/>
+      <text x="320" y="298" font-size="12" fill="currentColor" opacity=".6">0</text>
+      <text x="720" y="298" text-anchor="middle" font-size="12" fill="currentColor" opacity=".6">550</text>
+      <text x="1120" y="298" text-anchor="end" font-size="12" fill="currentColor" opacity=".6">1.100 unidades</text>
+    </g>
+  </svg>
+  <div class="cols c-2 gap-s" style="align-items:start">
     <div>
-      <p data-anim>Este trabalho <strong>mediu</strong> o problema. O passo seguinte é <strong>prever</strong>.</p>
-      <p data-anim>Sou candidato ao mestrado na <span class="ph-text">EsAO</span>, com pesquisa sobre <strong>predição de demanda de Mat Aet por inteligência artificial</strong>, apoiada em <strong>pesquisa operacional</strong>.</p>
-      <p class="note" data-anim>O painel ao lado é <strong>esboço</strong>, não sistema existente.</p>
+      <p data-anim>O lacre do reserva consumiu <strong>14 unidades por ano</strong> em média. Em 2026 consumiu <strong>1.010</strong>. Nada no histórico anunciava isso.</p>
+    </div>
+    <div>
+      <p data-anim>O que falta ao modelo não é algoritmo. É a variável que explica o salto: exercício programado, efetivo, missão. <strong>Dado que o sistema atual não produz.</strong></p>
     </div>
   </div>
-  <aside class="notes">Fechamento do argumento: o TCC mostrou que o dado não circula; o mestrado ataca o passo seguinte, que é usar esse dado para antecipar a necessidade. Deixar claro que o painel é esboço, porque a plateia de Logística 4.0 vai olhar para ele com olho técnico.</aside>
+  <p class="note" data-anim>Sou candidato ao mestrado na <span class="ph-text">EsAO</span>, com pesquisa sobre predição de demanda de Mat Aet por inteligência artificial, apoiada em pesquisa operacional. O POP proposto neste trabalho é o que passa a gerar a base que falta.</p>
+  <aside class="notes">Aqui o arco fecha. O TCC mostrou que o dado não circula; a prova de conceito mostra que, sem esse dado, prever não funciona. Os cinco itens do gráfico concentram 60 por cento do consumo do período, e são justamente os que o modelo não vê. É o argumento mais forte da apresentação para o mestrado: não estou pedindo para treinar um modelo melhor, estou mostrando que primeiro é preciso registrar a informação que explica a demanda.</aside>
 </section>
 
 <!-- ============================ 38 · REFERÊNCIAS ============================ -->
@@ -1385,7 +1410,7 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
   <figure class="photo fill hero-photo hero-soft" data-photo="fecho" data-from="capa" style="--hero-pos:center 44%" aria-hidden="true"></figure>
   <blockquote class="quote solta" style="max-width:30ch;font-size:42px" data-anim>
     Verificarei tudo duas vezes. O &ldquo;mais ou menos&rdquo; me fará um criminoso em potencial. Um dobrador relapso ensaia o mais vil dos crimes: assassinato pelas costas.
-    <cite>8º Mandamento do Dobrador de Paraquedas</cite>
+    <cite>8º Mandamento do Especialista DOMPSA</cite>
   </blockquote>
   <hr class="rule" style="max-width:340px;background:rgba(255,255,255,.48)" data-anim>
   <p class="small" data-anim>

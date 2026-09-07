@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **43 slides**.
+São **44 slides**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -89,7 +89,7 @@ tópico, o item da vez fica nítido, o que já passou fica levemente fora de foc
 que ainda vem fica bem borrado. É o mesmo efeito de profundidade de campo de uma
 lente: o olho da plateia vai direto para onde você está.
 
-**O encerramento** é um slide só: o **8º Mandamento do Dobrador de Paraquedas**, e
+**O encerramento** é um slide só: o **8º Mandamento do Especialista DOMPSA**, e
 embaixo dele o seu nome e o contato, sobre a foto do lançamento de carga. Não há a
 palavra "Obrigado" na tela — o agradecimento é falado, e isso costuma soar melhor
 do que lido.
@@ -156,7 +156,7 @@ você queira trocar alguma.
 | 16 · Divisor Metodologia | `dobragem-mesa.jpg` | fundo, sob véu preto |
 | 21 · Divisor Resultados | `deposito-prateleiras.jpg` | fundo, sob véu preto |
 | 37 · Divisor Conclusão | `paraquedista-salto.jpg` | fundo, sob véu preto |
-| 43 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do mandamento e do contato |
+| 44 · Encerramento | `capa-c295-lancamento.jpg` | tela cheia, atrás do mandamento e do contato |
 
 **Para trocar uma foto:** copie a nova para `fotos/` e me avise, ou substitua o
 `src` da tag `<img>` correspondente por `fotos/nome-do-arquivo.jpg` (aí o arquivo
@@ -238,12 +238,12 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 10–16 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · **Dois depósitos** · O recorte do estudo · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
 | 17–21 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
 | 22–36 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · **A prancheta** · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 37–42 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · Continuidade da pesquisa · Referências |
-| 43 | Encerramento | 8º Mandamento, nome e contato |
+| 37–43 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · **Prova de conceito** · **Por que o modelo erra** · Referências |
+| 44 | Encerramento | 8º Mandamento, nome e contato |
 
-## O 8º Mandamento (slide 43)
+## O 8º Mandamento (slide 44)
 
-O deck fecha num slide só, preto, com o **8º Mandamento do Dobrador de Paraquedas**
+O deck fecha num slide só, preto, com o **8º Mandamento do Especialista DOMPSA**
 no alto e o seu nome e contato embaixo:
 
 > Verificarei tudo duas vezes. O "mais ou menos" me fará um criminoso em potencial.
@@ -286,9 +286,34 @@ controle é uma prancheta. Ela funciona. Só não conversa com mais ninguém."**
 É o slide que transforma o número em imagem. Vale deixar a foto respirar dois
 segundos antes de falar.
 
+## A prova de conceito (slides 41 e 42)
+
+O painel-esboço saiu. No lugar dele entraram os **resultados reais** do pipeline
+que você rodou, e eles dizem uma coisa incômoda que vale dizer em voz alta:
+**nenhum dos três modelos superou a média histórica.**
+
+O slide 41 traz a tabela dos quatro modelos com MAE, RMSE e R². O 42 mostra, nos
+cinco insumos de maior consumo, a distância entre o previsto e o real, e explica o
+porquê: o histórico não contém a variável que produz o salto.
+
+**Por que apresentar um resultado negativo.** Porque numa plateia técnica ele vale
+mais que um número inflado. Mostra que o pipeline roda sobre dado real, que os
+critérios foram aplicados sem maquiagem, e sobretudo fecha o arco do trabalho: o
+TCC mostrou que o dado não circula, e a prova de conceito mostra que, sem esse
+dado, prever não funciona. O pedido do mestrado deixa de ser "quero treinar um
+modelo" e passa a ser "primeiro é preciso registrar a informação que explica a
+demanda". É um argumento muito mais forte.
+
+Se alguém perguntar por que o R² é baixo, a resposta honesta está nos números: são
+41 itens, dois anos-alvo de treino, e um consumo com mediana 32 e máximo 1.050. Não
+há regularidade a aprender no histórico sozinho.
+
+Os arquivos de origem estão em `dados/`, com o memorial de como cada número foi
+conferido.
+
 ## Contato no slide final
 
-O slide 43 traz, abaixo do mandamento:
+O slide 44 traz, abaixo do mandamento:
 
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
