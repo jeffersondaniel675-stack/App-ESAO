@@ -246,6 +246,8 @@ strong{color:var(--ink);font-weight:600}
   padding:28px 28px 30px;position:relative;overflow:hidden;
 }
 .dgm{display:block;width:100%;height:auto;margin-bottom:18px;color:var(--ink)}
+.dgm-wide{display:block;width:100%;height:auto;flex:0 0 auto;color:var(--ink);margin:4px 0 24px}
+.dgm-wide text{font-family:var(--sans)}
 .dgm text{font-family:var(--sans);font-weight:500}
 .card .n{
   font-size:14px;font-weight:600;letter-spacing:0;color:var(--muted);
@@ -1127,14 +1129,54 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
 <!-- ============================ 35 · PROPOSTA ============================ -->
 <section class="slide" data-transition="rise" data-section="Conclusão" data-title="Proposta · POP em 4 fases">
   <div class="head" data-anim><p class="eyebrow">Contribuição prática</p><h2>Um POP em doze etapas, implantado em quatro fases.</h2></div>
+  <svg class="dgm-wide" viewBox="0 0 1180 176" role="img" aria-label="Hoje o dado do material passa por livro, ficha e planilha e só vira decisão quando alguém consolida; com o POP a etiqueta é lida na própria etapa e alimenta uma ficha digital única que chega ao comando no mesmo instante">
+    <defs>
+      <marker id="sA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+      <marker id="sB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#0066ff"/></marker>
+    </defs>
+
+    <g opacity=".5">
+      <text x="8" y="45" font-size="16" font-weight="600" fill="currentColor">Hoje</text>
+      <rect x="150" y="16" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="250" y="44" text-anchor="middle" font-size="15" fill="currentColor">item</text>
+      <line x1="356" y1="39" x2="394" y2="39" stroke="currentColor" stroke-width="1.5" marker-end="url(#sA)"/>
+      <rect x="400" y="16" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="500" y="44" text-anchor="middle" font-size="15" fill="currentColor">livro e ficha</text>
+      <line x1="606" y1="39" x2="644" y2="39" stroke="currentColor" stroke-width="1.5" marker-end="url(#sA)"/>
+      <rect x="650" y="16" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <text x="750" y="44" text-anchor="middle" font-size="15" fill="currentColor">planilha do setor</text>
+      <line x1="856" y1="39" x2="894" y2="39" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#sA)"/>
+      <rect x="900" y="16" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 5"/>
+      <text x="1000" y="44" text-anchor="middle" font-size="15" fill="currentColor">decisão</text>
+      <text x="1000" y="80" text-anchor="middle" font-size="13" fill="currentColor">quando alguém consolida</text>
+    </g>
+
+    <line x1="8" y1="96" x2="1172" y2="96" stroke="currentColor" stroke-width="1" opacity=".18"/>
+
+    <g>
+      <text x="8" y="152" font-size="16" font-weight="600" fill="#0066ff">Com o POP</text>
+      <rect x="150" y="123" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text x="250" y="151" text-anchor="middle" font-size="15" fill="currentColor">item com QR ou RFID</text>
+      <line x1="356" y1="146" x2="394" y2="146" stroke="currentColor" stroke-width="1.6" marker-end="url(#sA)"/>
+      <rect x="400" y="123" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text x="500" y="151" text-anchor="middle" font-size="15" fill="currentColor">leitura na etapa</text>
+      <line x1="606" y1="146" x2="644" y2="146" stroke="currentColor" stroke-width="1.6" marker-end="url(#sA)"/>
+      <rect x="650" y="123" width="200" height="46" rx="14" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text x="750" y="151" text-anchor="middle" font-size="15" fill="currentColor">ficha digital única</text>
+      <line x1="856" y1="146" x2="894" y2="146" stroke="#0066ff" stroke-width="1.8" marker-end="url(#sB)"/>
+      <rect x="900" y="123" width="200" height="46" rx="14" fill="#0066ff"/>
+      <text x="1000" y="151" text-anchor="middle" font-size="15" fill="#fff">painel do comando</text>
+      <text x="1000" y="115" text-anchor="middle" font-size="13" fill="#0066ff">no mesmo instante</text>
+    </g>
+  </svg>
   <div class="flow" style="grid-template-columns:repeat(4,1fr)">
-    <div class="step" data-anim><span class="n">Fase 1 · Base</span><h3>Cadastrar e identificar</h3><p>Ficha digital individual por item e etiqueta QR <em>Code</em> ou RFID, começando por paraquedas e equipamentos críticos.</p></div>
-    <div class="step" data-anim><span class="n">Fase 2 · Rotina</span><h3>Registrar o ciclo</h3><p>Recebimento, localização física, movimentação interna e histórico técnico de inspeção, dobragem e manutenção.</p></div>
-    <div class="step" data-anim><span class="n">Fase 3 · Controle</span><h3>Inventariar e auditar</h3><p>Inventário periódico contra a base digital, auditoria de inconsistências e painel de indicadores para o comando.</p></div>
-    <div class="step" data-anim><span class="n">Fase 4 · Consolidação</span><h3>Capacitar e expandir</h3><p>Treinamento dos operadores, registros físicos e digitais em paralelo na transição e expansão após o projeto-piloto.</p></div>
+    <div class="step" data-anim><span class="n">Fase 1 · Base</span><h3>Cadastrar e identificar</h3><p>Ficha digital por item e etiqueta QR <em>Code</em> ou RFID, começando pelos equipamentos críticos.</p></div>
+    <div class="step" data-anim><span class="n">Fase 2 · Rotina</span><h3>Registrar o ciclo</h3><p>Recebimento, localização, movimentação e histórico de inspeção, dobragem e manutenção.</p></div>
+    <div class="step" data-anim><span class="n">Fase 3 · Controle</span><h3>Inventariar e auditar</h3><p>Inventário contra a base digital, auditoria de inconsistências e painel para o comando.</p></div>
+    <div class="step" data-anim><span class="n">Fase 4 · Consolidação</span><h3>Capacitar e expandir</h3><p>Treinamento, registros físicos e digitais em paralelo na transição e expansão após o piloto.</p></div>
   </div>
   <p class="note" data-anim>A proposta não substitui normas internas nem dispensa validação institucional: oferece uma sequência inicial de ações, testável em caráter piloto.</p>
-  <aside class="notes">Se a banca perguntar "e como se faz?", a resposta está aqui. Ter em mente as 12 etapas do apêndice, caso peçam detalhe.</aside>
+  <aside class="notes">Começar pelo desenho de cima: hoje o dado passa por três mãos antes de virar decisão, e a decisão só existe quando alguém consolida. Embaixo, a etiqueta é lida na própria etapa e o comando enxerga no mesmo instante. Só depois percorrer as quatro fases. Ter em mente as 12 etapas do apêndice, caso peçam detalhe.</aside>
 </section>
 
 <!-- ============================ 36 · RECOMENDAÇÕES ============================ -->

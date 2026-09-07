@@ -21,7 +21,10 @@ sombras: a hierarquia vem de preenchimento e fios de 1px. Geometria de pílula n
 controles, cantos de 24px nos cartões, sem versalete e sem espacejamento nos títulos. Os divisores de bloco e o encerramento usam a inversão de
 polaridade do sistema: fundo preto, texto branco.
 
-**Esquemas:** os três cartões do slide 12 trazem um diagrama em SVG cada um —
+**Esquemas:** o slide 36 abre a proposta com um antes e depois do caminho do dado —
+hoje item → livro e ficha → planilha → decisão só quando alguém consolida; com o POP
+item etiquetado → leitura na etapa → ficha digital única → painel do comando no mesmo
+instante. E os três cartões do slide 12 trazem um diagrama em SVG cada um —
 a etiqueta que transmite estado (IoT), os registros dispersos convergindo para uma
 base única (*Big Data*) e o histórico projetando o limite de vida útil (IA). São
 desenhos vetoriais, não fotos: escalam sem perder nitidez e não pesam no arquivo.
