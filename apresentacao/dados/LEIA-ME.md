@@ -21,3 +21,17 @@ Números que aparecem nos slides e não estão nos CSV, todos derivados de
 
 O cabeçalho do próprio script diz que isto é demonstração ilustrativa e
 preliminar, não o modelo final da dissertação. Os slides dizem o mesmo.
+
+# Fontes acrescentadas em 08/09
+
+| Arquivo | O que é | Onde aparece no deck |
+|---|---|---|
+| `EVTEA_BDOMPSA_v21.docx` | Estudo de viabilidade do B DOMPSA como Órgão Provedor, de 24/03/2026, revisado em 19/06/2026 | Slide 27, "O batalhão já se move" |
+| `insumos_2022_2026.xlsx` | Planilha de insumos aeroterrestres, cinco exercícios anuais | Base do piloto de predição do slide 29 |
+
+Números do EVTEA usados no deck: 12 portais RFID fixos, 14 leitores portáteis,
+9.900 etiquetas, faseamento 2026-2030, MVP no RZ-21 e as 29.345 dobragens anuais
+(mediana 2022-2026 da Bda Inf Pqdt, do COPESP e da 3ª Cia Fesp).
+
+Ficaram **fora** do deck, de propósito: valores em reais, nomes e contatos da
+equipe do estudo.

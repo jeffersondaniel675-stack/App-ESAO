@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **44 slides**.
+São **31 slides**, para trinta minutos de fala.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -286,30 +286,6 @@ controle é uma prancheta. Ela funciona. Só não conversa com mais ninguém."**
 É o slide que transforma o número em imagem. Vale deixar a foto respirar dois
 segundos antes de falar.
 
-## A prova de conceito (slides 41 e 42)
-
-O painel-esboço saiu. No lugar dele entraram os **resultados reais** do pipeline
-que você rodou, e eles dizem uma coisa incômoda que vale dizer em voz alta:
-**nenhum dos três modelos superou a média histórica.**
-
-O slide 41 traz a tabela dos quatro modelos com MAE, RMSE e R². O 42 mostra, nos
-cinco insumos de maior consumo, a distância entre o previsto e o real, e explica o
-porquê: o histórico não contém a variável que produz o salto.
-
-**Por que apresentar um resultado negativo.** Porque numa plateia técnica ele vale
-mais que um número inflado. Mostra que o pipeline roda sobre dado real, que os
-critérios foram aplicados sem maquiagem, e sobretudo fecha o arco do trabalho: o
-TCC mostrou que o dado não circula, e a prova de conceito mostra que, sem esse
-dado, prever não funciona. O pedido do mestrado deixa de ser "quero treinar um
-modelo" e passa a ser "primeiro é preciso registrar a informação que explica a
-demanda". É um argumento muito mais forte.
-
-Se alguém perguntar por que o R² é baixo, a resposta honesta está nos números: são
-41 itens, dois anos-alvo de treino, e um consumo com mediana 32 e máximo 1.050. Não
-há regularidade a aprender no histórico sozinho.
-
-Os arquivos de origem estão em `dados/`, com o memorial de como cada número foi
-conferido.
 
 ## Contato no slide final
 
@@ -321,6 +297,67 @@ O slide 44 traz, abaixo do mandamento:
 
 Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
 é o tipo de coisa que só se descobre depois.
+
+## O que saiu na revisão de 08/09
+
+O deck tinha 44 slides e 2.151 palavras em tela. Ficou com **31 slides e 1.681
+palavras**. O corte foi feito com olho de revisor: nada foi eliminado por ser
+ruim, e sim por repetir algo que já estava dito.
+
+**Fundidos**
+
+| Virou | O que era |
+|---|---|
+| Questões e objetivo | Questões de estudo + Objetivos, que diziam a mesma coisa em dois formatos |
+| Como a pesquisa foi feita | Delineamento + Amostra e coleta + Perfil da amostra + Instrumentos |
+| Os especialistas | Um slide por entrevistado, três no total |
+| Continuidade da pesquisa | Prova de conceito + Por que o modelo erra |
+
+**Removidos**
+
+- **Contexto · Logística 4.0**: dizia, no bloco de introdução, o que a linha do
+  tempo do referencial já diz melhor.
+- **Justificativa**: repetia o slide do Mat Aet crítico; o OEE nº 24 foi para a
+  nota do slide de questões.
+- **O recorte do estudo**: virou a etiqueta do slide das três tecnologias.
+- **Base doutrinária**: a tabela normativa reaparece inteira na síntese
+  interpretativa.
+- **Diagnóstico do modelo atual**: as mesmas quatro médias do painel de números.
+- **Etapas críticas**: mesmo achado do slide de problemas recorrentes.
+- **Aspectos mais beneficiados**: mesmo achado do potencial percebido.
+
+**O tamanho da amostra saiu da tela.** Não aparece mais "29 respondentes" em
+nenhum slide, só percentuais. O número continua na **nota de fala** da
+metodologia, com a taxa de retorno de 67,4%, para você responder se perguntarem.
+Vale saber que num artigo escrito isso não passaria: em texto, o n é
+obrigatório. Numa apresentação de trinta minutos, percentual sem contagem é
+prática comum.
+
+**O que entrou no lugar:** a escala real do objeto. O slide do Mat Aet passou a
+dizer **29.345 dobragens por ano**, número que vem da mediana 2022-2026 da
+Bda Inf Pqdt, do COPESP e da 3ª Cia Fesp, registrada no estudo de viabilidade.
+Esse número faz pelo estudo o que a contagem de respondentes não fazia.
+
+## O slide do EVTEA (27)
+
+Entra logo depois da proposta de POP e muda o peso da apresentação: mostra que
+a pesquisa não propõe uma hipótese de gabinete, ela chega junto com um plano
+institucional em execução. A linha do tempo vai de **2009**, o SISPQD
+embrionário, a **2030**, com o B DOMPSA consolidado como Órgão Provedor.
+
+Três cuidados que eu tomei e que valem a sua conferência:
+
+1. **Não pus valores em reais na tela.** O estudo traz R$ 319 mil de hardware,
+   R$ 148,5 mil de etiquetas e R$ 25 milhões/ano do PMAET. É documento interno,
+   com o campo "Aprovado por" ainda em branco, e um congresso é ambiente externo.
+   Se você quiser os números no slide, é uma linha.
+2. **O "parecer pela viabilidade" é do próprio estudo**, não uma aprovação
+   superior. O slide diz exatamente isso.
+3. **Nenhum nome, telefone ou e-mail** da equipe do estudo foi para o deck.
+
+O **2009 do SISPQD** veio de você, não do documento: o EVTEA cita o SISPQD como
+o sistema a ser desenvolvido agora, sem mencionar a origem. Confira a data antes
+de projetar.
 
 ## Dados usados nos gráficos
 
