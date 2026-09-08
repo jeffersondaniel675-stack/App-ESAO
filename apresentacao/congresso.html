@@ -342,6 +342,12 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 .kpi .v small{font-size:31px;font-weight:600;color:var(--muted);margin-left:4px}
 .kpi .l{margin-top:16px;font-size:23px;font-weight:400;color:var(--muted);line-height:1.42}
 .kpi .d{margin-top:12px;font-size:20px;font-weight:600;color:var(--muted)}
+/* variante compacta: para quando o painel de números divide o slide com
+   outro bloco e o corpo de 68px não cabe. */
+.kpis.compact .kpi{padding:20px 22px}
+.kpis.compact .kpi .v{font-size:46px}
+.kpis.compact .kpi .v small{font-size:22px}
+.kpis.compact .kpi .l{margin-top:12px;font-size:21px}
 
 .chart{margin-top:8px}
 .chart .c-title{font-size:25px;font-weight:600;color:var(--ink);margin-bottom:6px}
@@ -1060,9 +1066,14 @@ body.on-invert #chrome kbd:hover{color:#fff;border-color:#fff}
     <div class="tl" data-anim><span class="y">2028 · 2029</span><h3>Expansão</h3><p>Salto livre, MCI-IC, T-10R e paraquedas de carga.</p></div>
     <div class="tl" data-anim><span class="y">2030</span><h3>Órgão Provedor</h3><p>B DOMPSA consolidado como OP do Exército.</p></div>
   </div>
-  <p data-anim style="margin-top:26px;max-width:80ch">O POP proposto é a camada de procedimento desse plano: define <strong>quem lê, em que etapa e o que fica registrado</strong>.</p>
-  <p class="note" data-anim>12 portais RFID fixos, 14 leitores portáteis e 9.900 etiquetas · alinhado aos Objetivos Estratégicos do Exército 1, 5 e 6</p>
-  <aside class="notes">Este slide muda o peso da apresentação: mostra que a pesquisa não propõe uma hipótese de gabinete, ela chega junto com um plano institucional em execução. O SISPQD de 2009 serve para dizer que a ideia é antiga no batalhão e que só agora a tecnologia e o orçamento a alcançaram. Não citar valores em voz alta sem necessidade: o estudo de viabilidade é documento interno e ainda não tem aprovação formal registrada.</aside>
+  <div class="kpis compact" style="margin-top:22px">
+    <div class="kpi" data-anim><div class="v">R$ 194,5<small>mil</small></div><div class="l">A 1ª fase, com o piloto no RZ-21</div></div>
+    <div class="kpi" data-anim><div class="v">R$ 467<small>mil</small></div><div class="l">TIC completa: 12 portais RFID, 14 leitores e 9.900 etiquetas</div></div>
+    <div class="kpi" data-anim><div class="v">R$ 26<small>mi/ano</small></div><div class="l">O material controlado: R$ 25 mi de modernização e R$ 1 mi de insumos</div></div>
+  </div>
+  <p data-anim style="margin-top:22px;max-width:84ch">Rastrear tudo custa <strong>menos de 2% de um ano</strong> do material que se pretende rastrear.</p>
+  <p class="note" data-anim>O POP proposto é a camada de procedimento desse plano: define quem lê, em que etapa e o que fica registrado.</p>
+  <aside class="notes">Este slide muda o peso da apresentação: mostra que a pesquisa não propõe uma hipótese de gabinete, ela chega junto com um plano institucional em execução. O SISPQD de 2009 diz que a ideia é antiga no batalhão e que só agora a tecnologia e o orçamento a alcançaram. A comparação de valores é a frase mais forte daqui, e convém explicá-la: os R$ 467 mil são investimento único em TIC, os R$ 26 milhões são gasto de um ano com o próprio material aeroterrestre, entre modernização da Brigada e insumos de dobragem. Um custa menos de dois por cento do outro. Se perguntarem a origem, são os valores do estudo de viabilidade do Batalhão, de 2026, cujo parecer é pela viabilidade; a aprovação superior ainda não está registrada no documento, e vale dizer isso se a pergunta vier.</aside>
 </section>
 
 <!-- ============================ 36 · RECOMENDAÇÕES ============================ -->

@@ -345,15 +345,27 @@ a pesquisa não propõe uma hipótese de gabinete, ela chega junto com um plano
 institucional em execução. A linha do tempo vai de **2009**, o SISPQD
 embrionário, a **2030**, com o B DOMPSA consolidado como Órgão Provedor.
 
-Três cuidados que eu tomei e que valem a sua conferência:
+**Os valores estão na tela**, em três números, e a frase que os amarra:
 
-1. **Não pus valores em reais na tela.** O estudo traz R$ 319 mil de hardware,
-   R$ 148,5 mil de etiquetas e R$ 25 milhões/ano do PMAET. É documento interno,
-   com o campo "Aprovado por" ainda em branco, e um congresso é ambiente externo.
-   Se você quiser os números no slide, é uma linha.
-2. **O "parecer pela viabilidade" é do próprio estudo**, não uma aprovação
-   superior. O slide diz exatamente isso.
-3. **Nenhum nome, telefone ou e-mail** da equipe do estudo foi para o deck.
+| Número | O que é |
+|---|---|
+| R$ 194,5 mil | A 1ª fase do estudo: piloto no RZ-21, com 9 portais, 10 leitores e 1.500 etiquetas |
+| R$ 467 mil | A TIC completa: R$ 319.045 de hardware e R$ 148.500 das 9.900 etiquetas |
+| R$ 26 mi/ano | O material que o sistema controla: R$ 25 mi do PMAET e R$ 1 mi de insumos |
+
+> Rastrear tudo custa menos de 2% de um ano do material que se pretende rastrear.
+
+A conta é R$ 467,5 mil sobre R$ 26 milhões, ou 1,8%. Ao dizer isso em voz alta,
+explique que um é **investimento único** em TIC e o outro é **gasto de um ano**
+com o próprio material — a comparação é legítima, mas só se você a enunciar
+assim. Se alguém tratar como se fossem grandezas equivalentes, corrija na hora.
+
+Dois cuidados que ficam de pé:
+
+1. **O "parecer pela viabilidade" é do próprio estudo**, não uma aprovação
+   superior — o campo "Aprovado por" está em branco no documento. O slide diz
+   exatamente isso, e vale repetir se a pergunta vier.
+2. **Nenhum nome, telefone ou e-mail** da equipe do estudo foi para o deck.
 
 O **2009 do SISPQD** veio de você, não do documento: o EVTEA cita o SISPQD como
 o sistema a ser desenvolvido agora, sem mencionar a origem. Confira a data antes

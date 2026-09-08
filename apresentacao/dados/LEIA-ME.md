@@ -33,5 +33,8 @@ Números do EVTEA usados no deck: 12 portais RFID fixos, 14 leitores portáteis,
 9.900 etiquetas, faseamento 2026-2030, MVP no RZ-21 e as 29.345 dobragens anuais
 (mediana 2022-2026 da Bda Inf Pqdt, do COPESP e da 3ª Cia Fesp).
 
-Ficaram **fora** do deck, de propósito: valores em reais, nomes e contatos da
-equipe do estudo.
+Valores levados para o slide 27: R$ 194,5 mil da 1ª fase, R$ 467 mil de TIC
+completa (R$ 319.045 de hardware mais R$ 148.500 de etiquetas) e R$ 26 milhões
+por ano de material controlado (R$ 25 mi do PMAET mais R$ 1 mi de insumos).
+
+Ficaram **fora** do deck: nomes, telefones e e-mails da equipe do estudo.
