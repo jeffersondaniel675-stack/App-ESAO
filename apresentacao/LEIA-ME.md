@@ -290,8 +290,51 @@ No backup em PowerPoint há um cuidado a mais: cada slide vira uma imagem JPEG, 
 a compressão borrava os quadradinhos a ponto de o código não abrir. O gerador do
 pptx sobrepõe o QR em PNG nítido, na posição exata, por cima do JPEG do slide 28.
 
-**O infográfico está guardado** em `dados/infografico-log40.png`, no tamanho
-original de 2752 por 1536.
+## O infográfico
+
+O infográfico que aparece na página do QR foi **refeito do zero**. O original,
+gerado por IA, tinha o texto corrompido em vários pontos, do tipo que a plateia
+nota: onde deveria ler "livros, fichas e controles paralelos no cotidiano da
+unidade" estava escrito *"lhrres. lichas a controles parelelos no cotrbiano de
+unidade"*; na faixa do POP, *"Criçção de lioho digital úsicu"*, *"Lohora digital
+em cada stape: reperamento, debraguer, vofin"* e o título "REGISTRO DE FLUXO
+**INTEORADO**".
+
+Havia um segundo problema, mais sério que os erros de escrita. A tabela do
+original comparava "INDICADOR ATUAL" com "RESPOSTA NO PROJETO-PILOTO" e mostrava
+a rastreabilidade subindo de **2,86 para 3,38**. Esse 3,38 não existe na sua
+pesquisa: não há projeto-piloto medido, e apresentar um número assim é afirmar um
+resultado que o trabalho não tem. Na versão refeita a tabela mostra só o valor
+medido hoje, e a coluna da direita diz o que a proposta endereça, em texto, sem
+prometer número.
+
+**O que mudou de conteúdo**, além da correção da escrita:
+
+- As barreiras deixaram de ser dois recortes e viraram o gráfico completo, com as
+  sete respostas, de 79,3% a 13,8%.
+- O diagnóstico passou a trazer os números medidos: 79,3% de dependência de
+  registros manuais com média 4,17, rastreabilidade 2,86 e 48,3% de lentidão na
+  atualização.
+- A faixa do POP mostra o fluxo real com leitura de etiqueta em cada etapa:
+  recebimento, dobragem, salto, manutenção e recolhimento.
+- O rodapé declara a fonte dos dados e a autoria.
+- O título da comparação virou "Informatização e transformação digital". O
+  original dizia "Comparison", em inglês, e a formulação "informatizar não é
+  transformar" foi evitada de propósito, porque é o mesmo molde de frase de efeito
+  que saiu do deck.
+
+**Arquivos:**
+
+| Arquivo | O que é |
+|---|---|
+| `dados/infografico-log40.png` | A versão refeita, 2752 × 1536, a que está na página do QR |
+| `dados/infografico-log40-original-com-erros.png` | O original gerado por IA, guardado só para referência |
+| `infografico-log40.html` | O código-fonte do infográfico refeito, com as fontes embutidas |
+
+O infográfico é HTML renderizado a 2× em 1376 × 768. Para mudar qualquer texto ou
+número, edite `infografico-log40.html` e peça o novo PNG. Tipografia em Barlow e
+Barlow Condensed, embutidas no arquivo, e a paleta veio do original: fundo
+`#eaece9`, azul-ardósia `#333a4b`, verde-sálvia `#6f7a6e` e vinho `#8f1e42`.
 
 ## O 8º Mandamento (slide 28)
 
