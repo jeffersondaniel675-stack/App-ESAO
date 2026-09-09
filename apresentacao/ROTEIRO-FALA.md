@@ -452,6 +452,16 @@ registro rastreado passaria a produzir.
 Pare de falar. Em videoconferência a tentação de preencher o silêncio é grande, e o
 silêncio depois do fecho é da plateia, não seu.
 
+**O QR do resumo.** Ao lado do contato há um QR Code com o resumo da palestra.
+Antes de abrir para perguntas, diga uma frase sobre ele:
+
+> O QR ao lado do meu contato traz o resumo desta apresentação, com os números e a
+> conclusão. Ele não é um link, é o texto em si, então funciona mesmo sem internet.
+
+Depois **deixe este slide na tela durante todo o debate**. É enquanto se responde
+que a plateia fotografa. Em videoconferência, avise que quem quiser pode dar zoom
+ou tirar um print, porque escanear a foto funciona igual.
+
 ---
 
 ## Perguntas prováveis, e a resposta curta

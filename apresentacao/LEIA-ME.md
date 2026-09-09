@@ -244,6 +244,48 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 22–27 | Conclusão | Divisor · **Resposta ao problema, com a aplicabilidade ao Exército** · POP em doze etapas · Estudo de viabilidade · Limitações · Continuidade |
 | 28 | Encerramento | 8º Mandamento, nome e contato |
 
+## O QR do resumo (slide 28)
+
+Ao lado do contato, no slide de fecho, há um QR Code com o resumo da palestra.
+
+**Ele não é um link.** O código carrega o texto do resumo dentro de si, então
+funciona com o celular sem internet, não depende de nenhum site continuar no ar e
+não expira. Quem escaneia vê isto na tela:
+
+```
+Transformação digital da gestão do material aeroterrestre
+Cap Jefferson Daniel Ferreira Martins, EsAO, C Log, 2026
+Registros manuais 4,17; rastreabilidade 2,86; integração 3,28 (escala 1 a 5).
+Potencial: IoT 4,69; Big Data 4,62; IA 4,62.
+Proposta: POP em 12 etapas, em 4 fases.
+jefferson.daniel675@gmail.com
+```
+
+**Como usar na hora.** Antes de abrir para perguntas, diga que o resumo está no QR
+e deixe o slide 28 na tela durante todo o debate. É enquanto se responde que a
+plateia fotografa. Quem estiver longe fotografa o slide e escaneia a foto depois,
+que funciona igual.
+
+**Se quiser mudar o texto**, me diga o que trocar. O código precisa ser gerado de
+novo, porque o texto está codificado nos próprios quadradinhos. Texto mais longo
+deixa o código mais denso e mais difícil de ler de longe: o atual tem 307
+caracteres e 61 módulos por lado, que é o limite confortável para projeção.
+
+**O que foi conferido, e uma armadilha que apareceu no caminho.** O código foi lido
+de volta por decodificador de referência em cinco tamanhos, do slide em tela cheia
+até uma janela de 800 pixels de largura, dentro do HTML e dentro do PowerPoint, e o
+texto voltou idêntico ao original em todos.
+
+Na primeira tentativa não voltava. O gerador estava escolhendo sozinho o modo de
+codificação e, por causa dos acentos, caiu no **modo kanji**: ao ser lido, o resumo
+saía em japonês, com "Transformação" virando "Transforma誽o". O código agora é
+gerado em modo byte com UTF-8 declarado, e é por isso que os acentos chegam certos
+no celular de quem lê.
+
+No backup em PowerPoint há um cuidado a mais: cada slide vira uma imagem JPEG, e a
+compressão borrava os quadradinhos a ponto de o código não abrir. O gerador do pptx
+agora sobrepõe o QR em PNG nítido, na posição exata, por cima do JPEG do slide 28.
+
 ## O 8º Mandamento (slide 28)
 
 O deck fecha num slide só, preto, com o **8º Mandamento do Especialista DOMPSA**
@@ -268,6 +310,7 @@ O slide 28 traz, abaixo do mandamento:
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
 - `(21) 97920-3803`
+- o QR do resumo, à direita
 
 Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
 é o tipo de coisa que só se descobre depois.
