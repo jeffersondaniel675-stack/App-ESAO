@@ -463,10 +463,15 @@ então os dois valores estão confirmados. É um ajuste de uma linha no texto.
 
 ## Duas conferências que dependem de você
 
-**O título.** O artigo se chama "Transformação digital da gestão do material
-aeroterrestre: evidências sobre IoT, Big Data e Inteligência Artificial no B
-DOMPSA". A capa do deck traz o título do TCC, que é outro. Se a apresentação é do
-artigo, o título da capa deveria ser o dele.
+**O título** passou a ser o do artigo. A capa traz agora o título principal em
+destaque e o subtítulo logo abaixo, como manda a estrutura ABNT:
+
+> **Transformação digital da gestão do material aeroterrestre**
+> Evidências sobre IoT, *Big Data* e Inteligência Artificial no B DOMPSA.
+
+A aba do navegador acompanhou. **Repare que a linha do orientador continua na
+capa** — o artigo é assinado só por você, então, se a apresentação é do artigo,
+essa linha talvez deva sair. Diga e eu tiro.
 
 **As fotos novas.** As cinco que você mandou apareceram para mim, mas não chegaram
 como arquivo nas duas vezes — só a imagem na conversa. Para eu embutir, precisam vir
