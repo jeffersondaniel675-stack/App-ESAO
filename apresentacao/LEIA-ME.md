@@ -417,6 +417,62 @@ slide de Referências para sair. Ele ficou, e agora traz as duas fontes novas, o
 que faz o deck ter **30 slides**. Se preferir sem ele, é um corte de dois
 segundos.
 
+## O que o artigo corrigiu no deck (09/09)
+
+Com o artigo em mãos, conferi o deck contra ele. Três coisas estavam erradas ou
+desalinhadas, e foram corrigidas:
+
+| Estava | Passou a ser | Por quê |
+|---|---|---|
+| 75,9% atribuíram nível máximo | **79,3%** | O artigo publica 79,3% (23 de 29). O 75,9% saía de contar só quem marcou "5" numérico, sem a resposta "Sim". |
+| SisCAAeT | **SISCAET** | O artigo grafa SISCAET, Sistema de Controle Aeroterrestre, sete vezes. |
+| Prof. Victor Santos · AMAN | **Prof. Victor Santos** | O artigo o descreve como docente de Logística 4.0, sem vincular à AMAN. |
+
+**A conclusão principal do artigo não estava no deck.** O artigo diz, com todas as
+letras: "a transformação não deve começar pela IA". O caminho é mapeamento e
+padronização, identificação digital, base integrada, auditoria e indicadores, e só
+então análise preditiva. Isso agora fecha o slide da resposta às questões, no lugar
+de uma frase genérica sobre modelo de gestão.
+
+**As referências passaram a ser as do artigo**, em ABNT completa: Arora, Ballou,
+Christopher, Oztemel e Gursev, Pinto, Radivojević e Milosavljević, Rosário, Santos
+et al. e os dois manuais. Saíram as entradas aproximadas que estavam ali (LUO e
+SINGH, que não constam do artigo). As duas fontes de RFID que eu havia acrescentado
+seguem marcadas para você completar a autoria — e, se ficarem no deck, precisam
+entrar também no artigo.
+
+## Uma inconsistência dentro do próprio artigo
+
+Vale corrigir antes de submeter, porque é o tipo de coisa que um parecerista pega.
+
+O artigo declara a regra de padronização assim: *"Sim" ou "Sim, muito" correspondeu
+ao nível 5; "Parcialmente" ou "Sim, em parte", ao nível 4.*
+
+Essa regra reproduz exatamente os números publicados de duas questões: dependência
+de registros manuais (média 4,17, com 79,3% nos níveis 4 e 5) e contribuição geral
+das tecnologias (79,3% no nível máximo). O texto diz "em duas questões", então
+provavelmente são essas.
+
+Mas há uma terceira questão com resposta textual: integração entre setores, com duas
+respostas "Parcialmente". Se a regra fosse aplicada ali, a média sairia **3,34**. O
+artigo publica **3,28**, que é o valor obtido tratando "Parcialmente" como nível 3.
+
+Ou seja: ou a regra vale para as três questões e o 3,28 precisa virar 3,34, ou a
+regra vale só para duas e convém dizer quais. Recalculei tudo a partir do CSV bruto,
+então os dois valores estão confirmados. É um ajuste de uma linha no texto.
+
+## Duas conferências que dependem de você
+
+**O título.** O artigo se chama "Transformação digital da gestão do material
+aeroterrestre: evidências sobre IoT, Big Data e Inteligência Artificial no B
+DOMPSA". A capa do deck traz o título do TCC, que é outro. Se a apresentação é do
+artigo, o título da capa deveria ser o dele.
+
+**As fotos novas.** As cinco que você mandou apareceram para mim, mas não chegaram
+como arquivo nas duas vezes — só a imagem na conversa. Para eu embutir, precisam vir
+como anexo de arquivo. Uma delas, a das duas velas com o crédito "Agência Força
+Aérea / ©Sgt Batista" gravado, tem de manter o crédito visível se for usada.
+
 ## Dados usados nos gráficos
 
 Todos vindos do formulário (n = 29, taxa de retorno 67,4%):
