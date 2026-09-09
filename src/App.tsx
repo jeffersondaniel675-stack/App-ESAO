@@ -53,13 +53,40 @@ import {
   FileSpreadsheet,
   Pin,
   Layers,
-  Zap
+  Zap,
+  BarChart3
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import * as XLSX from "xlsx";
 import { Student, NotasInput, GradeInput, MilestoneLog, ClassStats, AppNotification } from "./types";
+import {
+  ModuleRadar,
+  ModuleComparisonBars,
+  GradeComposition,
+  GradeDistribution,
+  LaunchStatusDonut,
+  ClassModuleAverages,
+  QuartileBars,
+  ModuleHeatmap
+} from "./components/charts";
 
 // Standard formatting for grades (3 decimal places, comma as separator)
+/**
+ * Imagens do sistema.
+ *
+ * Para usar arquivos próprios: coloque-os em public/img/ e troque o valor abaixo
+ * pelo caminho absoluto do arquivo, por exemplo "/img/brasao-esao.png". A pasta
+ * public/ é copiada para a raiz do site tanto em desenvolvimento quanto no build,
+ * então o mesmo caminho vale nos dois casos.
+ *
+ * Os endereços atuais são temporários, herdados do Google AI Studio, e podem sair
+ * do ar sem aviso — trocá-los por arquivos locais é o caminho recomendado.
+ */
+const IMAGENS = {
+  brasao: "https://lh3.googleusercontent.com/aida-public/AB6AXuBLQc6GbJGQw3pjw9IKqHD6HAYuDjBtHDkJkHZSxEFscU62MNhp1Sk5m6rHrrsW6nG7HJjdNeJ2KvgrACmr_hHy-UcwogmOMAd7K_dbQpyN_s8AFXpT1KOrFLkwE8E5_kO1dSm8Y4KZG_GvkpR4aBl-Pgu2oYcEUTCyTFhpuU5hnj5JDFkRefhyieY6m-sAhM_8wb6K6dgEsu1WhbeOvu4WCCT0LbZ0BJlZ_kZppiID_Trq3BhtQg-cHu4QkUkNvnS15AHzJ5MqWMSt",
+  fundoPortal: "https://lh3.googleusercontent.com/aida-public/AB6AXuAAhHzVaj6XvzjGyLf42v3_4XXw74Yz9yNER9bpwlfs5gR6Xu5qPPA65ZAk8LkcY-tcOQjeFRyn-2LrLkpiDI4lrX6K9yeXdxzceS8WbN5b5xcQSNXvo9ESLhMeupZVIXCu5aFBgzsxZnNvHOKULtQmNGIj1HBMm008jD3Ekp1SzKh4GfjAJitefnMsh8IMcyChuzdKfeYF8DR87-yxOlhbepY7NO6ZqQLO5lMuvKRT8a768nE3OD98J1mR3R104FY_Gzwli4xRdbNB"
+};
+
 function fmtGrade(num: number | null | undefined): string {
   if (num === null || num === undefined) return "PENDENTE";
   return num.toLocaleString("pt-BR", {
@@ -2079,7 +2106,7 @@ export default function App() {
               <img 
                 alt="ESAO Logo" 
                 className="w-full h-full object-cover" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLQc6GbJGQw3pjw9IKqHD6HAYuDjBtHDkJkHZSxEFscU62MNhp1Sk5m6rHrrsW6nG7HJjdNeJ2KvgrACmr_hHy-UcwogmOMAd7K_dbQpyN_s8AFXpT1KOrFLkwE8E5_kO1dSm8Y4KZG_GvkpR4aBl-Pgu2oYcEUTCyTFhpuU5hnj5JDFkRefhyieY6m-sAhM_8wb6K6dgEsu1WhbeOvu4WCCT0LbZ0BJlZ_kZppiID_Trq3BhtQg-cHu4QkUkNvnS15AHzJ5MqWMSt"
+                src={IMAGENS.brasao}
               />
             </div>
             <div className="text-left">
@@ -2264,7 +2291,7 @@ export default function App() {
                 <img 
                   alt="Brasão ESAO Intendência" 
                   className="w-full h-full object-contain mix-blend-multiply" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLQc6GbJGQw3pjw9IKqHD6HAYuDjBtHDkJkHZSxEFscU62MNhp1Sk5m6rHrrsW6nG7HJjdNeJ2KvgrACmr_hHy-UcwogmOMAd7K_dbQpyN_s8AFXpT1KOrFLkwE8E5_kO1dSm8Y4KZG_GvkpR4aBl-Pgu2oYcEUTCyTFhpuU5hnj5JDFkRefhyieY6m-sAhM_8wb6K6dgEsu1WhbeOvu4WCCT0LbZ0BJlZ_kZppiID_Trq3BhtQg-cHu4QkUkNvnS15AHzJ5MqWMSt"
+                  src={IMAGENS.brasao}
                 />
               </div>
               <h1 className="font-headline text-2xl md:text-3xl font-black text-center text-emerald-950 tracking-tight" style={{ fontFamily: "Hanken Grotesk, sans-serif" }}>
@@ -2496,7 +2523,7 @@ export default function App() {
             <div 
               className="w-full min-h-screen text-slate-900 bg-cover bg-center bg-fixed bg-no-repeat flex flex-col" 
               style={{
-                backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuAAhHzVaj6XvzjGyLf42v3_4XXw74Yz9yNER9bpwlfs5gR6Xu5qPPA65ZAk8LkcY-tcOQjeFRyn-2LrLkpiDI4lrX6K9yeXdxzceS8WbN5b5xcQSNXvo9ESLhMeupZVIXCu5aFBgzsxZnNvHOKULtQmNGIj1HBMm008jD3Ekp1SzKh4GfjAJitefnMsh8IMcyChuzdKfeYF8DR87-yxOlhbepY7NO6ZqQLO5lMuvKRT8a768nE3OD98J1mR3R104FY_Gzwli4xRdbNB')",
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${IMAGENS.fundoPortal}')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundAttachment: "fixed",
@@ -3583,6 +3610,18 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* Distribuição da turma com a posição do próprio participante */}
+                  <div className="no-print">
+                    <GradeDistribution
+                      grades={anonRankings.map((r: any) => r.finalGrade).filter((g: any) => typeof g === "number")}
+                      myGrade={myCalcs?.finalGrade ?? null}
+                      mean={classStats?.mean ?? null}
+                      median={classStats?.median ?? null}
+                      theme={theme}
+                      hint="Cada barra é uma faixa de nota final. A barra destacada é a faixa em que você está."
+                    />
+                  </div>
+
                   {/* Document Container for Table */}
                   <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm flex flex-col">
                     <div className="bg-slate-50 border-b border-slate-200 px-5 py-3.5 flex justify-between items-center text-left">
@@ -4370,6 +4409,33 @@ export default function App() {
 
               </div>
               </div>
+
+              {/* LEITURA VISUAL DO DESEMPENHO INDIVIDUAL */}
+              {currentUser.notas && (
+                <div className="space-y-4 no-print">
+                  <div className="flex items-center gap-2 pt-2">
+                    <BarChart3 className="w-5 h-5 text-emerald-800" />
+                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest">Leitura Visual do Desempenho</h3>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <ModuleRadar
+                      notas={currentUser.notas}
+                      moduleAverages={classStats?.moduleAverages}
+                      modulesControl={settings?.modulesControl}
+                      theme={theme}
+                    />
+                    <ModuleComparisonBars
+                      notas={currentUser.notas}
+                      moduleAverages={classStats?.moduleAverages}
+                      modulesControl={settings?.modulesControl}
+                      theme={theme}
+                    />
+                    <div className="lg:col-span-2">
+                      <GradeComposition calcs={myCalcs} theme={theme} />
+                    </div>
+                  </div>
+                </div>
+              )}
               </>
               )}
 
@@ -4960,6 +5026,26 @@ export default function App() {
                         Esta área apresenta o desempenho acadêmico, médias, classificação e quartis de forma estritamente anônima. Dados pessoais dos participantes (como nome de guerra, matrícula, celular ou WhatsApp) não são exibidos aqui. Correlacionamento realizado exclusivamente com o Nome Sigiloso de cada participante.
                       </p>
                     </div>
+
+                    {/* PAINEL VISUAL DA TURMA */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <LaunchStatusDonut students={adminStudents} theme={theme} />
+                      <ClassModuleAverages moduleAverages={adminOverallStats?.moduleAverages} theme={theme} />
+                      <GradeDistribution
+                        grades={(adminOverallStats?.rankings || []).map((r: any) => r.finalGrade).filter((g: any) => typeof g === "number")}
+                        mean={adminOverallStats?.mean ?? null}
+                        median={adminOverallStats?.median ?? null}
+                        theme={theme}
+                        hint="Quantos participantes caíram em cada faixa de nota final, com média e mediana marcadas."
+                      />
+                      <QuartileBars rankings={adminOverallStats?.rankings || []} theme={theme} />
+                    </div>
+
+                    <ModuleHeatmap
+                      students={adminStudents}
+                      modulesControl={adminSettings?.modulesControl}
+                      theme={theme}
+                    />
 
                     <div className="border border-slate-200/80 rounded-2xl p-4 bg-white space-y-4 text-slate-700">
                       <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-3 border-slate-100">

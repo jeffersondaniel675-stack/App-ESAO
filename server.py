@@ -521,6 +521,92 @@ def get_student_calculations(student, settings=None):
         "finalGrade": final_grade
     }
 
+# Médias agregadas da turma, por módulo e por tipo de conceito, sobre os lançamentos
+# válidos. São exclusivamente agregados (nenhuma nota nominal individual sai daqui),
+# para alimentar os gráficos de comparação do painel do aluno e do painel
+# administrativo. Módulos fechados ficam de fora, igual ao cálculo da nota final.
+def compute_module_averages(valid_students, settings=None):
+    modules_ctrl = (settings or {}).get("modulesControl") or {}
+
+    def is_open(m):
+        return modules_ctrl.get(m) != "fechado"
+
+    def mean(vals):
+        return (sum(vals) / len(vals)) if vals else None
+
+    def num(v):
+        if v is None or v == "":
+            return None
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+    def collect(fn):
+        out = []
+        for s in valid_students:
+            v = fn(s)
+            if v is not None:
+                out.append(v)
+        return out
+
+    modules = {}
+    for key in ("ac3", "ac4", "ac5", "ac6"):
+        if not is_open(key):
+            continue
+        vals = collect(lambda s, k=key: get_module_note((s.get("notas") or {}).get(k)))
+        modules[key] = {"average": mean(vals), "count": len(vals)}
+
+    # Idiomas não tem AAT/AC: entra apenas com os conceitos lateral e vertical.
+    if is_open("idiomas"):
+        def idiomas_note(s):
+            idi = (s.get("notas") or {}).get("idiomas") or {}
+            both = [v for v in (num(idi.get("lateralIdiomas")), num(idi.get("verticalIdiomas"))) if v is not None]
+            return (sum(both) / len(both)) if both else None
+        vals = collect(idiomas_note)
+        modules["idiomas"] = {"average": mean(vals), "count": len(vals)}
+
+    def lateral_note(s):
+        notas = s.get("notas") or {}
+        vals = []
+        for key in ("ac3", "ac4", "ac5", "ac6"):
+            if not is_open(key):
+                continue
+            mod = notas.get(key) or {}
+            for field in ("lateral1", "lateral2"):
+                v = num(mod.get(field))
+                if v is not None:
+                    vals.append(v)
+        if is_open("idiomas"):
+            v = num((notas.get("idiomas") or {}).get("lateralIdiomas"))
+            if v is not None:
+                vals.append(v)
+        return (sum(vals) / len(vals)) if vals else None
+
+    def vertical_note(s):
+        notas = s.get("notas") or {}
+        vals = []
+        for key in ("ac3", "ac4", "ac5", "ac6"):
+            if not is_open(key):
+                continue
+            v = num((notas.get(key) or {}).get("vertical"))
+            if v is not None:
+                vals.append(v)
+        if is_open("idiomas"):
+            v = num((notas.get("idiomas") or {}).get("verticalIdiomas"))
+            if v is not None:
+                vals.append(v)
+        return (sum(vals) / len(vals)) if vals else None
+
+    lateral_vals = collect(lateral_note)
+    vertical_vals = collect(vertical_note)
+
+    return {
+        "modules": modules,
+        "lateral": {"average": mean(lateral_vals), "count": len(lateral_vals)},
+        "vertical": {"average": mean(vertical_vals), "count": len(vertical_vals)}
+    }
+
 def compute_class_stats(settings=None):
     db = read_db()
     if not settings:
@@ -546,7 +632,8 @@ def compute_class_stats(settings=None):
             "totalValid": 0,
             "mean": 0,
             "median": 0,
-            "rankings": []
+            "rankings": [],
+            "moduleAverages": compute_module_averages([], settings)
         }
 
     sum_grades = sum(item["finalGrade"] for item in students_with_grades)
@@ -580,7 +667,8 @@ def compute_class_stats(settings=None):
         "totalValid": total_valid,
         "mean": mean_val,
         "median": median_val,
-        "rankings": rankings
+        "rankings": rankings,
+        "moduleAverages": compute_module_averages([item["student"] for item in students_with_grades], settings)
     }
 
 def generate_whatsapp_message(student, class_stats, milestone, settings=None):
@@ -823,7 +911,8 @@ def api_login():
             "totalValid": class_stats.get("totalValid"),
             "mean": class_stats.get("mean"),
             "median": class_stats.get("median"),
-            "myRank": my_rank
+            "myRank": my_rank,
+            "moduleAverages": class_stats.get("moduleAverages")
         },
         "settings": db.get("settings")
     })
@@ -1015,7 +1104,8 @@ def api_confirm_launch():
             "totalValid": class_stats.get("totalValid"),
             "mean": class_stats.get("mean"),
             "median": class_stats.get("median"),
-            "myRank": my_rank
+            "myRank": my_rank,
+            "moduleAverages": class_stats.get("moduleAverages")
         }
     })
 
@@ -1050,7 +1140,8 @@ def api_refresh_student():
             "totalValid": class_stats.get("totalValid"),
             "mean": class_stats.get("mean"),
             "median": class_stats.get("median"),
-            "myRank": my_rank
+            "myRank": my_rank,
+            "moduleAverages": class_stats.get("moduleAverages")
         }
     })
 
@@ -1081,7 +1172,8 @@ def api_anon_rankings():
         "totalValid": stats.get("totalValid"),
         "mean": stats.get("mean"),
         "median": stats.get("median"),
-        "rankings": anon_rankings
+        "rankings": anon_rankings,
+        "moduleAverages": stats.get("moduleAverages")
     })
 
 @app.route("/api/notifications/mark-read", methods=["POST"])

@@ -20,5 +20,18 @@ export default defineConfig(() => {
       hmr: !disableHmr,
       watch: disableHmr ? null : undefined,
     },
+    build: {
+      rollupOptions: {
+        output: {
+          // Separa as bibliotecas pesadas em arquivos próprios: elas quase nunca
+          // mudam, então o navegador reaproveita o cache entre uma atualização e
+          // outra do sistema, em vez de rebaixar tudo num único arquivo.
+          manualChunks: {
+            charts: ['recharts'],
+            animacao: ['motion'],
+          },
+        },
+      },
+    },
   };
 });

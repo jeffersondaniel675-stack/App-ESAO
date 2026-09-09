@@ -54,10 +54,23 @@ export interface Student {
   notifications?: AppNotification[];
 }
 
+export interface ModuleAverage {
+  average: number | null;
+  count: number;
+}
+
+export interface ModuleAverages {
+  modules: Record<string, ModuleAverage>;
+  lateral: ModuleAverage;
+  vertical: ModuleAverage;
+}
+
 export interface ClassStats {
   totalValid: number;
   mean: number;
   median: number;
+  /** Médias agregadas da turma por módulo — nenhuma nota nominal individual. */
+  moduleAverages?: ModuleAverages;
   myRank?: {
     rank: number;
     quartil: number;

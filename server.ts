@@ -604,6 +604,78 @@ function getStudentCalculations(student: any, settings?: any) {
 }
 
 // Compute general statistics for the class
+// Médias agregadas da turma, por módulo e por tipo de conceito, sobre os lançamentos
+// válidos. São exclusivamente agregados (nenhuma nota nominal individual sai daqui),
+// para alimentar os gráficos de comparação do painel do aluno e do painel
+// administrativo. Módulos fechados ficam de fora, igual ao cálculo da nota final.
+function computeModuleAverages(validStudents: any[], settings?: any) {
+  const modulesCtrl = settings?.modulesControl || {};
+  const isOpen = (m: string) => modulesCtrl[m] !== "fechado";
+
+  const mean = (vals: number[]) => (vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null);
+  const num = (v: any) => {
+    if (v === null || v === undefined || v === "") return null;
+    const n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  };
+  const collect = (fn: (s: any) => number | null) =>
+    validStudents.map(fn).filter((n): n is number => n !== null);
+
+  const modules: Record<string, { average: number | null; count: number }> = {};
+  for (const key of ["ac3", "ac4", "ac5", "ac6"]) {
+    if (!isOpen(key)) continue;
+    const vals = collect((s: any) => getModuleNote(s.notas?.[key]));
+    modules[key] = { average: mean(vals), count: vals.length };
+  }
+
+  // Idiomas não tem AAT/AC: entra apenas com os conceitos lateral e vertical.
+  if (isOpen("idiomas")) {
+    const vals = collect((s: any) => {
+      const lat = num(s.notas?.idiomas?.lateralIdiomas);
+      const vert = num(s.notas?.idiomas?.verticalIdiomas);
+      const both = [lat, vert].filter((n): n is number => n !== null);
+      return both.length > 0 ? both.reduce((a, b) => a + b, 0) / both.length : null;
+    });
+    modules.idiomas = { average: mean(vals), count: vals.length };
+  }
+
+  const lateralVals = collect((s: any) => {
+    const vals: number[] = [];
+    for (const key of ["ac3", "ac4", "ac5", "ac6"]) {
+      if (!isOpen(key)) continue;
+      for (const field of ["lateral1", "lateral2"]) {
+        const v = num(s.notas?.[key]?.[field]);
+        if (v !== null) vals.push(v);
+      }
+    }
+    if (isOpen("idiomas")) {
+      const v = num(s.notas?.idiomas?.lateralIdiomas);
+      if (v !== null) vals.push(v);
+    }
+    return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  });
+
+  const verticalVals = collect((s: any) => {
+    const vals: number[] = [];
+    for (const key of ["ac3", "ac4", "ac5", "ac6"]) {
+      if (!isOpen(key)) continue;
+      const v = num(s.notas?.[key]?.vertical);
+      if (v !== null) vals.push(v);
+    }
+    if (isOpen("idiomas")) {
+      const v = num(s.notas?.idiomas?.verticalIdiomas);
+      if (v !== null) vals.push(v);
+    }
+    return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  });
+
+  return {
+    modules,
+    lateral: { average: mean(lateralVals), count: lateralVals.length },
+    vertical: { average: mean(verticalVals), count: verticalVals.length }
+  };
+}
+
 function computeClassStats(settings?: any) {
   const db = readDb();
   if (!settings) {
@@ -631,7 +703,8 @@ function computeClassStats(settings?: any) {
       mean: 0,
       median: 0,
       participantsWithCalculatedGrades: [],
-      rankings: []
+      rankings: [],
+      moduleAverages: computeModuleAverages([], settings)
     };
   }
 
@@ -675,7 +748,8 @@ function computeClassStats(settings?: any) {
     totalValid,
     mean,
     median,
-    rankings
+    rankings,
+    moduleAverages: computeModuleAverages(studentsWithGrades.map(item => item.student), settings)
   };
 }
 
@@ -1066,7 +1140,8 @@ app.post("/api/login", (req, res) => {
       totalValid: classStats.totalValid,
       mean: classStats.mean,
       median: classStats.median,
-      myRank: classStats.rankings ? classStats.rankings.find((r: any) => r.id === student.id) : null
+      myRank: classStats.rankings ? classStats.rankings.find((r: any) => r.id === student.id) : null,
+      moduleAverages: classStats.moduleAverages
     },
     settings: db.settings
   });
@@ -1294,7 +1369,8 @@ app.post("/api/refresh-student", (req, res) => {
       totalValid: freshStats.totalValid,
       mean: freshStats.mean,
       median: freshStats.median,
-      myRank: freshStats.rankings ? freshStats.rankings.find((r: any) => r.id === student.id) : null
+      myRank: freshStats.rankings ? freshStats.rankings.find((r: any) => r.id === student.id) : null,
+      moduleAverages: freshStats.moduleAverages
     },
     settings: db.settings
   });
@@ -1326,7 +1402,8 @@ app.get("/api/anon-rankings", (req, res) => {
 
   res.json({
     success: true,
-    rankings: anonList
+    rankings: anonList,
+    moduleAverages: freshStats.moduleAverages
   });
 });
 
