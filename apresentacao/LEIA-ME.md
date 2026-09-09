@@ -1,10 +1,14 @@
 # Apresentação de congresso — TCC
 
-**IoT, *Big Data* e inteligência artificial na gestão do material aeroterrestre no B DOMPSA**
-Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
+**Transformação digital da gestão do material aeroterrestre**
+Evidências sobre IoT, *Big Data* e Inteligência Artificial no B DOMPSA
+Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **30 slides**, para trinta minutos de fala.
+São **28 slides**, cronometrados para fechar em 28 minutos dentro dos trinta previstos.
+
+O roteiro de fala slide a slide, com a cronometragem e as perguntas prováveis, está
+em **`ROTEIRO-FALA.md`**.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -28,16 +32,15 @@ faixa de restrições da pesquisa operacional. O desenho traz a etiqueta "esboç
 legenda diz que não representa sistema existente — importante, porque a plateia vai
 olhar para ele com olho técnico.
 
-**Figura do TCC:** o slide 12 usa a figura "A Logística 4.0" do próprio trabalho —
-as dez tecnologias em torno do núcleo digital — para justificar o recorte em IoT,
-*Big Data* e IA. É a única imagem aproveitada do TCC: os gráficos do formulário já
-estão no deck como gráficos nativos, e os organogramas e as figuras de apoio não
-seriam legíveis projetados.
+**Nada de figura escaneada do TCC:** os gráficos do formulário são nativos do deck,
+e os organogramas e figuras de apoio do trabalho não seriam legíveis projetados. O
+recorte em IoT, *Big Data* e IA é justificado por texto, na etiqueta do slide 10:
+das dez tecnologias que a literatura associa à Logística 4.0, o estudo recorta três.
 
-**Esquemas:** o slide 36 abre a proposta com um antes e depois do caminho do dado —
+**Esquemas:** o slide 24 abre a proposta com um antes e depois do caminho do dado,
 hoje item → livro e ficha → planilha → decisão só quando alguém consolida; com o POP
 item etiquetado → leitura na etapa → ficha digital única → painel do comando no mesmo
-instante. E os três cartões do slide 12 trazem um diagrama em SVG cada um —
+instante. E os três cartões do slide 10 trazem um diagrama em SVG cada um,
 a etiqueta que transmite estado (IoT), os registros dispersos convergindo para uma
 base única (*Big Data*) e o histórico projetando o limite de vida útil (IA). São
 desenhos vetoriais, não fotos: escalam sem perder nitidez e não pesam no arquivo.
@@ -234,14 +237,14 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | # | Bloco | Slides |
 |---|---|---|
 | 1–2 | Abertura | Capa · Roteiro |
-| 3–9 | Introdução | Divisor · Contexto · Logística 4.0 · O B DOMPSA e o Mat Aet · Problema · Questões de estudo · Objetivos · Justificativa |
-| 10–16 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · **Dois depósitos** · O recorte do estudo · IoT, *Big Data* e IA · Base doutrinária · Lacuna |
-| 17–21 | Metodologia | Divisor · Delineamento · Amostra e coleta · Perfil da amostra · Instrumentos e análise |
-| 22–36 | Resultados | Divisor · O depósito (vídeo) · Panorama · Diagnóstico · Etapas críticas · Problemas · **A prancheta** · Potencial percebido · Aspectos beneficiados · Barreiras · SisCAAeT · Cel Lana · Prof. Santos · Evidências de campo · Síntese |
-| 37–43 | Conclusão | Divisor · Resposta à questão central · Proposta de POP · Limitações e trabalhos futuros · **Prova de conceito** · **Por que o modelo erra** · Referências |
-| 44 | Encerramento | 8º Mandamento, nome e contato |
+| 3–7 | Introdução | Divisor · Objeto do estudo · Como o material é controlado hoje · O problema · As quatro perguntas |
+| 8–11 | Referencial | Divisor · Da Indústria 4.0 à Logística 4.0 · As três tecnologias · Antecedentes no Exército e a lacuna |
+| 12–13 | Metodologia | Divisor · Formulário, entrevistas e análise documental |
+| 14–21 | Resultados | Divisor · O depósito (vídeo) · As quatro médias · Problemas relatados · Potencial das tecnologias · Barreiras · Entrevistas · **O conhecimento produzido** |
+| 22–27 | Conclusão | Divisor · **Resposta ao problema, com a aplicabilidade ao Exército** · POP em doze etapas · Estudo de viabilidade · Limitações · Continuidade |
+| 28 | Encerramento | 8º Mandamento, nome e contato |
 
-## O 8º Mandamento (slide 44)
+## O 8º Mandamento (slide 28)
 
 O deck fecha num slide só, preto, com o **8º Mandamento do Especialista DOMPSA**
 no alto e o seu nome e contato embaixo:
@@ -258,38 +261,9 @@ faz, falando.
 Vale ler o mandamento devagar e deixar o silêncio trabalhar. É a última coisa que
 a plateia lê, então é ela que fica.
 
-## Dois depósitos (slide 12)
-
-Depois da linha do tempo, um slide de contraste: à esquerda um depósito com
-identificação automática e movimentação assistida, à direita o depósito do
-B DOMPSA. Embaixo, uma linha só: **"A diferença não está na competência de quem
-opera. Está no instrumento que registra."**
-
-Duas ressalvas, e as duas importam:
-
-A imagem da esquerda é uma **ilustração em 3D**, não uma fotografia de um depósito
-existente, e a legenda diz isso. Se o congresso exigir crédito de imagem, é a única
-do deck que não é do batalhão, e convém verificar a origem antes de projetar.
-
-Na fala, diga em voz alta que o contraste não é crítica ao B DOMPSA. O depósito da
-direita funciona, com norma técnica rigorosa e gente competente. O que falta de um
-lado para o outro não é zelo, é instrumento de registro. Sem essa frase, parte da
-plateia militar lê o slide como acusação.
-
-## O slide da prancheta (28)
-
-Depois do gráfico de problemas recorrentes, onde 65,5% citaram excesso de controle
-manual, entra um slide de uma frase só: a foto da plataforma sendo preparada na
-pista, com o militar registrando os itens numa prancheta, e ao lado **"O sistema de
-controle é uma prancheta. Ela funciona. Só não conversa com mais ninguém."**
-
-É o slide que transforma o número em imagem. Vale deixar a foto respirar dois
-segundos antes de falar.
-
-
 ## Contato no slide final
 
-O slide 44 traz, abaixo do mandamento:
+O slide 28 traz, abaixo do mandamento:
 
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
@@ -297,6 +271,39 @@ O slide 44 traz, abaixo do mandamento:
 
 Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
 é o tipo de coisa que só se descobre depois.
+
+## As recomendações do General (09/09, após a videoconferência)
+
+Foram seis, e todas estão atendidas no deck. O que mudou:
+
+| Recomendação | O que foi feito |
+|---|---|
+| Cumprir o tempo previsto | Saíram dois slides, "Referência de mercado" e "Referências". O deck foi de 30 para **28 slides**, e o roteiro de fala fecha em 28 minutos, com folga de dois. |
+| Conhecimento produzido com a referida síntese | O slide da síntese passou a se chamar **"O conhecimento produzido"** e ganhou uma linha que declara o que o trabalho produz: um encadeamento verificável entre problema medido, base doutrinária, tecnologia aplicável e contribuição esperada. É o slide 21. |
+| Conclusão com referência e aplicabilidade para o Exército | O slide 23 ganhou um parágrafo de aplicabilidade, ancorado em **Arora, Bhatia e Sidharth (2025)**: em depósito militar a prontidão tecnológica depende de maturidade organizacional e capacitação, não só de equipamento. Fecha com o alinhamento aos **OEE 5 e 6**. |
+| Ser objetivo | Uma ideia por slide. Os objetivos específicos e o tamanho da amostra continuam fora da tela, nas notas de fala. |
+| Parcimônia ao comentar o Batalhão | Ver abaixo. |
+| Haverá civis na plateia | Siglas abertas por extenso no slide 4, glosa de "dobragem" no corpo do slide, e as notas marcam onde parar para explicar. |
+
+**A parcimônia, em detalhe.** O comandante do B DOMPSA estará na plateia, e três
+pontos do deck foram reescritos por causa disso:
+
+1. **Saiu o slide "Referência de mercado"**, que comparava o depósito do Batalhão a
+   um depósito automatizado. Mesmo com a ressalva escrita, um slide de comparação
+   lado a lado lido por quem comanda a unidade é uma crítica, não uma ilustração.
+2. **O slide 5 mudou de tom.** Saíram "e só quando alguém a faz" e "nenhum deles
+   conversa com o seguinte". Entrou, no lugar, a frase que define o alcance do
+   achado: *o controle é rigoroso e normatizado; a limitação que a pesquisa
+   identifica é de instrumento de registro, não de execução.* A nota de fala manda
+   você dizer isso em voz alta, antes de comentar as fotos.
+3. **O slide 15 amenizou a prancheta.** Era "o sistema de controle é uma prancheta";
+   passou a ser a constatação factual de que o registro, no vídeo e na rotina, é
+   feito em prancheta e ficha.
+
+No slide 25, o do estudo de viabilidade, a nota agora orienta a apresentar o estudo
+como conquista da unidade, e não como consequência da pesquisa. O Batalhão não
+esperou por este trabalho, e dizer isso em voz alta com o comandante na sala vale
+mais do que qualquer gráfico.
 
 ## O que saiu na revisão de 08/09
 
@@ -338,7 +345,7 @@ dizer **29.345 dobragens por ano**, número que vem da mediana 2022-2026 da
 Bda Inf Pqdt, do COPESP e da 3ª Cia Fesp, registrada no estudo de viabilidade.
 Esse número faz pelo estudo o que a contagem de respondentes não fazia.
 
-## O slide do EVTEA (27)
+## O slide do estudo de viabilidade (slide 25)
 
 Entra logo depois da proposta de POP e muda o peso da apresentação: mostra que
 a pesquisa não propõe uma hipótese de gabinete, ela chega junto com um plano
@@ -383,7 +390,7 @@ completa do que mudou.
   (registro na pista, conferência no depósito, preparo, embarque), com duas
   linhas factuais sobre livro, ficha e planilha.
 - **Novo slide 12, "Antecedentes e lacuna".** Substitui o slide que só trazia a
-  citação da lacuna. Agora traz três antecedentes reais: o SisCAAeT no COPESP,
+  citação da lacuna. Agora traz três antecedentes reais: o SISCAET no COPESP,
   o piloto de RFID descontinuado no 21º Depósito de Suprimento, e o SISPQD
   embrionário no próprio Batalhão.
 - **O gráfico de barreiras ganhou a sétima barra**, "Questões de segurança da
@@ -415,7 +422,8 @@ do EnANPAD antes de citar** — eu a localizei em busca, não abri o artigo.
 **Uma correção ao meu próprio roteiro:** eu escrevi 29 slides e não marquei o
 slide de Referências para sair. Ele ficou, e agora traz as duas fontes novas, o
 que faz o deck ter **30 slides**. Se preferir sem ele, é um corte de dois
-segundos.
+segundos. *(Ele acabou saindo na revisão do mesmo dia, por causa do tempo. Ver a
+seção das recomendações do General, acima.)*
 
 ## O que o artigo corrigiu no deck (09/09)
 
@@ -488,7 +496,7 @@ usá-la, tem de ser num quadro claro.
 Todos vindos do formulário (n = 29, taxa de retorno 67,4%):
 
 - **Médias 1–5:** registros manuais 4,17 · integração 3,28 · modelo de controle 3,21 · rastreabilidade 2,86
-- **Potencial percebido:** IoT 4,69 · *Big Data* 4,62 · IA 4,62 · 75,9% deram nota máxima à contribuição geral
+- **Potencial percebido:** IoT 4,69 · *Big Data* 4,62 · IA 4,62 · 79,3% deram nota máxima à contribuição geral
 - **Etapas mais difíceis:** controle de estoque 55,2% · integração de informações 48,3% · inventário 37,9%
 - **Problemas:** controles manuais 65,5% · erro humano 51,7% · lentidão 48,3% · rastreabilidade 44,8%
 - **Mais beneficiados:** controle de estoque 92,6% · integração 85,2% · inventário 74,1% (n = 27)

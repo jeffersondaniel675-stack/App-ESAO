@@ -2,6 +2,12 @@
 
 Congresso de Logística 4.0 do COLOG · 30 minutos · **29 slides**
 
+> **Nota de 09/09, à tarde.** Este arquivo é o registro da revisão que originou a
+> versão de 30 slides. O deck em vigor tem **28 slides**: saíram "Referência de
+> mercado" e "Referências" depois da videoconferência com o General. A conferência
+> dos dados abaixo continua valendo integralmente. Para o roteiro de fala atual,
+> com cronometragem, veja `ROTEIRO-FALA.md`.
+
 Este arquivo é um rascunho. Mexa à vontade: mude títulos, corte slides, troque a
 ordem, escreva os seus. Quando devolver, eu monto no layout que já existe, com as
 mesmas transições, o mesmo modo foco e o mesmo desenho.
@@ -147,7 +153,7 @@ diferença não está na competência de quem opera".
 
 **12. Antecedentes no Exército e lacuna de pesquisa** [novo, funde com o atual
 slide de lacuna]
-O SisCAAeT no COPESP, o piloto descontinuado no 21º D Sup (EnANPAD 2020) com os
+O SISCAET no COPESP, o piloto descontinuado no 21º D Sup (EnANPAD 2020) com os
 três fatores que o comprometeram, e o que ainda não foi estudado: nenhum trabalho
 aplicado ao material aeroterrestre.
 
