@@ -473,10 +473,15 @@ A aba do navegador acompanhou. **Repare que a linha do orientador continua na
 capa** — o artigo é assinado só por você, então, se a apresentação é do artigo,
 essa linha talvez deva sair. Diga e eu tiro.
 
-**As fotos novas.** As cinco que você mandou apareceram para mim, mas não chegaram
-como arquivo nas duas vezes — só a imagem na conversa. Para eu embutir, precisam vir
-como anexo de arquivo. Uma delas, a das duas velas com o crédito "Agência Força
-Aérea / ©Sgt Batista" gravado, tem de manter o crédito visível se for usada.
+**As fotos novas entraram** pelo zip. Duas foram para os divisores: o pôr do sol na
+rampa fecha o bloco de Conclusão, e o KC-390 com o saltador abre o Referencial. As
+outras quatro ficaram em `fotos/`, prontas para uso, com o mapa em
+`fotos/LEIA-ME.md`.
+
+A das duas velas com carga tem o crédito "Agência Força Aérea / ©Sgt Batista"
+gravado na imagem. Ela não serve para divisor, porque ali a foto é escurecida e
+desfocada e o crédito sumiria — o que na prática é remover a atribuição. Se quiser
+usá-la, tem de ser num quadro claro.
 
 ## Dados usados nos gráficos
 
