@@ -244,47 +244,54 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 22–27 | Conclusão | Divisor · **Resposta ao problema, com a aplicabilidade ao Exército** · POP em doze etapas · Estudo de viabilidade · Limitações · Continuidade |
 | 28 | Encerramento | 8º Mandamento, nome e contato |
 
-## O QR do resumo (slide 28)
+## O QR do slide 28
 
-Ao lado do contato, no slide de fecho, há um QR Code com o resumo da palestra.
+Ao lado do contato, no slide de fecho, há um QR Code com a legenda
+**"Resumo e infográfico"**.
 
-**Ele não é um link.** O código carrega o texto do resumo dentro de si, então
-funciona com o celular sem internet, não depende de nenhum site continuar no ar e
-não expira. Quem escaneia vê isto na tela:
+**Um QR Code não comporta um arquivo.** O limite físico do formato é de 2.953
+bytes, e o PNG do infográfico tem 4,9 MB, quase mil e setecentas vezes mais.
+Então o código não carrega o arquivo: ele leva a uma página que mostra o
+infográfico em tamanho real e traz o resumo escrito da pesquisa embaixo.
 
-```
-Transformação digital da gestão do material aeroterrestre
-Cap Jefferson Daniel Ferreira Martins, EsAO, C Log, 2026
-Registros manuais 4,17; rastreabilidade 2,86; integração 3,28 (escala 1 a 5).
-Potencial: IoT 4,69; Big Data 4,62; IA 4,62.
-Proposta: POP em 12 etapas, em 4 fases.
-jefferson.daniel675@gmail.com
-```
+Endereço codificado:
 
-**Como usar na hora.** Antes de abrir para perguntas, diga que o resumo está no QR
-e deixe o slide 28 na tela durante todo o debate. É enquanto se responde que a
-plateia fotografa. Quem estiver longe fotografa o slide e escaneia a foto depois,
-que funciona igual.
+    https://claude.ai/code/artifact/65752676-3cad-4251-aaeb-982875da7688
 
-**Se quiser mudar o texto**, me diga o que trocar. O código precisa ser gerado de
-novo, porque o texto está codificado nos próprios quadradinhos. Texto mais longo
-deixa o código mais denso e mais difícil de ler de longe: o atual tem 307
-caracteres e 61 módulos por lado, que é o limite confortável para projeção.
+**Falta um passo, e ele é seu.** A página nasce privada. Abra o endereço acima,
+use o menu de compartilhamento e marque **"qualquer pessoa com o link"**.
+Enquanto isso não for feito, quem escanear o QR esbarra numa tela de acesso.
+Vale testar com o seu próprio celular, fora da sua conta, antes do congresso.
 
-**O que foi conferido, e uma armadilha que apareceu no caminho.** O código foi lido
-de volta por decodificador de referência em cinco tamanhos, do slide em tela cheia
-até uma janela de 800 pixels de largura, dentro do HTML e dentro do PowerPoint, e o
-texto voltou idêntico ao original em todos.
+**O que a página tem:** o infográfico com um botão de tamanho real e arraste
+para percorrer o quadro, as quatro médias do modelo atual, o potencial das três
+tecnologias, a conclusão com a ressalva de Arora, Bhatia e Sidharth, as quatro
+fases do POP, o 8º Mandamento e o seu contato. Quem quiser guardar o infográfico
+toca e segura a imagem.
 
-Na primeira tentativa não voltava. O gerador estava escolhendo sozinho o modo de
-codificação e, por causa dos acentos, caiu no **modo kanji**: ao ser lido, o resumo
-saía em japonês, com "Transformação" virando "Transforma誽o". O código agora é
-gerado em modo byte com UTF-8 declarado, e é por isso que os acentos chegam certos
-no celular de quem lê.
+**A contrapartida:** agora o QR depende de internet no celular de quem lê. Até a
+versão anterior ele carregava o resumo em texto dentro de si e funcionava sem
+rede, mas texto puro não comporta o infográfico. Se preferir voltar ao resumo
+offline, é só dizer.
 
-No backup em PowerPoint há um cuidado a mais: cada slide vira uma imagem JPEG, e a
-compressão borrava os quadradinhos a ponto de o código não abrir. O gerador do pptx
-agora sobrepõe o QR em PNG nítido, na posição exata, por cima do JPEG do slide 28.
+**Como usar na hora.** Antes de abrir para perguntas, diga que o resumo e o
+infográfico estão no QR e deixe o slide 28 na tela durante todo o debate. É
+enquanto se responde que a plateia fotografa. Quem estiver longe fotografa o
+slide e escaneia a foto depois, que funciona igual.
+
+**O que foi conferido.** O código foi lido de volta por decodificador de
+referência em cinco tamanhos, do slide em tela cheia até uma janela de 640
+pixels de largura, dentro do HTML e dentro do PowerPoint, e o endereço voltou
+idêntico em todos. Como o endereço é só ASCII, some também o risco de
+codificação que apareceu antes: com o resumo em português, o gerador escolhia
+sozinho o **modo kanji** por causa dos acentos, e o texto era lido em japonês.
+
+No backup em PowerPoint há um cuidado a mais: cada slide vira uma imagem JPEG, e
+a compressão borrava os quadradinhos a ponto de o código não abrir. O gerador do
+pptx sobrepõe o QR em PNG nítido, na posição exata, por cima do JPEG do slide 28.
+
+**O infográfico está guardado** em `dados/infografico-log40.png`, no tamanho
+original de 2752 por 1536.
 
 ## O 8º Mandamento (slide 28)
 
@@ -310,7 +317,7 @@ O slide 28 traz, abaixo do mandamento:
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
 - `(21) 97920-3803`
-- o QR do resumo, à direita
+- o QR do resumo e do infográfico, à direita
 
 Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
 é o tipo de coisa que só se descobre depois.
