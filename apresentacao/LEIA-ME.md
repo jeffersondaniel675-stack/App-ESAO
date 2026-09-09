@@ -147,7 +147,7 @@ você queira trocar alguma.
 | 1 · Capa | `capa-c295-lancamento.jpg` | tela cheia, atrás do título |
 | 4 · Contextualização | `kc390-paraquedas-extracao.jpg` | quadro 16:9 na coluna direita |
 | 5 · O B DOMPSA e o Mat Aet | `deposito-prateleiras.jpg` | quadro 4:3 na coluna esquerda |
-| 12 · Dois depósitos | `armazem-automatizado.jpg` · `deposito-prateleiras.jpg` | dois quadros 16:9 lado a lado |
+| 12 · Dois depósitos | `deposito-automatizado.jpg` · `deposito-prateleiras.jpg` | dois quadros 16:9 lado a lado |
 | 20 · Instrumentos e análise | `dobragem-mesa.jpg` | quadro 4:3 na coluna esquerda |
 | 28 · O controle é uma prancheta | `plataforma-prancheta.jpg` | quadro 16:9, meia tela |
 | 35 · Evidências de campo | `inspecao-paraquedas.jpg` · `preparo-carga.jpg` · `interior-aeronave.jpg` | galeria de três |
@@ -260,14 +260,14 @@ a plateia lê, então é ela que fica.
 
 ## Dois depósitos (slide 12)
 
-Depois da linha do tempo, um slide de contraste: à esquerda um armazém com
+Depois da linha do tempo, um slide de contraste: à esquerda um depósito com
 identificação automática e movimentação assistida, à direita o depósito do
 B DOMPSA. Embaixo, uma linha só: **"A diferença não está na competência de quem
 opera. Está no instrumento que registra."**
 
 Duas ressalvas, e as duas importam:
 
-A imagem da esquerda é uma **ilustração em 3D**, não uma fotografia de um armazém
+A imagem da esquerda é uma **ilustração em 3D**, não uma fotografia de um depósito
 existente, e a legenda diz isso. Se o congresso exigir crédito de imagem, é a única
 do deck que não é do batalhão, e convém verificar a origem antes de projetar.
 

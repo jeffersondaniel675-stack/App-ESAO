@@ -14,7 +14,7 @@ arquivos ficam aqui como originais, para consulta ou substituição.
 | `preparo-carga.jpg` | 35 · Evidências de campo |
 | `interior-aeronave.jpg` | 35 · Evidências de campo |
 | `visita-deposito.jpg` | 3 · divisor Introdução |
-| `armazem-automatizado.jpg` | 12 · Dois depósitos (ilustração em 3D, não é foto) |
+| `deposito-automatizado.jpg` | 12 · Dois depósitos (ilustração em 3D, não é foto) |
 | `paraquedista-salto.jpg` | 37 · divisor Conclusão |
 
 Para trocar uma foto durante a apresentação, arraste a nova por cima do quadro;
