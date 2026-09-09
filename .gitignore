@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 data/db.json.bak
+data/db.json.tmp
+__pycache__/
+*.pyc
+.venv/
+venv/

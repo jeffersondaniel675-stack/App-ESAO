@@ -9,7 +9,7 @@ import unicodedata
 from flask import Flask, request, jsonify, send_from_directory, make_response
 
 app = Flask(__name__, static_folder="dist", static_url_path="")
-PORT = 3000
+PORT = int(os.environ.get("PORT", "3000"))
 
 DB_PATH = os.path.join(os.getcwd(), "data", "db.json")
 DB_BAK_PATH = os.path.join(os.getcwd(), "data", "db.json.bak")

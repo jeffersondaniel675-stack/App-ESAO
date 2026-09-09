@@ -1,0 +1,3 @@
+# Dependências do backend alternativo em Python (server.py).
+# Não são necessárias para rodar o sistema pelo Node.js (npm run dev).
+Flask>=3.0,<4.0
