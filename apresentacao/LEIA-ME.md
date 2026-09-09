@@ -4,7 +4,7 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO — Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **31 slides**, para trinta minutos de fala.
+São **30 slides**, para trinta minutos de fala.
 
 O conteúdo foi montado a partir do próprio TCC (introdução, referencial, metodologia,
 resultados e conclusão) e os gráficos usam os **dados reais do formulário** — as 29
@@ -370,6 +370,52 @@ Dois cuidados que ficam de pé:
 O **2009 do SISPQD** veio de você, não do documento: o EVTEA cita o SISPQD como
 o sistema a ser desenvolvido agora, sem mencionar a origem. Confira a data antes
 de projetar.
+
+## A revisão de 09/09: o roteiro novo
+
+Vale ler junto com `ROTEIRO.md`, que traz a conferência dos dados e a lista
+completa do que mudou.
+
+**O que aconteceu com os slides**
+
+- **Novo slide 5, "O controle atual do material".** Funde a prancheta com as
+  evidências de campo numa galeria de quatro fotos que segue o fluxo real
+  (registro na pista, conferência no depósito, preparo, embarque), com duas
+  linhas factuais sobre livro, ficha e planilha.
+- **Novo slide 12, "Antecedentes e lacuna".** Substitui o slide que só trazia a
+  citação da lacuna. Agora traz três antecedentes reais: o SisCAAeT no COPESP,
+  o piloto de RFID descontinuado no 21º Depósito de Suprimento, e o SISPQD
+  embrionário no próprio Batalhão.
+- **O gráfico de barreiras ganhou a sétima barra**, "Questões de segurança da
+  informação", 13,8%, que estava sendo omitida.
+- **Dez títulos e frases foram reescritos** para sair do molde de negação
+  seguida de afirmação, que é o que dava cara de texto de máquina.
+
+**Por que o 21º Depósito de Suprimento importa tanto**
+
+Um projeto-piloto de RFID foi descontinuado lá, e o estudo do caso (EnANPAD,
+2020) aponta três causas: a simplicidade percebida da tecnologia, o apoio da
+alta administração e a pressão do ambiente. São praticamente as mesmas barreiras
+que os seus respondentes elegeram: falta de prioridade institucional (62,1%),
+resistência à mudança (48,3%) e falta de capacitação (34,5%).
+
+Isso deixa de ser risco hipotético e passa a ser precedente documentado. Vale
+dizer em voz alta quando chegar ao slide das barreiras. **Confira a referência
+do EnANPAD antes de citar** — eu a localizei em busca, não abri o artigo.
+
+**As quatro decisões, e o que eu assumi**
+
+| Decisão | O que ficou |
+|---|---|
+| Questão 10, duas respostas em texto | Mantidos 4,17 e 79,3%, o critério do seu TCC. O tratamento está na nota de fala, para você responder se perguntarem. |
+| Big Data e IA | Já estavam na tela, no slide de potencial. Nada a fazer. |
+| Sétima barreira | Entrou. |
+| O 43 e os 67,4% | Mantidos, vêm do TCC. O n continua fora da tela e dentro da nota. |
+
+**Uma correção ao meu próprio roteiro:** eu escrevi 29 slides e não marquei o
+slide de Referências para sair. Ele ficou, e agora traz as duas fontes novas, o
+que faz o deck ter **30 slides**. Se preferir sem ele, é um corte de dois
+segundos.
 
 ## Dados usados nos gráficos
 
