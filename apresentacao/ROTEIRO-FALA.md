@@ -3,7 +3,7 @@
 **Transformação digital da gestão do material aeroterrestre**
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
-Deck: `congresso.html`, **28 slides** mais um anexo no 29. Duração alvo: **30 minutos**, com o roteiro
+Deck: `congresso.html`, **28 slides**. Duração alvo: **30 minutos**, com o roteiro
 fechando em **28 minutos** para deixar folga.
 
 ---
@@ -452,14 +452,6 @@ registro rastreado passaria a produzir.
 
 Pare de falar. Em videoconferência a tentação de preencher o silêncio é grande, e o
 silêncio depois do fecho é da plateia, não seu.
-
-### Slide 29 · Anexo, só para o debate
-
-Depois do mandamento, **pare**. O slide 29 não faz parte da sequência: é o quadro
-completo da pesquisa, guardado para o debate. Se alguém pedir o panorama ou os
-números todos de uma vez, **digite 29 e Enter** e ele aparece. Volte com a seta
-para a esquerda. Para mandar por e-mail depois, o mesmo quadro está no arquivo
-`infografico-log40.png`.
 
 ---
 

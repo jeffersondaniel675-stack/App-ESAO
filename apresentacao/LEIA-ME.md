@@ -5,9 +5,7 @@ Evidências sobre IoT, *Big Data* e Inteligência Artificial no B DOMPSA
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **28 slides** de apresentação, cronometrados para fechar em 28 minutos dentro dos
-trinta previstos, mais o **slide 29**, um anexo com o infográfico, que só aparece se
-você for até ele.
+São **28 slides**, cronometrados para fechar em 28 minutos dentro dos trinta previstos.
 
 O roteiro de fala slide a slide, com a cronometragem e as perguntas prováveis, está
 em **`ROTEIRO-FALA.md`**.
@@ -245,28 +243,24 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 14–21 | Resultados | Divisor · O depósito (vídeo) · As quatro médias · Problemas relatados · Potencial das tecnologias · Barreiras · Entrevistas · **O conhecimento produzido** |
 | 22–27 | Conclusão | Divisor · **Resposta ao problema, com a aplicabilidade ao Exército** · POP em doze etapas · Estudo de viabilidade · Limitações · Continuidade |
 | 28 | Encerramento | 8º Mandamento, nome e contato |
-| 29 | Anexo | O quadro completo da pesquisa, fora da sequência |
 
-## O anexo do slide 29
+## Nem QR, nem anexo: o infográfico viaja em arquivo
 
-Não há mais QR Code no deck. O slide de fecho traz o mandamento, o seu nome e o
-contato, e nada mais.
+O deck tem **28 slides** e termina no mandamento. Não há QR Code e não há slide de
+anexo: as duas coisas foram experimentadas e retiradas a seu pedido.
 
-**O infográfico está dentro do arquivo**, como **slide 29**, fora dos 28 da
-sequência. Ele não aparece se você seguir a apresentação até o fim: depois do
-mandamento, pare. Para chegar nele durante o debate, **digite 29 e Enter**, ou
-abra o índice com **O**. Volte com a seta para a esquerda. É a tela para quando
-alguém pedir o quadro completo ou os números todos de uma vez.
+O infográfico da pesquisa continua disponível, como arquivo solto:
 
-Para enviar a quem pedir depois, o mesmo quadro está em
-`dados/infografico-log40.png`, em 2752 por 1536.
+| Arquivo | O que é |
+|---|---|
+| `dados/infografico-log40.png` | O quadro completo, 2752 × 1536, para enviar a quem pedir |
+| `infografico-log40.html` | O código-fonte do infográfico, editável, com as fontes embutidas |
 
 **Por que o QR saiu.** A ideia era o código abrir o infográfico direto. Um QR
 comporta no máximo **2.953 bytes**, e o infográfico, mesmo reduzido a 344 por 192
 pixels, ocupa 12.944: quatro vezes o limite. Só cabe a 86 por 48 pixels, tamanho
-em que nada se lê. A alternativa seria o código levar um endereço na internet, e
-a decisão foi não depender de nuvem. Sem endereço e sem imagem, sobrava texto, e
-para texto o anexo do slide 29 e o PNG funcionam melhor.
+em que nada se lê. A alternativa seria o código levar um endereço na internet, e a
+decisão foi não depender de nuvem.
 
 ## O 8º Mandamento (slide 28)
 
