@@ -2078,18 +2078,7 @@ export default function App() {
       
       {!isLoggedIn && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-950/20 via-slate-900/40 to-black/95"></div>
-          
-          <div className="absolute top-10 left-10 w-1 h-1 bg-white rounded-full opacity-45 animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-0.5 h-0.5 bg-white rounded-full opacity-35"></div>
-          <div className="absolute top-80 left-1/4 w-1.5 h-1.5 bg-yellow-200/40 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute top-24 right-1/3 w-1 h-1 bg-white rounded-full opacity-30"></div>
-          <div className="absolute bottom-60 right-10 w-0.5 h-0.5 bg-white rounded-full opacity-40"></div>
-          <div className="absolute bottom-40 left-12 w-1 h-1 bg-white rounded-full opacity-40 animate-pulse"></div>
-          <div className="absolute top-1/2 left-3/4 w-1 h-1 bg-amber-300/35 rounded-full opacity-25 animate-pulse"></div>
-
-          <div className="absolute -bottom-[350px] left-1/2 -translate-x-1/2 w-[900px] h-[550px] rounded-full bg-gradient-to-t from-emerald-500/10 via-cyan-500/25 to-transparent blur-3xl"></div>
-          <div className="absolute -bottom-[400px] left-1/2 -translate-x-1/2 w-[1100px] h-[650px] rounded-full border border-cyan-400/20 bg-[#041217]/60 backdrop-blur-[1px]"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(165deg,#012418_0%,#001710_45%,#020503_100%)]"></div>
         </div>
       )}
       
@@ -2281,32 +2270,52 @@ export default function App() {
         
         {/* VIEW 1: WELCOME AND LOGIN SCREEN */}
         {!isLoggedIn && (
-          <div className="relative w-full max-w-md mx-auto py-12 px-4 z-10 flex flex-col items-center">
-            {/* Subtle Background Pattern */}
-            <div className="absolute inset-0 -z-10 opacity-5 pointer-events-none" style={{ backgroundImage: "radial-gradient(#012d1d 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+          <div className="relative w-full max-w-5xl mx-auto min-h-[calc(100vh-10rem)] py-12 px-4 z-10 grid lg:grid-cols-[1.05fr_minmax(0,25rem)] gap-12 lg:gap-20 items-center content-center">
 
-            {/* Header Section */}
-            <header className="text-center mb-8 flex flex-col items-center">
-              <div className="w-28 h-28 mb-4 flex items-center justify-center bg-white rounded-full p-2 border border-slate-200/80 shadow-sm">
-                <img 
-                  alt="Brasão ESAO Intendência" 
-                  className="w-full h-full object-contain mix-blend-multiply" 
+            {/* Identidade da turma: aqui a tipografia é o assunto, não moldura
+                para a marca. O brasão entra em corpo pequeno, ao lado do nome. */}
+            <header className="text-left">
+              <div className="flex items-center gap-3">
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="w-9 h-9 shrink-0 object-contain opacity-90 overflow-hidden text-[0px]"
                   src={IMAGENS.brasao}
                 />
+                <span className="text-sm font-semibold text-emerald-200/80">
+                  Escola de Aperfeiçoamento de Oficiais
+                </span>
               </div>
-              <h1 className="font-headline text-2xl md:text-3xl font-black text-center text-emerald-950 tracking-tight" style={{ fontFamily: "Hanken Grotesk, sans-serif" }}>
-                Intendência - ESAO 2026
+
+              <h1 className="font-headline mt-6 text-[clamp(2.75rem,8vw,4.75rem)] leading-[0.92] font-semibold text-white tracking-[-0.02em]">
+                Intendência
+                <span className="block text-emerald-300/70">2026</span>
               </h1>
-              <h2 className="text-sm font-medium text-slate-500 mt-1 font-sans text-center">
-                Acompanhamento individual de desempenho
-              </h2>
+
+              <p className="mt-6 max-w-[46ch] text-[15px] leading-relaxed text-emerald-100/70">
+                Cada oficial da turma lança as próprias notas e acompanha o
+                próprio desempenho. A classificação é publicada por nome
+                sigiloso, nunca por nome de guerra.
+              </p>
+
+              <dl className="mt-8 max-w-[42ch] space-y-3 border-t border-emerald-400/15 pt-6 text-sm">
+                <div className="flex gap-4">
+                  <dt className="w-28 shrink-0 text-emerald-300/60">Entrar com</dt>
+                  <dd className="text-emerald-50/90">nome de guerra, em maiúsculo e sem acento</dd>
+                </div>
+                <div className="flex gap-4">
+                  <dt className="w-28 shrink-0 text-emerald-300/60">Primeira senha</dt>
+                  <dd className="text-emerald-50/90">seu número de matrícula</dd>
+                </div>
+              </dl>
             </header>
+
+            <div className="w-full">
 
             {/* Login Card */}
             {!isAdminLoginView ? (
               <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-full overflow-hidden relative">
                 {/* Top Accent Bar (Emerald) */}
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-[#012d1d]" />
 
                 {/* Login Actions Form */}
                 <form onSubmit={handleLogin} className="p-6 space-y-5">
@@ -2319,8 +2328,8 @@ export default function App() {
 
                   {/* Nome de Guerra Field */}
                   <div className="space-y-1.5 text-left">
-                    <label htmlFor="warName" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider font-headline" style={{ fontFamily: "Hanken Grotesk, sans-serif" }}>
-                      Nome de Guerra
+                    <label htmlFor="warName" className="block text-[13px] font-semibold text-slate-600">
+                      Nome de guerra
                     </label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -2340,7 +2349,7 @@ export default function App() {
 
                   {/* Senha Field */}
                   <div className="space-y-1.5 text-left">
-                    <label htmlFor="pass" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider font-headline" style={{ fontFamily: "Hanken Grotesk, sans-serif" }}>
+                    <label htmlFor="pass" className="block text-[13px] font-semibold text-slate-600">
                       Senha
                     </label>
                     <div className="relative">
@@ -2365,22 +2374,19 @@ export default function App() {
                       id="btnLogin"
                       type="submit"
                       disabled={loading}
-                      className="w-full flex justify-center items-center py-2.5 px-4 bg-[#012d1d] hover:bg-[#1b4332] text-white font-bold text-xs uppercase rounded-xl shadow-sm cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#012d1d]"
+                      className="w-full flex justify-center items-center py-3 px-4 bg-[#012d1d] hover:bg-[#1b4332] text-white font-semibold text-sm rounded-xl cursor-pointer transition-colors"
                     >
                       {loading ? (
                         <RefreshCw className="w-4 h-4 animate-spin" />
                       ) : (
-                        <div className="flex items-center gap-1.5">
-                          <span>Acessar Sistema</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </div>
+                        <span>Entrar</span>
                       )}
                     </button>
                   </div>
 
                   {/* Toggle Admin link */}
                   <div className="text-center pt-4 border-t border-slate-100 flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acesso Coordenador</span>
+                    <span className="text-xs text-slate-500">Coordenação da turma</span>
                     <button 
                       id="toggleAdminLogin"
                       type="button"
@@ -2397,21 +2403,10 @@ export default function App() {
                   </div>
                 </form>
 
-                {/* Instructions Block */}
-                <div className="p-5 bg-slate-50 border-t border-slate-200/80">
-                  <div className="flex items-start gap-2.5 text-slate-600">
-                    <Info className="w-4 h-4 mt-0.5 text-[#735c00] flex-shrink-0" />
-                    <div className="text-xs text-left leading-normal space-y-1">
-                      <p><strong>Login:</strong> nome de guerra em maiúsculo e sem acento.</p>
-                      <p><strong>Senha inicial:</strong> número de matrícula militar.</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             ) : (
               <div className="bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-full overflow-hidden relative">
                 {/* Top Accent Bar (Amber for Admin) */}
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-[#d97706]" />
 
                 {/* Admin Login Actions Form */}
                 <form onSubmit={handleLogin} className="p-6 space-y-5">
@@ -2508,12 +2503,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Support Footer text */}
-            <footer className="mt-8 text-center">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">
-                Admin Coordenador: Cap Daniel
-              </p>
-            </footer>
+            </div>
           </div>
         )}
 
@@ -4220,12 +4210,20 @@ export default function App() {
                       <div className="bg-white/5 p-3 rounded-xl border border-white/5 col-span-2 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] text-slate-400 block uppercase">Classificação Estimada</span>
-                          <strong className="text-lg font-mono tracking-tight font-extrabold text-emerald-300">
-                            {classStats?.myRank?.rank ? `${classStats.myRank.rank}º` : "Calculando..."}
-                          </strong>
-                          <span className="text-slate-400 text-xs font-mono ml-1">
-                            de {classStats?.totalValid} na turma
-                          </span>
+                          {classStats?.myRank?.rank ? (
+                            <>
+                              <strong className="numeral text-xl font-semibold text-emerald-300">
+                                {classStats.myRank.rank}º
+                              </strong>
+                              <span className="text-slate-400 text-xs ml-1.5">
+                                de {classStats.totalValid} com lançamento válido
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-slate-400 text-xs block mt-0.5">
+                              Sai quando seu lançamento for confirmado.
+                            </span>
+                          )}
                         </div>
                         {classStats?.myRank?.rank && classStats.myRank.rank <= 2 && (
                           <div className="bg-amber-400 text-slate-900 border border-amber-300 text-[10px] uppercase font-bold py-1 px-2.5 rounded-lg text-center animate-bounce">

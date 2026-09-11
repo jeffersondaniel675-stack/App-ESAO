@@ -51,27 +51,30 @@ export interface ChartPalette {
 
 export function chartPalette(theme: Theme): ChartPalette {
   const dark = theme === "dark";
+  // Mesma paleta do resto do sistema (ver o bloco @theme em src/index.css).
+  // O ouro fosco é reservado ao resultado do próprio participante: é a única
+  // coisa na tela que precisa se separar do verde institucional.
   return {
-    me: dark ? "#34d399" : "#047857",
-    turma: dark ? "#94a3b8" : "#94a3b8",
-    grid: dark ? "#374151" : "#e2e8f0",
-    axis: dark ? "#9ca3af" : "#64748b",
-    cardBg: dark ? "#111827" : "#ffffff",
-    tooltipBg: dark ? "#1f2937" : "#ffffff",
-    tooltipBorder: dark ? "#374151" : "#e2e8f0",
-    tooltipText: dark ? "#f3f4f6" : "#0f172a",
-    positive: dark ? "#34d399" : "#059669",
-    negative: dark ? "#fb7185" : "#e11d48",
-    neutral: dark ? "#60a5fa" : "#2563eb",
+    me: dark ? "#c9a63c" : "#9a7b1f",
+    turma: dark ? "#4f866b" : "#7ba68e",
+    grid: dark ? "#2b352e" : "#dfe2da",
+    axis: dark ? "#98a094" : "#6f776c",
+    cardBg: dark ? "#121b16" : "#fafbf8",
+    tooltipBg: dark ? "#1b251f" : "#fafbf8",
+    tooltipBorder: dark ? "#2b352e" : "#dfe2da",
+    tooltipText: dark ? "#eef0ea" : "#101a16",
+    positive: dark ? "#4f866b" : "#1b5238",
+    negative: dark ? "#ad584c" : "#8a2f26",
+    neutral: dark ? "#7ba68e" : "#2f6b4e",
     quartis: dark
-      ? ["#34d399", "#60a5fa", "#fbbf24", "#fb7185"]
-      : ["#059669", "#2563eb", "#d97706", "#e11d48"],
+      ? ["#7ba68e", "#4f866b", "#a98a2a", "#ad584c"]
+      : ["#0d4029", "#2f6b4e", "#8f731c", "#8a2f26"],
     status: {
-      confirmado: dark ? "#34d399" : "#059669",
-      corrigido: dark ? "#60a5fa" : "#2563eb",
-      rascunho_salvo: dark ? "#fbbf24" : "#d97706",
-      não_iniciado: dark ? "#6b7280" : "#94a3b8",
-      bloqueado: dark ? "#fb7185" : "#e11d48"
+      confirmado: dark ? "#4f866b" : "#1b5238",
+      corrigido: dark ? "#7ba68e" : "#2f6b4e",
+      rascunho_salvo: dark ? "#a98a2a" : "#8f731c",
+      não_iniciado: dark ? "#3d453b" : "#c6cbc0",
+      bloqueado: dark ? "#ad584c" : "#8a2f26"
     }
   };
 }
@@ -309,7 +312,7 @@ export function GradeComposition({
       {calcs?.finalGrade !== null && calcs?.finalGrade !== undefined && (
         <div className="mt-3 pt-3 border-t border-slate-100 flex items-baseline justify-between">
           <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 font-bold">Nota final</span>
-          <span className="text-lg font-bold" style={{ color: p.me }}>{fmt(calcs.finalGrade)}</span>
+          <span className="numeral text-2xl font-semibold" style={{ color: p.me }}>{fmt(calcs.finalGrade)}</span>
         </div>
       )}
     </ChartCard>
@@ -398,7 +401,7 @@ export function GradeDistribution({
           )}
           <Bar dataKey="Participantes" radius={[4, 4, 0, 0]} maxBarSize={34}>
             {data.map((d, i) => (
-              <Cell key={i} fill={myBinStart !== null && d.inicio === myBinStart ? p.me : p.turma} />
+              <Cell key={i} fill={myBinStart !== null && d.inicio === myBinStart ? p.me : p.positive} />
             ))}
           </Bar>
         </BarChart>
@@ -494,7 +497,7 @@ export function ClassModuleAverages({
             formatter={(v: any, _n: any, item: any) => [`${fmt(v)} (${item?.payload?.lancamentos} lançamentos)`, "Média"]}
           />
           {geral !== null && <ReferenceLine y={geral} stroke={p.axis} strokeDasharray="4 3" />}
-          <Bar dataKey="Média" fill={p.me} radius={[4, 4, 0, 0]} maxBarSize={40}>
+          <Bar dataKey="Média" fill={p.positive} radius={[4, 4, 0, 0]} maxBarSize={40}>
             <LabelList
               dataKey="Média"
               position="top"

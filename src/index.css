@@ -1,21 +1,219 @@
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Archivo:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   SISTEMA VISUAL — Intendência, EsAO 2026
+
+   Conceito: ficha de registro, não painel de cartões. O que decide a vida do
+   usuário aqui é um número de três casas decimais, então o numeral é o
+   conteúdo e tudo em volta fica quieto: papel, fio de 1px, verde institucional.
+
+   Os tokens abaixo são os do próprio Tailwind, reescritos. Como o app usa as
+   classes utilitárias em toda parte (slate 700x, emerald 100x), redefinir as
+   rampas repagina as telas inteiras sem tocar no JSX.
+   --------------------------------------------------------------------------- */
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-headline: "Hanken Grotesk", sans-serif;
+  /* Tipografia --------------------------------------------------------------
+     Duas famílias. Zilla Slab (serifa quadrada, técnica) para título e para os
+     numerais grandes; Archivo (grotesca sólida) para interface e texto.
+     --font-mono aponta para Archivo de propósito: apagava-se assim o rótulo
+     minúsculo em monoespaçada e caixa alta que aparecia em 198 pontos do app e
+     dava à tela o ar de template. Alinhamento de coluna passa a vir de
+     tabular-nums, não da largura fixa do caractere. */
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Zilla Slab", Georgia, serif;
+  --font-numeral: "Zilla Slab", Georgia, serif;
+
+  /* Cor ---------------------------------------------------------------------
+     O verde profundo não é escolha nova: #012d1d já estava cravado 45 vezes no
+     código. Ele vira a rampa emerald inteira, deliberado em vez de acidental.
+     O neutro sai do azul-ardósia do Tailwind e vira papel cinza-esverdeado. */
+
+  /* Neutros: papel e tinta */
+  --color-slate-50:  #f7f8f5;
+  --color-slate-100: #eef0ea;
+  --color-slate-200: #dfe2da;
+  --color-slate-300: #c6cbc0;
+  --color-slate-400: #98a094;
+  --color-slate-500: #6f776c;
+  --color-slate-600: #545c52;
+  --color-slate-700: #3d453b;
+  --color-slate-800: #28302a;
+  --color-slate-900: #18211c;
+  --color-slate-950: #101a16;
+
+  /* Institucional: o verde da turma */
+  --color-emerald-50:  #eaf1ec;
+  --color-emerald-100: #d3e2d8;
+  --color-emerald-200: #a9c6b4;
+  --color-emerald-300: #7ba68e;
+  --color-emerald-400: #4f866b;
+  --color-emerald-500: #2f6b4e;
+  --color-emerald-600: #1b5238;
+  --color-emerald-700: #0d4029;
+  --color-emerald-800: #012d1d;
+  --color-emerald-900: #012418;
+  --color-emerald-950: #001710;
+
+  /* Espera / atenção: ocre, não o âmbar saturado */
+  --color-amber-50:  #f7f1de;
+  --color-amber-100: #eee2bd;
+  --color-amber-200: #ddc888;
+  --color-amber-300: #c5a63f;
+  --color-amber-400: #a98a2a;
+  --color-amber-500: #8f731c;
+  --color-amber-600: #7a5e12;
+  --color-amber-700: #654d0f;
+  --color-amber-800: #533f0d;
+  --color-amber-900: #43330b;
+
+  /* Abaixo da média / bloqueio: óxido, não o rosa */
+  --color-rose-50:  #f8eeec;
+  --color-rose-100: #efd8d4;
+  --color-rose-200: #dcb0a9;
+  --color-rose-300: #c48279;
+  --color-rose-400: #ad584c;
+  --color-rose-500: #98392c;
+  --color-rose-600: #8a2f26;
+  --color-rose-700: #74271f;
+  --color-rose-800: #5f2019;
+  --color-rose-900: #4d1a15;
+
+  /* Famílias órfãs -----------------------------------------------------------
+     O app herdou índigo, azul, vermelho e roxo do padrão do Tailwind em uns 80
+     pontos — um botão roxo no meio do painel verde, caixas de aviso em azul
+     berrante. Em vez de caçar classe por classe no JSX, as rampas são dobradas
+     dentro da paleta: ação vira verde, informação vira petróleo, erro vira o
+     mesmo óxido do rose, roxo some no neutro. */
+
+  /* Ação: mesma família do verde institucional */
+  --color-indigo-50:  #eaf1ec;
+  --color-indigo-100: #d3e2d8;
+  --color-indigo-200: #a9c6b4;
+  --color-indigo-300: #7ba68e;
+  --color-indigo-400: #4f866b;
+  --color-indigo-500: #2f6b4e;
+  --color-indigo-600: #1b5238;
+  --color-indigo-700: #0d4029;
+  --color-indigo-800: #012d1d;
+  --color-indigo-900: #012418;
+
+  /* Informação: petróleo dessaturado, o único terceiro tom do sistema */
+  --color-blue-50:  #e9eff1;
+  --color-blue-100: #d0dde0;
+  --color-blue-200: #a3bcc2;
+  --color-blue-300: #7599a2;
+  --color-blue-400: #4d7681;
+  --color-blue-500: #355e69;
+  --color-blue-600: #2a4d57;
+  --color-blue-700: #223f47;
+  --color-blue-800: #1c333a;
+  --color-blue-900: #172a30;
+  --color-sky-50:  #e9eff1;
+  --color-sky-100: #d0dde0;
+  --color-sky-200: #a3bcc2;
+  --color-sky-300: #7599a2;
+  --color-sky-400: #4d7681;
+  --color-sky-500: #355e69;
+  --color-sky-600: #2a4d57;
+  --color-sky-700: #223f47;
+  --color-sky-800: #1c333a;
+  --color-sky-900: #172a30;
+
+  /* Erro: o mesmo óxido do rose, para não existirem dois vermelhos */
+  --color-red-50:  #f8eeec;
+  --color-red-100: #efd8d4;
+  --color-red-200: #dcb0a9;
+  --color-red-300: #c48279;
+  --color-red-400: #ad584c;
+  --color-red-500: #98392c;
+  --color-red-600: #8a2f26;
+  --color-red-700: #74271f;
+  --color-red-800: #5f2019;
+  --color-red-900: #4d1a15;
+
+  /* Roxo: sem papel no sistema, recolhido ao neutro */
+  --color-purple-50:  #eef0ea;
+  --color-purple-100: #dfe2da;
+  --color-purple-200: #c6cbc0;
+  --color-purple-300: #98a094;
+  --color-purple-400: #6f776c;
+  --color-purple-500: #545c52;
+  --color-purple-600: #3d453b;
+  --color-purple-700: #28302a;
+  --color-purple-800: #18211c;
+  --color-purple-900: #101a16;
+  --color-violet-500: #545c52;
+  --color-violet-600: #3d453b;
+  --color-violet-700: #28302a;
+
+  /* Geometria ---------------------------------------------------------------
+     De 16px para 4px. O app tem 259 usos de rounded-*; o cartão arredondado
+     e uniforme era o que fazia tudo parecer o mesmo bloco genérico. Ficha de
+     papel tem canto vivo. */
+  --radius-xs:  1px;
+  --radius-sm:  2px;
+  --radius-md:  3px;
+  --radius-lg:  3px;
+  --radius-xl:  4px;
+  --radius-2xl: 5px;
+  --radius-3xl: 6px;
+  --radius-4xl: 8px;
+
+  /* Elevação ----------------------------------------------------------------
+     Painel não flutua: é fio de 1px sobre papel. A sombra fica só para o que
+     de fato paira sobre a página — modal, menu suspenso. */
+  --shadow-2xs: 0 0 0 0 transparent;
+  --shadow-xs:  0 0 0 0 transparent;
+  --shadow-sm:  0 1px 0 0 rgb(16 26 22 / 0.05);
+  --shadow-md:  0 2px 6px -2px rgb(16 26 22 / 0.12);
+  --shadow-lg:  0 8px 20px -6px rgb(16 26 22 / 0.18);
+  --shadow-xl:  0 16px 40px -12px rgb(16 26 22 / 0.24);
+}
+
+/* Numerais: alinhamento de coluna e altura constante. Vale para a ficha, para
+   as tabelas de classificação e para os eixos dos gráficos. */
+body {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* O numeral como conteúdo principal: onde o número é a resposta, ele é
+   composto na serifa quadrada, em corpo grande e com marcha apertada. */
+.numeral {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.01em;
+  font-feature-settings: "ss01";
+}
+
+/* Foco visível de teclado — a ficha é preenchida por 55 pessoas, várias
+   navegando por tab entre dezenas de campos de nota. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-emerald-600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Dark Mode Override Stylesheet for ESAO 2026 Night Grading */
 .dark-mode {
-  --bg-main: #090d16;
-  --bg-card: #111827;
-  --bg-item: #1f2937;
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --border-color: #374151;
-  --border-light: rgba(55, 65, 81, 0.5);
+  /* O escuro é o mesmo sistema com a tinta e o papel trocados de lugar: verde
+     profundo no lugar do azul-ardósia que vinha por padrão. */
+  --bg-main: #0a120e;
+  --bg-card: #121b16;
+  --bg-item: #1b251f;
+  --text-primary: #eef0ea;
+  --text-secondary: #98a094;
+  --border-color: #2b352e;
+  --border-light: rgba(43, 53, 46, 0.6);
   
   background-color: var(--bg-main) !important;
   color: var(--text-primary) !important;
