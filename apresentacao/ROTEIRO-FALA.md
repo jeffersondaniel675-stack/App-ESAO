@@ -335,7 +335,8 @@ o texto continua valendo.*
 
 ### Slide 23 · Resposta ao problema — 110 segundos · 20:10
 
-**Aqui entram a referência e a aplicabilidade que o General pediu.**
+**Aqui entram a referência e a aplicabilidade que o General pediu.** Ela não está
+mais escrita na tela, então é falada. Não pule este trecho.
 
 > A resposta ao problema de pesquisa tem quatro efeitos. Rastreabilidade: o ciclo
 > de vida de cada item, do recebimento ao lançamento. Confiabilidade: registro
@@ -452,22 +453,13 @@ registro rastreado passaria a produzir.
 Pare de falar. Em videoconferência a tentação de preencher o silêncio é grande, e o
 silêncio depois do fecho é da plateia, não seu.
 
-**O QR do slide.** Ao lado do contato há um QR Code. Antes de abrir para
-perguntas, diga uma frase sobre ele:
-
-> O QR ao lado do meu contato traz o resumo desta apresentação, com os números e a
-> conclusão. Ele não é um link, é o texto em si, então funciona mesmo sem internet.
-
-Depois **deixe este slide na tela durante todo o debate**. É enquanto se responde
-que a plateia fotografa. Em videoconferência, avise que quem quiser pode dar zoom
-ou tirar um print, porque escanear a foto funciona igual.
-
 ### Slide 29 · Anexo, só para o debate
 
 Depois do mandamento, **pare**. O slide 29 não faz parte da sequência: é o quadro
 completo da pesquisa, guardado para o debate. Se alguém pedir o panorama ou os
 números todos de uma vez, **digite 29 e Enter** e ele aparece. Volte com a seta
-para a esquerda.
+para a esquerda. Para mandar por e-mail depois, o mesmo quadro está no arquivo
+`infografico-log40.png`.
 
 ---
 

@@ -244,55 +244,29 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 12–13 | Metodologia | Divisor · Formulário, entrevistas e análise documental |
 | 14–21 | Resultados | Divisor · O depósito (vídeo) · As quatro médias · Problemas relatados · Potencial das tecnologias · Barreiras · Entrevistas · **O conhecimento produzido** |
 | 22–27 | Conclusão | Divisor · **Resposta ao problema, com a aplicabilidade ao Exército** · POP em doze etapas · Estudo de viabilidade · Limitações · Continuidade |
-| 28 | Encerramento | 8º Mandamento, nome, contato e o QR do resumo |
+| 28 | Encerramento | 8º Mandamento, nome e contato |
 | 29 | Anexo | O quadro completo da pesquisa, fora da sequência |
 
-## O QR do slide 28, e o anexo do slide 29
+## O anexo do slide 29
 
-Nada no deck depende de internet. O arquivo é único e fechado em si.
-
-**O QR carrega o resumo dentro dele**, não um endereço. Quem escaneia lê isto na
-tela do próprio celular, com ou sem rede:
-
-```
-Transformação digital da gestão do material aeroterrestre
-Cap Jefferson Daniel Ferreira Martins, EsAO, C Log, 2026
-
-Achados (1 a 5): registros manuais 4,17; rastreabilidade 2,86; integração 3,28.
-Potencial: IoT 4,69; Big Data 4,62; IA 4,62.
-
-Ganho: rastreabilidade, confiabilidade, integração e decisão.
-Proposta: POP em 12 etapas, em 4 fases.
-
-jefferson.daniel675@gmail.com
-```
+Não há mais QR Code no deck. O slide de fecho traz o mandamento, o seu nome e o
+contato, e nada mais.
 
 **O infográfico está dentro do arquivo**, como **slide 29**, fora dos 28 da
 sequência. Ele não aparece se você seguir a apresentação até o fim: depois do
 mandamento, pare. Para chegar nele durante o debate, **digite 29 e Enter**, ou
-abra o índice com **O**. É a tela para quando alguém pedir o quadro completo ou
-os números todos de uma vez.
+abra o índice com **O**. Volte com a seta para a esquerda. É a tela para quando
+alguém pedir o quadro completo ou os números todos de uma vez.
 
 Para enviar a quem pedir depois, o mesmo quadro está em
 `dados/infografico-log40.png`, em 2752 por 1536.
 
-**Uma limitação que vale saber.** Um QR Code comporta no máximo 2.953 bytes, então
-ele nunca vai carregar o infográfico, que tem megabytes. Ou o código leva texto,
-como agora, ou leva um endereço. Como a escolha foi não depender de nuvem, ele
-leva o texto, e o infográfico viaja no arquivo e no PNG.
-
-**O que foi conferido.** O código foi lido de volta por decodificador de
-referência em quatro tamanhos, do slide em tela cheia até uma janela de 800
-pixels de largura, dentro do HTML e dentro do PowerPoint, e o texto voltou
-idêntico ao original em todos.
-
-Duas armadilhas apareceram no caminho e ficam registradas. A primeira: o gerador
-escolhia sozinho o modo de codificação e, por causa dos acentos, caía no **modo
-kanji**, de forma que o resumo era lido em japonês, com "Transformação" virando
-"Transforma誽o". O código é gerado em modo byte com UTF-8 declarado. A segunda: no
-backup em PowerPoint cada slide vira uma imagem JPEG, e a compressão borrava os
-quadradinhos a ponto de o código não abrir, então o gerador do pptx sobrepõe o QR
-em PNG nítido, na posição exata, por cima do JPEG do slide 28.
+**Por que o QR saiu.** A ideia era o código abrir o infográfico direto. Um QR
+comporta no máximo **2.953 bytes**, e o infográfico, mesmo reduzido a 344 por 192
+pixels, ocupa 12.944: quatro vezes o limite. Só cabe a 86 por 48 pixels, tamanho
+em que nada se lê. A alternativa seria o código levar um endereço na internet, e
+a decisão foi não depender de nuvem. Sem endereço e sem imagem, sobrava texto, e
+para texto o anexo do slide 29 e o PNG funcionam melhor.
 
 ## O 8º Mandamento (slide 28)
 
@@ -318,7 +292,6 @@ O slide 28 traz, abaixo do mandamento:
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
 - `(21) 97920-3803`
-- o QR do resumo, à direita
 
 Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
 é o tipo de coisa que só se descobre depois.
@@ -331,7 +304,7 @@ Foram seis, e todas estão atendidas no deck. O que mudou:
 |---|---|
 | Cumprir o tempo previsto | Saíram dois slides, "Referência de mercado" e "Referências". O deck foi de 30 para **28 slides**, e o roteiro de fala fecha em 28 minutos, com folga de dois. |
 | Conhecimento produzido com a referida síntese | O slide da síntese passou a se chamar **"O conhecimento produzido"** e ganhou uma linha que declara o que o trabalho produz: um encadeamento verificável entre problema medido, base doutrinária, tecnologia aplicável e contribuição esperada. É o slide 21. |
-| Conclusão com referência e aplicabilidade para o Exército | O slide 23 ganhou um parágrafo de aplicabilidade, ancorado em **Arora, Bhatia e Sidharth (2025)**: em depósito militar a prontidão tecnológica depende de maturidade organizacional e capacitação, não só de equipamento. Fecha com o alinhamento aos **OEE 5 e 6**. |
+| Conclusão com referência e aplicabilidade para o Exército | A aplicabilidade saiu da tela do slide 23 a pedido seu e ficou **na nota de fala**: o encadeamento serve a qualquer Órgão Provedor que controle material por item; em depósito militar a prontidão tecnológica depende de maturidade organizacional e capacitação, não só de equipamento (ARORA; BHATIA; SIDHARTH, 2025); alinhamento aos OEE 5 e 6. Continua sendo dita, deixou de ser lida. |
 | Ser objetivo | Uma ideia por slide. Os objetivos específicos e o tamanho da amostra continuam fora da tela, nas notas de fala. |
 | Parcimônia ao comentar o Batalhão | Ver abaixo. |
 | Haverá civis na plateia | Siglas abertas por extenso no slide 4, glosa de "dobragem" no corpo do slide, e as notas marcam onde parar para explicar. |
