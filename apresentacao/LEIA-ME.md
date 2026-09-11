@@ -5,7 +5,9 @@ Evidências sobre IoT, *Big Data* e Inteligência Artificial no B DOMPSA
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **28 slides**, cronometrados para fechar em 28 minutos dentro dos trinta previstos.
+São **28 slides** de apresentação, cronometrados para fechar em 28 minutos dentro dos
+trinta previstos, mais o **slide 29**, um anexo com o infográfico, que só aparece se
+você for até ele.
 
 O roteiro de fala slide a slide, com a cronometragem e as perguntas prováveis, está
 em **`ROTEIRO-FALA.md`**.
@@ -242,99 +244,55 @@ margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 | 12–13 | Metodologia | Divisor · Formulário, entrevistas e análise documental |
 | 14–21 | Resultados | Divisor · O depósito (vídeo) · As quatro médias · Problemas relatados · Potencial das tecnologias · Barreiras · Entrevistas · **O conhecimento produzido** |
 | 22–27 | Conclusão | Divisor · **Resposta ao problema, com a aplicabilidade ao Exército** · POP em doze etapas · Estudo de viabilidade · Limitações · Continuidade |
-| 28 | Encerramento | 8º Mandamento, nome e contato |
+| 28 | Encerramento | 8º Mandamento, nome, contato e o QR do resumo |
+| 29 | Anexo | O quadro completo da pesquisa, fora da sequência |
 
-## O QR do slide 28
+## O QR do slide 28, e o anexo do slide 29
 
-Ao lado do contato, no slide de fecho, há um QR Code com a legenda
-**"Resumo e infográfico"**.
+Nada no deck depende de internet. O arquivo é único e fechado em si.
 
-**Um QR Code não comporta um arquivo.** O limite físico do formato é de 2.953
-bytes, e o PNG do infográfico tem 4,9 MB, quase mil e setecentas vezes mais.
-Então o código não carrega o arquivo: ele leva a uma página que mostra o
-infográfico em tamanho real e traz o resumo escrito da pesquisa embaixo.
+**O QR carrega o resumo dentro dele**, não um endereço. Quem escaneia lê isto na
+tela do próprio celular, com ou sem rede:
 
-Endereço codificado:
+```
+Transformação digital da gestão do material aeroterrestre
+Cap Jefferson Daniel Ferreira Martins, EsAO, C Log, 2026
 
-    https://claude.ai/code/artifact/65752676-3cad-4251-aaeb-982875da7688
+Achados (1 a 5): registros manuais 4,17; rastreabilidade 2,86; integração 3,28.
+Potencial: IoT 4,69; Big Data 4,62; IA 4,62.
 
-**Falta um passo, e ele é seu.** A página nasce privada. Abra o endereço acima,
-use o menu de compartilhamento e marque **"qualquer pessoa com o link"**.
-Enquanto isso não for feito, quem escanear o QR esbarra numa tela de acesso.
-Vale testar com o seu próprio celular, fora da sua conta, antes do congresso.
+Ganho: rastreabilidade, confiabilidade, integração e decisão.
+Proposta: POP em 12 etapas, em 4 fases.
 
-**O que a página tem:** o infográfico com um botão de tamanho real e arraste
-para percorrer o quadro, as quatro médias do modelo atual, o potencial das três
-tecnologias, a conclusão com a ressalva de Arora, Bhatia e Sidharth, as quatro
-fases do POP, o 8º Mandamento e o seu contato. Quem quiser guardar o infográfico
-toca e segura a imagem.
+jefferson.daniel675@gmail.com
+```
 
-**A contrapartida:** agora o QR depende de internet no celular de quem lê. Até a
-versão anterior ele carregava o resumo em texto dentro de si e funcionava sem
-rede, mas texto puro não comporta o infográfico. Se preferir voltar ao resumo
-offline, é só dizer.
+**O infográfico está dentro do arquivo**, como **slide 29**, fora dos 28 da
+sequência. Ele não aparece se você seguir a apresentação até o fim: depois do
+mandamento, pare. Para chegar nele durante o debate, **digite 29 e Enter**, ou
+abra o índice com **O**. É a tela para quando alguém pedir o quadro completo ou
+os números todos de uma vez.
 
-**Como usar na hora.** Antes de abrir para perguntas, diga que o resumo e o
-infográfico estão no QR e deixe o slide 28 na tela durante todo o debate. É
-enquanto se responde que a plateia fotografa. Quem estiver longe fotografa o
-slide e escaneia a foto depois, que funciona igual.
+Para enviar a quem pedir depois, o mesmo quadro está em
+`dados/infografico-log40.png`, em 2752 por 1536.
+
+**Uma limitação que vale saber.** Um QR Code comporta no máximo 2.953 bytes, então
+ele nunca vai carregar o infográfico, que tem megabytes. Ou o código leva texto,
+como agora, ou leva um endereço. Como a escolha foi não depender de nuvem, ele
+leva o texto, e o infográfico viaja no arquivo e no PNG.
 
 **O que foi conferido.** O código foi lido de volta por decodificador de
-referência em cinco tamanhos, do slide em tela cheia até uma janela de 640
-pixels de largura, dentro do HTML e dentro do PowerPoint, e o endereço voltou
-idêntico em todos. Como o endereço é só ASCII, some também o risco de
-codificação que apareceu antes: com o resumo em português, o gerador escolhia
-sozinho o **modo kanji** por causa dos acentos, e o texto era lido em japonês.
+referência em quatro tamanhos, do slide em tela cheia até uma janela de 800
+pixels de largura, dentro do HTML e dentro do PowerPoint, e o texto voltou
+idêntico ao original em todos.
 
-No backup em PowerPoint há um cuidado a mais: cada slide vira uma imagem JPEG, e
-a compressão borrava os quadradinhos a ponto de o código não abrir. O gerador do
-pptx sobrepõe o QR em PNG nítido, na posição exata, por cima do JPEG do slide 28.
-
-## O infográfico
-
-O infográfico que aparece na página do QR foi **refeito do zero**. O original,
-gerado por IA, tinha o texto corrompido em vários pontos, do tipo que a plateia
-nota: onde deveria ler "livros, fichas e controles paralelos no cotidiano da
-unidade" estava escrito *"lhrres. lichas a controles parelelos no cotrbiano de
-unidade"*; na faixa do POP, *"Criçção de lioho digital úsicu"*, *"Lohora digital
-em cada stape: reperamento, debraguer, vofin"* e o título "REGISTRO DE FLUXO
-**INTEORADO**".
-
-Havia um segundo problema, mais sério que os erros de escrita. A tabela do
-original comparava "INDICADOR ATUAL" com "RESPOSTA NO PROJETO-PILOTO" e mostrava
-a rastreabilidade subindo de **2,86 para 3,38**. Esse 3,38 não existe na sua
-pesquisa: não há projeto-piloto medido, e apresentar um número assim é afirmar um
-resultado que o trabalho não tem. Na versão refeita a tabela mostra só o valor
-medido hoje, e a coluna da direita diz o que a proposta endereça, em texto, sem
-prometer número.
-
-**O que mudou de conteúdo**, além da correção da escrita:
-
-- As barreiras deixaram de ser dois recortes e viraram o gráfico completo, com as
-  sete respostas, de 79,3% a 13,8%.
-- O diagnóstico passou a trazer os números medidos: 79,3% de dependência de
-  registros manuais com média 4,17, rastreabilidade 2,86 e 48,3% de lentidão na
-  atualização.
-- A faixa do POP mostra o fluxo real com leitura de etiqueta em cada etapa:
-  recebimento, dobragem, salto, manutenção e recolhimento.
-- O rodapé declara a fonte dos dados e a autoria.
-- O título da comparação virou "Informatização e transformação digital". O
-  original dizia "Comparison", em inglês, e a formulação "informatizar não é
-  transformar" foi evitada de propósito, porque é o mesmo molde de frase de efeito
-  que saiu do deck.
-
-**Arquivos:**
-
-| Arquivo | O que é |
-|---|---|
-| `dados/infografico-log40.png` | A versão refeita, 2752 × 1536, a que está na página do QR |
-| `dados/infografico-log40-original-com-erros.png` | O original gerado por IA, guardado só para referência |
-| `infografico-log40.html` | O código-fonte do infográfico refeito, com as fontes embutidas |
-
-O infográfico é HTML renderizado a 2× em 1376 × 768. Para mudar qualquer texto ou
-número, edite `infografico-log40.html` e peça o novo PNG. Tipografia em Barlow e
-Barlow Condensed, embutidas no arquivo, e a paleta veio do original: fundo
-`#eaece9`, azul-ardósia `#333a4b`, verde-sálvia `#6f7a6e` e vinho `#8f1e42`.
+Duas armadilhas apareceram no caminho e ficam registradas. A primeira: o gerador
+escolhia sozinho o modo de codificação e, por causa dos acentos, caía no **modo
+kanji**, de forma que o resumo era lido em japonês, com "Transformação" virando
+"Transforma誽o". O código é gerado em modo byte com UTF-8 declarado. A segunda: no
+backup em PowerPoint cada slide vira uma imagem JPEG, e a compressão borrava os
+quadradinhos a ponto de o código não abrir, então o gerador do pptx sobrepõe o QR
+em PNG nítido, na posição exata, por cima do JPEG do slide 28.
 
 ## O 8º Mandamento (slide 28)
 
@@ -360,7 +318,7 @@ O slide 28 traz, abaixo do mandamento:
 - **Cap Jefferson Daniel Ferreira Martins**
 - `jefferson.daniel675@gmail.com`
 - `(21) 97920-3803`
-- o QR do resumo e do infográfico, à direita
+- o QR do resumo, à direita
 
 Vale conferir os dois antes de projetar: um telefone errado num slide de congresso
 é o tipo de coisa que só se descobre depois.

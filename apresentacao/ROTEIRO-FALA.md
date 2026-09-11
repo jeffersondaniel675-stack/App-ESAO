@@ -3,7 +3,7 @@
 **Transformação digital da gestão do material aeroterrestre**
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
-Deck: `congresso.html`, **28 slides**. Duração alvo: **30 minutos**, com o roteiro
+Deck: `congresso.html`, **28 slides** mais um anexo no 29. Duração alvo: **30 minutos**, com o roteiro
 fechando em **28 minutos** para deixar folga.
 
 ---
@@ -455,16 +455,19 @@ silêncio depois do fecho é da plateia, não seu.
 **O QR do slide.** Ao lado do contato há um QR Code. Antes de abrir para
 perguntas, diga uma frase sobre ele:
 
-> O QR ao lado do meu contato abre o infográfico da pesquisa e o resumo, com os
-> números e a conclusão. Fica à disposição de quem quiser guardar.
+> O QR ao lado do meu contato traz o resumo desta apresentação, com os números e a
+> conclusão. Ele não é um link, é o texto em si, então funciona mesmo sem internet.
 
 Depois **deixe este slide na tela durante todo o debate**. É enquanto se responde
 que a plateia fotografa. Em videoconferência, avise que quem quiser pode dar zoom
 ou tirar um print, porque escanear a foto funciona igual.
 
-Confira antes: o QR leva a uma página que precisa estar compartilhada como
-"qualquer pessoa com o link". Teste com o seu celular, fora da sua conta, na
-véspera.
+### Slide 29 · Anexo, só para o debate
+
+Depois do mandamento, **pare**. O slide 29 não faz parte da sequência: é o quadro
+completo da pesquisa, guardado para o debate. Se alguém pedir o panorama ou os
+números todos de uma vez, **digite 29 e Enter** e ele aparece. Volte com a seta
+para a esquerda.
 
 ---
 
