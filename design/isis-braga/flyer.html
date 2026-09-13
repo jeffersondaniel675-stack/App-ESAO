@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Gloock';src:url('fonts/Gloock-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:'ISerif';src:url('fonts/InstrumentSerif-Italic.ttf') format('truetype');font-style:italic}
+@font-face{font-family:'WS';src:url('fonts/WorkSans-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:'PM';src:url('fonts/IBMPlexMono-Regular.ttf') format('truetype');font-weight:400}
+
+:root{
+  --paper:#F2EDE1;
+  --ink:#191714;
+  --soft:#5C554A;
+  --rule:#C9BDA6;
+  --rule-fine:#D7CDB9;
+  --accent:#7B3B2E;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1350px;overflow:hidden}
+body{background:var(--paper);-webkit-font-smoothing:antialiased;font-kerning:normal;text-rendering:geometricPrecision}
+
+.sheet{position:relative;width:1080px;height:1350px;overflow:hidden}
+.tone{position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(125% 62% at 50% -4%, rgba(255,252,244,.9) 0%, rgba(255,252,244,0) 60%),
+    radial-gradient(130% 70% at 50% 112%, rgba(122,100,66,.09) 0%, rgba(122,100,66,0) 64%)}
+.grain{position:absolute;inset:-12px;opacity:.05;mix-blend-mode:multiply;pointer-events:none}
+.keyline{position:absolute;left:38px;top:38px;right:38px;bottom:38px;border:1px solid var(--rule-fine);pointer-events:none}
+.tick{position:absolute;pointer-events:none}
+.tick i{position:absolute;background:var(--accent);opacity:.6}
+.tick i.h{width:15px;height:1px} .tick i.v{width:1px;height:15px}
+.t1{left:38px;top:38px}   .t2{left:1027px;top:38px}
+.t3{left:38px;top:1297px} .t4{left:1027px;top:1297px}
+.t2 i.h{right:0} .t2 i.v{right:0}
+.t3 i.h{bottom:0} .t3 i.v{bottom:0}
+.t4 i.h{right:0;bottom:0} .t4 i.v{right:0;bottom:0}
+
+.stage{position:absolute;inset:0;padding:94px 96px 76px;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+
+/* masthead */
+.masthead{width:100%;text-align:center}
+.name{font-family:'Gloock',serif;font-size:138px;line-height:1.0;color:var(--ink);
+  letter-spacing:-.005em;white-space:nowrap}
+.orn{display:flex;align-items:center;justify-content:center;margin:34px 0 36px}
+.orn .d{width:6px;height:6px;background:var(--accent);transform:rotate(45deg)}
+.band{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:26px 0 28px}
+.headline{font-family:'WS',sans-serif;font-weight:400;font-size:61px;line-height:1.3;
+  text-transform:uppercase;letter-spacing:.155em;color:var(--ink);
+  text-indent:.155em;white-space:nowrap}
+
+/* index */
+.index{width:100%}
+.cap{font-family:'PM',monospace;font-size:15px;letter-spacing:.38em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:24px}
+.row{display:flex;align-items:baseline;gap:30px;padding:20px 2px 19px;border-top:1px solid var(--rule-fine)}
+.row:last-of-type{border-bottom:1px solid var(--rule-fine)}
+.num{font-family:'PM',monospace;font-size:19px;color:var(--accent);letter-spacing:.05em;width:34px;flex:none}
+.svc{font-family:'WS',sans-serif;font-size:42px;line-height:1.05;color:var(--ink);letter-spacing:.002em;white-space:nowrap}
+
+/* plate + footer */
+.plate{display:flex;justify-content:center;width:100%}
+.footer{width:100%;text-align:center}
+.frules{height:5px;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);margin-bottom:30px;opacity:.9}
+.cta{font-family:'ISerif',serif;font-style:italic;font-size:50px;line-height:1.12;color:var(--ink);white-space:nowrap}
+</style></head><body>
+<div class="sheet">
+  <div class="tone"></div>
+  <svg class="grain"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#g)"/></svg>
+  <div class="keyline"></div>
+  <div class="tick t1"><i class="h"></i><i class="v"></i></div>
+  <div class="tick t2"><i class="h"></i><i class="v"></i></div>
+  <div class="tick t3"><i class="h"></i><i class="v"></i></div>
+  <div class="tick t4"><i class="h"></i><i class="v"></i></div>
+
+  <div class="stage">
+    <div class="masthead">
+      <div class="name">Isis Braga</div>
+      <div class="orn"><span class="d"></span></div>
+      <div class="band"><div class="headline">Formatação<br>Acadêmica</div></div>
+    </div>
+
+    <div class="index">
+      <div class="cap">Serviços</div>
+      <div class="row"><span class="num">01</span><span class="svc">TCC</span></div>
+      <div class="row"><span class="num">02</span><span class="svc">Projeto Mário Travassos</span></div>
+      <div class="row"><span class="num">03</span><span class="svc">Projeto de pesquisa de mestrado</span></div>
+      <div class="row"><span class="num">04</span><span class="svc">Projeto de pesquisa de TCC</span></div>
+    </div>
+
+    <div class="plate"><svg width="508" height="163" viewBox="0 0 508 163" fill="none">
+          <g stroke="#BBAE94" stroke-width="1.1" stroke-linecap="round"><path d="M254.0 24.0L237.4 23.9L220.9 23.8L204.3 23.6L187.7 23.2L171.1 22.8L154.6 22.3L138.0 21.7L121.4 21.0L104.9 20.3L88.3 19.4L71.7 18.4L55.1 17.4L38.6 16.2L22.0 15.0"/><path d="M254.0 146.0L237.4 145.9L220.9 145.8L204.3 145.6L187.7 145.2L171.1 144.8L154.6 144.3L138.0 143.7L121.4 143.0L104.9 142.3L88.3 141.4L71.7 140.4L55.1 139.4L38.6 138.2L22.0 137.0"/><path d="M22.0 15.0V137.0"/><path d="M254.0 24.0L270.6 23.9L287.1 23.8L303.7 23.6L320.3 23.2L336.9 22.8L353.4 22.3L370.0 21.7L386.6 21.0L403.1 20.3L419.7 19.4L436.3 18.4L452.9 17.4L469.4 16.2L486.0 15.0"/><path d="M254.0 146.0L270.6 145.9L287.1 145.8L303.7 145.6L320.3 145.2L336.9 144.8L353.4 144.3L370.0 143.7L386.6 143.0L403.1 142.3L419.7 141.4L436.3 140.4L452.9 139.4L469.4 138.2L486.0 137.0"/><path d="M486.0 15.0V137.0"/></g>
+          <g stroke="#C8BDA6" stroke-width="1" stroke-linecap="round"><path d="M203.0 148.1L190.9 147.9L178.8 147.6L166.7 147.3L154.6 146.9L142.5 146.5L130.4 146.0L118.3 145.5L106.2 144.9L94.1 144.3L82.0 143.6L69.9 142.9L57.8 142.1L45.7 141.3L33.6 140.5" opacity="0.28"/><path d="M203.0 150.7L190.9 150.5L178.8 150.2L166.7 149.9L154.6 149.5L142.5 149.1L130.4 148.6L118.3 148.1L106.2 147.5L94.1 146.9L82.0 146.2L69.9 145.5L57.8 144.7L45.7 143.9L33.6 143.1" opacity="0.14"/><path d="M305.0 148.1L317.1 147.9L329.2 147.6L341.3 147.3L353.4 146.9L365.5 146.5L377.6 146.0L389.7 145.5L401.8 144.9L413.9 144.3L426.0 143.6L438.1 142.9L450.2 142.1L462.3 141.3L474.4 140.5" opacity="0.28"/><path d="M305.0 150.7L317.1 150.5L329.2 150.2L341.3 149.9L353.4 149.5L365.5 149.1L377.6 148.6L389.7 148.1L401.8 147.5L413.9 146.9L426.0 146.2L438.1 145.5L450.2 144.7L462.3 143.9L474.4 143.1" opacity="0.14"/></g>
+          <g stroke="#C1B69E" stroke-width="1" stroke-linecap="round"><path d="M219.2 60.0L207.1 59.8L195.0 59.6L182.9 59.4L170.8 59.0L158.7 58.7L146.6 58.3L134.5 57.8L122.4 57.3L110.3 56.8L98.2 56.2L86.1 55.5L74.0 54.8L61.9 54.0L49.8 53.3"/><path d="M219.2 73.1L207.1 72.9L195.0 72.7L182.9 72.4L170.8 72.1L158.7 71.7L146.6 71.3L134.5 70.9L122.4 70.4L110.3 69.8L98.2 69.2L86.1 68.6L74.0 67.9L61.9 67.1L49.8 66.3"/><path d="M202.3 85.9L191.4 85.7L180.5 85.4L169.6 85.1L158.7 84.8L147.8 84.4L136.9 84.0L126.1 83.6L115.2 83.1L104.3 82.6L93.4 82.0L82.5 81.4L71.6 80.8L60.7 80.1L49.8 79.4"/><path d="M219.2 99.2L207.1 99.0L195.0 98.8L182.9 98.5L170.8 98.2L158.7 97.8L146.6 97.4L134.5 97.0L122.4 96.5L110.3 95.9L98.2 95.3L86.1 94.7L74.0 94.0L61.9 93.2L49.8 92.4"/><path d="M219.2 112.2L207.1 112.1L195.0 111.8L182.9 111.6L170.8 111.3L158.7 110.9L146.6 110.5L134.5 110.0L122.4 109.5L110.3 109.0L98.2 108.4L86.1 107.7L74.0 107.0L61.9 106.3L49.8 105.5"/><path d="M127.7 122.8L122.2 122.6L116.6 122.3L111.1 122.1L105.5 121.8L99.9 121.5L94.4 121.2L88.8 120.9L83.2 120.6L77.7 120.3L72.1 120.0L66.5 119.6L61.0 119.3L55.4 118.9L49.8 118.5"/><path d="M288.8 47.0L300.9 46.8L313.0 46.6L325.1 46.3L337.2 46.0L349.3 45.6L361.4 45.2L373.5 44.8L385.6 44.3L397.7 43.7L409.8 43.1L421.9 42.4L434.0 41.7L446.1 41.0L458.2 40.2"/><path d="M288.8 60.0L300.9 59.8L313.0 59.6L325.1 59.4L337.2 59.0L349.3 58.7L361.4 58.3L373.5 57.8L385.6 57.3L397.7 56.8L409.8 56.2L421.9 55.5L434.0 54.8L446.1 54.0L458.2 53.3"/><path d="M288.8 73.1L300.9 72.9L313.0 72.7L325.1 72.4L337.2 72.1L349.3 71.7L361.4 71.3L373.5 70.9L385.6 70.4L397.7 69.8L409.8 69.2L421.9 68.6L434.0 67.9L446.1 67.1L458.2 66.3"/><path d="M288.8 86.1L299.7 86.0L310.6 85.8L321.5 85.6L332.3 85.3L343.2 85.0L354.1 84.6L365.0 84.3L375.9 83.8L386.8 83.4L397.7 82.9L408.6 82.3L419.4 81.7L430.3 81.1L441.2 80.5"/><path d="M288.8 99.2L300.9 99.0L313.0 98.8L325.1 98.5L337.2 98.2L349.3 97.8L361.4 97.4L373.5 97.0L385.6 96.5L397.7 95.9L409.8 95.3L421.9 94.7L434.0 94.0L446.1 93.2L458.2 92.4"/><path d="M288.8 112.2L300.9 112.1L313.0 111.8L325.1 111.6L337.2 111.3L349.3 110.9L361.4 110.5L373.5 110.0L385.6 109.5L397.7 109.0L409.8 108.4L421.9 107.7L434.0 107.0L446.1 106.3L458.2 105.5"/><path d="M288.8 125.3L294.4 125.2L299.9 125.1L305.5 125.0L311.1 124.9L316.6 124.8L322.2 124.7L327.8 124.6L333.3 124.4L338.9 124.3L344.4 124.1L350.0 123.9L355.6 123.7L361.1 123.6L366.7 123.4"/></g>
+          <g stroke="#7B3B2E" stroke-width="1.6" stroke-linecap="round" opacity=".5"><path d="M143.0 45.1L136.3 44.8L129.7 44.6L123.0 44.3L116.4 44.0L109.7 43.7L103.1 43.3L96.4 43.0L89.8 42.6L83.1 42.3L76.5 41.9L69.8 41.5L63.1 41.1L56.5 40.6L49.8 40.2"/></g>
+          <g stroke="#BBAE94" stroke-width="1.1"><path d="M254.0 24.0V146.0"/></g>
+        </svg></div>
+
+    <div class="footer">
+      <div class="frules"></div>
+      <div class="cta">Solicite seu orçamento</div>
+    </div>
+  </div>
+</div>
+</body></html>
