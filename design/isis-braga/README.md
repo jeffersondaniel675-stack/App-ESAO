@@ -1,21 +1,62 @@
 # Flyer — Isis Braga · Formatação Acadêmica
 
-Peça 4:5 para redes sociais. O PNG é gerado a partir de `flyer.html`; o HTML é a
-fonte da verdade, os PNGs são build.
+Peça 4:5 para redes sociais, no vocabulário do International Typographic Style
+(escola suíça): grid modular, composição assimétrica, sem ornamento, um único acento
+cromático. O PNG é gerado a partir de `flyer.html` — o HTML é a fonte da verdade,
+os PNGs são build.
+
+Versões anteriores da peça, em outra direção estética, estão no histórico do git
+(commit `91d0a00`).
 
 ## Arquivos
 
 | Arquivo | O que é |
 | --- | --- |
-| `flyer.html` | Fonte. Página de 1080×1350 com as fontes embutidas via `@font-face`. |
+| `flyer.html` | Fonte. Página de 1080×1350, gerada por script a partir de um grid declarado. |
 | `flyer-1080x1350.png` | Versão para postagem. |
-| `flyer-2160x2700.png` | Mesma arte em 2×, para impressão ou recorte. |
-| `VELLUM-ORDER.md` | Filosofia de design que guiou a peça. |
-| `fonts/` | As quatro fontes usadas, com as licenças OFL disponíveis. |
+| `flyer-2160x2700.png` | Mesma arte em 2×. |
+| `OBJECTIVE-FIELD.md` | Filosofia de design que guiou a peça. |
+| `fonts/` | Instrument Sans (regular e bold) com a licença OFL. |
+
+## O grid
+
+Tudo deriva de quatro números, declarados uma vez:
+
+```
+margem      90px
+área útil   900px
+colunas     6, com medianiz de 24px  ->  coluna de 130px
+```
+
+As colunas caem em x = 90, 244, 398, 552, 706, 860, fechando exatamente em 990.
+Os numeradores ficam na coluna 0, o texto dos serviços começa na coluna 1, e o campo
+de barras da direita ocupa da coluna 3 até a margem. Nada é posicionado "no olho".
+
+## Alinhamento óptico
+
+As letras não são alinhadas pela caixa, e sim pela tinta. Os deslocamentos foram
+medidos no raster e aplicados um a um:
+
+| Elemento | Correção | Motivo |
+| --- | --- | --- |
+| `Isis Braga` | −5,5px | haste reta do I encosta no fio |
+| `FORMATAÇÃO` / `ACADÊMICA` | −5,0px | haste reta do F encosta; o A diagonal sobra 2,5px |
+| `Solicite seu orçamento` | −2,5px | o S redondo precisa sobrar ~1,5px |
+| `TCC` | −1,5px | o T tem espacejamento lateral menor que o P |
+| demais serviços | −4,0px | haste reta do P |
+
+Depois da correção, as hastes retas caem em 90,0 e 244,0 exatos; as letras redondas
+e diagonais sobram de propósito.
+
+## Entrelinha do título
+
+`line-height` de 1,15 não é estético, é obrigatório. Em 0,94 o circunflexo do Ê em
+ACADÊMICA colide com a cedilha do Ç em FORMATAÇÃO. Em 1,06 o respiro cai para 7,5px
+e fica sufocado. O valor atual deixa 18px de papel limpo entre as duas linhas — isso
+foi medido no raster, não estimado. Quem mexer no corpo ou na entrelinha do título
+precisa refazer essa verificação.
 
 ## Como regerar os PNGs
-
-Precisa de um Chromium headless e do Pillow:
 
 ```sh
 cd design/isis-braga
@@ -33,14 +74,13 @@ Duas armadilhas conhecidas:
 
 - Use o binário `headless_shell` ou `--headless=new`. O headless antigo do Chrome
   desconta a altura da barra do navegador da viewport e corta uns 70px do rodapé,
-  deixando de fora o fio da moldura sem dar erro.
+  sem dar erro.
 - `--allow-file-access-from-files` é obrigatório, senão as `@font-face` não carregam
   e o texto cai para a fonte do sistema.
 
 ## Texto da peça
 
-O conteúdo é fixo e foi conferido caractere a caractere. Qualquer edição precisa
-preservar os acentos:
+Conferido caractere a caractere. Qualquer edição precisa preservar os acentos:
 
 - Nome: `Isis Braga`
 - Título: `FORMATAÇÃO ACADÊMICA` (escrito em title case no HTML, convertido por
@@ -49,30 +89,20 @@ preservar os acentos:
   `Projeto de pesquisa de TCC`
 - Chamada: `Solicite seu orçamento`
 
-As quatro linhas de serviço usam `white-space: nowrap` de propósito. Se alguma for
-alterada para um texto mais longo, confira se ainda cabe na largura útil de 888px
-antes de publicar — a mais longa hoje ocupa cerca de 75%.
+As linhas de serviço usam `white-space: nowrap`. A mais longa hoje termina em x=895,
+com 95px de folga até a margem. Texto mais longo que isso estoura sem avisar — confira
+antes de publicar.
 
 Não há telefone, e-mail, @, preço, prazo ou credencial na peça. Isso foi decidido,
 não esquecido.
 
-## Tipografia e cor
+## Cor
 
-- Nome: Gloock
-- Título e serviços: Work Sans
-- Numeradores e rótulo de seção: IBM Plex Mono
-- Chamada: Instrument Serif Italic
+Papel `#F4F2ED`, tinta `#16171A`, vermelho `#D6402A`. O vermelho aparece em três
+lugares e só: a barra sob o título, os numeradores e o rótulo "Serviços". O campo de
+barras da direita é uma página de texto reduzida a notação — mesma geometria dos fios
+do resto da peça, sem virar ilustração.
 
-Papel `#F2EDE1`, tinta `#191714`, um único acento terracota `#7B3B2E` usado só nos
-numeradores, no losango, nas marcas de canto e numa linha da ilustração.
+## Licença da fonte
 
-A ilustração do livro aberto é SVG gerado por script: as linhas de texto são
-amostras da mesma curva de Bézier das bordas da página, e as linhas curtas terminam
-do lado certo em cada página — perto da lombada na página esquerda, perto da margem
-externa na direita.
-
-## Licenças das fontes
-
-Gloock, IBM Plex Mono e Work Sans vêm com o texto da OFL em `fonts/`. Instrument
-Serif também é SIL Open Font License 1.1, mas a cópia de origem não trazia o arquivo
-de licença; o texto está em https://fonts.google.com/specimen/Instrument+Serif/license
+Instrument Sans é SIL Open Font License 1.1; o texto está em `fonts/InstrumentSans-OFL.txt`.
