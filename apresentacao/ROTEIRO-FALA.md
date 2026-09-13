@@ -204,7 +204,18 @@ Batalhão. Comece justificando o recorte.*
 > data e quantidade estimadas em vez de percepção.
 
 *Se perguntarem por que não começar pela IA:* sem dado padronizado e integrado, não
-há o que o modelo aprenda. É o que o slide da conclusão diz.
+há o que o modelo aprenda. Implantar inteligência artificial sobre processos
+analógicos e despadronizados não produz decisão melhor, produz inconsistência
+automatizada.
+
+*Se sobrar tempo, ou se a pergunta vier, um argumento a mais para a IoT:* a
+contagem de saltos é uma métrica incompleta. O desgaste do conjunto não vem só de
+quantas vezes ele foi usado, vem também de calor, umidade, salitre e condição de
+armazenagem. O estudo de viabilidade do Batalhão registra isso ao pedir depósitos
+com controle de temperatura e umidade, comparando a degradação do náilon à perda
+de validade de um alimento. Sensor ambiental e registro de localização não
+substituem a inspeção do especialista, mas dão a ele evidência que hoje não
+existe.
 
 ### Slide 11 · Antecedentes no Exército — 90 segundos · 9:20
 
@@ -420,6 +431,19 @@ Diga a frase da transformação devagar. Ela ecoa o slide do problema e fecha o 
 
 *Se pedirem detalhe:* as doze etapas estão no apêndice do artigo.
 
+*Se perguntarem como se mede se o piloto deu certo,* que é a pergunta mais dura que
+pode vir, são três indicadores que o próprio piloto produz, sem depender de
+pesquisa nova:
+
+1. o **tempo entre a movimentação física e a atualização no sistema**, que hoje é o
+   intervalo em que o registro e o depósito divergem;
+2. o **percentual de itens localizados já na primeira consulta**;
+3. o **volume de divergências** entre a base digital e o estoque físico no
+   inventário.
+
+Os três medem exatamente os achados da pesquisa, a lentidão de atualização, a
+rastreabilidade e a defasagem de estoque. Por isso fecham o arco.
+
 ### Slide 25 · Estudo de viabilidade — 110 segundos · 24:50
 
 **Parcimônia: este slide é sobre o mérito do Batalhão, e o Comandante está na sala.
@@ -525,6 +549,12 @@ questão de dizer na entrevista.
 **Isso vale só para o material aeroterrestre?**
 Não. O encadeamento serve a qualquer Órgão Provedor que controle material por item,
 com vida útil e histórico. Muda a norma técnica, não muda a lógica.
+
+**Como vocês vão saber se o piloto deu certo?**
+Por três indicadores que o próprio piloto produz: o tempo entre a movimentação
+física e a atualização no sistema, o percentual de itens localizados na primeira
+consulta e o volume de divergências entre a base digital e o estoque físico. São os
+mesmos achados da pesquisa, agora medidos do outro lado.
 
 **Como isso se alinha ao planejamento estratégico do Exército?**
 Ao Objetivo Estratégico nº 24, aperfeiçoar o Sistema Logístico Militar Terrestre, e

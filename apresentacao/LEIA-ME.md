@@ -263,6 +263,65 @@ e a tabela de bolso foram recalculadas, e o plano de corte continua valendo: se 
 21 minutos você ainda estiver no bloco 04, os slides 17 e 18 viram uma frase e
 devolvem dois minutos.
 
+## O que veio do "Tactical Digital Thread" (13/09)
+
+Você enviou um deck de 16 telas gerado no NotebookLM. **Confiro primeiro o que
+importa: os números estão certos.** Ao contrário do infográfico anterior, este não
+inventou nada. Conferi 3,21, 4,17, 2,86, 79,3%, 55,2%, 48,3%, 51,7%, 65,5%, 92,6%,
+85,2%, 74,1% e 62,1% contra a sua base, e todos batem.
+
+**Três coisas entraram, todas em nota de fala, para não custar tempo de tela:**
+
+1. **Como se mede se o piloto deu certo** (nota do slide 24). O deck do NotebookLM
+   traz uma matriz com uma terceira coluna que faltava na sua: o indicador. Três
+   medidas que o próprio piloto produz, sem pesquisa nova: tempo entre a
+   movimentação física e a atualização no sistema, percentual de itens localizados
+   na primeira consulta, e volume de divergências entre base digital e estoque
+   físico. É a resposta para a pergunta mais dura que pode vir, e entrou também no
+   bloco de perguntas prováveis do roteiro.
+2. **A frase da IA prematura** (nota do slide 23): implantar inteligência
+   artificial sobre processos analógicos e despadronizados não produz decisão
+   melhor, produz inconsistência automatizada. É a formulação mais afiada da sua
+   própria conclusão de que a transformação não começa pela IA.
+3. **A degradação invisível** (nota do slide 10): a contagem de saltos é métrica
+   incompleta, porque calor, umidade, salitre e armazenagem também consomem vida
+   útil. Isso amplia o argumento da IoT, de identificar para também sentir o
+   ambiente, e é sustentado pelo seu próprio EVTEA, que pede depósitos com controle
+   de temperatura e umidade e compara a degradação do náilon à perda de validade de
+   um alimento.
+
+**Duas coisas para não copiar de lá, porque estão erradas.** Na tela do custo
+operacional, o deck rotula os 55,2% como "defasagem constante entre a situação
+física e a informação disponível". Esse número é outra coisa: é o percentual que
+apontou o controle de estoque como a **etapa mais difícil**, e não a frequência de
+defasagem. Na mesma tela, o 51,7% de risco de erro humano aparece seguido de
+"(citado por 65,5%)", o que faz um número parecer qualificar o outro, quando os
+65,5% são do excesso de controles manuais. Atribuir a um número um sentido que ele
+não tem é o tipo de coisa que um parecerista pega.
+
+**O que ficou de fora, e por quê.** A capa traz a palavra "Title:" impressa e
+rótulos técnicos espelhados e sem sentido. Várias telas têm etiquetas em inglês no
+meio do português, como "Heat icon", "Water dropp", "Tension Bar" e "Logbooks". A
+tela final repete "conduzida conduzida". O quadro do efeito multiplicador usa nomes
+de OM que parecem inventados como enchimento ("Depósito a", "Depósito A", "Base Av"
+repetidos). E a tela da comparação usa o título "Informatização não é Transformação
+Digital", que é justamente o molde de frase que saiu do seu deck.
+
+**Três ideias boas que não apliquei, porque mexem em slide e no relógio**, e a
+decisão é sua:
+
+- **A escada de maturidade**: mostrar IoT, Big Data e IA como três degraus
+  numerados, identificar, integrar e prever, em vez de três cartões lado a lado.
+  Tornaria a ordem visível no slide 10, que hoje só é dita.
+- **Os três pilares das entrevistas**: nomear o Ten Azevedo como o operacional, o
+  Cel Lana como o desenvolvedor e o Prof. Santos como o acadêmico, no slide 20. É
+  ganho de narrativa, sem custo de tela.
+- **Responsável e evidência por etapa do POP**: o deck do NotebookLM atribui cada
+  etapa a um setor e nomeia a evidência que ela produz. Antes de usar, eu
+  precisaria que você confirmasse os nomes das frações.
+
+O PDF original está guardado em `dados/tactical-digital-thread-notebooklm.pdf`.
+
 ## Mapa dos slides
 
 | # | Bloco | Slides |
