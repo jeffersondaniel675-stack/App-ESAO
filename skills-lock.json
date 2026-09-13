@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "superimage-generator": {
+      "source": "bluebagai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/superimage-generator/SKILL.md",
+      "computedHash": "79c7013848624cd6edb7e5bec7633d69cf145ed25ee0a2a24d4d6e05af95c9a2"
+    }
+  }
+}
