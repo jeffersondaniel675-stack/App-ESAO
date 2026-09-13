@@ -4,7 +4,8 @@
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
 Deck: `congresso.html`, **28 slides**. Duração alvo: **30 minutos**, com o roteiro
-fechando em **28 minutos** para deixar folga.
+fechando em **29 minutos**. A folga é de um minuto, então o plano de corte abaixo
+importa.
 
 ---
 
@@ -12,7 +13,7 @@ fechando em **28 minutos** para deixar folga.
 
 | Recomendação | Onde ela aparece |
 |---|---|
-| Cumprir o tempo previsto | Cronometragem slide a slide abaixo; o deck perdeu 2 slides e fecha em 28 min |
+| Cumprir o tempo previsto | Cronometragem slide a slide abaixo; o deck perdeu 2 slides e fecha em 29 min, com plano de corte se atrasar |
 | Conhecimento produzido com a referida síntese | **Slide 21**, que agora se chama "O conhecimento produzido" e declara em voz alta o que o trabalho produz |
 | Conclusão com referência e aplicabilidade para o Exército | **Slide 23**, com a citação de Arora, Bhatia e Sidharth (2025) e o alinhamento aos OEE 5 e 6 |
 | Ser objetivo | Uma ideia por slide; os objetivos específicos e a amostra ficaram só na fala, se perguntarem |
@@ -31,7 +32,7 @@ fechando em **28 minutos** para deixar folga.
    próprio deck e a plateia lê tudo. Deixe este arquivo aberto no celular, num
    tablet ou num segundo monitor que não esteja sendo compartilhado.
 4. Aperte **`R`** no início para zerar o cronômetro do rodapé. Ele fica amarelo aos
-   35 minutos e vermelho aos 40. Se aos 20 minutos você ainda estiver antes do
+   35 minutos e vermelho aos 40. Se aos 21 minutos você ainda estiver antes do
    slide 21, acelere os blocos 02 e 03.
 5. Teste o som do vídeo do slide 15 antes: no compartilhamento, marque a opção
    **"compartilhar áudio da guia"**. Se esquecer, o vídeo roda mudo e não faz falta,
@@ -138,40 +139,74 @@ usa Logística 4.0 e avaliar a viabilidade no B DOMPSA.
 
 ---
 
-## Bloco 02 · Referencial teórico — slides 8 a 11 · até 9min50
+## Bloco 02 · Referencial teórico — slides 8 a 11 · até 10min50
 
 ### Slide 8 · Divisor — 10 segundos · 5:40
 
 > Estabelecido o problema, vejamos o que já se sabe.
 
-### Slide 9 · Evolução do campo — 60 segundos · 5:50
+### Slide 9 · Evolução do campo — 90 segundos · 5:50
 
-> A logística nasce militar, na campanha. Depois vira pilar de competitividade no
-> meio empresarial. A Indústria 4.0 traz os sistemas ciberfísicos e o dado em tempo
-> real. A Logística 4.0 fecha o ciclo, com decisão orientada por dado. E o
-> horizonte é a sustentação preditiva, antecipar a demanda antes que ela apareça.
+*Percorra a linha da esquerda para a direita. O argumento é que a Logística 4.0 não
+caiu de paraquedas na doutrina: ela é o ponto atual de uma evolução, e a logística
+militar está na origem dela.*
+
+> **Origem.** A logística nasce militar, na campanha, para sustentar a tropa em
+> movimento. Transporte, suprimento e manutenção são funções de guerra antes de
+> serem funções de empresa.
 >
-> Nessa linha, o B DOMPSA está entre o registro manual e a informatização parcial.
-
-### Slide 10 · As três tecnologias — 90 segundos · 6:50
-
-*Uma frase por tecnologia, cada uma amarrada a um problema concreto.*
-
-> Das dez tecnologias que a literatura associa à Logística 4.0, o estudo recorta
-> três, e escolhe as três que respondem aos problemas que o Batalhão tem.
+> **Difusão.** O meio empresarial adota a mesma lógica e passa a medi-la em custo e
+> em prazo. É quando ela vira pilar de competitividade.
 >
-> Internet das Coisas: o material informa onde está, em que condição e há quanto
-> tempo. No caso concreto, é o paraquedas com etiqueta lida na própria etapa de
-> trabalho.
+> **Indústria 4.0.** Aqui o salto não é de máquina, é de informação. Máquina,
+> produto e sistema passam a trocar dados em tempo real, por sensores e automação.
+> Öztemel e Gursev descrevem esse estágio como sistemas ciberfísicos.
 >
-> Big Data: registros hoje dispersos em livro, ficha e planilha viram uma base só,
-> com padrão visível. É o histórico de saltos deixando de ser um conjunto de
-> cadernos.
+> **Logística 4.0.** A mesma lógica aplicada ao fluxo do material. O item informa
+> onde está e em que estado, e a decisão deixa de depender de alguém ir olhar.
 >
-> Inteligência Artificial: a decisão deixa de ser empírica. Prever a demanda e
-> priorizar manutenção e reposição a partir do histórico de uso.
+> **Horizonte.** A sustentação preditiva, em que o histórico antecipa a demanda e a
+> manutenção antes de a falta aparecer. É onde o campo caminha, não onde ele está.
+>
+> Nessa linha, o Batalhão opera hoje entre o registro manual e a informatização
+> parcial: a norma está consolidada e a execução é rigorosa, mas o dado ainda não
+> circula sozinho.
 
-### Slide 11 · Antecedentes no Exército — 90 segundos · 8:20
+*A última frase está escrita no slide e é a ponte para o bloco seguinte. Diga-a
+olhando para a plateia, não para a tela.*
+
+### Slide 10 · As três tecnologias — 2 minutos · 7:20
+
+*Um cartão de cada vez, cada tecnologia amarrada a um problema concreto do
+Batalhão. Comece justificando o recorte.*
+
+> A literatura associa dez tecnologias à Logística 4.0. O estudo recorta três, e
+> recorta justamente as que respondem aos problemas que a pesquisa mediu:
+> identificar o item, integrar a informação e apoiar a decisão. As outras sete
+> existem, mas não respondem a este problema.
+>
+> **Internet das Coisas.** É a mais concreta, e é por ela que a plateia entra no
+> assunto. Uma etiqueta de QR Code ou RFID no conjunto e um leitor na etapa de
+> trabalho. O paraquedas passa a ser lido no recebimento, na dobragem, na
+> manutenção, e cada leitura já grava onde ele está, em que condição e há quanto
+> tempo. Ninguém digita, e é por isso que o erro de lançamento cai. Foi a
+> tecnologia com a maior média da pesquisa, 4,69.
+>
+> **Big Data.** Aqui o cuidado é não deixar virar palavra vazia. Não é volume de
+> dado: é o que hoje está repartido entre livro, ficha e planilha reunido numa base
+> só. Com o histórico junto, aparece o padrão que ninguém enxerga em três cadernos
+> separados: consumo por tipo de paraquedas, tempo entre inspeções, item que mais
+> falha.
+>
+> **Inteligência artificial.** E convém dizer que ela é a última da fila, não a
+> primeira, porque depende do histórico que as duas anteriores produzem. Sobre esse
+> histórico, o modelo projeta a demanda e a fila de manutenção, e a reposição ganha
+> data e quantidade estimadas em vez de percepção.
+
+*Se perguntarem por que não começar pela IA:* sem dado padronizado e integrado, não
+há o que o modelo aprenda. É o que o slide da conclusão diz.
+
+### Slide 11 · Antecedentes no Exército — 90 segundos · 9:20
 
 > O Exército já tentou. O SISCAET, Sistema de Controle Aeroterrestre, no COPESP,
 > cadastra paraquedas por número de série, guarda histórico de uso e alerta vida
@@ -191,15 +226,15 @@ usa Logística 4.0 e avaliar a viabilidade no B DOMPSA.
 
 ---
 
-## Bloco 03 · Metodologia — slides 12 e 13 · até 11min
+## Bloco 03 · Metodologia — slides 12 e 13 · até 12min
 
-### Slide 12 · Divisor — 10 segundos · 9:50
+### Slide 12 · Divisor — 10 segundos · 10:50
 
 > Como a pesquisa foi construída.
 
 Ritmo mais lento a partir daqui, precisão nos termos.
 
-### Slide 13 · Metodologia — 60 segundos · 10:00
+### Slide 13 · Metodologia — 60 segundos · 11:00
 
 > Três fontes. Um formulário eletrônico aplicado ao efetivo que opera o material,
 > com escala de 1 a 5 e questões abertas. Entrevistas com três especialistas.
@@ -214,27 +249,32 @@ achado é o perfil de quem respondeu, gente que opera o material todo dia.
 
 ---
 
-## Bloco 04 · Resultados — slides 14 a 21 · até 20min
+## Bloco 04 · Resultados — slides 14 a 21 · até 21min10
 
-### Slide 14 · Divisor — 10 segundos · 11:00
+### Slide 14 · Divisor — 10 segundos · 12:00
 
 > Vamos aos resultados.
 
 Suba a energia da voz aqui.
 
-### Slide 15 · Antes dos números — 30 segundos · 11:10
+### Slide 15 · Antes dos números — 40 segundos · 12:10
 
 *Deixe o vídeo correr e fale por cima.*
 
 > Este é o depósito. Cada conjunto que vocês estão vendo tem número, vida útil,
 > contagem de saltos e histórico próprios. O registro de tudo isso, no vídeo e na
-> rotina, é feito em prancheta e ficha. É exatamente o que os quatro números do
-> próximo slide medem.
+> rotina, é feito em prancheta e ficha no depósito, e em planilha eletrônica no
+> setor. A consolidação entre os três é manual. É exatamente o que os quatro
+> números do próximo slide medem.
+
+*Cite os três instrumentos, porque a plateia tende a imaginar só papel. A planilha
+eletrônica já é meio digital, e é por isso mesmo que ela ilustra a diferença entre
+informatizar e transformar: guarda o dado, mas não conversa com os outros dois.*
 
 *Se o vídeo não abrir na videoconferência, o quadro de fundo mostra a mesma cena e
 o texto continua valendo.*
 
-### Slide 16 · Avaliação do modelo atual — 90 segundos · 11:40
+### Slide 16 · Avaliação do modelo atual — 90 segundos · 12:50
 
 *Mostre os quatro números e fique três segundos em silêncio.*
 
@@ -247,7 +287,7 @@ o texto continua valendo.*
 > Lidos juntos, dizem o seguinte: o controle existe e funciona, mas convive com
 > lentidão de atualização, registro manual e baixa rastreabilidade.
 
-### Slide 17 · Problemas relatados — 70 segundos · 13:10
+### Slide 17 · Problemas relatados — 70 segundos · 14:20
 
 > Na questão de múltipla escolha sobre os principais problemas, o excesso de
 > controles manuais foi o mais citado, com 65,5 por cento. Depois vêm risco de erro
@@ -256,7 +296,7 @@ o texto continua valendo.*
 >
 > Os cinco primeiros são sintomas do mesmo problema: a informação não circula.
 
-### Slide 18 · Potencial das tecnologias — 60 segundos · 14:20
+### Slide 18 · Potencial das tecnologias — 60 segundos · 15:30
 
 > Quanto ao potencial das três tecnologias, as médias são praticamente iguais:
 > 4,69 para IoT, 4,62 para Big Data e 4,62 para Inteligência Artificial. Na
@@ -266,7 +306,7 @@ o texto continua valendo.*
 > Isso importa por um motivo prático: adoção de tecnologia costuma falhar por
 > resistência das pessoas, e aqui a resistência não aparece como barreira principal.
 
-### Slide 19 · Barreiras — 80 segundos · 15:20
+### Slide 19 · Barreiras — 80 segundos · 16:30
 
 *Não passe rápido. Reconhecer as barreiras dá credibilidade à proposta gradual.*
 
@@ -281,7 +321,7 @@ o texto continua valendo.*
 > adoção não depende só de software e hardware, exige planejamento, governança,
 > qualificação e alinhamento estratégico.
 
-### Slide 20 · Entrevistas — 100 segundos · 16:40
+### Slide 20 · Entrevistas — 100 segundos · 17:50
 
 *Uma frase por cartão, e a convergência no fim.*
 
@@ -300,7 +340,7 @@ o texto continua valendo.*
 > Os três apontam a mesma carência: uma base única de dados do material, alimentada
 > na própria etapa de trabalho.
 
-### Slide 21 · O conhecimento produzido — 100 segundos · 18:20
+### Slide 21 · O conhecimento produzido — 100 segundos · 19:30
 
 **Este é o slide que o General pediu. Percorra linha por linha, sem ler literalmente.**
 
@@ -327,13 +367,13 @@ o texto continua valendo.*
 
 ---
 
-## Bloco 05 · Conclusão — slides 22 a 28 · até 28min
+## Bloco 05 · Conclusão — slides 22 a 28 · até 29min10
 
-### Slide 22 · Divisor — 10 segundos · 20:00
+### Slide 22 · Divisor — 10 segundos · 21:10
 
 > Volto agora às perguntas do início, com resposta.
 
-### Slide 23 · Resposta ao problema — 110 segundos · 20:10
+### Slide 23 · Resposta ao problema — 110 segundos · 21:20
 
 **Aqui entram a referência e a aplicabilidade que o General pediu.** Ela não está
 mais escrita na tela, então é falada. Não pule este trecho.
@@ -357,7 +397,7 @@ mais escrita na tela, então é falada. Não pule este trecho.
 
 Diga a frase da transformação devagar. Ela ecoa o slide do problema e fecha o arco.
 
-### Slide 24 · Contribuição prática — 100 segundos · 22:00
+### Slide 24 · Contribuição prática — 100 segundos · 23:10
 
 *Comece pelo desenho de cima, depois as quatro fases.*
 
@@ -380,7 +420,7 @@ Diga a frase da transformação devagar. Ela ecoa o slide do problema e fecha o 
 
 *Se pedirem detalhe:* as doze etapas estão no apêndice do artigo.
 
-### Slide 25 · Estudo de viabilidade — 110 segundos · 23:40
+### Slide 25 · Estudo de viabilidade — 110 segundos · 24:50
 
 **Parcimônia: este slide é sobre o mérito do Batalhão, e o Comandante está na sala.
 Trate o estudo como conquista da unidade, não como resultado da sua pesquisa.**
@@ -408,7 +448,7 @@ Trate o estudo como conquista da unidade, não como resultado da sua pesquisa.**
 2026, cujo parecer é pela viabilidade. A aprovação superior ainda não consta do
 documento, e convém dizer isso se a pergunta vier.
 
-### Slide 26 · Limitações — 60 segundos · 25:30
+### Slide 26 · Limitações — 60 segundos · 26:40
 
 *Assuma as limitações com naturalidade.*
 
@@ -422,7 +462,7 @@ documento, e convém dizer isso se a pergunta vier.
 > rede nem energia garantidas. Um sistema que só funciona com rede estável não
 > serve. Ou ele trabalha off-line e sincroniza depois, ou não passa do depósito.
 
-### Slide 27 · Continuidade — 50 segundos · 26:30
+### Slide 27 · Continuidade — 50 segundos · 27:40
 
 > Medido o problema do registro, o passo seguinte é a previsão de demanda. Já rodei
 > um piloto sobre os insumos de 2022 a 2026, e ele agora vira projeto de pesquisa e
@@ -434,7 +474,7 @@ a média histórica, e é exatamente por isso que o estudo se justifica. Falta a
 histórico a variável que explica o salto de demanda, e essa variável é a que o
 registro rastreado passaria a produzir.
 
-### Slide 28 · Fecho — 40 segundos · 27:20
+### Slide 28 · Fecho — 40 segundos · 28:30
 
 *Leia devagar e deixe o silêncio trabalhar.*
 
@@ -497,13 +537,14 @@ aos Objetivos Estratégicos 5 e 6.
 | Marca | Onde você deve estar |
 |---|---|
 | 5 min | terminando o bloco 01, no slide 7 |
-| 10 min | terminando o bloco 02, no slide 11 |
-| 12 min | entrando nos resultados, slide 16 |
-| 20 min | terminando o slide 21 e abrindo a conclusão |
-| 25 min | terminando o slide 25 |
-| 28 min | slide 28, fecho |
+| 9 min | terminando a linha do tempo, entrando no slide 10 |
+| 11 min | terminando o bloco 02, no slide 11 |
+| 13 min | entrando nos resultados, slide 16 |
+| 21 min | terminando o slide 21 e abrindo a conclusão |
+| 27 min | terminando o slide 25 |
+| 29 min | slide 28, fecho |
 
-Se aos 20 minutos você ainda estiver no bloco 04, corte o slide 17 (problemas
+Se aos 21 minutos você ainda estiver no bloco 04, corte o slide 17 (problemas
 relatados) e o slide 18 (potencial), resumindo os dois em uma frase: "os problemas
 mais citados foram excesso de controle manual e risco de erro humano, e o potencial
 atribuído às três tecnologias ficou entre 4,6 e 4,7". Isso devolve dois minutos sem

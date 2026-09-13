@@ -5,7 +5,9 @@ Evidências sobre IoT, *Big Data* e Inteligência Artificial no B DOMPSA
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
 Arquivo único, offline, para projetar no navegador: **`congresso.html`**.
-São **28 slides**, cronometrados para fechar em 28 minutos dentro dos trinta previstos.
+São **28 slides**, cronometrados para fechar em 29 minutos dentro dos trinta
+previstos. A folga é de um minuto, e o roteiro de fala traz o plano de corte caso o
+tempo aperte.
 
 O roteiro de fala slide a slide, com a cronometragem e as perguntas prováveis, está
 em **`ROTEIRO-FALA.md`**.
@@ -231,6 +233,35 @@ corrija no `congresso.html` e me peça o .pptx de novo.
 
 `Ctrl + P` (ou `Cmd + P`) → destino **Salvar como PDF** → layout **paisagem**,
 margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
+
+## Os três slides que ficaram mais explicativos (13/09)
+
+A pedido seu, para dar mais apoio na hora de falar:
+
+**Slide 9, a linha do tempo.** Cada etapa deixou de ser uma frase de quatro
+palavras e passou a explicar o que muda ali. Entrou também, no corpo do slide, a
+frase que antes só existia na nota: nessa linha, o Batalhão opera entre o registro
+manual e a informatização parcial, com a norma consolidada e a execução rigorosa.
+A nota de fala virou um roteiro etapa por etapa, com o argumento de abertura, que
+a Logística 4.0 é o ponto atual de uma evolução que começa na logística militar.
+
+**Slide 10, as três tecnologias.** Cada cartão passou a amarrar a tecnologia a um
+problema concreto do Batalhão: a etiqueta lida na etapa de trabalho, os três
+instrumentos de registro virando uma base só, o histórico virando projeção de
+demanda. A nota inclui a justificativa do recorte de dez para três, a média 4,69 da
+IoT e a resposta para a pergunta mais provável, por que não começar pela IA.
+
+**Slide 15, o registro no depósito.** Passou a citar os três instrumentos, e não
+dois: prancheta e ficha no depósito, planilha eletrônica no setor, com a
+consolidação manual entre eles. A nota explica por que isso importa, já que a
+planilha eletrônica é o melhor exemplo da diferença entre informatizar e
+transformar: ela guarda o dado, mas não conversa com os outros dois.
+
+**O custo disso no relógio:** a apresentação passou de 28 para **29 minutos**. Os
+slides 9, 10 e 15 ganharam 30, 30 e 10 segundos. Todas as marcas do roteiro de fala
+e a tabela de bolso foram recalculadas, e o plano de corte continua valendo: se aos
+21 minutos você ainda estiver no bloco 04, os slides 17 e 18 viram uma frase e
+devolvem dois minutos.
 
 ## Mapa dos slides
 
