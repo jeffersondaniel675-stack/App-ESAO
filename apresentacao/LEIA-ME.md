@@ -234,6 +234,22 @@ corrija no `congresso.html` e me peça o .pptx de novo.
 `Ctrl + P` (ou `Cmd + P`) → destino **Salvar como PDF** → layout **paisagem**,
 margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 
+## O roteiro de fala em PDF
+
+Além do `ROTEIRO-FALA.md`, há agora o **`ROTEIRO-FALA.pdf`**, 16 páginas em A4,
+diagramado para uso em púlpito e para imprimir:
+
+- a **marca de tempo** e o número do slide ficam numa coluna à esquerda, em
+  destaque, para você se localizar de relance;
+- **o que se fala em voz alta** vem em corpo maior, com um filete vinho ao lado;
+- as **direções de cena** vêm menores e em itálico, para não se confundirem com a
+  fala;
+- os **avisos** vêm em caixa, e nenhum deles se parte entre páginas;
+- cada bloco começa em página nova, e o rodapé numera as páginas.
+
+Ele é gerado a partir do próprio `ROTEIRO-FALA.md`, então o Markdown continua
+sendo a fonte da verdade: quando o roteiro mudar, o PDF é regerado a partir dele.
+
 ## Os três slides que ficaram mais explicativos (13/09)
 
 A pedido seu, para dar mais apoio na hora de falar:
