@@ -234,10 +234,36 @@ corrija no `congresso.html` e me peça o .pptx de novo.
 `Ctrl + P` (ou `Cmd + P`) → destino **Salvar como PDF** → layout **paisagem**,
 margens **nenhuma**, marcar **"Gráficos de fundo"**. Sai um slide por página.
 
+## A palestra é presencial (14/09)
+
+O roteiro de fala tinha nascido para a **videoconferência do ensaio com o General**
+e assumia tela compartilhada. A palestra do congresso é **presencial**, e todo o
+preparo foi reescrito.
+
+**O que saiu:** compartilhar a janela em vez da tela inteira, marcar "compartilhar
+áudio da guia", o cumprimento ao Comandante "na chamada", o aviso de dar zoom ou
+print no QR, e o ritmo de videoconferência.
+
+**O que entrou:** chegar cedo e testar a projeção, levar o `congresso-backup.pptx` e
+um PDF do deck num pendrive, porque o auditório pode exigir a máquina da casa;
+qualquer apresentador sem fio serve, já que o deck avança com seta, espaço e
+*Page Down*; o vídeo do slide 15 é mudo de propósito, então não há som a configurar;
+projetar a voz para a última fileira; olhar para a plateia e não para o telão, que
+fica às suas costas; repetir em voz alta a pergunta antes de responder, porque em
+auditório boa parte da sala não escuta quem perguntou; e o roteiro impresso em
+folhas soltas, nunca grampeado.
+
+**O que continuou valendo:** não apertar `N` durante a apresentação. Antes o motivo
+era a tela compartilhada; agora é o telão. As notas abrem por cima do próprio deck,
+e a plateia lê tudo. É exatamente para isso que existe o roteiro impresso.
+
+O deck em si não mudou: as notas de fala dentro do `congresso.html` nunca
+mencionaram videoconferência.
+
 ## O roteiro de fala em PDF
 
 Além do `ROTEIRO-FALA.md`, há agora o **`ROTEIRO-FALA.pdf`**, 16 páginas em A4,
-diagramado para uso em púlpito e para imprimir:
+diagramado para uso em púlpito e para imprimir, já na versão presencial:
 
 - a **marca de tempo** e o número do slide ficam numa coluna à esquerda, em
   destaque, para você se localizar de relance;

@@ -3,9 +3,10 @@
 **Transformação digital da gestão do material aeroterrestre**
 Cap Jefferson Daniel Ferreira Martins · EsAO, Curso de Logística · 2026
 
-Deck: `congresso.html`, **28 slides**. Duração alvo: **30 minutos**, com o roteiro
-fechando em **29 minutos**. A folga é de um minuto, então o plano de corte abaixo
-importa.
+Palestra **presencial**. Deck: `congresso.html`, **28 slides**. Duração alvo: **30
+minutos**, com o roteiro
+fechando em **29 minutos**. A folga é de um minuto, então o plano de corte no fim
+deste roteiro importa.
 
 ---
 
@@ -22,31 +23,51 @@ importa.
 
 ---
 
-## Antes de entrar na sala virtual
+## Antes de subir ao palco
 
-1. Abra `congresso.html` no Chrome ou no Edge, aperte **F** para tela cheia e **só
-   depois** compartilhe a tela.
-2. **Compartilhe a janela do navegador, não a tela inteira.** Assim ninguém vê
-   notificação, e-mail ou a barra de tarefas.
-3. **Não aperte `N` enquanto estiver compartilhando.** As notas abrem por cima do
-   próprio deck e a plateia lê tudo. Deixe este arquivo aberto no celular, num
-   tablet ou num segundo monitor que não esteja sendo compartilhado.
-4. Aperte **`R`** no início para zerar o cronômetro do rodapé. Ele fica amarelo aos
+A palestra é **presencial**. O que decide aqui não é conexão, é o computador do
+auditório e o que você leva na mão.
+
+1. **Chegue com antecedência e teste a projeção.** Abra `congresso.html` no Chrome
+   ou no Edge e aperte **F** para tela cheia. O deck se ajusta sozinho a qualquer
+   proporção de tela, mas convém ver com os próprios olhos, sobretudo o tamanho dos
+   números nos slides 16 a 19.
+2. **Leve os dois formatos, num pendrive.** Se o auditório exigir a máquina da casa
+   e ela não abrir um HTML local, ou se pedirem o arquivo com antecedência, o
+   `congresso-backup.pptx` resolve, com as mesmas 28 telas e as mesmas transições.
+   Leve também um PDF do deck, feito com Ctrl+P, como terceira linha de defesa.
+3. **Não aperte `N` durante a apresentação.** As notas abrem por cima do próprio
+   deck, e no telão a plateia lê tudo. Em apresentação presencial elas não servem:
+   é para isso que existe este roteiro impresso.
+4. **Qualquer apresentador sem fio serve.** O deck avança com seta para a direita,
+   espaço ou *Page Down*, e volta com seta para a esquerda, que é o que esses
+   controles enviam. Teste o alcance antes.
+5. Aperte **`R`** ao começar para zerar o cronômetro do rodapé. Ele fica amarelo aos
    35 minutos e vermelho aos 40. Se aos 21 minutos você ainda estiver antes do
    slide 21, acelere os blocos 02 e 03.
-5. Teste o som do vídeo do slide 15 antes: no compartilhamento, marque a opção
-   **"compartilhar áudio da guia"**. Se esquecer, o vídeo roda mudo e não faz falta,
-   porque a narração é sua.
-6. Deixe o celular no silencioso e um copo d'água à mão. Em videoconferência a voz
-   seca mais rápido.
+6. **O vídeo do slide 15 é mudo**, de propósito. Não há som a configurar, e a
+   narração é sua. Se o computador do auditório não o reproduzir, o quadro ao fundo
+   mostra a mesma cena e o texto continua valendo.
+7. Celular no silencioso, água ao alcance, e o roteiro impresso numa pilha de folhas
+   soltas, nunca grampeado: vira a página sem ruído e sem perder o lugar.
 
-**Ritmo de videoconferência:** fale um pouco mais devagar do que falaria numa sala
-e faça pausas maiores depois de cada número. O áudio comprime a fala e a plateia,
-sem enxergar sua expressão, precisa do silêncio para acompanhar.
+**Ritmo em auditório:** projete a voz para a última fileira, não para a primeira. Se
+houver microfone, fale a um palmo dele e não se afaste ao virar a cabeça para o
+telão. Faça pausas maiores depois de cada número, porque em sala grande o som
+demora a assentar.
+
+**Para onde olhar.** O telão está atrás de você: olhe para ele o mínimo possível, só
+para conferir que o slide certo entrou. Quem precisa da sua atenção é a plateia, e
+na primeira fileira estarão o General e o Comandante do Batalhão. Um olhar de
+relance para o slide, o resto do tempo para as pessoas.
 
 **Modo foco:** por padrão as setas revelam os tópicos um a um. É o que você quer.
 Se algum slide travar, aperte **`E`** para desligar o modo foco e a seta volta a
 trocar de slide inteiro.
+
+**No debate.** Repita em voz alta a pergunta antes de responder: em auditório, boa
+parte da plateia não escuta quem perguntou, e a repetição ainda lhe dá dois segundos
+para organizar a resposta.
 
 ---
 
@@ -63,7 +84,7 @@ trocar de slide inteiro.
 > Começo com a frase que orientou o trabalho: um paraquedas mal controlado não é um
 > problema administrativo, é um problema de segurança de quem salta.
 
-Cumprimente o Comandante do B DOMPSA pelo nome, se ele já estiver na chamada.
+Cumprimente o Comandante do B DOMPSA pelo nome, se ele estiver na plateia.
 
 ### Slide 2 · Roteiro — 30 segundos · 0:40
 
@@ -270,7 +291,7 @@ Suba a energia da voz aqui.
 
 ### Slide 15 · Antes dos números — 40 segundos · 12:10
 
-*Deixe o vídeo correr e fale por cima.*
+*Deixe o vídeo correr e fale por cima, sem se virar para o telão.*
 
 > Este é o depósito. Cada conjunto que vocês estão vendo tem número, vida útil,
 > contagem de saltos e histórico próprios. O registro de tudo isso, no vídeo e na
@@ -282,8 +303,8 @@ Suba a energia da voz aqui.
 eletrônica já é meio digital, e é por isso mesmo que ela ilustra a diferença entre
 informatizar e transformar: guarda o dado, mas não conversa com os outros dois.*
 
-*Se o vídeo não abrir na videoconferência, o quadro de fundo mostra a mesma cena e
-o texto continua valendo.*
+*Se o computador do auditório não reproduzir o vídeo, o quadro ao fundo mostra a
+mesma cena e o texto continua valendo.*
 
 ### Slide 16 · Avaliação do modelo atual — 90 segundos · 12:50
 
@@ -514,8 +535,8 @@ registro rastreado passaria a produzir.
 > todos pela atenção. Meus contatos estão na tela e fico à disposição para as
 > perguntas.
 
-Pare de falar. Em videoconferência a tentação de preencher o silêncio é grande, e o
-silêncio depois do fecho é da plateia, não seu.
+Pare de falar. A tentação de preencher o silêncio é grande, e o silêncio depois do
+fecho é da plateia, não seu. Fique parado, de frente para ela, e espere.
 
 ---
 
