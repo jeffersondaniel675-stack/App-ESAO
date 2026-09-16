@@ -1,0 +1,33 @@
+# Materiais da cozinha modular 270 x 220 cm
+
+newmtl madeira
+Ka 0.1950 0.1320 0.0810
+Kd 0.6500 0.4400 0.2700
+Ks 0.0600 0.0600 0.0600
+Ns 24.0
+d 1.0
+illum 2
+
+newmtl frentes_madeira
+Ka 0.2190 0.1650 0.1080
+Kd 0.7300 0.5500 0.3600
+Ks 0.0600 0.0600 0.0600
+Ns 24.0
+d 1.0
+illum 2
+
+newmtl off_white
+Ka 0.2370 0.2340 0.2160
+Kd 0.7900 0.7800 0.7200
+Ks 0.0600 0.0600 0.0600
+Ns 24.0
+d 1.0
+illum 2
+
+newmtl fundo
+Ka 0.1710 0.1110 0.0660
+Kd 0.5700 0.3700 0.2200
+Ks 0.0600 0.0600 0.0600
+Ns 24.0
+d 1.0
+illum 2
