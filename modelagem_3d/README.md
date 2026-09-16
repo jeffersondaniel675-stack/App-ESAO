@@ -3,22 +3,22 @@
 Modelo paramétrico de uma cozinha modular de **270 × 220 cm** (profundidade de tampo
 52 cm), exportado nos formatos que o Homestyler aceita no upload de modelos próprios.
 
-![prévia](saida/previa.svg)
+![prévia](saida/previa.png)
 
 ## O que enviar para o Homestyler
 
 | Arquivo | Uso |
 | --- | --- |
-| `saida/cozinha_homestyler.zip` | **Opção principal** — OBJ + MTL zipados, com as portas fechadas |
-| `saida/cozinha_homestyler.glb` | Alternativa em glTF binário (arquivo único, já em metros) |
+| `saida/cozinha_homestyler.glb` | **Mais simples** — arquivo único, já em metros, com os materiais embutidos |
+| `saida/cozinha_homestyler.zip` | Alternativa em OBJ + MTL zipados (o importador pergunta a unidade) |
 | `saida/cozinha_sem_portas.zip` / `.glb` | Mesmo móvel sem as frentes, para mostrar as divisões internas |
-| `saida/previa.svg` | Conferência visual antes do upload |
+| `saida/previa.png` e `previa.svg` | Conferência visual antes do upload |
 | `saida/pecas_modelo.json` | Lista dos 86 painéis (nome, posição, tamanho, material) |
 
 ### Passo a passo
 
 1. No Homestyler, abra **Assets → My Models → Upload Model** (também chamado de *Model Upload*).
-2. Envie `cozinha_homestyler.zip` (OBJ + MTL) ou `cozinha_homestyler.glb`.
+2. Envie `cozinha_homestyler.glb` (recomendado) ou `cozinha_homestyler.zip` (OBJ + MTL).
 3. Se o importador perguntar a unidade do arquivo, escolha **centímetros** para o `.zip`
    (o OBJ é gerado em cm por padrão) e **metros** para o `.glb` — o formato glTF é
    sempre métrico.

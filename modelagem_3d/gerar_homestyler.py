@@ -5,10 +5,10 @@ Somente biblioteca padrao do Python (3.9+). Execute:
     python3 gerar_homestyler.py
 
 Saidas em ./saida:
-    cozinha_homestyler.zip        OBJ + MTL (portas fechadas)  <- upload no Homestyler
-    cozinha_homestyler.glb        glTF binario (portas fechadas)
+    cozinha_homestyler.glb        glTF binario (portas fechadas) <- upload no Homestyler
+    cozinha_homestyler.zip        OBJ + MTL zipados, alternativa ao GLB
     cozinha_sem_portas.zip/.glb   mesmo movel com as frentes removidas
-    previa.svg                    conferencia visual rapida
+    previa.png / previa.svg       conferencia visual rapida
     pecas_modelo.json             lista de paineis (nome, posicao, tamanho, material)
 
 Sistema de coordenadas de entrada (o mesmo do gerar_modelo.py original):
@@ -24,7 +24,10 @@ import json
 import math
 import struct
 import zipfile
+import zlib
 from pathlib import Path
+
+import fonte5x7
 
 RAIZ = Path(__file__).resolve().parent
 SAIDA = RAIZ / "saida"
@@ -305,7 +308,7 @@ def escrever_glb(caminho: Path, pecas: list[dict], nome: str) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Previa SVG (algoritmo do pintor, sem dependencias)
+# Previa (SVG vetorial + PNG rasterizado), tudo em stdlib
 # --------------------------------------------------------------------------- #
 def _norm(v):
     m = math.sqrt(sum(c * c for c in v))
@@ -320,54 +323,158 @@ def _dot(a, b):
     return sum(x * y for x, y in zip(a, b))
 
 
-def painel_svg(pecas: list[dict], largura: int, altura: int, titulo: str) -> str:
-    cam = _norm((-0.26, -1.0, 0.23))
-    direita = _norm(_cross((0, 0, 1), cam))
-    cima = _cross(cam, direita)
-    luz = _norm((-0.3, -0.6, 0.75))
-    centro = (1.35, -0.25, 1.1)
-    escala = 310 * (largura / 1000)
+CAM = _norm((-0.26, -1.0, 0.23))
+LUZ = _norm((-0.3, -0.6, 0.75))
+CENTRO = (1.35, -0.25, 1.1)
+
+
+def projetar(pecas: list[dict], largura: float, altura: float):
+    """Faces visiveis ja projetadas na tela, ordenadas da mais distante para a mais proxima."""
+    direita = _norm(_cross((0, 0, 1), CAM))
+    cima = _cross(CAM, direita)
+    escala = 0.31 * largura
 
     quads = []
     for peca in pecas:
         for pontos, normal, _ in faces(peca):
-            if _dot(normal, cam) <= 0:
+            if _dot(normal, CAM) <= 0:
                 continue
-            sombra = 0.72 + 0.28 * max(0.0, _dot(normal, luz))
-            r, g, b = (min(255, int(c * 255 * sombra)) for c in CORES[peca["mat"]])
-            rel = [tuple(p[i] - centro[i] for i in range(3)) for p in pontos]
+            sombra = 0.72 + 0.28 * max(0.0, _dot(normal, LUZ))
+            cor = tuple(min(255, int(c * 255 * sombra)) for c in CORES[peca["mat"]])
+            rel = [tuple(p[i] - CENTRO[i] for i in range(3)) for p in pontos]
             tela = [(_dot(p, direita) * escala + largura / 2, altura / 2 - _dot(p, cima) * escala) for p in rel]
-            prof = sum(_dot(p, cam) for p in rel) / 4
-            quads.append((prof, tela, "#{:02x}{:02x}{:02x}".format(r, g, b)))
+            quads.append((sum(_dot(p, CAM) for p in rel) / 4, tela, cor))
 
-    quads.sort(key=lambda q: q[0])  # mais distante primeiro
-    partes = ['<rect width="{}" height="{}" fill="#f5f3ef"/>'.format(largura, altura)]
-    for _, tela, cor in quads:
-        pts = " ".join("{:.1f},{:.1f}".format(x, y) for x, y in tela)
-        partes.append('<polygon points="{}" fill="{}" stroke="#39302620" stroke-width="0.6"/>'.format(pts, cor))
-    partes.append('<text x="{}" y="{}" text-anchor="middle" font-family="DejaVu Sans,Arial" '
-                  'font-size="22" fill="#4b4134">{}</text>'.format(largura / 2, 34, titulo))
-    return "".join(partes)
+    quads.sort(key=lambda q: q[0])
+    return quads
 
 
 def escrever_svg(caminho: Path, pecas: list[dict]) -> None:
-    l, a = 1000, 1000
-    corpo = (
-        '<g transform="translate(0,80)">{}</g>'.format(painel_svg(pecas, l, a, "PORTAS FECHADAS"))
-        + '<g transform="translate(1000,80)">{}</g>'.format(
-            painel_svg([p for p in pecas if not p["front"]], l, a, "DIVISOES INTERNAS"))
-    )
-    svg = (
+    lado = 1000
+
+    def painel(selecao, titulo):
+        partes = ['<rect width="{0}" height="{0}" fill="#f5f3ef"/>'.format(lado)]
+        for _, tela, (r, g, b) in projetar(selecao, lado, lado):
+            pts = " ".join("{:.1f},{:.1f}".format(x, y) for x, y in tela)
+            partes.append('<polygon points="{}" fill="#{:02x}{:02x}{:02x}" stroke="#39302633" '
+                          'stroke-width="0.6"/>'.format(pts, r, g, b))
+        partes.append('<text x="{}" y="34" text-anchor="middle" font-family="DejaVu Sans,Arial" '
+                      'font-size="22" fill="#4b4134">{}</text>'.format(lado / 2, titulo))
+        return "".join(partes)
+
+    corpo = ('<g transform="translate(0,80)">{}</g>'.format(painel(pecas, "PORTAS FECHADAS"))
+             + '<g transform="translate(1000,80)">{}</g>'.format(
+                 painel([p for p in pecas if not p["front"]], "DIVISOES INTERNAS")))
+    caminho.write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1140" viewBox="0 0 2000 1140">'
         '<rect width="2000" height="1140" fill="#f5f3ef"/>'
         '<text x="1000" y="56" text-anchor="middle" font-family="DejaVu Sans,Arial" font-size="34" '
-        'fill="#43392d">COZINHA MODULAR | 270 x 220 cm</text>'
-        + corpo +
+        'fill="#43392d">COZINHA MODULAR | 270 x 220 cm</text>' + corpo +
         '<text x="1000" y="1105" text-anchor="middle" font-family="DejaVu Sans,Arial" font-size="20" '
         'fill="#6e6255">Profundidade do tampo: 52 cm - Modulos: 70 + 120 + 80 cm - '
-        'medidas internas nao cotadas sao estimadas</text></svg>'
-    )
-    caminho.write_text(svg, encoding="utf-8")
+        'medidas internas nao cotadas sao estimadas</text></svg>', encoding="utf-8")
+
+
+FUNDO = (0xF5, 0xF3, 0xEF)
+TINTA = (0x43, 0x39, 0x2D)
+
+
+def _rasterizar(pecas: list[dict], lado: int, ss: int = 3) -> bytearray:
+    """Desenha um painel lado x lado (RGB) pelo algoritmo do pintor, com supersampling."""
+    L = lado * ss
+    buf = bytearray(bytes(FUNDO) * (L * L))
+
+    def span(y, x0, x1, cor):
+        if y < 0 or y >= L:
+            return
+        x0 = max(0, int(x0))
+        x1 = min(L - 1, int(x1))
+        if x1 >= x0:
+            i = (y * L + x0) * 3
+            buf[i:i + (x1 - x0 + 1) * 3] = bytes(cor) * (x1 - x0 + 1)
+
+    def linha(p0, p1, cor):
+        x0, y0 = p0
+        x1, y1 = p1
+        passos = int(max(abs(x1 - x0), abs(y1 - y0))) + 1
+        for k in range(passos + 1):
+            t = k / passos
+            x, y = int(x0 + (x1 - x0) * t), int(y0 + (y1 - y0) * t)
+            if 0 <= x < L and 0 <= y < L:
+                i = (y * L + x) * 3
+                buf[i:i + 3] = bytes(cor)
+
+    for _, tela, cor in projetar(pecas, L, L):
+        borda = tuple(int(c * 0.72) for c in cor)
+        ys = [p[1] for p in tela]
+        for y in range(max(0, int(min(ys))), min(L - 1, int(max(ys))) + 1):
+            xs = []
+            for k in range(len(tela)):
+                x1, y1 = tela[k]
+                x2, y2 = tela[(k + 1) % len(tela)]
+                if (y1 <= y < y2) or (y2 <= y < y1):
+                    xs.append(x1 + (y - y1) * (x2 - x1) / (y2 - y1))
+            if len(xs) >= 2:
+                span(y, min(xs), max(xs), cor)
+        for k in range(len(tela)):
+            linha(tela[k], tela[(k + 1) % len(tela)], borda)
+
+    # Reducao por media do bloco ss x ss (antialiasing).
+    saida = bytearray(lado * lado * 3)
+    n = ss * ss
+    for y in range(lado):
+        base_y = y * ss
+        for x in range(lado):
+            base_x = x * ss
+            r = g = b = 0
+            for dy in range(ss):
+                i = ((base_y + dy) * L + base_x) * 3
+                for dx in range(ss):
+                    r += buf[i]; g += buf[i + 1]; b += buf[i + 2]
+                    i += 3
+            o = (y * lado + x) * 3
+            saida[o] = r // n; saida[o + 1] = g // n; saida[o + 2] = b // n
+    return saida
+
+
+def escrever_png(caminho: Path, pecas: list[dict], lado: int = 860) -> None:
+    W, H = lado * 2 + 60, lado + 190
+    canvas = bytearray(bytes(FUNDO) * (W * H))
+
+    def pixel(x, y, cor):
+        if 0 <= x < W and 0 <= y < H:
+            i = (y * W + x) * 3
+            canvas[i:i + 3] = bytes(cor)
+
+    def colar(painel, ox, oy):
+        for y in range(lado):
+            origem = y * lado * 3
+            destino = ((oy + y) * W + ox) * 3
+            canvas[destino:destino + lado * 3] = painel[origem:origem + lado * 3]
+
+    def texto(s, y, escala, cor=TINTA, centro_x=None):
+        x = (centro_x if centro_x is not None else W // 2) - fonte5x7.largura_texto(s, escala) // 2
+        fonte5x7.desenhar(pixel, s, x, y, escala, cor)
+
+    colar(_rasterizar(pecas, lado), 20, 130)
+    colar(_rasterizar([p for p in pecas if not p["front"]], lado), lado + 40, 130)
+
+    texto("COZINHA MODULAR 270 X 220 CM", 30, 5)
+    texto("PORTAS FECHADAS", 95, 3, (0x6E, 0x62, 0x55), 20 + lado // 2)
+    texto("SEM AS FRENTES", 95, 3, (0x6E, 0x62, 0x55), lado + 40 + lado // 2)
+    texto("TAMPO A 94,5 CM  -  PROFUNDIDADE 52 CM  -  MODULOS 70 + 120 + 80 CM", H - 45, 3,
+          (0x6E, 0x62, 0x55))
+
+    bruto = b"".join(b"\x00" + bytes(canvas[y * W * 3:(y + 1) * W * 3]) for y in range(H))
+
+    def bloco(tipo, dados):
+        return struct.pack(">I", len(dados)) + tipo + dados + struct.pack(">I", zlib.crc32(tipo + dados))
+
+    caminho.write_bytes(
+        b"\x89PNG\r\n\x1a\n"
+        + bloco(b"IHDR", struct.pack(">IIBBBBB", W, H, 8, 2, 0, 0, 0))
+        + bloco(b"IDAT", zlib.compress(bruto, 9))
+        + bloco(b"IEND", b""))
 
 
 # --------------------------------------------------------------------------- #
@@ -439,6 +546,7 @@ def main() -> None:
         }
 
     escrever_svg(SAIDA / "previa.svg", pecas)
+    escrever_png(SAIDA / "previa.png", pecas)
     (SAIDA / "pecas_modelo.json").write_text(json.dumps(pecas, indent=2, ensure_ascii=False), encoding="utf-8")
     (RAIZ / "pecas_modelo.json").write_text(json.dumps(pecas, indent=2, ensure_ascii=False), encoding="utf-8")
     relatorio["validacao"] = "OBJ e GLB reabertos: contagem, winding, bounding box e alinhamento OK"
