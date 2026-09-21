@@ -2,21 +2,21 @@ import { Plus } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api';
+import Dashboard from './components/Dashboard';
 import LoginScreen from './components/LoginScreen';
 import MembersPanel from './components/MembersPanel';
+import PrintableTasks from './components/PrintableTasks';
 import ProgressBar from './components/ProgressBar';
 import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
-import Topbar from './components/Topbar';
+import Topbar, { type Tab } from './components/Topbar';
 import type { Task, User } from './types';
 import { PILL_BUTTON_PRIMARY } from './ui';
-
-type Tab = 'tarefas' | 'membros';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
-  const [tab, setTab] = useState<Tab>('tarefas');
+  const [tab, setTab] = useState<Tab>('painel');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [members, setMembers] = useState<User[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -57,7 +57,7 @@ export default function App() {
     setUser(null);
     setTasks([]);
     setMembers([]);
-    setTab('tarefas');
+    setTab('painel');
     setFormOpen(false);
     setEditingTask(null);
   }
@@ -80,52 +80,58 @@ export default function App() {
   if (!user) return <LoginScreen onLogin={handleLogin} />;
 
   return (
-    <div className="min-h-screen bg-soft-cloud">
-      <Topbar user={user} tab={tab} onTabChange={setTab} onLogout={handleLogout} />
+    <>
+      <div className="min-h-screen bg-soft-cloud no-print">
+        <Topbar user={user} tab={tab} onTabChange={setTab} onLogout={handleLogout} />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4">
-        {!isAdmin || tab === 'tarefas' ? (
-          <>
-            <ProgressBar tasks={tasks} />
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+          {tab === 'painel' && <Dashboard tasks={tasks} members={isAdmin ? members : [user]} isAdmin={isAdmin} />}
 
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-ink">Quadro de tarefas</h2>
-              {!formOpen && (
-                <button onClick={() => setFormOpen(true)} className={PILL_BUTTON_PRIMARY}>
-                  <Plus size={15} /> Nova tarefa
-                </button>
-              )}
-            </div>
+          {tab === 'tarefas' && (
+            <>
+              <ProgressBar tasks={tasks} />
 
-            <AnimatePresence initial={false}>
-              {formOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <TaskForm
-                    currentUser={user}
-                    members={isAdmin ? members : [user]}
-                    editingTask={editingTask}
-                    onCancelEdit={closeForm}
-                    onSaved={() => {
-                      if (editingTask) closeForm();
-                      refresh();
-                    }}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-ink">Quadro de tarefas</h2>
+                {!formOpen && (
+                  <button onClick={() => setFormOpen(true)} className={PILL_BUTTON_PRIMARY}>
+                    <Plus size={15} /> Nova tarefa
+                  </button>
+                )}
+              </div>
 
-            <TaskList tasks={tasks} members={members} isAdmin={isAdmin} onChanged={refresh} onEdit={startEdit} />
-          </>
-        ) : (
-          <MembersPanel members={members} currentUser={user} onChanged={refresh} />
-        )}
-      </main>
-    </div>
+              <AnimatePresence initial={false}>
+                {formOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <TaskForm
+                      currentUser={user}
+                      members={isAdmin ? members : [user]}
+                      editingTask={editingTask}
+                      onCancelEdit={closeForm}
+                      onSaved={() => {
+                        if (editingTask) closeForm();
+                        refresh();
+                      }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <TaskList tasks={tasks} members={members} isAdmin={isAdmin} onChanged={refresh} onEdit={startEdit} />
+            </>
+          )}
+
+          {tab === 'membros' && isAdmin && <MembersPanel members={members} currentUser={user} onChanged={refresh} />}
+        </main>
+      </div>
+
+      <PrintableTasks tasks={tasks} />
+    </>
   );
 }

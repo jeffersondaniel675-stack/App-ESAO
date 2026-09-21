@@ -1,8 +1,14 @@
-import { ClipboardList, LogOut, ShieldCheck, Users } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, LogOut, ShieldCheck, Users } from 'lucide-react';
 import type { User } from '../types';
 import Avatar from './Avatar';
 
-type Tab = 'tarefas' | 'membros';
+export type Tab = 'painel' | 'tarefas' | 'membros';
+
+const TABS: { tab: Tab; label: string; icon: typeof ClipboardList; adminOnly?: boolean }[] = [
+  { tab: 'painel', label: 'Painel', icon: LayoutDashboard },
+  { tab: 'tarefas', label: 'Tarefas', icon: ClipboardList },
+  { tab: 'membros', label: 'Membros', icon: Users, adminOnly: true },
+];
 
 export default function Topbar({
   user,
@@ -16,9 +22,10 @@ export default function Topbar({
   onLogout: () => void;
 }) {
   const isAdmin = user.tipoAcesso === 'admin';
+  const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin);
 
   return (
-    <header className="bg-canvas border-b border-hairline sticky top-0 z-10">
+    <header className="bg-canvas border-b border-hairline sticky top-0 z-10 no-print">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-ink text-on-ink rounded-full hidden sm:flex">
@@ -42,26 +49,19 @@ export default function Topbar({
         </div>
 
         <div className="flex items-center gap-2">
-          {isAdmin && (
-            <nav className="hidden sm:flex bg-soft-cloud rounded-full p-1 text-sm">
+          <nav className="hidden sm:flex bg-soft-cloud rounded-full p-1 text-sm">
+            {visibleTabs.map(({ tab: t, label, icon: Icon }) => (
               <button
-                onClick={() => onTabChange('tarefas')}
+                key={t}
+                onClick={() => onTabChange(t)}
                 className={`px-3.5 py-1.5 rounded-full font-medium transition flex items-center gap-1.5 ${
-                  tab === 'tarefas' ? 'bg-ink text-on-ink' : 'text-mute hover:text-ink'
+                  tab === t ? 'bg-ink text-on-ink' : 'text-mute hover:text-ink'
                 }`}
               >
-                <ClipboardList size={14} /> Tarefas
+                <Icon size={14} /> {label}
               </button>
-              <button
-                onClick={() => onTabChange('membros')}
-                className={`px-3.5 py-1.5 rounded-full font-medium transition flex items-center gap-1.5 ${
-                  tab === 'membros' ? 'bg-ink text-on-ink' : 'text-mute hover:text-ink'
-                }`}
-              >
-                <Users size={14} /> Membros
-              </button>
-            </nav>
-          )}
+            ))}
+          </nav>
           <button
             onClick={onLogout}
             className="flex items-center gap-1.5 text-sm font-medium text-mute hover:text-ink bg-soft-cloud hover:bg-hairline-soft px-3.5 py-1.5 rounded-full transition"
@@ -72,26 +72,19 @@ export default function Topbar({
         </div>
       </div>
 
-      {isAdmin && (
-        <div className="sm:hidden flex border-t border-hairline">
+      <div className="sm:hidden flex border-t border-hairline">
+        {visibleTabs.map(({ tab: t, label, icon: Icon }) => (
           <button
-            onClick={() => onTabChange('tarefas')}
+            key={t}
+            onClick={() => onTabChange(t)}
             className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 ${
-              tab === 'tarefas' ? 'text-ink border-b-2 border-ink' : 'text-mute'
+              tab === t ? 'text-ink border-b-2 border-ink' : 'text-mute'
             }`}
           >
-            <ClipboardList size={14} /> Tarefas
+            <Icon size={14} /> {label}
           </button>
-          <button
-            onClick={() => onTabChange('membros')}
-            className={`flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1.5 ${
-              tab === 'membros' ? 'text-ink border-b-2 border-ink' : 'text-mute'
-            }`}
-          >
-            <Users size={14} /> Membros
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
     </header>
   );
 }

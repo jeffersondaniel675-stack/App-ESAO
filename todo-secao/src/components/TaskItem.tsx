@@ -1,6 +1,7 @@
 import { AlertTriangle, Calendar, Check, Pencil, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { api, ApiError } from '../api';
+import { googleCalendarUrl } from '../lib/calendar';
 import { PRIORIDADE_LABEL, type Prioridade, type Status, type Task } from '../types';
 import Avatar from './Avatar';
 
@@ -96,12 +97,18 @@ export default function TaskItem({
             {PRIORIDADE_LABEL[task.prioridade]}
           </span>
           {task.prazo && (
-            <span
-              className={`flex items-center gap-1 text-[11px] font-medium shrink-0 ${overdue ? 'text-sale' : 'text-mute'}`}
+            <a
+              href={googleCalendarUrl(task)}
+              target="_blank"
+              rel="noreferrer"
+              title="Adicionar ao Google Agenda"
+              className={`flex items-center gap-1 text-[11px] font-medium shrink-0 hover:underline ${
+                overdue ? 'text-sale' : 'text-mute hover:text-ink'
+              }`}
             >
               {overdue ? <AlertTriangle size={11} /> : <Calendar size={11} />}
               {new Date(task.prazo + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-            </span>
+            </a>
           )}
         </div>
 
