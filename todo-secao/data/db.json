@@ -1,0 +1,33 @@
+{
+  "users": [
+    { "id": "admin", "nomeGuerra": "Administrador", "senha": "admin123", "tipoAcesso": "admin" },
+    { "id": "u1", "nomeGuerra": "Silva", "senha": "123456", "tipoAcesso": "membro" },
+    { "id": "u2", "nomeGuerra": "Santos", "senha": "123456", "tipoAcesso": "membro" }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "titulo": "Entregar relatório de intendência",
+      "descricao": "Consolidar planilha de suprimentos da semana.",
+      "responsavel": "Silva",
+      "criadoPor": "Administrador",
+      "prioridade": "alta",
+      "status": "pendente",
+      "prazo": "2026-09-25",
+      "criadoEm": "2026-09-21T12:00:00.000Z",
+      "atualizadoEm": "2026-09-21T12:00:00.000Z"
+    },
+    {
+      "id": "t2",
+      "titulo": "Vistoriar material",
+      "descricao": "",
+      "responsavel": "Santos",
+      "criadoPor": "Administrador",
+      "prioridade": "alta",
+      "status": "pendente",
+      "prazo": "2026-09-30",
+      "criadoEm": "2026-09-21T12:00:00.000Z",
+      "atualizadoEm": "2026-09-21T12:00:00.000Z"
+    }
+  ]
+}
