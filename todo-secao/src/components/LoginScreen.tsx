@@ -1,4 +1,4 @@
-import { CheckCircle2, ClipboardList, LogIn, Shield, Users } from 'lucide-react';
+import { ArrowRight, ClipboardList } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
@@ -25,42 +25,23 @@ export default function LoginScreen({ onLogin }: { onLogin: (user: User) => void
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
-      <div className="hidden lg:flex lg:w-[46%] xl:w-2/5 relative bg-[#012d1d] text-white flex-col justify-between p-10 overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-            backgroundSize: '22px 22px',
-          }}
-        />
-
-        <div className="relative flex items-center gap-3">
-          <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-sm">
-            <ClipboardList size={20} />
-          </div>
-          <span className="font-headline font-bold text-sm tracking-wide">TAREFAS DA SEÇÃO</span>
+    <div className="min-h-screen flex bg-canvas">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative bg-ink text-on-ink flex-col justify-between p-12 overflow-hidden">
+        <div className="relative flex items-center gap-2.5">
+          <ClipboardList size={20} />
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase">Tarefas da Seção</span>
         </div>
 
-        <div className="relative space-y-6">
-          <h1 className="font-headline font-bold text-3xl xl:text-4xl leading-tight">
-            Organize a rotina<br />da sua seção.
-          </h1>
-          <ul className="space-y-3 text-sm text-emerald-100/90">
-            <li className="flex items-center gap-2.5">
-              <CheckCircle2 size={16} className="text-emerald-400 shrink-0" /> Cada membro acompanha suas próprias tarefas
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Users size={16} className="text-emerald-400 shrink-0" /> Administrador distribui e acompanha tudo
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Shield size={16} className="text-emerald-400 shrink-0" /> Acesso individual por nome de guerra
-            </li>
-          </ul>
-        </div>
+        <h1 className="font-display uppercase leading-[0.9] text-[clamp(56px,7vw,112px)] tracking-tight">
+          Organize
+          <br />a rotina.
+          <br />
+          Cumpra a
+          <br />
+          missão.
+        </h1>
 
-        <p className="relative text-xs text-emerald-100/50">Intendência · ESAO 2026</p>
+        <p className="relative text-xs tracking-[0.15em] uppercase text-stone">Intendência · ESAO 2026</p>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6">
@@ -70,22 +51,22 @@ export default function LoginScreen({ onLogin }: { onLogin: (user: User) => void
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="w-full max-w-sm"
         >
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="p-2.5 bg-[#012d1d] text-emerald-300 rounded-xl">
+          <div className="lg:hidden flex items-center gap-2.5 mb-10">
+            <div className="p-2.5 bg-ink text-on-ink rounded-full">
               <ClipboardList size={20} />
             </div>
             <div>
-              <h1 className="font-headline font-bold text-lg text-slate-900">Tarefas da Seção</h1>
-              <p className="text-xs text-slate-500">Intendência · ESAO 2026</p>
+              <h1 className="font-display uppercase text-2xl leading-none text-ink">Tarefas da Seção</h1>
+              <p className="text-xs text-mute mt-1">Intendência · ESAO 2026</p>
             </div>
           </div>
 
-          <h2 className="font-headline font-bold text-xl text-slate-900 mb-1">Entrar</h2>
-          <p className="text-sm text-slate-500 mb-6">Use seu nome de guerra e senha da seção.</p>
+          <h2 className="text-xl font-semibold text-ink mb-1">Entrar</h2>
+          <p className="text-sm text-mute mb-7">Use seu nome de guerra e senha da seção.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="nomeGuerra">
+              <label className="block text-xs font-semibold text-ink mb-1.5" htmlFor="nomeGuerra">
                 Nome de guerra
               </label>
               <input
@@ -95,12 +76,12 @@ export default function LoginScreen({ onLogin }: { onLogin: (user: User) => void
                 value={nomeGuerra}
                 onChange={(e) => setNomeGuerra(e.target.value)}
                 placeholder="ex: Silva"
-                className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-300 transition"
+                className="w-full px-4 py-3 text-sm rounded-md border-0 bg-soft-cloud focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink transition"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="senha">
+              <label className="block text-xs font-semibold text-ink mb-1.5" htmlFor="senha">
                 Senha
               </label>
               <input
@@ -110,22 +91,22 @@ export default function LoginScreen({ onLogin }: { onLogin: (user: User) => void
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="••••••"
-                className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-300 transition"
+                className="w-full px-4 py-3 text-sm rounded-md border-0 bg-soft-cloud focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink transition"
                 required
               />
             </div>
 
             {error && (
-              <p className="text-xs font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+              <p className="text-xs font-medium text-sale bg-soft-cloud rounded-md px-3 py-2">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#012d1d] hover:bg-emerald-900 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-xl shadow-sm transition active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 bg-ink hover:bg-charcoal disabled:opacity-50 text-on-ink font-semibold text-sm h-12 rounded-full transition active:scale-[0.97]"
             >
-              <LogIn size={16} />
               {loading ? 'Entrando…' : 'Entrar'}
+              {!loading && <ArrowRight size={16} />}
             </button>
           </form>
         </motion.div>

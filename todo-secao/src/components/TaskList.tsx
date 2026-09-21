@@ -1,12 +1,13 @@
 import { AnimatePresence } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { STATUS_LABEL, type Status, type Task, type User } from '../types';
+import { INPUT_CLASS } from '../ui';
 import TaskItem from './TaskItem';
 
-const COLUMNS: { status: Status; dot: string; accent: string }[] = [
-  { status: 'pendente', dot: 'bg-slate-400', accent: 'bg-slate-50/60 border-slate-200/70' },
-  { status: 'em_andamento', dot: 'bg-sky-400', accent: 'bg-sky-50/50 border-sky-100' },
-  { status: 'concluida', dot: 'bg-emerald-500', accent: 'bg-emerald-50/50 border-emerald-100' },
+const COLUMNS: { status: Status; dot: string }[] = [
+  { status: 'pendente', dot: 'bg-stone' },
+  { status: 'em_andamento', dot: 'bg-info' },
+  { status: 'concluida', dot: 'bg-success' },
 ];
 
 export default function TaskList({
@@ -45,7 +46,7 @@ export default function TaskList({
           <select
             value={responsavelFilter}
             onChange={(e) => setResponsavelFilter(e.target.value)}
-            className="text-xs font-medium border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            className={`${INPUT_CLASS} w-auto py-2`}
           >
             <option value="">Todos os membros</option>
             {members.map((m) => (
@@ -57,15 +58,13 @@ export default function TaskList({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {COLUMNS.map(({ status, dot, accent }) => (
-          <div key={status} className={`rounded-2xl border p-3 ${accent}`}>
-            <div className="flex items-center gap-2 px-1.5 py-1 mb-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-hairline border border-hairline">
+        {COLUMNS.map(({ status, dot }) => (
+          <div key={status} className="bg-soft-cloud p-3">
+            <div className="flex items-center gap-2 px-1 py-1 mb-2">
               <span className={`w-2 h-2 rounded-full ${dot}`} />
-              <h3 className="font-headline font-bold text-xs uppercase tracking-wide text-slate-600">
-                {STATUS_LABEL[status]}
-              </h3>
-              <span className="text-xs font-semibold text-slate-400 ml-auto">{byStatus[status].length}</span>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-ink">{STATUS_LABEL[status]}</h3>
+              <span className="text-xs font-semibold text-stone ml-auto">{byStatus[status].length}</span>
             </div>
 
             <div className="space-y-2 min-h-[3rem]">
@@ -74,9 +73,7 @@ export default function TaskList({
                   <TaskItem key={task.id} task={task} isAdmin={isAdmin} onChanged={onChanged} onEdit={() => onEdit(task)} />
                 ))}
               </AnimatePresence>
-              {byStatus[status].length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-4">Nenhuma tarefa</p>
-              )}
+              {byStatus[status].length === 0 && <p className="text-xs text-stone text-center py-4">Nenhuma tarefa</p>}
             </div>
           </div>
         ))}

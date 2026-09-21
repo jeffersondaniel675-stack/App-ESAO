@@ -9,6 +9,7 @@ import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
 import Topbar from './components/Topbar';
 import type { Task, User } from './types';
+import { PILL_BUTTON_PRIMARY } from './ui';
 
 type Tab = 'tarefas' | 'membros';
 
@@ -79,7 +80,7 @@ export default function App() {
   if (!user) return <LoginScreen onLogin={handleLogin} />;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-soft-cloud">
       <Topbar user={user} tab={tab} onTabChange={setTab} onLogout={handleLogout} />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-4">
@@ -88,12 +89,9 @@ export default function App() {
             <ProgressBar tasks={tasks} />
 
             <div className="flex items-center justify-between">
-              <h2 className="font-headline font-bold text-base text-slate-900">Quadro de tarefas</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-ink">Quadro de tarefas</h2>
               {!formOpen && (
-                <button
-                  onClick={() => setFormOpen(true)}
-                  className="flex items-center gap-1.5 bg-[#012d1d] hover:bg-emerald-900 text-white font-semibold text-sm px-3.5 py-2 rounded-xl shadow-sm transition active:scale-[0.98]"
-                >
+                <button onClick={() => setFormOpen(true)} className={PILL_BUTTON_PRIMARY}>
                   <Plus size={15} /> Nova tarefa
                 </button>
               )}

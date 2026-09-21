@@ -1,12 +1,10 @@
 const PALETTE = [
-  'bg-emerald-100 text-emerald-800',
-  'bg-sky-100 text-sky-800',
-  'bg-amber-100 text-amber-800',
-  'bg-rose-100 text-rose-800',
-  'bg-indigo-100 text-indigo-800',
-  'bg-violet-100 text-violet-800',
-  'bg-teal-100 text-teal-800',
-  'bg-orange-100 text-orange-800',
+  'bg-ink text-on-ink',
+  'bg-accent-teal text-on-ink',
+  'bg-info text-on-ink',
+  'bg-accent-pink text-on-ink',
+  'bg-success text-on-ink',
+  'bg-charcoal text-on-ink',
 ];
 
 function toneFor(name: string) {
@@ -22,7 +20,7 @@ export default function Avatar({ name, size = 'md' }: { name: string; size?: 'sm
   return (
     <span
       title={name}
-      className={`inline-flex items-center justify-center shrink-0 rounded-full font-bold ring-2 ring-white ${dims} ${toneFor(name)}`}
+      className={`inline-flex items-center justify-center shrink-0 rounded-full font-bold ring-2 ring-canvas ${dims} ${toneFor(name)}`}
     >
       {initials}
     </span>
