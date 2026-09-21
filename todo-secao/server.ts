@@ -3,29 +3,55 @@ import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createServer as createViteServer } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
-const PORT = process.env.TODO_PORT || 3001;
+const PORT = process.env.TODO_PORT ? Number(process.env.TODO_PORT) : 3001;
 
 const STATUSES = ['pendente', 'em_andamento', 'concluida'];
 const PRIORIDADES = ['baixa', 'media', 'alta'];
 
-async function readDb() {
+interface TodoUser {
+  id: string;
+  nomeGuerra: string;
+  senha: string;
+  tipoAcesso: 'admin' | 'membro';
+}
+
+interface TodoTask {
+  id: string;
+  titulo: string;
+  descricao: string;
+  responsavel: string;
+  criadoPor: string;
+  prioridade: string;
+  status: string;
+  prazo: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+interface Db {
+  users: TodoUser[];
+  tasks: TodoTask[];
+}
+
+async function readDb(): Promise<Db> {
   const raw = await readFile(DB_PATH, 'utf-8');
   return JSON.parse(raw);
 }
 
-async function writeDb(db) {
+async function writeDb(db: Db): Promise<void> {
   await writeFile(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
 }
 
 // token -> userId
-const sessions = new Map();
+const sessions = new Map<string, string>();
 
-function parseCookies(req) {
+function parseCookies(req: express.Request): Record<string, string> {
   const header = req.headers.cookie;
-  const out = {};
+  const out: Record<string, string> = {};
   if (!header) return out;
   for (const part of header.split(';')) {
     const idx = part.indexOf('=');
@@ -35,11 +61,25 @@ function parseCookies(req) {
   return out;
 }
 
+function publicUser(u: TodoUser) {
+  return { id: u.id, nomeGuerra: u.nomeGuerra, tipoAcesso: u.tipoAcesso };
+}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user: TodoUser;
+      db: Db;
+      token: string;
+    }
+  }
+}
+
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-async function auth(req, res, next) {
+async function auth(req: express.Request, res: express.Response, next: express.NextFunction) {
   const cookies = parseCookies(req);
   const token = cookies.todo_token;
   const userId = token && sessions.get(token);
@@ -53,15 +93,11 @@ async function auth(req, res, next) {
   next();
 }
 
-function requireAdmin(req, res, next) {
+function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (req.user.tipoAcesso !== 'admin') {
     return res.status(403).json({ error: 'Apenas o administrador pode fazer isso.' });
   }
   next();
-}
-
-function publicUser(u) {
-  return { id: u.id, nomeGuerra: u.nomeGuerra, tipoAcesso: u.tipoAcesso };
 }
 
 // ---- Auth ----
@@ -111,7 +147,7 @@ app.post('/api/users', auth, requireAdmin, async (req, res) => {
   if (db.users.some((u) => u.nomeGuerra.toLowerCase() === String(nomeGuerra).toLowerCase())) {
     return res.status(409).json({ error: 'Já existe um membro com esse nome de guerra.' });
   }
-  const user = {
+  const user: TodoUser = {
     id: randomUUID(),
     nomeGuerra: String(nomeGuerra).trim(),
     senha: String(senha),
@@ -171,7 +207,7 @@ app.post('/api/tasks', auth, async (req, res) => {
   }
 
   const now = new Date().toISOString();
-  const task = {
+  const task: TodoTask = {
     id: randomUUID(),
     titulo: String(titulo).trim(),
     descricao: descricao ? String(descricao).trim() : '',
@@ -233,6 +269,28 @@ app.delete('/api/tasks/:id', auth, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.listen(PORT, () => {
-  console.log(`Tarefas da Seção rodando em http://localhost:${PORT}`);
-});
+// SERVE VITE STATIC FILES & MIDDLEWARE
+
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const vite = await createViteServer({
+      root: __dirname,
+      configFile: path.join(__dirname, 'vite.config.ts'),
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(__dirname, 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Tarefas da Seção rodando em http://localhost:${PORT}`);
+  });
+}
+
+startServer();
