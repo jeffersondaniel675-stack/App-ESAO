@@ -1,5 +1,6 @@
-import { ClipboardList, LogOut, ShieldCheck, User as UserIcon, Users } from 'lucide-react';
+import { ClipboardList, LogOut, ShieldCheck, Users } from 'lucide-react';
 import type { User } from '../types';
+import Avatar from './Avatar';
 
 type Tab = 'tarefas' | 'membros';
 
@@ -18,16 +19,24 @@ export default function Topbar({
 
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[#012d1d] text-emerald-300 rounded-xl hidden sm:flex">
             <ClipboardList size={18} />
           </div>
           <div>
             <h1 className="font-headline font-bold text-base sm:text-lg text-slate-900 leading-tight">Tarefas da Seção</h1>
-            <p className="text-xs text-slate-500 flex items-center gap-1">
-              {isAdmin ? <ShieldCheck size={12} /> : <UserIcon size={12} />}
-              {user.nomeGuerra} · {isAdmin ? 'Administrador' : 'Membro'}
+            <p className="text-xs text-slate-500">Intendência · ESAO 2026</p>
+          </div>
+        </div>
+
+        <div className="hidden md:flex items-center gap-2 mr-auto ml-6 pl-6 border-l border-slate-200">
+          <Avatar name={user.nomeGuerra} size="sm" />
+          <div>
+            <p className="text-xs font-semibold text-slate-800 leading-tight">{user.nomeGuerra}</p>
+            <p className="text-[11px] text-slate-500 flex items-center gap-1">
+              {isAdmin && <ShieldCheck size={10} />}
+              {isAdmin ? 'Administrador' : 'Membro'}
             </p>
           </div>
         </div>

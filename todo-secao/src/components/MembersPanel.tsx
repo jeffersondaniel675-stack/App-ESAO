@@ -2,6 +2,7 @@ import { KeyRound, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api';
 import type { User } from '../types';
+import Avatar from './Avatar';
 
 export default function MembersPanel({
   members,
@@ -121,12 +122,15 @@ export default function MembersPanel({
         <div className="divide-y divide-slate-100">
           {members.map((m) => (
             <div key={m.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <p className="text-sm font-semibold text-slate-900">{m.nomeGuerra}</p>
-                <p className="text-xs text-slate-500 flex items-center gap-1">
-                  {m.tipoAcesso === 'admin' && <ShieldCheck size={11} className="text-emerald-600" />}
-                  {m.tipoAcesso === 'admin' ? 'Administrador' : 'Membro'}
-                </p>
+              <div className="flex items-center gap-2.5">
+                <Avatar name={m.nomeGuerra} />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{m.nomeGuerra}</p>
+                  <p className="text-xs text-slate-500 flex items-center gap-1">
+                    {m.tipoAcesso === 'admin' && <ShieldCheck size={11} className="text-emerald-600" />}
+                    {m.tipoAcesso === 'admin' ? 'Administrador' : 'Membro'}
+                  </p>
+                </div>
               </div>
               <div className="flex gap-1.5">
                 <button
