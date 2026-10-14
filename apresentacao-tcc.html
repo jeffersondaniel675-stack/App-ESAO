@@ -43,12 +43,30 @@
     padding: 64px 80px 72px;
     display: flex; flex-direction: column;
     opacity: 0; visibility: hidden;
-    transform: translateX(24px);
-    transition: opacity .45s ease, transform .45s ease, visibility .45s;
+    transform: scale(1.04);
+    filter: blur(18px);
+    transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1), filter .7s ease, visibility .7s;
     overflow: hidden;
   }
-  .slide.active { opacity: 1; visibility: visible; transform: none; }
-  .slide.past { transform: translateX(-24px); }
+  .slide.active { opacity: 1; visibility: visible; transform: none; filter: blur(0); }
+  .slide.past { transform: scale(.97); }
+
+  /* Elementos do slide surgem em sequência, saindo do desfoque */
+  .slide > *:not(.footer) {
+    opacity: 0; filter: blur(10px); transform: translateY(10px);
+    transition: opacity .6s ease, filter .6s ease, transform .6s ease;
+  }
+  .slide.active > *:not(.footer) { opacity: 1; filter: blur(0); transform: none; }
+  .slide.active > *:nth-child(1) { transition-delay: .15s; }
+  .slide.active > *:nth-child(2) { transition-delay: .25s; }
+  .slide.active > *:nth-child(3) { transition-delay: .38s; }
+  .slide.active > *:nth-child(4) { transition-delay: .5s; }
+  .slide.active > *:nth-child(5) { transition-delay: .62s; }
+  .slide.active > *:nth-child(n+6) { transition-delay: .74s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide > * { transition: opacity .2s ease !important; transform: none !important; filter: none !important; }
+  }
 
   /* ---------- Tipografia ---------- */
   .kicker {
@@ -176,7 +194,8 @@
     body { background: none; overflow: visible; }
     .viewport { position: static; display: block; }
     .deck { transform: none !important; width: 1280px; height: auto; }
-    .slide { position: relative; opacity: 1; visibility: visible; transform: none; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .slide, .slide > * { opacity: 1 !important; filter: none !important; transform: none !important; }
+    .slide { position: relative; visibility: visible; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
     .progress, .hud, .notes, .help { display: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
