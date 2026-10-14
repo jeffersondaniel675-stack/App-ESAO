@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bifosfonatos em Implantodontia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0D0E10;
+    --surface: #17191C;
+    --surface-2: #1F2226;
+    --line: #2E3237;
+    --line-2: #3A3F45;
+    --ink: #F1F2F4;
+    --silver: #C0C0C0;
+    --muted: #9EA3AA;
+    --red: #ED1C24;
+    --red-soft: rgba(237, 28, 36, .10);
+    --blue: #00BFFF;
+    --blue-soft: rgba(0, 191, 255, .08);
+    --green: #00FF00;
+    --sans: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #060708;
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Palco 16:9 escalável ---------- */
+  .viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+  .deck { position: relative; width: 1280px; height: 720px; transform-origin: center center; }
+  .slide {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      radial-gradient(90% 70% at 85% 0%, rgba(0,191,255,.07), transparent 60%),
+      var(--bg);
+    padding: 60px 80px 72px;
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transform: scale(1.04);
+    filter: blur(18px);
+    transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1), filter .7s ease, visibility .7s;
+    overflow: hidden;
+  }
+  .slide::before {
+    content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 1px;
+    background: linear-gradient(90deg, var(--red), transparent 45%);
+  }
+  .slide.active { opacity: 1; visibility: visible; transform: none; filter: blur(0); }
+  .slide.past { transform: scale(.97); }
+
+  /* Elementos do slide surgem em sequência, saindo do desfoque */
+  .slide > *:not(.footer) {
+    opacity: 0; filter: blur(10px); transform: translateY(16px);
+    transition: opacity .42s ease-out, filter .42s ease-out, transform .42s ease-out;
+  }
+  .slide.active > *:not(.footer) { opacity: 1; filter: blur(0); transform: none; }
+  .slide.active > *:nth-child(1) { transition-delay: .15s; }
+  .slide.active > *:nth-child(2) { transition-delay: .23s; }
+  .slide.active > *:nth-child(3) { transition-delay: .31s; }
+  .slide.active > *:nth-child(4) { transition-delay: .39s; }
+  .slide.active > *:nth-child(5) { transition-delay: .47s; }
+  .slide.active > *:nth-child(n+6) { transition-delay: .55s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide > * { transition: opacity .2s ease !important; transform: none !important; filter: none !important; }
+    .flowline { animation: none !important; }
+  }
+
+  /* ---------- Tipografia ---------- */
+  .kicker {
+    font: 500 14px var(--mono); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .kicker .num { color: var(--red); font-weight: 600; }
+  .kicker .num::before { content: "["; color: var(--line-2); margin-right: 2px; }
+  .kicker .num::after { content: "]"; color: var(--line-2); margin-left: 2px; }
+  .kicker::after { content: ""; flex: 1; height: 1px; background: var(--line); margin-left: 8px; }
+  h1, h2, h3 { font-family: var(--sans); font-weight: 700; letter-spacing: -.02em; }
+  h2 { font-size: 42px; line-height: 1.12; margin-bottom: 30px; max-width: 1040px; }
+  h3 { font-size: 21px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; margin-bottom: 8px; }
+  p, li { font-size: 19px; line-height: 1.6; color: var(--silver); }
+  b { color: var(--ink); font-weight: 600; }
+  .muted { color: var(--muted); }
+  em.hl { font-style: normal; color: var(--red); font-weight: 700; }
+  .quote { font-size: 24px; line-height: 1.45; color: var(--ink); font-weight: 400; }
+
+  .footer {
+    position: absolute; left: 80px; right: 80px; bottom: 26px;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 12px var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase;
+  }
+  .footer .status::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green); margin-right: 8px; vertical-align: 1px;
+  }
+
+  /* ---------- Componentes ---------- */
+  .grid { display: grid; gap: 20px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: 1.15fr 1fr 1.45fr; }
+  .g-asym { grid-template-columns: 1.3fr 1fr; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px 26px; box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    position: relative;
+  }
+  .card p { font-size: 17px; color: var(--muted); }
+  .card.red { background: linear-gradient(180deg, var(--red-soft), transparent 140%), var(--surface); border-color: rgba(237,28,36,.35); }
+  .card.blue { background: linear-gradient(180deg, var(--blue-soft), transparent 140%), var(--surface); border-color: rgba(0,191,255,.3); }
+  .card.red::before, .card.blue::before {
+    content: ""; position: absolute; left: -1px; top: 14px; bottom: 14px; width: 2px; border-radius: 2px;
+  }
+  .card.red::before { background: var(--red); box-shadow: 0 0 10px rgba(237,28,36,.6); }
+  .card.blue::before { background: var(--blue); box-shadow: 0 0 10px rgba(0,191,255,.6); }
+  .card.focus { border-color: var(--red); box-shadow: 0 0 0 1px rgba(237,28,36,.25), 0 0 28px rgba(237,28,36,.18); }
+  .card.outline { border: 1px solid var(--line-2); background: var(--surface-2); }
+
+  .tag {
+    display: inline-block; align-self: flex-start;
+    font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 4px; margin-bottom: 12px;
+    border: 1px solid var(--line-2); color: var(--silver);
+  }
+  .tag.red { color: #FF5A60; border-color: rgba(237,28,36,.45); background: var(--red-soft); }
+  .tag.blue { color: var(--blue); border-color: rgba(0,191,255,.4); background: var(--blue-soft); }
+  .tag.warn { color: var(--silver); border-color: var(--line-2); background: var(--surface-2); }
+
+  .callout {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: var(--red-soft); border: 1px solid rgba(237,28,36,.35);
+    border-radius: var(--radius); padding: 16px 22px; margin-top: auto;
+  }
+  .callout .ico { font: 700 15px var(--mono); line-height: 1.75; color: var(--red); white-space: nowrap; }
+  .callout p { font-size: 17px; color: var(--silver); }
+  .callout.info { background: var(--blue-soft); border-color: rgba(0,191,255,.3); }
+  .callout.info .ico { color: var(--blue); }
+
+  .ref { font: 600 13px var(--mono); color: var(--blue); margin-bottom: 8px; letter-spacing: .02em; }
+
+  ul.dots { list-style: none; display: grid; gap: 12px; }
+  ul.dots li { padding-left: 24px; position: relative; }
+  ul.dots li::before {
+    content: ""; position: absolute; left: 2px; top: .7em;
+    width: 7px; height: 7px; background: var(--red); transform: rotate(45deg);
+  }
+  .card.blue ul.dots li::before { background: var(--blue); }
+
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chips .tag { margin: 0; }
+
+  /* ---------- Capa ---------- */
+  .cover { padding: 0; flex-direction: row; }
+  .cover .left { flex: 1.25; padding: 72px 64px 72px 80px; display: flex; flex-direction: column; }
+  .cover .right {
+    flex: 1; position: relative; display: grid; place-items: center;
+    border-left: 1px solid var(--line);
+    background: radial-gradient(70% 60% at 50% 50%, rgba(237,28,36,.10), transparent 70%);
+  }
+  .cover .eyebrow { font: 500 14px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--red); }
+  .cover h1 { font-size: 58px; line-height: 1.05; letter-spacing: -.03em; margin: 26px 0 0; color: var(--ink); }
+  .cover h1 span { color: var(--blue); }
+  .cover .who { margin-top: auto; display: grid; gap: 16px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .cover .who .name { font-size: 26px; font-weight: 500; color: var(--ink); }
+  .cover .who .meta { font: 14px/1.9 var(--mono); color: var(--muted); }
+  .cover .who .meta b { color: var(--silver); font-weight: 500; }
+
+  .flowline { stroke-dasharray: 4 8; animation: flow 1.6s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -24; } }
+
+  /* ---------- Fluxo diagnóstico ---------- */
+  .flow { display: grid; grid-template-columns: 1fr 48px 1.15fr 48px 1.5fr; align-items: stretch; }
+  .flow .arrow { position: relative; display: grid; place-items: center; }
+  .flow .arrow::before { content: ""; position: absolute; left: 6px; right: 10px; top: 50%; height: 1px; background: var(--line-2); }
+  .flow .arrow::after {
+    content: ""; position: absolute; right: 8px; top: calc(50% - 4px);
+    border: 4px solid transparent; border-left: 6px solid var(--red);
+  }
+  .flow .stack { display: grid; gap: 14px; }
+
+  /* ---------- Visualizações ---------- */
+  .stat { font: 600 40px var(--mono); color: var(--ink); line-height: 1; margin-bottom: 10px; letter-spacing: -.02em; }
+  .stat span { color: var(--red); }
+  .meter { margin-top: 14px; }
+  .meter .track { position: relative; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .meter .fill {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,191,255,.25) 0%, var(--blue) 18%, var(--blue) 30%, rgba(0,191,255,.35) 65%, transparent 100%);
+  }
+  .meter .labels { display: flex; justify-content: space-between; margin-top: 8px; font: 12px var(--mono); color: var(--muted); }
+  .meter .labels .peak { color: var(--blue); }
+  .layers { display: grid; gap: 10px; }
+  .layer {
+    display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 20px;
+  }
+  .layer .id { font: 600 13px var(--mono); color: var(--red); }
+  .layer h3 { margin: 0; font-size: 20px; }
+
+  /* ---------- Encerramento ---------- */
+  .closing { align-items: center; justify-content: center; text-align: center;
+    background:
+      radial-gradient(50% 45% at 50% 50%, rgba(237,28,36,.14), transparent 70%),
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      var(--bg);
+  }
+  .closing .eyebrow { font: 500 14px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--red); margin-bottom: 20px; }
+  .closing h2 { font-size: 80px; letter-spacing: -.04em; margin-bottom: 18px; max-width: none; }
+  .closing p { font-size: 22px; color: var(--silver); }
+  .closing .small { font: 14px var(--mono); color: var(--muted); margin-top: 10px; }
+
+  /* ---------- Controles ---------- */
+  .progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--red); box-shadow: 0 0 10px rgba(237,28,36,.7); transition: width .3s ease-out; z-index: 100; }
+  .hud {
+    position: fixed; right: 18px; bottom: 16px; z-index: 100;
+    display: flex; gap: 8px; align-items: center;
+    font: 500 12px var(--mono); color: var(--muted);
+    opacity: .35; transition: opacity .2s;
+  }
+  .hud:hover { opacity: 1; }
+  .hud button {
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line-2);
+    border-radius: 6px; padding: 7px 11px; font: inherit; cursor: pointer;
+    transition: background .2s, border-color .2s;
+  }
+  .hud button:hover { background: var(--surface-2); border-color: var(--red); }
+  .hud button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .notes {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+    max-height: 42vh; overflow: auto;
+    background: var(--surface); color: var(--ink);
+    border-top: 1px solid var(--red);
+    padding: 22px max(16px, calc((100vw - 900px) / 2)) 28px;
+    transform: translateY(100%); transition: transform .3s ease-out;
+  }
+  .notes.open { transform: none; box-shadow: 0 -10px 30px rgba(0,0,0,.5); }
+  .notes h4 { font: 600 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--red); margin-bottom: 10px; }
+  .notes p { font-size: 17px; line-height: 1.6; margin-bottom: 10px; color: var(--silver); }
+  .help {
+    position: fixed; left: 16px; bottom: 16px; z-index: 100;
+    font: 12px var(--mono); color: var(--muted); opacity: .6; transition: opacity .6s;
+  }
+  .help.hide { opacity: 0; pointer-events: none; }
+  kbd { font: 600 11px var(--mono); border: 1px solid var(--line-2); border-radius: 4px; padding: 1px 6px; }
+
+  /* ---------- Impressão / PDF ---------- */
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    body { background: none; overflow: visible; }
+    .viewport { position: static; display: block; }
+    .deck { transform: none !important; width: 1280px; height: auto; }
+    .slide, .slide > * { opacity: 1 !important; filter: none !important; transform: none !important; }
+    .slide { position: relative; visibility: visible; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .progress, .hud, .notes, .help { display: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+  /* ---------- Componentes extras ---------- */
+  .cover-q { margin-top: 24px; font-size: 18px; max-width: 520px; color: var(--muted); }
+  .pipe { display: grid; grid-template-columns: 1fr 70px 1.1fr 48px 1.2fr; align-items: stretch; }
+  .pipe .card { padding: 16px 22px; }
+  .pipe .card h3 { margin: 0; }
+  .pipe .card p { font-size: 15px; margin-top: 4px; }
+  .arrow { position: relative; display: grid; place-items: center; }
+  .arrow::before { content: ""; position: absolute; left: 6px; right: 10px; top: 50%; height: 1px; background: var(--line-2); }
+  .arrow::after { content: ""; position: absolute; right: 8px; top: calc(50% - 4px); border: 4px solid transparent; border-left: 6px solid var(--blue); }
+  .arrow.inhibit::before { background: var(--red); }
+  .arrow.inhibit::after { border: 0; width: 2px; height: 16px; top: calc(50% - 8px); right: 10px; background: var(--red); }
+  .arrow span { position: relative; top: -14px; font: 600 11px var(--mono); color: var(--red); text-transform: uppercase; letter-spacing: .06em; }
+  .versus { display: grid; grid-template-columns: 1fr 56px 1fr; align-items: stretch; }
+  .versus .vs { display: grid; place-items: center; font: 600 28px var(--mono); color: var(--muted); }
+  .bars { margin-top: 18px; display: grid; gap: 12px; }
+  .bars .row { display: grid; grid-template-columns: 110px 1fr 74px; align-items: center; gap: 14px; }
+  .bars .row > span:first-child { font-size: 15px; color: var(--silver); }
+  .bars .bar { height: 16px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+  .bars .bar i { display: block; height: 100%; background: var(--blue); transform-origin: left center; animation: grow 1.2s ease-out both .5s; }
+  .bars .bar i.red { background: var(--red); }
+  .slide:not(.active) .bars .bar i { animation: none; transform: scaleX(0); }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .bars .val { font: 600 17px var(--mono); color: var(--ink); text-align: right; }
+  .bars .axis { display: flex; justify-content: space-between; margin-left: 124px; margin-right: 88px; font: 11px var(--mono); color: var(--muted); text-transform: uppercase; }
+  .spectrum .track { height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--blue), #6E5A8C 50%, var(--red)); box-shadow: 0 0 14px rgba(237,28,36,.18); }
+  .spectrum .ends { display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px; color: var(--muted); }
+  .spectrum .ends span { font: 13px var(--mono); }
+  ol.criteria { list-style: none; counter-reset: c; display: grid; gap: 12px; }
+  ol.criteria li { counter-increment: c; position: relative; padding-left: 40px; font-size: 17px; }
+  ol.criteria li::before { content: counter(c, decimal-leading-zero); position: absolute; left: 0; top: 1px; font: 600 13px var(--mono); color: var(--red); border: 1px solid rgba(237,28,36,.45); border-radius: 4px; padding: 2px 5px; }
+  .steps { display: grid; grid-template-columns: 1fr 1.1fr 1.25fr 1fr; gap: 16px; }
+  .steps .card { padding: 20px 22px; }
+  .steps .card:not(:last-child)::after { content: ""; position: absolute; right: -13px; top: 50%; border: 5px solid transparent; border-left: 7px solid var(--red); transform: translateY(-50%); z-index: 1; }
+  .steps .id { display: inline-block; font: 600 13px var(--mono); color: var(--red); margin-bottom: 10px; }
+  .steps p { font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="viewport">
+<div class="deck" id="deck">
+
+  <!-- 1. Capa -->
+  <section class="slide cover" data-notes="Boa tarde à banca examinadora e a todos os presentes.|Meu nome é Giovanna Borges de Oliveira Nery e apresentarei meu Trabalho de Conclusão de Curso, intitulado ‘O uso de bifosfonatos em implantodontia’, desenvolvido no curso de Especialização em Implantodontia, sob orientação da professora doutora Carolina Ventura.|O trabalho aborda uma questão importante para a prática clínica: quais cuidados devem ser considerados ao planejar implantes dentários em pacientes que utilizam bifosfonatos?">
+    <div class="left">
+      <div class="eyebrow">// Trabalho de Conclusão de Curso</div>
+      <h1>O uso de <span>bifosfonatos</span> em implantodontia</h1>
+      <p class="cover-q"><b>Questão:</b> quais cuidados considerar ao planejar implantes em pacientes que utilizam bifosfonatos?</p>
+      <div class="who">
+        <div class="name">Giovanna Borges de Oliveira Nery</div>
+        <div class="meta">
+          Especialização em Implantodontia<br>
+          Orientadora: <b>Profa. Dra. Carolina Ventura</b>
+        </div>
+      </div>
+    </div>
+    <div class="right" aria-hidden="true">
+      <svg width="380" height="420" viewBox="0 0 380 420" fill="none" font-family="JetBrains Mono, monospace">
+        <!-- osso -->
+        <rect x="40" y="110" width="300" height="270" rx="10" fill="#17191C" stroke="#3A3F45"/>
+        <rect x="40" y="110" width="300" height="34" rx="10" fill="#1F2226" stroke="#3A3F45"/>
+        <g stroke="#2E3237">
+          <circle cx="80" cy="230" r="9"/><circle cx="300" cy="250" r="11"/><circle cx="95" cy="320" r="12"/>
+          <circle cx="290" cy="330" r="8"/><circle cx="70" cy="280" r="6"/><circle cx="310" cy="200" r="7"/>
+        </g>
+        <text x="52" y="132" fill="#9EA3AA" font-size="10" letter-spacing="1">CORTICAL</text>
+        <text x="52" y="370" fill="#9EA3AA" font-size="10" letter-spacing="1">OSSO TRABECULAR</text>
+        <!-- implante -->
+        <rect x="160" y="40" width="60" height="26" rx="4" fill="#26292E" stroke="#C0C0C0"/>
+        <rect x="170" y="66" width="40" height="18" fill="#26292E" stroke="#C0C0C0"/>
+        <path d="M166 84h48v190l-24 30-24-30z" fill="#1F2226" stroke="#C0C0C0" stroke-width="1.5"/>
+        <g stroke="#C0C0C0" stroke-width="1.5">
+          <path d="M160 110l60-8M160 140l60-8M160 170l60-8M160 200l60-8M160 230l60-8M162 258l56-8"/>
+        </g>
+        <!-- interface osseointegração -->
+        <path class="flowline" d="M150 96v190M230 96v190" stroke="#00BFFF" stroke-width="1.5"/>
+        <path d="M232 96h56" stroke="#00BFFF" stroke-width="1"/>
+        <text x="240" y="88" fill="#00BFFF" font-size="10" letter-spacing="1">OSSEOINTEGRAÇÃO</text>
+        <!-- osteoclasto inibido -->
+        <circle cx="96" cy="250" r="16" fill="rgba(237,28,36,.12)" stroke="#ED1C24"/>
+        <path d="M86 240l20 20" stroke="#ED1C24" stroke-width="2"/>
+        <path d="M112 250h36" stroke="#ED1C24" stroke-width="1" stroke-dasharray="3 4"/>
+        <text x="56" y="224" fill="#FF5A60" font-size="10" letter-spacing="1">OSTEOCLASTO</text>
+        <circle cx="330" cy="58" r="3" fill="#00FF00"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 2. Introdução -->
+  <section class="slide" data-notes="Os bifosfonatos são medicamentos utilizados no tratamento de doenças como osteoporose, doença de Paget, mieloma múltiplo e metástases ósseas.|Sua principal ação é reduzir a atividade dos osteoclastos, que são as células responsáveis pela reabsorção óssea. Dessa maneira, contribuem para a preservação da massa óssea.|Entretanto, essa ação também gera preocupação na implantodontia, porque o sucesso dos implantes depende da osseointegração e de uma resposta adequada do tecido ósseo.|Além disso, existe o risco de osteonecrose dos maxilares relacionada a medicamentos, conhecida pela sigla MRONJ.|Com o envelhecimento da população e o aumento do número de pacientes em tratamento com esses medicamentos, compreender essa relação torna-se cada vez mais relevante para o cirurgião-dentista.">
+    <div class="kicker"><span class="num">2</span>Introdução</div>
+    <h2>Bifosfonatos: preservam a massa óssea, mas exigem atenção na implantodontia</h2>
+    <div class="card outline" style="display:flex; align-items:center; gap:24px; padding:16px 24px; margin-bottom:20px">
+      <div style="font:500 13px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap">Indicações &gt;</div>
+      <div class="chips">
+        <span class="tag">Osteoporose</span>
+        <span class="tag">Doença de Paget</span>
+        <span class="tag">Mieloma múltiplo</span>
+        <span class="tag">Metástases ósseas</span>
+      </div>
+    </div>
+    <div class="pipe" style="margin-bottom:20px">
+      <div class="card blue"><span class="tag blue">Fármaco</span><h3>Bifosfonato</h3></div>
+      <div class="arrow inhibit"><span>inibe</span></div>
+      <div class="card"><span class="tag">Alvo</span><h3>Osteoclastos</h3><p>Células da reabsorção óssea</p></div>
+      <div class="arrow"></div>
+      <div class="card blue"><span class="tag blue">Efeito</span><h3>Preservação da massa óssea</h3></div>
+    </div>
+    <div class="grid g-asym">
+      <div class="callout" style="margin:0">
+        <span class="ico">[!]</span>
+        <p>O sucesso dos implantes depende da <b>osseointegração</b> e de uma resposta óssea adequada, e há risco de <b>MRONJ</b>: osteonecrose dos maxilares relacionada a medicamentos.</p>
+      </div>
+      <div class="card" style="padding:16px 22px">
+        <div class="ref">Relevância</div>
+        <p>Envelhecimento da população e mais pacientes em tratamento com esses medicamentos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Objetivo -->
+  <section class="slide" data-notes="O objetivo deste estudo foi analisar os benefícios, os riscos e as implicações clínicas do uso de bifosfonatos na implantodontia.|Para isso, foram abordados os mecanismos de ação desses medicamentos, sua relação com a osseointegração, os resultados dos implantes e os cuidados necessários para o planejamento do tratamento.">
+    <div class="kicker"><span class="num">3</span>Objetivo</div>
+    <h2>Analisar <em class="hl">benefícios, riscos e implicações clínicas</em> dos bifosfonatos na implantodontia</h2>
+    <div class="grid g-asym" style="align-items:start">
+      <div class="layers">
+        <div class="layer"><span class="id">01</span><h3>Mecanismos de ação</h3></div>
+        <div class="layer"><span class="id">02</span><h3>Relação com a osseointegração</h3></div>
+        <div class="layer"><span class="id">03</span><h3>Resultados dos implantes</h3></div>
+        <div class="layer"><span class="id">04</span><h3>Cuidados no planejamento do tratamento</h3></div>
+      </div>
+      <div class="card red">
+        <span class="tag red">Questão central</span>
+        <p class="quote">Quais cuidados devem ser considerados ao planejar implantes em pacientes que utilizam bifosfonatos?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Metodologia -->
+  <section class="slide" data-notes="Foi realizada uma revisão narrativa da literatura, com abordagem descritiva e qualitativa.|As buscas ocorreram entre abril e junho de 2026, nas bases PubMed e SciELO e, de forma complementar, no Google Acadêmico.|Foram utilizados termos relacionados a bifosfonatos, implantes dentários, osseointegração, falha de implantes e osteonecrose dos maxilares.|O recorte principal compreendeu publicações de 2021 a 2025, com inclusão de uma referência anterior necessária à discussão sobre suspensão temporária do medicamento.|A matriz de síntese reuniu oito publicações diretamente relacionadas à questão de pesquisa.|É importante destacar que este trabalho é uma revisão narrativa. Portanto, não foi conduzido como uma revisão sistemática e não utilizou todas as etapas do protocolo PRISMA.">
+    <div class="kicker"><span class="num">4</span>Metodologia</div>
+    <h2>Revisão narrativa da literatura, descritiva e qualitativa</h2>
+    <div class="grid g3">
+      <div class="card">
+        <span class="tag blue">Bases · abr–jun 2026</span>
+        <p style="color:var(--ink)">PubMed<br>SciELO<br><span class="muted">Google Acadêmico (complementar)</span></p>
+      </div>
+      <div class="card">
+        <span class="tag blue">Recorte</span>
+        <div class="stat">2021<span>–</span>2025</div>
+        <p>+ 1 referência anterior sobre suspensão temporária</p>
+      </div>
+      <div class="card red">
+        <span class="tag red">Matriz de síntese</span>
+        <div class="stat" style="font-size:52px">08</div>
+        <p>publicações diretamente relacionadas à questão de pesquisa</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:20px; font-size:17px"><span style="font-family:var(--mono); color:var(--blue)">termos &gt;</span> bifosfonatos · implantes dentários · osseointegração · falha de implantes · osteonecrose dos maxilares</p>
+    <div class="callout">
+      <span class="ico">[!]</span>
+      <p>Revisão <b>narrativa</b>: não foi conduzida como revisão sistemática e não utilizou todas as etapas do protocolo <b>PRISMA</b>.</p>
+    </div>
+  </section>
+
+  <!-- 5. Mecanismo -->
+  <section class="slide" data-notes="Para compreender os resultados, precisamos considerar a relação entre a ação do medicamento e o metabolismo ósseo.|Os bifosfonatos reduzem a reabsorção óssea, o que representa um benefício no tratamento das doenças para as quais são indicados.|Por outro lado, a remodelação óssea também participa da adaptação e da reparação do osso ao redor dos implantes.|Assim, o efeito do medicamento precisa ser avaliado dentro do contexto de cada paciente. A preservação da massa óssea, isoladamente, não significa que a resposta ao tratamento implantodôntico será necessariamente melhor.">
+    <div class="kicker"><span class="num">5</span>Mecanismo de ação</div>
+    <h2>Ação do medicamento × metabolismo ósseo ao redor do implante</h2>
+    <div class="versus">
+      <div class="card blue">
+        <span class="tag blue">Benefício</span>
+        <h3>Redução da reabsorção óssea</h3>
+        <p>Favorece o tratamento das doenças para as quais o fármaco é indicado.</p>
+      </div>
+      <div class="vs">×</div>
+      <div class="card red">
+        <span class="tag red">Ponto de atenção</span>
+        <h3>A remodelação óssea também atua no implante</h3>
+        <p>Participa da adaptação e da reparação do osso peri-implantar.</p>
+      </div>
+    </div>
+    <div class="card focus" style="margin-top:auto; padding:22px 28px">
+      <p class="quote" style="font-size:23px">Preservar massa óssea, <b>isoladamente</b>, não significa resposta implantodôntica necessariamente melhor. O efeito deve ser avaliado <b>no contexto de cada paciente</b>.</p>
+    </div>
+  </section>
+
+  <!-- 6. Resultados -->
+  <section class="slide" data-notes="Os estudos analisados apresentaram resultados diferentes sobre a falha de implantes em usuários de bifosfonatos.|Na revisão de Jung e colaboradores, de 2025, não foi identificado aumento estatisticamente significativo da falha de implantes. A sobrevivência foi de aproximadamente 96,2% entre os usuários e de 98,1% entre os não usuários.|Já Sulaiman e colaboradores, em 2023, analisaram 33 publicações e encontraram maior chance de falha no nível do implante entre usuários de bifosfonatos. Apesar disso, a sobrevivência absoluta dos implantes permaneceu elevada.|Crupi e colaboradores também relataram resultados favoráveis em pacientes selecionados, especialmente naqueles tratados com baixa dose para osteoporose.|Esses achados mostram que uma elevada sobrevivência dos implantes pode coexistir com um possível aumento do risco de falha.|A divergência entre os estudos também reforça a necessidade de cautela, porque as populações, os medicamentos, as doses e os períodos de acompanhamento não foram iguais.">
+    <div class="kicker"><span class="num">6</span>Resultados</div>
+    <h2>Alta sobrevivência pode coexistir com possível aumento do risco de falha</h2>
+    <div class="grid g-asym" style="align-items:stretch">
+      <div class="card">
+        <div class="ref">Jung et al., 2025</div>
+        <p>Sem aumento estatisticamente significativo da falha de implantes.</p>
+        <div class="bars">
+          <div class="row"><span>Usuários</span><div class="bar"><i class="red" style="width:96.2%"></i></div><span class="val">≈96,2%</span></div>
+          <div class="row"><span>Não usuários</span><div class="bar"><i style="width:98.1%"></i></div><span class="val">≈98,1%</span></div>
+          <div class="axis"><span>0%</span><span>sobrevivência dos implantes</span><span>100%</span></div>
+        </div>
+      </div>
+      <div class="grid" style="gap:14px">
+        <div class="card" style="padding:16px 22px">
+          <div class="ref">Sulaiman et al., 2023 · 33 publicações</div>
+          <p style="font-size:16px">Maior chance de falha no nível do implante; sobrevivência absoluta ainda elevada.</p>
+        </div>
+        <div class="card" style="padding:16px 22px">
+          <div class="ref">Crupi et al.</div>
+          <p style="font-size:16px">Resultados favoráveis em pacientes selecionados, sobretudo com baixa dose para osteoporose.</p>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="ico">[!]</span>
+      <p>Divergência entre estudos: <b>populações, medicamentos, doses e acompanhamento</b> não foram iguais. Cautela na interpretação.</p>
+    </div>
+  </section>
+
+  <!-- 7. Risco e MRONJ -->
+  <section class="slide" data-notes="Um dos pontos centrais do trabalho é que o risco não deve ser definido apenas pela via de administração do medicamento.|É necessário considerar a indicação terapêutica, a potência do fármaco, a dose cumulativa, a duração do tratamento, as condições sistêmicas e a saúde bucal.|Por isso, pacientes com osteoporose em esquemas de baixa dose apresentam um contexto diferente daquele dos pacientes oncológicos em tratamento de alta dose.|Em relação à osteonecrose dos maxilares, os critérios apresentados pela AAOMS incluem o uso atual ou anterior dos medicamentos relacionados, a presença de osso exposto ou sondável por fístula por mais de oito semanas e a ausência de radioterapia ou doença metastática evidente nos maxilares.|Infecções locais e procedimentos que envolvem manipulação óssea são fatores relevantes nessa avaliação. Entretanto, o risco resulta da interação entre diferentes fatores, e não de uma única condição.">
+    <div class="kicker"><span class="num">7</span>Avaliação do risco</div>
+    <h2>O risco não se define apenas pela via de administração</h2>
+    <div class="grid g-asym" style="align-items:start">
+      <div>
+        <div class="chips" style="margin-bottom:18px">
+          <span class="tag blue">Indicação terapêutica</span>
+          <span class="tag blue">Potência do fármaco</span>
+          <span class="tag blue">Dose cumulativa</span>
+          <span class="tag blue">Duração do tratamento</span>
+          <span class="tag blue">Condições sistêmicas</span>
+          <span class="tag blue">Saúde bucal</span>
+        </div>
+        <div class="spectrum">
+          <div class="track"></div>
+          <div class="ends">
+            <div><b>Osteoporose</b><br><span>baixa dose</span></div>
+            <div style="text-align:right"><b>Oncológico</b><br><span>alta dose</span></div>
+          </div>
+        </div>
+        <p style="font-size:16px; margin-top:14px" class="muted">Infecções locais e manipulação óssea são relevantes, mas o risco resulta da <b>interação entre fatores</b>.</p>
+      </div>
+      <div class="card red">
+        <span class="tag red">MRONJ · critérios AAOMS</span>
+        <ol class="criteria">
+          <li>Uso atual ou anterior dos medicamentos relacionados</li>
+          <li>Osso exposto ou sondável por fístula por <b>mais de 8 semanas</b></li>
+          <li>Ausência de radioterapia ou doença metastática evidente nos maxilares</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Planejamento -->
+  <section class="slide" data-notes="Na prática clínica, os resultados reforçam a importância de uma anamnese detalhada.|É necessário identificar qual medicamento o paciente utiliza, por qual motivo, em qual dose e há quanto tempo.|Também devem ser avaliadas as condições periodontais, a presença de infecções e os fatores sistêmicos que possam interferir no reparo ósseo.|O planejamento deve incluir comunicação com o médico prescritor, esclarecimento dos riscos e das incertezas ao paciente e acompanhamento clínico e radiográfico.|O controle de infecções, a higiene bucal e a técnica cirúrgica cuidadosa fazem parte das estratégias preventivas, mas nenhuma medida isolada garante a ausência de complicações.|Além disso, um bom resultado inicial não elimina a possibilidade de alterações tardias, o que torna o acompanhamento especialmente importante.">
+    <div class="kicker"><span class="num">8</span>Implicações clínicas</div>
+    <h2>Planejamento clínico em usuários de bifosfonatos</h2>
+    <div class="steps">
+      <div class="card"><span class="id">01</span><h3>Anamnese</h3><p>Qual medicamento, por qual motivo, em qual dose e há quanto tempo</p></div>
+      <div class="card"><span class="id">02</span><h3>Avaliação</h3><p>Condições periodontais, infecções e fatores sistêmicos do reparo ósseo</p></div>
+      <div class="card"><span class="id">03</span><h3>Planejamento</h3><p>Médico prescritor, riscos e incertezas ao paciente, controle clínico e radiográfico</p></div>
+      <div class="card"><span class="id">04</span><h3>Prevenção</h3><p>Controle de infecções, higiene bucal e técnica cirúrgica cuidadosa</p></div>
+    </div>
+    <div class="callout">
+      <span class="ico">[!]</span>
+      <p><b>Nenhuma medida isolada</b> garante ausência de complicações, e um bom resultado inicial não elimina <b>alterações tardias</b>: o acompanhamento é essencial.</p>
+    </div>
+  </section>
+
+  <!-- 9. Drug holiday -->
+  <section class="slide" data-notes="Outro tema discutido foi a suspensão temporária da terapia, chamada de drug holiday.|A literatura analisada não apresenta evidência suficiente para recomendar essa suspensão de forma universal como medida de prevenção da osteonecrose.|Essa decisão também precisa considerar os benefícios do medicamento e os riscos relacionados à doença de base, como fraturas ou progressão da doença.|Portanto, quando essa possibilidade é discutida, a decisão deve ser compartilhada com o médico prescritor. O cirurgião-dentista não deve suspender a medicação por conta própria.">
+    <div class="kicker"><span class="num">9</span>Suspensão temporária</div>
+    <h2><em class="hl">Drug holiday</em>: sem evidência para recomendação universal</h2>
+    <div class="grid g-asym" style="align-items:stretch">
+      <div class="card">
+        <span class="tag">Na literatura analisada</span>
+        <p class="quote" style="font-size:22px">Não há evidência suficiente para recomendar a suspensão de forma universal como prevenção da osteonecrose.</p>
+      </div>
+      <div class="card blue">
+        <span class="tag blue">A decisão pesa</span>
+        <ul class="dots">
+          <li>Benefícios do medicamento</li>
+          <li>Riscos da doença de base: <b>fraturas</b> ou <b>progressão</b></li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="ico">[!]</span>
+      <p>Decisão <b>compartilhada com o médico prescritor</b>. O cirurgião-dentista <b>não deve suspender</b> a medicação por conta própria.</p>
+    </div>
+  </section>
+
+  <!-- 10. Conclusão -->
+  <section class="slide" data-notes="Conclui-se que o uso de bifosfonatos não representa uma contraindicação absoluta à instalação de implantes em todos os pacientes.|Os implantes podem ser considerados em pacientes selecionados, sobretudo naqueles com osteoporose tratados em baixa dose, após avaliação individualizada e esclarecimento das incertezas.|Nos pacientes em terapia oncológica de alta dose, a indicação exige maior cautela e deve ser mais restritiva.|A principal contribuição deste trabalho é reforçar que a decisão clínica precisa considerar o conjunto das condições do paciente, sem se apoiar apenas na via de administração do medicamento.|Por fim, são necessários novos estudos prospectivos, com melhor diferenciação dos medicamentos, das doses e das indicações, para esclarecer os riscos em longo prazo.">
+    <div class="kicker"><span class="num">10</span>Conclusão</div>
+    <h2>Bifosfonatos não são contraindicação absoluta para todos os pacientes</h2>
+    <div class="grid g2" style="margin-bottom:20px">
+      <div class="card blue">
+        <span class="tag blue">Osteoporose · baixa dose</span>
+        <h3>Implantes podem ser considerados</h3>
+        <p>Em pacientes selecionados, após avaliação individualizada e esclarecimento das incertezas.</p>
+      </div>
+      <div class="card red">
+        <span class="tag red">Oncológico · alta dose</span>
+        <h3>Maior cautela</h3>
+        <p>Indicação mais restritiva.</p>
+      </div>
+    </div>
+    <p style="font-size:19px"><em class="hl">→</em> A decisão considera o <b>conjunto das condições do paciente</b>, não apenas a via de administração.</p>
+    <div class="callout info">
+      <span class="ico">&gt;&gt;</span>
+      <p><b>Perspectiva:</b> estudos prospectivos que diferenciem medicamentos, doses e indicações, para esclarecer os riscos em longo prazo.</p>
+    </div>
+  </section>
+
+  <!-- 11. Encerramento -->
+  <section class="slide closing" data-notes="Agradeço a atenção de todos e fico à disposição para as perguntas da banca.">
+    <div class="eyebrow">// Obrigada pela atenção</div>
+    <h2>Perguntas?</h2>
+    <p>Giovanna Borges de Oliveira Nery</p>
+    <p class="small">Orientadora: Profa. Dra. Carolina Ventura · Especialização em Implantodontia</p>
+  </section>
+
+</div>
+</div>
+
+<div class="help"><kbd>←</kbd> <kbd>→</kbd> navegar · <kbd>N</kbd> roteiro · <kbd>F</kbd> tela cheia</div>
+<div class="hud">
+  <button id="prev" aria-label="Slide anterior">←</button>
+  <span id="counter">1 / 11</span>
+  <button id="next" aria-label="Próximo slide">→</button>
+  <button id="notesBtn">Roteiro</button>
+  <button id="fsBtn">Tela cheia</button>
+</div>
+<aside class="notes" id="notes"><h4>Roteiro de fala</h4><div id="notesBody"></div></aside>
+
+<script>
+(function () {
+  const deck = document.getElementById('deck');
+  const slides = Array.from(deck.querySelectorAll('.slide'));
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  const notes = document.getElementById('notes');
+  const notesBody = document.getElementById('notesBody');
+  const total = slides.length;
+  let i = 0;
+
+  // Rodapé automático nos slides de conteúdo
+  slides.forEach((s, idx) => {
+    if (s.classList.contains('cover') || s.classList.contains('closing')) return;
+    const f = document.createElement('div');
+    f.className = 'footer';
+    f.innerHTML = '<span>Bifosfonatos × Implantodontia</span><span class="status">Especialização em Implantodontia · TCC</span>';
+    s.appendChild(f);
+  });
+
+  deck.querySelectorAll('.kicker .num').forEach(n => { n.textContent = n.textContent.padStart(2, '0'); });
+
+  function fit() {
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = 'scale(' + scale + ')';
+  }
+
+  function show(n) {
+    i = Math.max(0, Math.min(total - 1, n));
+    slides.forEach((s, idx) => {
+      s.classList.toggle('active', idx === i);
+      s.classList.toggle('past', idx < i);
+    });
+    counter.textContent = (i + 1) + ' / ' + total;
+    progress.style.width = ((i + 1) / total * 100) + '%';
+    notesBody.innerHTML = (slides[i].dataset.notes || '')
+      .split('|').map(t => '<p>' + t + '</p>').join('');
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
+  }
+
+  function toggleFs() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(total - 1);
+    else if (e.key === 'n' || e.key === 'N') notes.classList.toggle('open');
+    else if (e.key === 'f' || e.key === 'F') toggleFs();
+  });
+  document.getElementById('prev').onclick = () => show(i - 1);
+  document.getElementById('next').onclick = () => show(i + 1);
+  document.getElementById('notesBtn').onclick = () => notes.classList.toggle('open');
+  document.getElementById('fsBtn').onclick = toggleFs;
+
+  let x0 = null;
+  document.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+
+  setTimeout(() => document.querySelector('.help').classList.add('hide'), 5000);
+  const hud = document.querySelector('.hud');
+  let hudTimer;
+  document.addEventListener('mousemove', () => {
+    hud.classList.add('show');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => hud.classList.remove('show'), 2000);
+  });
+  window.addEventListener('resize', fit);
+  fit();
+  const start = parseInt(location.hash.slice(1), 10);
+  show(Number.isFinite(start) ? start - 1 : 0);
+})();
+</script>
+</body>
+</html>
