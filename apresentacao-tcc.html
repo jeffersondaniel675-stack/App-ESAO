@@ -6,28 +6,30 @@
 <title>Periodontia e Harmonização Orofacial</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #FBF7F4;
-    --surface: #FFFFFF;
-    --ink: #2A1F23;
-    --muted: #6E5F64;
-    --line: #E9DED9;
-    --rose: #B4536A;
-    --rose-soft: #F6E4E7;
-    --teal: #2F6366;
-    --teal-soft: #E1EEED;
-    --amber: #9A6A1F;
-    --amber-soft: #F7EEDC;
-    --dark: #2C1A22;
-    --serif: "Fraunces", Georgia, "Times New Roman", serif;
-    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bg: #0D0E10;
+    --surface: #17191C;
+    --surface-2: #1F2226;
+    --line: #2E3237;
+    --line-2: #3A3F45;
+    --ink: #F1F2F4;
+    --silver: #C0C0C0;
+    --muted: #9EA3AA;
+    --red: #ED1C24;
+    --red-soft: rgba(237, 28, 36, .10);
+    --blue: #00BFFF;
+    --blue-soft: rgba(0, 191, 255, .08);
+    --green: #00FF00;
+    --sans: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --radius: 8px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    background: #1B1216;
+    background: #060708;
     color: var(--ink);
     font-family: var(--sans);
     overflow: hidden;
@@ -39,8 +41,12 @@
   .deck { position: relative; width: 1280px; height: 720px; transform-origin: center center; }
   .slide {
     position: absolute; inset: 0;
-    background: var(--bg);
-    padding: 64px 80px 72px;
+    background:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      radial-gradient(90% 70% at 85% 0%, rgba(0,191,255,.07), transparent 60%),
+      var(--bg);
+    padding: 60px 80px 72px;
     display: flex; flex-direction: column;
     opacity: 0; visibility: hidden;
     transform: scale(1.04);
@@ -48,145 +54,208 @@
     transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1), filter .7s ease, visibility .7s;
     overflow: hidden;
   }
+  .slide::before {
+    content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 1px;
+    background: linear-gradient(90deg, var(--red), transparent 45%);
+  }
   .slide.active { opacity: 1; visibility: visible; transform: none; filter: blur(0); }
   .slide.past { transform: scale(.97); }
 
   /* Elementos do slide surgem em sequência, saindo do desfoque */
   .slide > *:not(.footer) {
-    opacity: 0; filter: blur(10px); transform: translateY(10px);
-    transition: opacity .6s ease, filter .6s ease, transform .6s ease;
+    opacity: 0; filter: blur(10px); transform: translateY(16px);
+    transition: opacity .42s ease-out, filter .42s ease-out, transform .42s ease-out;
   }
   .slide.active > *:not(.footer) { opacity: 1; filter: blur(0); transform: none; }
   .slide.active > *:nth-child(1) { transition-delay: .15s; }
-  .slide.active > *:nth-child(2) { transition-delay: .25s; }
-  .slide.active > *:nth-child(3) { transition-delay: .38s; }
-  .slide.active > *:nth-child(4) { transition-delay: .5s; }
-  .slide.active > *:nth-child(5) { transition-delay: .62s; }
-  .slide.active > *:nth-child(n+6) { transition-delay: .74s; }
+  .slide.active > *:nth-child(2) { transition-delay: .23s; }
+  .slide.active > *:nth-child(3) { transition-delay: .31s; }
+  .slide.active > *:nth-child(4) { transition-delay: .39s; }
+  .slide.active > *:nth-child(5) { transition-delay: .47s; }
+  .slide.active > *:nth-child(n+6) { transition-delay: .55s; }
 
   @media (prefers-reduced-motion: reduce) {
     .slide, .slide > * { transition: opacity .2s ease !important; transform: none !important; filter: none !important; }
+    .flowline { animation: none !important; }
   }
 
   /* ---------- Tipografia ---------- */
   .kicker {
-    font-size: 15px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--rose); display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+    font: 500 14px var(--mono); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
   }
-  .kicker .num {
-    font-family: var(--serif); font-size: 15px; letter-spacing: 0;
-    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--rose);
-    display: grid; place-items: center;
-  }
-  h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -.01em; }
-  h2 { font-size: 44px; line-height: 1.1; margin-bottom: 30px; max-width: 1000px; }
-  h3 { font-size: 23px; line-height: 1.2; margin-bottom: 10px; }
-  p, li { font-size: 20px; line-height: 1.5; }
+  .kicker .num { color: var(--red); font-weight: 600; }
+  .kicker .num::before { content: "["; color: var(--line-2); margin-right: 2px; }
+  .kicker .num::after { content: "]"; color: var(--line-2); margin-left: 2px; }
+  .kicker::after { content: ""; flex: 1; height: 1px; background: var(--line); margin-left: 8px; }
+  h1, h2, h3 { font-family: var(--sans); font-weight: 700; letter-spacing: -.02em; }
+  h2 { font-size: 42px; line-height: 1.12; margin-bottom: 30px; max-width: 1040px; }
+  h3 { font-size: 21px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; margin-bottom: 8px; }
+  p, li { font-size: 19px; line-height: 1.6; color: var(--silver); }
+  b { color: var(--ink); font-weight: 600; }
   .muted { color: var(--muted); }
-  em.hl { font-style: normal; color: var(--rose); font-weight: 600; }
+  em.hl { font-style: normal; color: var(--red); font-weight: 700; }
+  .quote { font-size: 24px; line-height: 1.45; color: var(--ink); font-weight: 400; }
 
   .footer {
     position: absolute; left: 80px; right: 80px; bottom: 26px;
-    display: flex; justify-content: space-between;
-    font-size: 13px; color: var(--muted); letter-spacing: .02em;
+    display: flex; justify-content: space-between; align-items: center;
+    font: 12px var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase;
+  }
+  .footer .status::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green); margin-right: 8px; vertical-align: 1px;
   }
 
   /* ---------- Componentes ---------- */
-  .grid { display: grid; gap: 22px; }
+  .grid { display: grid; gap: 20px; }
   .g2 { grid-template-columns: 1fr 1fr; }
-  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g3 { grid-template-columns: 1.15fr 1fr 1.45fr; }
+  .g-asym { grid-template-columns: 1.3fr 1fr; }
   .card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-    padding: 26px 28px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px 26px; box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    position: relative;
   }
-  .card p { font-size: 18px; color: var(--muted); }
-  .card.rose { background: var(--rose-soft); border-color: transparent; }
-  .card.teal { background: var(--teal-soft); border-color: transparent; }
+  .card p { font-size: 17px; color: var(--muted); }
+  .card.red { background: linear-gradient(180deg, var(--red-soft), transparent 140%), var(--surface); border-color: rgba(237,28,36,.35); }
+  .card.blue { background: linear-gradient(180deg, var(--blue-soft), transparent 140%), var(--surface); border-color: rgba(0,191,255,.3); }
+  .card.red::before, .card.blue::before {
+    content: ""; position: absolute; left: -1px; top: 14px; bottom: 14px; width: 2px; border-radius: 2px;
+  }
+  .card.red::before { background: var(--red); box-shadow: 0 0 10px rgba(237,28,36,.6); }
+  .card.blue::before { background: var(--blue); box-shadow: 0 0 10px rgba(0,191,255,.6); }
+  .card.focus { border-color: var(--red); box-shadow: 0 0 0 1px rgba(237,28,36,.25), 0 0 28px rgba(237,28,36,.18); }
+  .card.outline { border: 1px solid var(--line-2); background: var(--surface-2); }
+
   .tag {
-    display: inline-block; align-self: flex-start; font-size: 13px; font-weight: 600; letter-spacing: .08em;
-    text-transform: uppercase; padding: 5px 11px; border-radius: 999px; margin-bottom: 14px;
+    display: inline-block; align-self: flex-start;
+    font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 4px; margin-bottom: 12px;
+    border: 1px solid var(--line-2); color: var(--silver);
   }
-  .tag.rose { background: var(--rose-soft); color: var(--rose); }
-  .tag.teal { background: var(--teal-soft); color: var(--teal); }
-  .tag.amber { background: var(--amber-soft); color: var(--amber); }
+  .tag.red { color: #FF5A60; border-color: rgba(237,28,36,.45); background: var(--red-soft); }
+  .tag.blue { color: var(--blue); border-color: rgba(0,191,255,.4); background: var(--blue-soft); }
+  .tag.warn { color: var(--silver); border-color: var(--line-2); background: var(--surface-2); }
 
   .callout {
-    display: flex; gap: 18px; align-items: flex-start;
-    background: var(--amber-soft); border-left: 4px solid var(--amber);
-    border-radius: 10px; padding: 18px 24px; margin-top: auto;
+    display: flex; gap: 16px; align-items: flex-start;
+    background: var(--red-soft); border: 1px solid rgba(237,28,36,.35);
+    border-radius: var(--radius); padding: 16px 22px; margin-top: auto;
   }
-  .callout .ico { font-size: 22px; line-height: 1.3; color: var(--amber); font-weight: 700; }
-  .callout p { font-size: 18px; }
+  .callout .ico { font: 700 15px var(--mono); line-height: 1.75; color: var(--red); white-space: nowrap; }
+  .callout p { font-size: 17px; color: var(--silver); }
+  .callout.info { background: var(--blue-soft); border-color: rgba(0,191,255,.3); }
+  .callout.info .ico { color: var(--blue); }
 
-  .ref { font-size: 15px; font-weight: 600; color: var(--teal); margin-bottom: 6px; letter-spacing: .02em; }
+  .ref { font: 600 13px var(--mono); color: var(--blue); margin-bottom: 8px; letter-spacing: .02em; }
 
-  ul.dots { list-style: none; display: grid; gap: 14px; }
-  ul.dots li { padding-left: 26px; position: relative; }
+  ul.dots { list-style: none; display: grid; gap: 12px; }
+  ul.dots li { padding-left: 24px; position: relative; }
   ul.dots li::before {
-    content: ""; position: absolute; left: 2px; top: .62em;
-    width: 9px; height: 9px; border-radius: 50%; background: var(--rose);
+    content: ""; position: absolute; left: 2px; top: .7em;
+    width: 7px; height: 7px; background: var(--red); transform: rotate(45deg);
   }
+  .card.blue ul.dots li::before { background: var(--blue); }
+
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chips .tag { margin: 0; }
 
   /* ---------- Capa ---------- */
-  .cover { background: var(--dark); color: #F5ECEE; padding: 0; flex-direction: row; }
-  .cover .left { flex: 1.35; padding: 72px 80px; display: flex; flex-direction: column; }
+  .cover { padding: 0; flex-direction: row; }
+  .cover .left { flex: 1.25; padding: 72px 64px 72px 80px; display: flex; flex-direction: column; }
   .cover .right {
-    flex: 1; position: relative;
-    background: radial-gradient(120% 90% at 30% 40%, #5A2E3B 0%, #3A2129 55%, #2C1A22 100%);
-    display: grid; place-items: center;
+    flex: 1; position: relative; display: grid; place-items: center;
+    border-left: 1px solid var(--line);
+    background: radial-gradient(70% 60% at 50% 50%, rgba(237,28,36,.10), transparent 70%);
   }
-  .cover .eyebrow { font-size: 15px; letter-spacing: .16em; text-transform: uppercase; color: #E2A9B6; font-weight: 600; }
-  .cover h1 { font-size: 62px; line-height: 1.04; margin: 26px 0 0; color: #FFF6F7; }
-  .cover h1 span { color: #E8A0B0; font-style: italic; font-weight: 400; }
-  .cover .who { margin-top: auto; display: grid; gap: 18px; }
-  .cover .who .name { font-family: var(--serif); font-size: 28px; color: #FFF6F7; }
-  .cover .who .meta { font-size: 17px; color: #CDB8BE; line-height: 1.6; }
-  .cover .who .meta b { color: #F0DCE1; font-weight: 600; }
+  .cover .eyebrow { font: 500 14px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--red); }
+  .cover h1 { font-size: 58px; line-height: 1.05; letter-spacing: -.03em; margin: 26px 0 0; color: var(--ink); }
+  .cover h1 span { color: var(--blue); }
+  .cover .who { margin-top: auto; display: grid; gap: 16px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .cover .who .name { font-size: 26px; font-weight: 500; color: var(--ink); }
+  .cover .who .meta { font: 14px/1.9 var(--mono); color: var(--muted); }
+  .cover .who .meta b { color: var(--silver); font-weight: 500; }
+
+  .flowline { stroke-dasharray: 4 8; animation: flow 1.6s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -24; } }
 
   /* ---------- Fluxo diagnóstico ---------- */
-  .flow { display: grid; grid-template-columns: 1fr 44px 1.15fr 44px 1.5fr; align-items: stretch; gap: 0; }
-  .flow .arrow { display: grid; place-items: center; color: var(--rose); font-size: 26px; }
-  .flow .stack { display: grid; gap: 16px; }
+  .flow { display: grid; grid-template-columns: 1fr 48px 1.15fr 48px 1.5fr; align-items: stretch; }
+  .flow .arrow { position: relative; display: grid; place-items: center; }
+  .flow .arrow::before { content: ""; position: absolute; left: 6px; right: 10px; top: 50%; height: 1px; background: var(--line-2); }
+  .flow .arrow::after {
+    content: ""; position: absolute; right: 8px; top: calc(50% - 4px);
+    border: 4px solid transparent; border-left: 6px solid var(--red);
+  }
+  .flow .stack { display: grid; gap: 14px; }
 
-  /* ---------- Estatística ---------- */
-  .stat { font-family: var(--serif); font-size: 46px; color: var(--rose); line-height: 1; margin-bottom: 8px; }
+  /* ---------- Visualizações ---------- */
+  .stat { font: 600 40px var(--mono); color: var(--ink); line-height: 1; margin-bottom: 10px; letter-spacing: -.02em; }
+  .stat span { color: var(--red); }
+  .meter { margin-top: 14px; }
+  .meter .track { position: relative; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .meter .fill {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,191,255,.25) 0%, var(--blue) 18%, var(--blue) 30%, rgba(0,191,255,.35) 65%, transparent 100%);
+  }
+  .meter .labels { display: flex; justify-content: space-between; margin-top: 8px; font: 12px var(--mono); color: var(--muted); }
+  .meter .labels .peak { color: var(--blue); }
+  .layers { display: grid; gap: 10px; }
+  .layer {
+    display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 20px;
+  }
+  .layer .id { font: 600 13px var(--mono); color: var(--red); }
+  .layer h3 { margin: 0; font-size: 20px; }
 
   /* ---------- Encerramento ---------- */
-  .closing { background: var(--dark); color: #F5ECEE; align-items: center; justify-content: center; text-align: center; }
-  .closing h2 { color: #FFF6F7; font-size: 76px; margin-bottom: 18px; }
-  .closing p { color: #CDB8BE; font-size: 22px; }
+  .closing { align-items: center; justify-content: center; text-align: center;
+    background:
+      radial-gradient(50% 45% at 50% 50%, rgba(237,28,36,.14), transparent 70%),
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+      var(--bg);
+  }
+  .closing .eyebrow { font: 500 14px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--red); margin-bottom: 20px; }
+  .closing h2 { font-size: 80px; letter-spacing: -.04em; margin-bottom: 18px; max-width: none; }
+  .closing p { font-size: 22px; color: var(--silver); }
+  .closing .small { font: 14px var(--mono); color: var(--muted); margin-top: 10px; }
 
   /* ---------- Controles ---------- */
-  .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--rose); transition: width .35s ease; z-index: 5; }
+  .progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--red); box-shadow: 0 0 10px rgba(237,28,36,.7); transition: width .3s ease-out; z-index: 100; }
   .hud {
-    position: fixed; right: 18px; bottom: 16px; z-index: 5;
+    position: fixed; right: 18px; bottom: 16px; z-index: 100;
     display: flex; gap: 8px; align-items: center;
-    font: 500 13px var(--sans); color: #CDB8BE;
-    opacity: .35; transition: opacity .2s;
+    font: 500 12px var(--mono); color: var(--muted);
+    opacity: 0; transition: opacity .3s;
   }
+  .hud.show { opacity: .85; }
   .hud:hover { opacity: 1; }
   .hud button {
-    background: rgba(255,255,255,.08); color: #F5ECEE; border: 1px solid rgba(255,255,255,.16);
-    border-radius: 8px; padding: 7px 11px; font: inherit; cursor: pointer;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line-2);
+    border-radius: 6px; padding: 7px 11px; font: inherit; cursor: pointer;
+    transition: background .2s, border-color .2s;
   }
-  .hud button:hover { background: rgba(255,255,255,.16); }
+  .hud button:hover { background: var(--surface-2); border-color: var(--red); }
+  .hud button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
   .notes {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
     max-height: 42vh; overflow: auto;
-    background: #FFFDFB; color: var(--ink);
-    border-top: 3px solid var(--rose);
+    background: var(--surface); color: var(--ink);
+    border-top: 1px solid var(--red);
     padding: 22px max(16px, calc((100vw - 900px) / 2)) 28px;
-    transform: translateY(100%); transition: transform .3s ease;
+    transform: translateY(100%); transition: transform .3s ease-out;
   }
-  .notes.open { transform: none; box-shadow: 0 -10px 30px rgba(0,0,0,.25); }
-  .notes h4 { font: 600 12px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--rose); margin-bottom: 10px; }
-  .notes p { font-size: 17px; line-height: 1.6; margin-bottom: 10px; }
+  .notes.open { transform: none; box-shadow: 0 -10px 30px rgba(0,0,0,.5); }
+  .notes h4 { font: 600 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--red); margin-bottom: 10px; }
+  .notes p { font-size: 17px; line-height: 1.6; margin-bottom: 10px; color: var(--silver); }
   .help {
-    position: fixed; left: 16px; bottom: 16px; z-index: 5;
-    font: 13px var(--sans); color: #CDB8BE; opacity: .5; transition: opacity .6s;
+    position: fixed; left: 16px; bottom: 16px; z-index: 100;
+    font: 12px var(--mono); color: var(--muted); opacity: .6; transition: opacity .6s;
   }
   .help.hide { opacity: 0; pointer-events: none; }
-  kbd { font: 600 12px var(--sans); border: 1px solid rgba(255,255,255,.3); border-radius: 4px; padding: 1px 6px; }
+  kbd { font: 600 11px var(--mono); border: 1px solid var(--line-2); border-radius: 4px; padding: 1px 6px; }
 
   /* ---------- Impressão / PDF ---------- */
   @media print {
@@ -210,7 +279,7 @@
   <!-- 1. Capa -->
   <section class="slide cover" data-notes="Boa tarde à banca examinadora e a todos os presentes.|Meu nome é Giovanna Borges de Oliveira Nery e apresentarei meu Trabalho de Conclusão de Curso, intitulado ‘Periodontia associada à harmonização orofacial’.|O trabalho foi desenvolvido no curso de Especialização em Periodontia do Centro Universitário UniDomBosco, sob orientação da professora Nathalia Reiche Moreira.|Nesta apresentação, abordarei como a avaliação periodontal e a análise facial podem contribuir, de maneira complementar, para o planejamento odontológico.">
     <div class="left">
-      <div class="eyebrow">Trabalho de Conclusão de Curso</div>
+      <div class="eyebrow">// Trabalho de Conclusão de Curso</div>
       <h1>Periodontia associada à <span>harmonização orofacial</span></h1>
       <div class="who">
         <div class="name">Giovanna Borges de Oliveira Nery</div>
@@ -222,13 +291,28 @@
       </div>
     </div>
     <div class="right" aria-hidden="true">
-      <svg width="340" height="340" viewBox="0 0 340 340" fill="none">
-        <circle cx="170" cy="170" r="150" stroke="#E8A0B0" stroke-opacity=".25" stroke-width="1.5"/>
-        <circle cx="170" cy="170" r="110" stroke="#E8A0B0" stroke-opacity=".35" stroke-width="1.5"/>
-        <circle cx="130" cy="170" r="62" fill="#B4536A" fill-opacity=".55"/>
-        <circle cx="210" cy="170" r="62" fill="#4E8C8F" fill-opacity=".55"/>
-        <text x="96" y="176" fill="#FFF6F7" font-family="Inter, sans-serif" font-size="13" font-weight="600" letter-spacing="1">PERIO</text>
-        <text x="222" y="176" fill="#FFF6F7" font-family="Inter, sans-serif" font-size="13" font-weight="600" letter-spacing="1">HOF</text>
+      <svg width="380" height="380" viewBox="0 0 380 380" fill="none" font-family="JetBrains Mono, monospace">
+        <g stroke="#3A3F45" stroke-width="2">
+          <path d="M110 60v-22M140 60v-22M170 60v-22M210 60v-22M240 60v-22M270 60v-22"/>
+          <path d="M110 320v22M140 320v22M170 320v22M210 320v22M240 320v22M270 320v22"/>
+          <path d="M60 110h-22M60 140h-22M60 170h-22M60 210h-22M60 240h-22M60 270h-22"/>
+          <path d="M320 110h22M320 140h22M320 170h22M320 210h22M320 240h22M320 270h22"/>
+        </g>
+        <rect x="60" y="60" width="260" height="260" rx="10" fill="#17191C" stroke="#3A3F45"/>
+        <rect x="72" y="72" width="236" height="236" rx="6" stroke="#2E3237" stroke-dasharray="2 4"/>
+        <rect x="88" y="94" width="96" height="78" rx="6" fill="rgba(237,28,36,.12)" stroke="#ED1C24"/>
+        <text x="100" y="116" fill="#FF5A60" font-size="10" letter-spacing="1">CORE 01</text>
+        <text x="100" y="150" fill="#F1F2F4" font-size="15" font-weight="600">PERIO</text>
+        <rect x="196" y="94" width="96" height="78" rx="6" fill="rgba(0,191,255,.10)" stroke="#00BFFF"/>
+        <text x="208" y="116" fill="#00BFFF" font-size="10" letter-spacing="1">CORE 02</text>
+        <text x="208" y="150" fill="#F1F2F4" font-size="15" font-weight="600">HOF</text>
+        <path class="flowline" d="M136 172v40h54" stroke="#ED1C24" stroke-width="1.5"/>
+        <path class="flowline" d="M244 172v40h-54" stroke="#00BFFF" stroke-width="1.5"/>
+        <path d="M190 212v20" stroke="#C0C0C0" stroke-width="1.5"/>
+        <rect x="88" y="232" width="204" height="54" rx="6" fill="#1F2226" stroke="#C0C0C0"/>
+        <text x="100" y="252" fill="#9EA3AA" font-size="10" letter-spacing="1">OUTPUT</text>
+        <text x="100" y="274" fill="#F1F2F4" font-size="13" font-weight="600">PLANEJAMENTO INTEGRADO</text>
+        <circle cx="300" cy="80" r="3" fill="#00FF00"/>
       </svg>
     </div>
   </section>
@@ -238,28 +322,28 @@
     <div class="kicker"><span class="num">2</span>Introdução</div>
     <h2>Odontologia contemporânea: integrar <em class="hl">saúde, função e estética</em></h2>
     <div class="grid g2" style="margin-bottom:24px">
-      <div class="card rose">
-        <span class="tag rose">Periodontia</span>
+      <div class="card red">
+        <span class="tag red">Periodontia</span>
         <h3>Tecidos de proteção e suporte</h3>
         <p>Prevenção e tratamento das condições que afetam os tecidos ao redor dos dentes.</p>
       </div>
-      <div class="card teal">
-        <span class="tag teal">Harmonização orofacial</span>
+      <div class="card blue">
+        <span class="tag blue">Harmonização orofacial</span>
         <h3>Contornos, volumes e dinâmica</h3>
         <p>Procedimentos relacionados às estruturas faciais e à sua dinâmica.</p>
       </div>
     </div>
-    <div class="card" style="display:flex; align-items:center; gap:28px; padding:20px 28px">
-      <div style="font-size:15px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap">Estética do sorriso</div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap">
-        <span class="tag rose" style="margin:0">Dentes</span>
-        <span class="tag rose" style="margin:0">Gengiva</span>
-        <span class="tag teal" style="margin:0">Posição dos lábios</span>
-        <span class="tag teal" style="margin:0">Exposição gengival</span>
+    <div class="card outline" style="display:flex; align-items:center; gap:28px; padding:18px 26px">
+      <div style="font:500 13px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap">Estética do sorriso &gt;</div>
+      <div class="chips">
+        <span class="tag red">Dentes</span>
+        <span class="tag red">Gengiva</span>
+        <span class="tag blue">Posição dos lábios</span>
+        <span class="tag blue">Exposição gengival</span>
       </div>
     </div>
-    <div class="callout" style="margin-top:22px">
-      <span class="ico">!</span>
+    <div class="callout" style="margin-top:20px">
+      <span class="ico">[!]</span>
       <p>A integração precisa respeitar as <b>indicações e os limites</b> de cada procedimento.</p>
     </div>
   </section>
@@ -268,7 +352,7 @@
   <section class="slide" data-notes="O objetivo deste estudo foi analisar a importância da associação entre a Periodontia e a harmonização orofacial.|Buscou-se identificar suas possíveis contribuições para o planejamento estético e interdisciplinar, considerando os aspectos periodontais e faciais necessários a uma abordagem individualizada.|A questão central foi compreender como essas áreas podem se complementar, sem atribuir a uma técnica benefícios que ainda não foram demonstrados pela literatura.">
     <div class="kicker"><span class="num">3</span>Objetivo</div>
     <h2>Analisar a importância da associação entre Periodontia e harmonização orofacial</h2>
-    <div class="grid g2" style="flex:1; align-items:start">
+    <div class="grid g2" style="align-items:start">
       <div>
         <ul class="dots">
           <li>Identificar possíveis contribuições para o <b>planejamento estético e interdisciplinar</b></li>
@@ -276,9 +360,9 @@
           <li>Favorecer uma <b>abordagem individualizada</b></li>
         </ul>
       </div>
-      <div class="card" style="border-left:4px solid var(--rose)">
-        <span class="tag rose">Questão central</span>
-        <p style="font-family:var(--serif); font-size:25px; line-height:1.4; color:var(--ink)">Como essas áreas podem se complementar — sem atribuir a uma técnica benefícios ainda não demonstrados pela literatura?</p>
+      <div class="card red">
+        <span class="tag red">Questão central</span>
+        <p class="quote">Como essas áreas podem se complementar — sem atribuir a uma técnica benefícios ainda não demonstrados pela literatura?</p>
       </div>
     </div>
   </section>
@@ -289,22 +373,22 @@
     <h2>Revisão de literatura qualitativa, descritiva e exploratória</h2>
     <div class="grid g3">
       <div class="card">
-        <span class="tag teal">Bases de dados</span>
-        <p style="color:var(--ink)">PubMed<br>SciELO<br>Google Scholar<br>Biblioteca Virtual em Saúde</p>
+        <span class="tag blue">Bases de dados</span>
+        <p>PubMed<br>SciELO<br>Google Scholar<br>Biblioteca Virtual em Saúde</p>
       </div>
       <div class="card">
-        <span class="tag teal">Período</span>
-        <div class="stat">2021–2026</div>
+        <span class="tag blue">Período</span>
+        <div class="stat">2021<span>–</span>2026</div>
         <p>Publicações em português e inglês</p>
       </div>
       <div class="card">
-        <span class="tag teal">Descritores</span>
-        <p style="color:var(--ink)">Periodontia · Harmonização orofacial · Estética dentária · Fenótipo periodontal · Saúde periodontal</p>
+        <span class="tag blue">Descritores</span>
+        <p>Periodontia · Harmonização orofacial · Estética dentária · Fenótipo periodontal · Saúde periodontal</p>
       </div>
     </div>
-    <p class="muted" style="margin-top:22px; font-size:18px">Análise <b style="color:var(--ink)">interpretativa</b> das publicações, conforme a relação com o tema e a contribuição para o planejamento clínico.</p>
+    <p class="muted" style="margin-top:22px; font-size:18px">Análise <b>interpretativa</b> das publicações, conforme a relação com o tema e a contribuição para o planejamento clínico.</p>
     <div class="callout">
-      <span class="ico">!</span>
+      <span class="ico">[!]</span>
       <p><b>Não</b> é uma revisão sistemática e <b>não</b> realizou meta-análise: a proposta foi sintetizar e discutir criticamente a literatura selecionada.</p>
     </div>
   </section>
@@ -313,19 +397,21 @@
   <section class="slide" data-notes="Um dos principais pontos identificados foi a importância do fenótipo periodontal.|Esse conceito considera características como a espessura gengival, a largura do tecido queratinizado e o morfotipo ósseo.|Essas características ajudam a compreender a condição dos tecidos e podem influenciar os resultados de tratamentos periodontais e restauradores.|Rodrigues e colaboradores, em 2022, observaram diferenças nos componentes do fenótipo periodontal entre diferentes tipos de sorriso.|Shafizadeh e colaboradores também identificaram associação entre o fenótipo gengival e a espessura óssea alveolar, com maior tendência a uma tábua óssea delgada em indivíduos com fenótipo gengival fino.|Esses resultados reforçam a necessidade de avaliar individualmente os tecidos gengivais e ósseos antes de intervenções estéticas.">
     <div class="kicker"><span class="num">5</span>Resultados e discussão</div>
     <h2>Fenótipo periodontal e estética do sorriso</h2>
-    <div class="grid g3" style="margin-bottom:22px">
-      <div class="card rose"><h3>Espessura gengival</h3></div>
-      <div class="card rose"><h3>Largura do tecido queratinizado</h3></div>
-      <div class="card rose"><h3>Morfotipo ósseo</h3></div>
-    </div>
-    <div class="grid g2">
-      <div class="card">
-        <div class="ref">Rodrigues et al., 2022</div>
-        <p>Diferenças nos componentes do fenótipo periodontal entre diferentes tipos de sorriso.</p>
+    <div class="grid g-asym" style="align-items:start">
+      <div class="layers">
+        <div class="layer"><span class="id">01</span><h3>Espessura gengival</h3></div>
+        <div class="layer"><span class="id">02</span><h3>Largura do tecido queratinizado</h3></div>
+        <div class="layer"><span class="id">03</span><h3>Morfotipo ósseo</h3></div>
       </div>
-      <div class="card">
-        <div class="ref">Shafizadeh et al.</div>
-        <p>Associação entre fenótipo gengival e espessura óssea alveolar: fenótipo fino tende a tábua óssea delgada.</p>
+      <div class="grid" style="gap:14px">
+        <div class="card" style="padding:18px 22px">
+          <div class="ref">Rodrigues et al., 2022</div>
+          <p>Diferenças nos componentes do fenótipo periodontal entre diferentes tipos de sorriso.</p>
+        </div>
+        <div class="card" style="padding:18px 22px">
+          <div class="ref">Shafizadeh et al.</div>
+          <p>Associação entre fenótipo gengival e espessura óssea alveolar: fenótipo fino tende a tábua óssea delgada.</p>
+        </div>
       </div>
     </div>
     <p style="margin-top:auto; font-size:20px"><em class="hl">→</em> Avaliar individualmente os tecidos gengivais e ósseos <b>antes</b> de intervenções estéticas.</p>
@@ -336,22 +422,22 @@
     <div class="kicker"><span class="num">6</span>Resultados e discussão</div>
     <h2>Aplicações da harmonização orofacial</h2>
     <div class="grid g2" style="margin-bottom:20px">
-      <div class="card teal">
-        <span class="tag teal">Toxina botulínica</span>
+      <div class="card blue">
+        <span class="tag blue">Toxina botulínica</span>
         <h3>Dinâmica muscular</h3>
       </div>
-      <div class="card teal">
-        <span class="tag teal">Ácido hialurônico</span>
+      <div class="card blue">
+        <span class="tag blue">Ácido hialurônico</span>
         <h3>Volume e contorno</h3>
       </div>
     </div>
     <div class="card" style="margin-bottom:20px">
       <div class="ref">Maci et al., 2024</div>
-      <p>Aplicações terapêuticas e estéticas na odontologia, incluindo o <b style="color:var(--ink)">manejo do sorriso gengival</b> e o <b style="color:var(--ink)">aumento labial</b>.</p>
+      <p>Aplicações terapêuticas e estéticas na odontologia, incluindo o <b>manejo do sorriso gengival</b> e o <b>aumento labial</b>.</p>
     </div>
-    <p style="font-size:18px" class="muted">A escolha considera <b style="color:var(--ink)">anatomia · indicação clínica · segurança · expectativas do paciente</b></p>
+    <p style="font-size:18px" class="muted">A escolha considera <b>anatomia · indicação clínica · segurança · expectativas do paciente</b></p>
     <div class="callout">
-      <span class="ico">!</span>
+      <span class="ico">[!]</span>
       <p>Ácido hialurônico: os estudos <b>não</b> permitem afirmar benefício periodontal direto. Sua participação aqui se relaciona ao planejamento estético facial.</p>
     </div>
   </section>
@@ -362,22 +448,22 @@
     <h2>Sorriso gengival: o diagnóstico da causa orienta a conduta</h2>
     <div class="flow" style="margin-bottom:22px">
       <div class="card" style="display:flex; flex-direction:column; justify-content:center">
-        <span class="tag amber">Queixa</span>
+        <span class="tag warn">Input</span>
         <h3>Exposição gengival excessiva</h3>
       </div>
       <div class="arrow">→</div>
-      <div class="card" style="display:flex; flex-direction:column; justify-content:center; border:2px solid var(--rose)">
-        <span class="tag rose">Diagnóstico</span>
+      <div class="card focus" style="display:flex; flex-direction:column; justify-content:center">
+        <span class="tag red">Processamento</span>
         <h3>Identificar a causa</h3>
         <p>Avaliação periodontal + análise facial</p>
       </div>
       <div class="arrow">→</div>
       <div class="stack">
-        <div class="card teal" style="padding:18px 22px">
+        <div class="card blue" style="padding:18px 22px">
           <h3 style="font-size:19px">Hiperatividade muscular</h3>
           <p style="font-size:16px">Toxina botulínica — redução <b>temporária</b></p>
         </div>
-        <div class="card rose" style="padding:18px 22px">
+        <div class="card red" style="padding:18px 22px">
           <h3 style="font-size:19px">Origem dentogengival</h3>
           <p style="font-size:16px">Intervenção periodontal — não substituível</p>
         </div>
@@ -390,7 +476,9 @@
       </div>
       <div class="card" style="padding:20px 26px">
         <div class="ref">Wang et al., 2024</div>
-        <p style="font-size:17px">Efeito máximo em <b style="color:var(--ink)">2–4 semanas</b>; duração limitada a alguns meses.</p>
+        <p style="font-size:17px">Efeito máximo em <b>2–4 semanas</b>; duração limitada a alguns meses.</p>
+        <div class="meter"><div class="track"><div class="fill"></div></div>
+          <div class="labels"><span>aplicação</span><span class="peak">pico 2–4 sem</span><span>alguns meses</span></div></div>
       </div>
     </div>
   </section>
@@ -400,16 +488,16 @@
     <div class="kicker"><span class="num">8</span>Resultados e discussão</div>
     <h2>Integração no planejamento clínico</h2>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:22px; position:relative">
-      <div class="card rose">
-        <span class="tag rose">Avaliação periodontal</span>
+      <div class="card red">
+        <span class="tag red">Avaliação periodontal</span>
         <ul class="dots">
           <li>Características gengivais</li>
           <li>Características ósseas</li>
           <li>Características do sorriso</li>
         </ul>
       </div>
-      <div class="card teal">
-        <span class="tag teal">Análise facial</span>
+      <div class="card blue">
+        <span class="tag blue">Análise facial</span>
         <ul class="dots">
           <li>Anatomia</li>
           <li>Posição e dinâmica dos lábios</li>
@@ -418,10 +506,10 @@
         </ul>
       </div>
     </div>
-    <div style="text-align:center; color:var(--rose); font-size:26px; margin:10px 0">↓</div>
-    <div class="card" style="text-align:center; border:2px solid var(--ink); padding:20px 28px">
+    <svg width="100%" height="44" viewBox="0 0 1120 44" preserveAspectRatio="none" aria-hidden="true"><path class="flowline" d="M280 0v22h560v-22M560 22v22" stroke="#ED1C24" stroke-width="1.5" fill="none"/></svg>
+    <div class="card focus" style="text-align:center; padding:20px 28px">
       <h3 style="margin-bottom:6px">Planejamento integrado e individualizado</h3>
-      <p>Cada intervenção escolhida conforme sua <b style="color:var(--ink)">indicação</b> e as <b style="color:var(--ink)">evidências disponíveis</b></p>
+      <p>Cada intervenção escolhida conforme sua <b>indicação</b> e as <b>evidências disponíveis</b></p>
     </div>
   </section>
 
@@ -431,11 +519,11 @@
     <h2>Limitações das evidências</h2>
     <div class="grid g2" style="margin-bottom:24px">
       <div class="card">
-        <span class="tag rose">Estudos periodontais</span>
+        <span class="tag red">Estudos periodontais</span>
         <p>Fenótipo periodontal e tratamentos odontológicos</p>
       </div>
       <div class="card">
-        <span class="tag teal">Estudos de HOF</span>
+        <span class="tag blue">Estudos de HOF</span>
         <p>Aplicações da harmonização orofacial</p>
       </div>
     </div>
@@ -457,23 +545,23 @@
         <li>A integração pode contribuir para um planejamento <b>mais abrangente</b></li>
         <li>Cada técnica fundamentada em <b>diagnóstico, indicação e evidências próprias</b></li>
       </ul>
-      <div class="card rose" style="display:flex; flex-direction:column; justify-content:center">
-        <span class="tag rose" style="background:#fff">Mensagem principal</span>
-        <p style="font-family:var(--serif); font-size:24px; line-height:1.4; color:var(--ink)">Considerar o paciente de forma integrada, preservando a saúde, a função e os limites biológicos dos tecidos.</p>
+      <div class="card red" style="display:flex; flex-direction:column; justify-content:center">
+        <span class="tag red">Mensagem principal</span>
+        <p class="quote">Considerar o paciente de forma integrada, preservando a saúde, a função e os limites biológicos dos tecidos.</p>
       </div>
     </div>
-    <div class="callout" style="background:var(--teal-soft); border-color:var(--teal)">
-      <span class="ico" style="color:var(--teal)">→</span>
+    <div class="callout info">
+      <span class="ico">&gt;&gt;</span>
       <p><b>Perspectiva:</b> estudos clínicos que avaliem diretamente essa associação, com critérios diagnósticos definidos e acompanhamento dos resultados estéticos, funcionais e periodontais.</p>
     </div>
   </section>
 
   <!-- 11. Agradecimento -->
   <section class="slide closing" data-notes="Agradeço à minha orientadora, à banca examinadora e a todos os presentes pela atenção. Fico à disposição para as perguntas.">
-    <div class="eyebrow" style="font-size:15px; letter-spacing:.16em; text-transform:uppercase; color:#E2A9B6; font-weight:600; margin-bottom:22px">Obrigada pela atenção</div>
+    <div class="eyebrow">// Obrigada pela atenção</div>
     <h2>Perguntas?</h2>
     <p>Giovanna Borges de Oliveira Nery</p>
-    <p style="font-size:17px; margin-top:8px">Orientadora: Profa. Nathalia Reiche Moreira · UniDomBosco</p>
+    <p class="small">Orientadora: Profa. Nathalia Reiche Moreira · UniDomBosco</p>
   </section>
 
 </div>
@@ -505,9 +593,11 @@
     if (s.classList.contains('cover') || s.classList.contains('closing')) return;
     const f = document.createElement('div');
     f.className = 'footer';
-    f.innerHTML = '<span>Periodontia associada à harmonização orofacial</span><span>UniDomBosco</span>';
+    f.innerHTML = '<span>Periodontia × HOF</span><span class="status">UniDomBosco · TCC</span>';
     s.appendChild(f);
   });
+
+  deck.querySelectorAll('.kicker .num').forEach(n => { n.textContent = n.textContent.padStart(2, '0'); });
 
   function fit() {
     const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
@@ -555,6 +645,13 @@
   });
 
   setTimeout(() => document.querySelector('.help').classList.add('hide'), 5000);
+  const hud = document.querySelector('.hud');
+  let hudTimer;
+  document.addEventListener('mousemove', () => {
+    hud.classList.add('show');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => hud.classList.remove('show'), 2000);
+  });
   window.addEventListener('resize', fit);
   fit();
   const start = parseInt(location.hash.slice(1), 10);
