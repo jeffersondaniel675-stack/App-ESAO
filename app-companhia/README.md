@@ -12,6 +12,7 @@ Aplicativo web para a subunidade controlar **escala de serviço**, **missões**,
 | **Missões** | Missão, período, local, comandante, pessoal, viaturas, material e anexo. Quem está em missão sai automaticamente da escala. Impressão da ordem de missão com a relação de pessoal. |
 | **Aditamentos** | Numeração automática por ano. A 1ª parte (serviços diários) é preenchida pela escala; a 3ª parte (afastamentos, retornos, missões e cautelas) pelos lançamentos do período. Texto editável, impressão/PDF e geração de **Google Doc** na pasta do sistema. |
 | **Material** | Inventário com patrimônio, categoria, quantidade, local, estado e data da última conferência; cautelas com saída, devolução, controle de quantidade disponível, termo de cautela para impressão e anexo do termo assinado (digitalizado) no Drive. Importa sua planilha de material atual (.xlsx, .csv ou Google Planilhas). |
+| **Arquivo PDF** | Todo documento (aditamento, escala do mês, ordem de missão, termo de cautela, relação de material) tem o botão **Salvar PDF**: o sistema gera o PDF e guarda no Drive, organizado por tipo e ano, pronto para imprimir. Ao **publicar** um aditamento, o PDF é arquivado automaticamente. A tela lista tudo o que foi arquivado, com busca e filtro. |
 | **Configurações** | Tipos de serviço, feriados (inclui os nacionais do ano com um clique), cabeçalho dos documentos, usuários e backup. |
 
 ## Instalação (uns 10 minutos)
@@ -49,9 +50,29 @@ Aplicativo web para a subunidade controlar **escala de serviço**, **missões**,
 5. **Material → Importar planilha** com a sua relação atual. O sistema reconhece colunas como *Patrimônio, Nomenclatura/Descrição, Qtde, Local, Estado* e permite ajustar a associação antes de importar.
 6. **Escala → Gerar dias vazios.**
 
+## Arquivo de PDFs (backup dos documentos)
+
+Os PDFs ficam na pasta do sistema no Drive, assim:
+
+```
+Arquivos - Sistema 1ª Cia/
+└── PDFs/
+    ├── Aditamentos/2026/Aditamento 012 - 2026-10-30.pdf
+    ├── Escalas/2026/Escala de servico 2026-11.pdf
+    ├── Missoes/2026/Ordem de missao - … .pdf
+    ├── Cautelas/2026/Termo de cautela - … .pdf
+    └── Material/2026/Relacao de material 2026-10-30.pdf
+```
+
+Cada PDF gerado também fica registrado na aba `Documentos` (data, tipo, título, quem gerou e link). Gerar de novo o mesmo documento cria uma nova versão e mantém a anterior.
+
+Para ter uma cópia **fora do Google** (num computador ou pendrive da SU), instale o [Google Drive para computador](https://www.google.com/drive/download/) e sincronize a pasta `PDFs`. Assim os arquivos ficam gravados no computador automaticamente.
+
+Quem já tinha o sistema instalado não precisa fazer nada na planilha: a aba `Documentos` e a coluna `pdfUrl` são criadas sozinhas no primeiro uso. Basta colar o código novo e publicar uma nova versão.
+
 ## Como os dados ficam na planilha
 
-Cada aba é uma tabela, com a linha 1 de cabeçalho: `Militares`, `Impedimentos`, `TiposServico`, `Escala`, `Feriados`, `Missoes`, `Aditamentos`, `Material`, `Cautelas`, `Usuarios`, `Config` e `Log` (registro de quem alterou o quê). Dá para consultar e filtrar direto na planilha, mas **prefira editar pelo sistema** para não quebrar os vínculos (ids). O histórico de versões do Google Planilhas (Arquivo → Histórico de versões) serve como backup; há também "Configurações → Backup" para baixar tudo em JSON.
+Cada aba é uma tabela, com a linha 1 de cabeçalho: `Militares`, `Impedimentos`, `TiposServico`, `Escala`, `Feriados`, `Missoes`, `Aditamentos`, `Material`, `Cautelas`, `Usuarios`, `Config`, `Documentos` (PDFs arquivados) e `Log` (registro de quem alterou o quê). Dá para consultar e filtrar direto na planilha, mas **prefira editar pelo sistema** para não quebrar os vínculos (ids). O histórico de versões do Google Planilhas (Arquivo → Histórico de versões) serve como backup; há também "Configurações → Backup" para baixar tudo em JSON.
 
 Anexos (termos de cautela digitalizados, fotos, ordens de missão) e os Google Docs dos aditamentos ficam na pasta **"Arquivos - (nome da planilha)"** do Drive.
 

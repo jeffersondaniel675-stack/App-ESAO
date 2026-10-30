@@ -15,11 +15,12 @@ const TABELAS = {
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs'],
   Feriados: ['data', 'descricao'],
   Missoes: ['id', 'titulo', 'tipo', 'local', 'inicio', 'fim', 'horario', 'responsavelId', 'militaresIds', 'viaturas', 'material', 'descricao', 'status', 'arquivoUrl'],
-  Aditamentos: ['id', 'numero', 'data', 'biNumero', 'dataServico', 'parte1', 'parte2', 'parte3', 'parte4', 'status', 'docUrl', 'autor'],
+  Aditamentos: ['id', 'numero', 'data', 'biNumero', 'dataServico', 'parte1', 'parte2', 'parte3', 'parte4', 'status', 'docUrl', 'pdfUrl', 'autor'],
   Material: ['id', 'patrimonio', 'descricao', 'categoria', 'quantidade', 'unidade', 'localizacao', 'estado', 'valor', 'ultimaConferencia', 'obs', 'arquivoUrl'],
   Cautelas: ['id', 'materialId', 'militarId', 'quantidade', 'dataSaida', 'previsaoDevolucao', 'dataDevolucao', 'status', 'obs', 'arquivoUrl'],
   Usuarios: ['email', 'nome', 'perfil'],
   Config: ['chave', 'valor'],
+  Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
@@ -142,6 +143,31 @@ function importarDePlanilha(url, nomeAba) {
   return sh.getDataRange().getDisplayValues();
 }
 
+/**
+ * Converte o documento (HTML pronto para impressão) em PDF e arquiva em
+ * "Arquivos - …/PDFs/<tipo>/<ano>/" no Drive, registrando na aba Documentos.
+ */
+function salvarPdf(tipo, titulo, html, referencia) {
+  exigirEscrita_('Documentos');
+  const agora = new Date();
+  const tz = Session.getScriptTimeZone();
+  const ano = Utilities.formatDate(agora, tz, 'yyyy');
+  const nome = String(titulo).replace(/[\\/:*?"<>|]/g, '-') + '.pdf';
+  const pdf = HtmlService.createHtmlOutput(html).getBlob().getAs(MimeType.PDF).setName(nome);
+  const arquivo = subpasta_(['PDFs', tipo, ano]).createFile(pdf);
+  const registro = {
+    data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo,
+    referencia: referencia || '', url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail()
+  };
+  const salvo = gravar_('Documentos', [registro], [])[0];
+  if (tipo === 'Aditamentos' && referencia) {
+    const ad = lerTabela_('Aditamentos').filter(function (a) { return a.id === referencia; })[0];
+    if (ad) { ad.pdfUrl = salvo.url; gravar_('Aditamentos', [ad], []); }
+  }
+  registrarLog_('arquivar pdf', tipo, titulo);
+  return salvo;
+}
+
 /** Gera um Google Doc do aditamento na pasta do sistema e grava o link no registro. */
 function criarDocAditamento(id, titulo, paragrafos) {
   exigirEscrita_('Aditamentos');
@@ -195,9 +221,22 @@ function planilha_() {
   return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
+/** Devolve a aba da tabela, criando-a ou acrescentando colunas novas quando o sistema for atualizado. */
 function aba_(tabela) {
-  const sh = planilha_().getSheetByName(tabela);
-  if (!sh) throw new Error('Aba "' + tabela + '" não existe. Rode a função setup() no editor do Apps Script.');
+  const ss = planilha_();
+  let sh = ss.getSheetByName(tabela);
+  if (!sh) {
+    if (!TABELAS[tabela]) throw new Error('Aba "' + tabela + '" não existe.');
+    sh = ss.insertSheet(tabela);
+    sh.setFrozenRows(1);
+  }
+  const esperado = TABELAS[tabela] || [];
+  const atual = sh.getLastColumn() ? sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].filter(String) : [];
+  const faltando = esperado.filter(function (h) { return atual.indexOf(h) < 0; });
+  if (faltando.length) {
+    sh.getRange(1, atual.length + 1, 1, faltando.length).setValues([faltando]).setFontWeight('bold').setBackground('#3d4a2a').setFontColor('#ffffff');
+    sh.getRange(1, atual.length + 1, sh.getMaxRows(), faltando.length).setNumberFormat('@');
+  }
   return sh;
 }
 
@@ -273,6 +312,14 @@ function pasta_() {
   const id = configMap_().pastaDriveId;
   if (!id) throw new Error('Pasta do Drive não configurada. Rode setup() no editor do Apps Script.');
   return DriveApp.getFolderById(id);
+}
+
+/** Pasta dentro da pasta do sistema, criando o caminho que faltar. */
+function subpasta_(nomes) {
+  return nomes.reduce(function (pai, nome) {
+    const it = pai.getFoldersByName(nome);
+    return it.hasNext() ? it.next() : pai.createFolder(nome);
+  }, pasta_());
 }
 
 function registrarLog_(acao, tabela, registro) {

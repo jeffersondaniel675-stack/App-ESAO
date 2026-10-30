@@ -182,6 +182,7 @@ const ICONES = {
   missoes: '<path d="M4 22V4a1 1 0 0 1 1-1h12l-2 4 2 4H5"/>',
   aditamentos: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/>',
   material: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+  arquivo: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M12 11v6M9 14l3 3 3-3"/>',
   config: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
 };
 const icone = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONES[n]}</svg>`;
@@ -210,13 +211,14 @@ const Demo = {
   },
   async uploadArquivo(nome) { return { url: '#', nome, id: uid() }; },
   async importarDePlanilha() { throw new Error('A importação direto do Google Drive só funciona com o sistema publicado no Google. Use um arquivo .xlsx ou .csv.'); },
+  async salvarPdf(tipo, titulo, html, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com' }], []))[0]; },
   async criarDocAditamento() { throw new Error('A geração de Google Docs só funciona com o sistema publicado no Google. Use "Imprimir / PDF".'); },
   resetar() { localStorage.removeItem(this.KEY); this.mem = null; }
 };
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Usuarios', 'Config'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Usuarios', 'Config', 'Documentos'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => ['admin', 'editor'].includes(S.user?.perfil);
 const admin = () => S.user?.perfil === 'admin';
@@ -406,16 +408,46 @@ const aba = (chave, padrao) => S.sub[chave] || padrao;
 const busca = (chave, ph) => `<input type="search" placeholder="${esc(ph || 'Buscar…')}" value="${esc(S.filtro[chave] || '')}" oninput="S.filtro['${chave}']=this.value;clearTimeout(window._bt);window._bt=setTimeout(()=>{render();const i=$('input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)">`;
 const casa = (chave, ...textos) => { const q = norm(S.filtro[chave]); return !q || textos.some(t => norm(t).includes(q)); };
 
-function imprimir(html) {
+/** Imprime o documento ou, com `pdf`, gera o PDF e arquiva no Drive. `meta` = { tipo, titulo, ref }. */
+function imprimir(html, meta, pdf) {
+  if (pdf) return arquivarPdf(html, meta);
   $('#print').innerHTML = html;
   setTimeout(() => window.print(), 50);
 }
+const CSS_DOC = `@page { size: A4; margin: 18mm 15mm 18mm 25mm; }
+  body { font: 12pt/1.5 "Times New Roman", Times, serif; color: #000; margin: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 10pt; } th, td { border: 1px solid #000; padding: 3px 6px; text-align: left; vertical-align: top; }
+  .c { text-align: center; } .b { font-weight: bold; } .r { text-align: right; } p { margin: 0 0 6px; text-align: justify; white-space: pre-wrap; }`;
+async function arquivarPdf(html, meta) {
+  const titulo = meta.titulo.replace(/[\\/:*?"<>|]/g, '-');
+  const completo = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>${CSS_DOC}</style></head><body>${html}</body></html>`;
+  try {
+    toast('Gerando PDF e arquivando no Drive…');
+    const reg = await api('salvarPdf', meta.tipo, titulo, completo, meta.ref || '');
+    S.db.Documentos.push(reg);
+    if (meta.tipo === 'Aditamentos' && meta.ref) {
+      const ad = S.db.Aditamentos.find(a => a.id === meta.ref); if (ad) ad.pdfUrl = reg.url;
+      if (S.adEdit && S.adEdit.id === meta.ref) S.adEdit.pdfUrl = reg.url;
+    }
+    render();
+    const onde = `PDFs / ${meta.tipo} / ${new Date().getFullYear()}`;
+    if (!NO_GOOGLE) { toast('Demonstração: na versão instalada o PDF é salvo no Drive em ' + onde + '. Use Imprimir → Salvar como PDF.'); return reg; }
+    avisoPdf(reg, onde);
+    return reg;
+  } catch (e) { toast('Não foi possível gerar o PDF: ' + e.message, true); }
+}
+function avisoPdf(reg, onde) {
+  $('#dialog').innerHTML = `<div class="modal-bg" style="z-index:70" onclick="if(event.target===this)this.parentNode.innerHTML=''"><div class="modal" style="max-width:460px">
+    <h3>PDF arquivado</h3><p><b>${esc(reg.titulo)}.pdf</b><br><span class="muted">Pasta do Drive: ${esc(onde)}</span></p>
+    <div class="acts"><button class="btn" onclick="$('#dialog').innerHTML=''">Fechar</button><a class="btn pri" href="${esc(reg.url)}" target="_blank" onclick="$('#dialog').innerHTML=''">Abrir PDF para imprimir</a></div></div></div>`;
+}
+const botoesDoc = (fn, arg = '') => `<button class="btn sm" onclick="${fn}(${arg})">Imprimir</button>${pode() ? ` <button class="btn sm" onclick="${fn}(${arg ? arg + ',' : 'undefined,'}true)" title="Gera o PDF e guarda na pasta de arquivo do Drive">Salvar PDF</button>` : ''}`;
 function cabecalhoDoc() { return cfg('cabecalho').split('\n').filter(Boolean); }
 
 // ============================================================ navegação
 const VIEWS = [
   ['painel', 'Painel'], ['efetivo', 'Efetivo'], ['escala', 'Escala de serviço'], ['missoes', 'Missões'],
-  ['aditamentos', 'Aditamentos'], ['material', 'Material'], ['config', 'Configurações']
+  ['aditamentos', 'Aditamentos'], ['material', 'Material'], ['arquivo', 'Arquivo PDF'], ['config', 'Configurações']
 ];
 function irPara(v) { S.view = v; try { localStorage.setItem('cia-view', v); } catch (e) { } render(); window.scrollTo(0, 0); }
 function render() {
@@ -530,7 +562,7 @@ function vEscala() {
   const barra = `<div class="bar"><input type="month" value="${S.mes}" onchange="S.mes=this.value;render()">
     <button class="btn" onclick="mudarMes(-1)">◀</button><button class="btn" onclick="mudarMes(1)">▶</button><span class="grow"></span>
     ${pode() ? `<button class="btn pri" onclick="gerarMes()">Gerar dias vazios</button><button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
-    <button class="btn" onclick="imprimirEscala()">Imprimir</button></div>`;
+    <button class="btn" onclick="imprimirEscala()">Imprimir</button>${pode() ? '<button class="btn" onclick="imprimirEscala(undefined,true)">Salvar PDF</button>' : ''}</div>`;
   if (t === 'folgas') return titulo + abas('escala', [['mes', 'Escala do mês'], ['folgas', 'Quadro de folgas']]) + barra + vFolgas(dias[0]);
   const linhas = dias.map(d => {
     const cor = corDoDia(d), w = dataDe(d).getDay();
@@ -598,12 +630,12 @@ function vFolgas(dataRef) {
       ])}`;
     }).join('');
 }
-function imprimirEscala() {
+function imprimirEscala(_, pdf) {
   const tipos = tiposAtivos(), [y, m] = S.mes.split('-');
   imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">ESCALA DE SERVIÇO – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}</p>
   <table style="width:100%;border-collapse:collapse"><thead><tr><th>Dia</th><th>Cor</th>${tipos.map(t => `<th>${esc(t.nome)}</th>`).join('')}</tr></thead><tbody>
   ${diasDoMes(S.mes).map(d => `<tr><td>${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}</td><td>${corDoDia(d) === 'V' ? 'V' : 'P'}</td>${tipos.map(t => { const e = (ESC_DIA[d] || []).find(x => x.tipoId === t.id); return `<td>${e ? esc(nomeMil(e.militarId)) : ''}</td>`; }).join('')}</tr>`).join('')}
-  </tbody></table>${assinatura()}`);
+  </tbody></table>${assinatura()}`, { tipo: 'Escalas', titulo: `Escala de servico ${S.mes}` }, pdf);
 }
 const assinatura = () => `<div class="c" style="margin-top:48px"><div class="b">${esc(cfg('cmtNome'))}</div><div>${esc(cfg('cmtFuncao'))}</div></div>`;
 
@@ -637,7 +669,7 @@ function vMissoes() {
     { l: 'Responsável', v: m => esc(m.responsavelId ? nomeMil(m.responsavelId) : '') },
     { l: 'Efetivo', v: m => ids(m.militaresIds).length, c: 'num' },
     { l: 'Situação', v: m => tagSt(m.status) }
-  ], m => `${pode() ? `<button class="btn sm" onclick="editarMissao('${m.id}')">Editar</button> ` : ''}<button class="btn sm" onclick="imprimirMissao('${m.id}')">Imprimir</button>${pode() ? ` <button class="btn sm dng" onclick="excluir('Missoes','${m.id}')">Excluir</button>` : ''}`)}`;
+  ], m => `${pode() ? `<button class="btn sm" onclick="editarMissao('${m.id}')">Editar</button> ` : ''}${botoesDoc('imprimirMissao', `'${m.id}'`)}${pode() ? ` <button class="btn sm dng" onclick="excluir('Missoes','${m.id}')">Excluir</button>` : ''}`)}`;
 }
 function editarMissao(id) {
   abrirForm({ titulo: id ? 'Editar missão' : 'Nova missão', campos: CAMPOS_MISSAO, valores: id ? S.db.Missoes.find(m => m.id === id) : { inicio: hoje(), status: 'Planejada' },
@@ -648,7 +680,7 @@ function editarMissao(id) {
       return salvar('Missoes', [o]);
     } });
 }
-function imprimirMissao(id) {
+function imprimirMissao(id, pdf) {
   const m = S.db.Missoes.find(x => x.id === id);
   const pessoal = ids(m.militaresIds).map(i => MIL[i]).filter(Boolean).sort(ordemMil);
   imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">ORDEM DE MISSÃO – ${esc(m.titulo.toUpperCase())}</p>
@@ -657,7 +689,7 @@ function imprimirMissao(id) {
   <p><b>6. Missão:</b>\n${esc(m.descricao)}</p><p><b>7. Material:</b>\n${esc(m.material)}</p>
   <p class="b">8. Pessoal empregado (${pessoal.length}):</p><table style="width:100%;border-collapse:collapse"><tr><th>Nº</th><th>Posto/Grad</th><th>Nome</th><th>Identidade</th></tr>
   ${pessoal.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.postoGrad)}</td><td>${esc(p.nomeCompleto || p.nomeGuerra)}</td><td>${esc(p.idt)}</td></tr>`).join('')}</table>
-  <p class="r" style="margin-top:16px">${esc(cfg('cidade'))}, ${fmtExt(hoje())}.</p>${assinatura()}`);
+  <p class="r" style="margin-top:16px">${esc(cfg('cidade'))}, ${fmtExt(hoje())}.</p>${assinatura()}`, { tipo: 'Missoes', titulo: `Ordem de missao - ${m.titulo} - ${m.inicio}`, ref: m.id }, pdf);
 }
 
 // ============================================================ aditamentos
@@ -671,8 +703,8 @@ function vAditamentos() {
     { l: 'Nº', v: a => `<b>${esc(a.numero)}</b>`, c: 'num' }, { l: 'Data', v: a => fmt(a.data) }, { l: 'Ao BI nº', v: a => esc(a.biNumero) },
     { l: 'Serviço para', v: a => fmt(a.dataServico) },
     { l: 'Situação', v: a => `<span class="tag ${a.status === 'Publicado' ? 'ok' : 'warn'}">${esc(a.status || 'Rascunho')}</span>` },
-    { l: 'Doc', v: a => a.docUrl ? `<a href="${esc(a.docUrl)}" target="_blank">Google Doc</a>` : '' }
-  ], a => `<button class="btn sm" onclick="abrirAditamento('${a.id}')">${pode() ? 'Abrir' : 'Ver'}</button> <button class="btn sm" onclick="imprimirAditamento('${a.id}')">Imprimir</button>`)}`;
+    { l: 'Arquivos', v: a => [a.pdfUrl ? `<a href="${esc(a.pdfUrl)}" target="_blank">PDF</a>` : '', a.docUrl ? `<a href="${esc(a.docUrl)}" target="_blank">Google Doc</a>` : ''].filter(Boolean).join(' · ') }
+  ], a => `<button class="btn sm" onclick="abrirAditamento('${a.id}')">${pode() ? 'Abrir' : 'Ver'}</button> ${botoesDoc('imprimirAditamento', `'${a.id}'`)}`)}`;
 }
 function novoAditamento() {
   const d = hoje(), ano = d.slice(0, 4);
@@ -722,8 +754,10 @@ function vEditorAditamento() {
   <div class="card"><div class="ad-grid">${campo('numero', 'Número')}${campo('data', 'Data', 'date')}${campo('biNumero', 'Ao BI nº')}${campo('dataServico', 'Serviço / fatos até', 'date')}</div>
   ${PARTES.map((_, i) => area('parte' + (i + 1), i)).join('')}
   <div class="bar" style="margin-top:14px">${!ro ? `<button class="btn pri" onclick="salvarAditamento()">Salvar</button>
-    <button class="btn" onclick="salvarAditamento('Publicado')">Salvar como publicado</button>` : ''}
-    <button class="btn" onclick="imprimirAditamento()">Imprimir / PDF</button>
+    <button class="btn" onclick="publicarAditamento()" title="Salva, marca como publicado e arquiva o PDF no Drive">Publicar e arquivar PDF</button>` : ''}
+    <button class="btn" onclick="imprimirAditamento()">Imprimir</button>
+    ${!ro ? '<button class="btn" onclick="salvarAditamento().then(a=>a&&imprimirAditamento(a.id,true))">Salvar PDF</button>' : ''}
+    ${a.pdfUrl ? `<a class="btn" href="${esc(a.pdfUrl)}" target="_blank">Abrir PDF</a>` : ''}
     ${!ro ? '<button class="btn" onclick="gerarDocAditamento()">Gerar Google Doc</button>' : ''}
     ${a.docUrl ? `<a class="btn" href="${esc(a.docUrl)}" target="_blank">Abrir Google Doc</a>` : ''}
     <span class="grow"></span>${!ro && a.id ? `<button class="btn dng" onclick="excluirAditamento()">Excluir</button>` : ''}</div></div>`;
@@ -764,9 +798,14 @@ function paragrafosAditamento(a) {
   P.push({ texto: cfg('cmtFuncao'), centro: true });
   return P;
 }
-function imprimirAditamento(id) {
+function imprimirAditamento(id, pdf) {
   const a = id ? S.db.Aditamentos.find(x => x.id === id) : S.adEdit;
-  imprimir(paragrafosAditamento(a).map(p => `<p class="${p.centro ? 'c' : ''} ${p.negrito ? 'b' : ''}">${esc(p.texto) || '&nbsp;'}</p>`).join(''));
+  return imprimir(paragrafosAditamento(a).map(p => `<p class="${p.centro ? 'c' : ''} ${p.negrito ? 'b' : ''}">${esc(p.texto) || '&nbsp;'}</p>`).join(''),
+    { tipo: 'Aditamentos', titulo: `Aditamento ${String(a.numero).padStart(3, '0')} - ${a.data}`, ref: a.id }, pdf);
+}
+async function publicarAditamento() {
+  const a = await salvarAditamento('Publicado');
+  if (a) await imprimirAditamento(a.id, true);
 }
 async function gerarDocAditamento() {
   try {
@@ -815,7 +854,7 @@ function vMaterial() {
       .sort((a, b) => String(a.categoria).localeCompare(b.categoria) || a.descricao.localeCompare(b.descricao));
     const total = lista.reduce((s, m) => s + num(m.valor) * num(m.quantidade), 0);
     corpo = `<div class="bar">${busca('mat', 'Buscar material ou patrimônio…')}<select onchange="S.filtro.cat=this.value;render()"><option value="">Todas as categorias</option>${CATEGORIAS.map(c => `<option ${c === cat ? 'selected' : ''}>${c}</option>`).join('')}</select>
-      <span class="grow"></span><button class="btn" onclick="imprimirInventario()">Imprimir relação</button>${pode() ? '<button class="btn pri" onclick="editarMat()">+ Material</button>' : ''}</div>
+      <span class="grow"></span><button class="btn" onclick="imprimirInventario()">Imprimir relação</button>${pode() ? '<button class="btn" onclick="imprimirInventario(undefined,true)">Salvar PDF</button>' : ''}${pode() ? '<button class="btn pri" onclick="editarMat()">+ Material</button>' : ''}</div>
     ${tabela(lista, [
       { l: 'Patrimônio', v: m => esc(m.patrimonio) },
       { l: 'Descrição', v: m => `<b>${esc(m.descricao)}</b> ${linkArq(m.arquivoUrl)}<div class="muted">${esc(m.categoria)}${m.localizacao ? ' · ' + esc(m.localizacao) : ''}</div>` },
@@ -845,7 +884,7 @@ function tabelaCautelas(lista) {
     { l: 'Militar', v: c => esc(nomeMil(c.militarId)) },
     { l: 'Saída', v: c => fmt(c.dataSaida) },
     { l: 'Devolução', v: c => c.status === 'Devolvida' ? `<span class="tag ok">Devolvida ${fmt(c.dataDevolucao)}</span>` : c.previsaoDevolucao && c.previsaoDevolucao < d ? `<span class="tag dng">Vencida ${fmt(c.previsaoDevolucao)}</span>` : `<span class="tag warn">Prev. ${fmt(c.previsaoDevolucao) || '—'}</span>` }
-  ], c => `<button class="btn sm" onclick="imprimirCautela('${c.id}')">Termo</button>${pode() && c.status !== 'Devolvida' ? ` <button class="btn sm" onclick="devolver('${c.id}')">Devolver</button> <button class="btn sm" onclick="editarCautela('${c.id}')">Editar</button>` : ''}`);
+  ], c => `${botoesDoc('imprimirCautela', `'${c.id}'`).replace('>Imprimir<', '>Termo<')}${pode() && c.status !== 'Devolvida' ? ` <button class="btn sm" onclick="devolver('${c.id}')">Devolver</button> <button class="btn sm" onclick="editarCautela('${c.id}')">Editar</button>` : ''}`);
 }
 function editarMat(id) {
   abrirForm({ titulo: id ? 'Editar material' : 'Novo material', campos: CAMPOS_MAT, valores: id ? MAT[id] : {}, aoSalvar: o => salvar('Material', [o]),
@@ -871,7 +910,7 @@ async function devolver(id) {
   await salvar('Cautelas', [{ ...c, status: 'Devolvida', dataDevolucao: data }]);
   toast('Devolução registrada.'); render();
 }
-function imprimirCautela(id) {
+function imprimirCautela(id, pdf) {
   const c = S.db.Cautelas.find(x => x.id === id), m = MAT[c.materialId] || {}, mil = MIL[c.militarId] || {};
   imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">TERMO DE CAUTELA DE MATERIAL</p>
   <p>Declaro ter recebido, em ${fmtExt(c.dataSaida)}, o material abaixo relacionado, pelo qual me responsabilizo, comprometendo-me a devolvê-lo nas mesmas condições${c.previsaoDevolucao ? ' até ' + fmtExt(c.previsaoDevolucao) : ''}.</p>
@@ -879,13 +918,14 @@ function imprimirCautela(id) {
   <tr><td>${esc(m.patrimonio)}</td><td>${esc(m.descricao)}</td><td>${esc(c.quantidade)} ${esc(m.unidade)}</td><td>${esc(m.estado)}</td></tr></table>
   ${c.obs ? `<p>Obs: ${esc(c.obs)}</p>` : ''}<p class="r" style="margin-top:16px">${esc(cfg('cidade'))}, ${fmtExt(c.dataSaida)}.</p>
   <div class="c" style="margin-top:48px">_______________________________________<div class="b">${esc(mil.nomeCompleto || nomeMil(mil))} – ${esc(mil.postoGrad)}</div><div>Idt ${esc(mil.idt)}</div></div>
-  ${c.status === 'Devolvida' ? `<p style="margin-top:24px">Material devolvido em ${fmtExt(c.dataDevolucao)}.</p>` : ''}`);
+  ${c.status === 'Devolvida' ? `<p style="margin-top:24px">Material devolvido em ${fmtExt(c.dataDevolucao)}.</p>` : ''}`,
+    { tipo: 'Cautelas', titulo: `Termo de cautela - ${m.patrimonio || m.descricao} - ${mil.nomeGuerra || ''} - ${c.dataSaida}`, ref: c.id }, pdf);
 }
-function imprimirInventario() {
+function imprimirInventario(_, pdf) {
   const lista = S.db.Material.slice().sort((a, b) => String(a.categoria).localeCompare(b.categoria) || a.descricao.localeCompare(b.descricao));
   imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">RELAÇÃO DE MATERIAL – ${fmtMil(hoje())}</p>
   <table style="width:100%;border-collapse:collapse"><tr><th>Nº</th><th>Patrimônio</th><th>Descrição</th><th>Categoria</th><th>Qtd</th><th>Cautelado</th><th>Local</th><th>Estado</th><th>Conferido</th></tr>
-  ${lista.map((m, i) => `<tr><td>${i + 1}</td><td>${esc(m.patrimonio)}</td><td>${esc(m.descricao)}</td><td>${esc(m.categoria)}</td><td>${esc(m.quantidade)} ${esc(m.unidade)}</td><td>${cauteladoDe(m) || ''}</td><td>${esc(m.localizacao)}</td><td>${esc(m.estado)}</td><td>${fmt(m.ultimaConferencia)}</td></tr>`).join('')}</table>${assinatura()}`);
+  ${lista.map((m, i) => `<tr><td>${i + 1}</td><td>${esc(m.patrimonio)}</td><td>${esc(m.descricao)}</td><td>${esc(m.categoria)}</td><td>${esc(m.quantidade)} ${esc(m.unidade)}</td><td>${cauteladoDe(m) || ''}</td><td>${esc(m.localizacao)}</td><td>${esc(m.estado)}</td><td>${fmt(m.ultimaConferencia)}</td></tr>`).join('')}</table>${assinatura()}`, { tipo: 'Material', titulo: `Relacao de material ${hoje()}` }, pdf);
 }
 
 // ============================================================ importação de planilhas (xlsx, csv ou Google Sheets)
@@ -1054,7 +1094,25 @@ function baixarBackup() {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup-sistema-cia-${hoje()}.json`; a.click();
 }
 
-const VIEWS_FN = { painel: vPainel, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, material: vMaterial, config: vConfig };
+// ============================================================ arquivo de PDFs
+const TIPOS_DOC = [['Aditamentos', 'Aditamentos'], ['Escalas', 'Escalas'], ['Missoes', 'Ordens de missão'], ['Cautelas', 'Termos de cautela'], ['Material', 'Relações de material']];
+function vArquivo() {
+  const tp = S.filtro.docTipo || '';
+  const lista = S.db.Documentos.filter(d => (!tp || d.tipo === tp) && casa('doc', d.titulo, d.autor)).sort((a, b) => b.data.localeCompare(a.data));
+  const pasta = cfg('pastaDriveId');
+  return `<h2>Arquivo PDF</h2><p class="sub">Documentos gerados em PDF e guardados no Google Drive, separados por tipo e ano. Abra o PDF para imprimir ou baixar.</p>
+  <div class="bar">${busca('doc', 'Buscar documento…')}<select onchange="S.filtro.docTipo=this.value;render()"><option value="">Todos os tipos</option>${TIPOS_DOC.map(([v, l]) => `<option value="${v}" ${v === tp ? 'selected' : ''}>${l}</option>`).join('')}</select>
+  <span class="grow"></span>${pasta ? `<a class="btn" href="https://drive.google.com/drive/folders/${esc(pasta)}" target="_blank">Abrir pasta no Drive</a>` : ''}</div>
+  ${tabela(lista, [
+    { l: 'Gerado em', v: d => `${fmt(d.data.slice(0, 10))} <span class="muted">${esc(d.data.slice(11))}</span>` },
+    { l: 'Tipo', v: d => `<span class="tag">${esc((TIPOS_DOC.find(t => t[0] === d.tipo) || [0, d.tipo])[1])}</span>` },
+    { l: 'Documento', v: d => `<b>${esc(d.titulo)}</b>` },
+    { l: 'Por', v: d => `<span class="muted">${esc(d.autor)}</span>` }
+  ], d => d.url ? `<a class="btn sm" href="${esc(d.url)}" target="_blank">Abrir PDF</a>` : '<span class="muted">só na versão instalada</span>')}
+  <p class="muted">Para gerar: use "Salvar PDF" na escala, nas missões, nos aditamentos e no material. "Publicar e arquivar PDF" no aditamento faz isso automaticamente.</p>`;
+}
+
+const VIEWS_FN = { painel: vPainel, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, material: vMaterial, arquivo: vArquivo, config: vConfig };
 
 // ============================================================ dados de demonstração
 function semente() {
