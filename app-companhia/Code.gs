@@ -9,18 +9,20 @@
  */
 
 const TABELAS = {
-  Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs'],
-  Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs'],
-  TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo'],
+  Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs',
+    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo'],
+  Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
+  TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico'],
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs'],
   Feriados: ['data', 'descricao'],
   Missoes: ['id', 'titulo', 'tipo', 'local', 'inicio', 'fim', 'horario', 'responsavelId', 'militaresIds', 'viaturas', 'material', 'descricao', 'status', 'arquivoUrl'],
-  Aditamentos: ['id', 'numero', 'data', 'biNumero', 'dataServico', 'parte1', 'parte2', 'parte3', 'parte4', 'status', 'docUrl', 'pdfUrl', 'autor'],
-  Material: ['id', 'patrimonio', 'descricao', 'categoria', 'quantidade', 'unidade', 'localizacao', 'estado', 'valor', 'ultimaConferencia', 'obs', 'arquivoUrl'],
-  Cautelas: ['id', 'materialId', 'militarId', 'quantidade', 'dataSaida', 'previsaoDevolucao', 'dataDevolucao', 'status', 'obs', 'arquivoUrl'],
+  Aditamentos: ['id', 'numero', 'data', 'biNumero', 'dataServico', 'parte1', 'parte2', 'parte3', 'parte4', 'status', 'docUrl', 'pdfUrl', 'autor', 'servicoAte', 'servicos'],
+  Material: ['id', 'patrimonio', 'descricao', 'categoria', 'quantidade', 'unidade', 'localizacao', 'estado', 'valor', 'ultimaConferencia', 'obs', 'arquivoUrl', 'tipoMaterial', 'nrFicha', 'codMat', 'contaContabil', 'acervo'],
+  Cautelas: ['id', 'materialId', 'militarId', 'quantidade', 'dataSaida', 'previsaoDevolucao', 'dataDevolucao', 'status', 'obs', 'arquivoUrl', 'numero', 'numeracao', 'destino'],
+  Pedidos: ['id', 'numero', 'data', 'de', 'para', 'itens', 'status', 'obs', 'arquivoUrl', 'autor'],
   Usuarios: ['email', 'nome', 'perfil'],
   Config: ['chave', 'valor'],
-  Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor'],
+  Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
@@ -28,20 +30,24 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 const SOMENTE_LEITURA = ['Log'];
 
 const CONFIG_PADRAO = {
-  cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\nNOME DA OM\nNOME DA SUBUNIDADE',
-  sigla: 'Cia',
-  nomeCia: 'Sistema da Companhia',
-  cidade: 'Cidade - UF',
-  cmtNome: 'NOME COMPLETO - Cap',
-  cmtFuncao: 'Comandante da Companhia',
+  cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n11º DEPÓSITO DE SUPRIMENTO\n1ª COMPANHIA',
+  sigla: '1ª Cia',
+  siglaOM: '11º D Sup',
+  nomeCia: 'Sistema da 1ª Companhia',
+  cidade: 'Quartel em Brasília-DF',
+  cmtNome: 'NOME DO COMANDANTE – Cap',
+  cmtFuncao: 'Cmt Cia',
   pastaDriveId: ''
 };
 
 const TIPOS_PADRAO = [
-  { id: 'of-dia', nome: 'Oficial de Dia', postos: 'Cap,1º Ten,2º Ten,Asp', ordem: 1, ativo: 'Sim' },
-  { id: 'sgt-dia', nome: 'Sargento de Dia', postos: 'ST,1º Sgt,2º Sgt,3º Sgt', ordem: 2, ativo: 'Sim' },
-  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 3, ativo: 'Sim' },
-  { id: 'plantao', nome: 'Plantão', postos: 'Sd', ordem: 4, ativo: 'Sim' }
+  { id: 'adj', nome: 'Adj Of Dia', postos: '1º Sgt,2º Sgt,3º Sgt', ordem: 1, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'cmt-gda', nome: 'Cmt Gda', postos: '2º Sgt,3º Sgt', ordem: 2, ativo: 'Sim', grupo: 'Externo', dias: 'Vermelha', automatico: 'Sim' },
+  { id: 'cb-gda', nome: 'Cb Gda', postos: 'Cb', ordem: 3, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'sd-gda', nome: 'Sd Gda', postos: 'Sd EP,Sd EV', ordem: 4, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'cb-dia', nome: 'Cb Dia', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Interno', dias: 'Vermelha', automatico: 'Sim' },
+  { id: 'plantao', nome: 'Plantão', postos: 'Sd EP,Sd EV', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' },
+  { id: 'permanencia', nome: 'Permanência', postos: 'Cb,Sd EP', ordem: 7, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' }
 ];
 
 // ---------------------------------------------------------------- web app
@@ -158,7 +164,7 @@ function salvarPdf(tipo, titulo, html, referencia) {
   const arquivo = subpasta_(['PDFs', tipo, ano]).createFile(pdf);
   const registro = {
     data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo,
-    referencia: referencia || '', url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail()
+    referencia: referencia || '', url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail(), formato: 'PDF'
   };
   const salvo = gravar_('Documentos', [registro], [])[0];
   if (tipo === 'Aditamentos' && referencia) {
@@ -169,30 +175,88 @@ function salvarPdf(tipo, titulo, html, referencia) {
   return salvo;
 }
 
-/** Gera um Google Doc do aditamento na pasta do sistema e grava o link no registro. */
-function criarDocAditamento(id, titulo, paragrafos) {
-  exigirEscrita_('Aditamentos');
-  const doc = DocumentApp.create(titulo);
+/**
+ * Gera um Google Doc editável (abre no Word como .docx) a partir dos blocos do documento,
+ * guarda em "Arquivos - …/Google Docs/<tipo>/<ano>/" e registra na aba Documentos.
+ * Blocos: { p: texto, c, b, i, r, sz, mt } parágrafo · { img: dataURL, w } imagem ·
+ * { t: [[célula]], w: [%], h: linhas de cabeçalho, sz, sem: sem bordas } tabela, célula = texto ou { v, b, i, c, l, span } ·
+ * { esp: n } linhas em branco · { paisagem: true } página deitada.
+ */
+function criarDoc(tipo, titulo, blocos, referencia) {
+  exigirEscrita_('Documentos');
+  const doc = DocumentApp.create(String(titulo).replace(/[\\/:*?"<>|]/g, '-'));
   const body = doc.getBody();
-  body.setMarginTop(56).setMarginBottom(56).setMarginLeft(70).setMarginRight(56);
-  paragrafos.forEach(function (p) {
-    const par = body.appendParagraph(p.texto || '');
-    par.setFontFamily('Times New Roman').setFontSize(12);
-    if (p.centro) par.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    else if (p.direita) par.setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
-    else par.setAlignment(DocumentApp.HorizontalAlignment.JUSTIFY);
-    if (p.negrito) par.editAsText().setBold(true);
+  if (blocos.some(function (b) { return b.paisagem; })) body.setPageWidth(842).setPageHeight(595);
+  body.setMarginTop(40).setMarginBottom(40).setMarginLeft(56).setMarginRight(40);
+  const largura = body.getPageWidth() - body.getMarginLeft() - body.getMarginRight();
+  const AL = DocumentApp.HorizontalAlignment;
+  const estilo = function (par, o, sz) {
+    par.setFontFamily('Arial').setFontSize(o.sz || sz || 10).setSpacingAfter(0).setSpacingBefore(o.mt || 0).setLineSpacing(1.1);
+    par.setAlignment(o.c ? AL.CENTER : o.r ? AL.RIGHT : o.l ? AL.LEFT : AL.JUSTIFY);
+    if (par.getText()) par.editAsText().setBold(!!o.b).setItalic(!!o.i);
+  };
+  blocos.forEach(function (b) {
+    if (b.paisagem) return;
+    if (b.esp) { for (let k = 0; k < b.esp; k++) estilo(body.appendParagraph(''), {}); return; }
+    if (b.img) {
+      const m = String(b.img).match(/^data:(.+?);base64,(.*)$/);
+      if (!m) return;
+      const par = body.appendParagraph('').setAlignment(AL.CENTER);
+      const im = par.appendInlineImage(Utilities.newBlob(Utilities.base64Decode(m[2]), m[1]));
+      const w = b.w || 60;
+      im.setHeight(Math.round(im.getHeight() * w / im.getWidth())).setWidth(w);
+      return;
+    }
+    if (b.t) {
+      const cols = Math.max.apply(null, b.t.map(function (l) { return l.reduce(function (n, c) { return n + ((c && c.span) || 1); }, 0); }));
+      const texto = b.t.map(function (l) {
+        const linha = [];
+        l.forEach(function (c) { linha.push(c && typeof c === 'object' ? String(c.v || '') : String(c == null ? '' : c)); for (let k = 1; k < ((c && c.span) || 1); k++) linha.push(''); });
+        while (linha.length < cols) linha.push('');
+        return linha;
+      });
+      const t = body.appendTable(texto);
+      t.setBorderWidth(b.sem ? 0 : 0.75);
+      b.t.forEach(function (l, r) {
+        let col = 0;
+        l.forEach(function (c) {
+          const o = c && typeof c === 'object' ? c : {};
+          const cel = t.getCell(r, col).setPaddingTop(1).setPaddingBottom(1).setPaddingLeft(4).setPaddingRight(4);
+          for (let k = 0; k < cel.getNumChildren(); k++) {
+            const par = cel.getChild(k).asParagraph();
+            estilo(par, { b: o.b || r < (b.h || 0), i: o.i, c: o.l ? false : (o.c !== undefined ? o.c : !b.esq), l: o.l || b.esq, sz: b.sz || 9 });
+          }
+          col += o.span || 1;
+        });
+      });
+      (b.w || []).forEach(function (pct, i) { if (i < cols) t.setColumnWidth(i, largura * pct / 100); });
+      // Mescla as células com span (da direita para a esquerda, para não deslocar índices).
+      b.t.forEach(function (l, r) {
+        let col = 0;
+        const spans = [];
+        l.forEach(function (c) { const n = (c && c.span) || 1; if (n > 1) spans.push([col, n]); col += n; });
+        spans.reverse().forEach(function (sp) { for (let k = sp[0] + sp[1] - 1; k > sp[0]; k--) t.getCell(r, k).merge(); });
+      });
+      return;
+    }
+    estilo(body.appendParagraph(b.p || ''), b);
   });
   const primeiro = body.getChild(0);
-  if (primeiro && primeiro.asParagraph && primeiro.asParagraph().getText() === '') body.removeChild(primeiro);
+  if (body.getNumChildren() > 1 && primeiro.getType() === DocumentApp.ElementType.PARAGRAPH && primeiro.asParagraph().getText() === '' && !primeiro.asParagraph().getNumChildren()) body.removeChild(primeiro);
   doc.saveAndClose();
+  const agora = new Date(), tz = Session.getScriptTimeZone();
   const arquivo = DriveApp.getFileById(doc.getId());
-  arquivo.moveTo(pasta_());
-  const url = arquivo.getUrl();
-  const atual = lerTabela_('Aditamentos').filter(function (a) { return a.id === id; })[0];
-  if (atual) { atual.docUrl = url; gravar_('Aditamentos', [atual], []); }
-  registrarLog_('gerar doc', 'Aditamentos', titulo);
-  return url;
+  arquivo.moveTo(subpasta_(['Google Docs', tipo, Utilities.formatDate(agora, tz, 'yyyy')]));
+  const registro = gravar_('Documentos', [{
+    data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo, referencia: referencia || '',
+    url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail(), formato: 'Google Doc'
+  }], [])[0];
+  if (tipo === 'Aditamentos' && referencia) {
+    const ad = lerTabela_('Aditamentos').filter(function (a) { return a.id === referencia; })[0];
+    if (ad) { ad.docUrl = registro.url; gravar_('Aditamentos', [ad], []); }
+  }
+  registrarLog_('gerar doc', tipo, titulo);
+  return registro;
 }
 
 // ---------------------------------------------------------------- permissões
