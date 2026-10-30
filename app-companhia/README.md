@@ -43,7 +43,7 @@ Aplicativo web para a subunidade controlar **escala de serviço**, **missões**,
 
 ## Primeiros passos dentro do sistema
 
-1. **Configurações → Documentos:** cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / OM / SU), local e assinatura do comandante.
+1. **Configurações → Documentos:** sigla (aparece no canto superior esquerdo, no lugar do logotipo), nome do sistema, cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / OM / SU), local e assinatura do comandante.
 2. **Configurações → Feriados:** "Incluir feriados nacionais do ano" e acrescente os locais.
 3. **Configurações → Tipos de serviço:** ajuste os serviços e quais postos/graduações concorrem a cada um.
 4. **Efetivo → Importar planilha** (ou cadastre um a um). Preencha a **antiguidade** (1 = mais antigo) para o desempate da escala.
@@ -69,6 +69,17 @@ Cada PDF gerado também fica registrado na aba `Documentos` (data, tipo, título
 Para ter uma cópia **fora do Google** (num computador ou pendrive da SU), instale o [Google Drive para computador](https://www.google.com/drive/download/) e sincronize a pasta `PDFs`. Assim os arquivos ficam gravados no computador automaticamente.
 
 Quem já tinha o sistema instalado não precisa fazer nada na planilha: a aba `Documentos` e a coluna `pdfUrl` são criadas sozinhas no primeiro uso. Basta colar o código novo e publicar uma nova versão.
+
+## Layout
+
+A interface segue o **Padrão Digital de Governo (gov.br Design System)**:
+- cabeçalho branco com a identificação da OM e faixa amarela;
+- botão ☰ que abre o menu em duas colunas (módulos e, ao lado, as páginas de cada um);
+- trilha de navegação ("você está aqui");
+- busca geral ("O que você procura?") em militares, material, missões, aditamentos e PDFs;
+- botões arredondados e paleta azul institucional.
+
+O botão **Atalhos** reúne as ações mais usadas (nova missão, novo aditamento, nova cautela, lançar afastamento, gerar e salvar a escala do mês). O sistema acompanha o tema claro ou escuro do aparelho.
 
 ## Como os dados ficam na planilha
 

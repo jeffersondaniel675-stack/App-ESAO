@@ -29,7 +29,8 @@ const SOMENTE_LEITURA = ['Log'];
 
 const CONFIG_PADRAO = {
   cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\nNOME DA OM\nNOME DA SUBUNIDADE',
-  nomeCia: 'Companhia',
+  sigla: 'Cia',
+  nomeCia: 'Sistema da Companhia',
   cidade: 'Cidade - UF',
   cmtNome: 'NOME COMPLETO - Cap',
   cmtFuncao: 'Comandante da Companhia',
