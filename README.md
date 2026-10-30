@@ -36,3 +36,7 @@ npm run start
 
 - **Administrador:** `Cap Daniel` / senha `DOMPSA675`
 - **Aluno:** nome de guerra em maiúsculo / senha inicial = matrícula
+
+## Sistema da Companhia
+
+A pasta [`app-companhia/`](app-companhia/) contém um sistema separado, para a subunidade (escala de serviço, missões, aditamentos e controle de material) usando Google Planilhas como base de dados. Veja o [passo a passo de instalação](app-companhia/README.md).

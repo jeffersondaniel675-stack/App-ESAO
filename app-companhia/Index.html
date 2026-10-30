@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema da Companhia</title>
+<style>
+:root {
+  --bg: #f3f4ef; --surface: #ffffff; --surface-2: #eef0e8; --border: #d6d9cc;
+  --text: #1e2318; --muted: #5d6452; --accent: #4b5d2e; --accent-2: #3a4823; --accent-text: #ffffff;
+  --danger: #b3261e; --warn: #9a6700; --ok: #2e7d32; --info: #2f5b8a;
+  --preta: #2b2b2b; --vermelha: #c62828;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14170f; --surface: #1d2117; --surface-2: #252a1d; --border: #353b2b;
+    --text: #e7eadf; --muted: #a2a993; --accent: #8fa865; --accent-2: #a7bf7d; --accent-text: #11140c;
+    --danger: #ef6b62; --warn: #e0b04a; --ok: #6fbf73; --info: #7fb0e0;
+    --preta: #d8d8d8; --vermelha: #ff6b6b; --shadow: none; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14170f; --surface: #1d2117; --surface-2: #252a1d; --border: #353b2b;
+  --text: #e7eadf; --muted: #a2a993; --accent: #8fa865; --accent-2: #a7bf7d; --accent-text: #11140c;
+  --danger: #ef6b62; --warn: #e0b04a; --ok: #6fbf73; --info: #7fb0e0;
+  --preta: #d8d8d8; --vermelha: #ff6b6b; --shadow: none; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--info); }
+button, input, select, textarea { font: inherit; color: inherit; }
+header.top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--accent-2); color: #fff; }
+header.top h1 { font-size: 16px; margin: 0; font-weight: 650; letter-spacing: .2px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+header.top .user { font-size: 12px; opacity: .85; text-align: right; }
+.layout { display: flex; min-height: calc(100vh - 48px); }
+nav.side { width: 210px; flex: none; background: var(--surface); border-right: 1px solid var(--border); padding: 12px 8px; }
+nav.side button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 9px 12px; border: 0; background: none; border-radius: 8px; cursor: pointer; text-align: left; color: var(--text); }
+nav.side button:hover { background: var(--surface-2); }
+nav.side button.on { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+nav.side svg { width: 18px; height: 18px; flex: none; }
+main { flex: 1; min-width: 0; padding: 20px 24px 60px; }
+h2 { margin: 0 0 4px; font-size: 20px; }
+h3 { margin: 18px 0 8px; font-size: 15px; }
+.sub { color: var(--muted); margin: 0 0 16px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+.bar .grow { flex: 1; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--surface-2); }
+.btn.pri { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+.btn.pri:hover { filter: brightness(1.08); }
+.btn.dng { color: var(--danger); }
+.btn.sm { padding: 3px 8px; font-size: 12.5px; }
+.btn:disabled { opacity: .5; cursor: default; }
+input[type=text], input[type=date], input[type=number], input[type=month], input[type=email], input[type=search], select, textarea {
+  padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); width: 100%; min-width: 0;
+}
+textarea { min-height: 90px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+.bar input, .bar select { width: auto; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
+.card h4 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+.big { font-size: 28px; font-weight: 700; line-height: 1.1; }
+.list { margin: 0; padding: 0; list-style: none; }
+.list li { padding: 5px 0; border-bottom: 1px dashed var(--border); display: flex; gap: 8px; justify-content: space-between; }
+.list li:last-child { border-bottom: 0; }
+.list li .tag { white-space: normal; text-align: right; }
+.tw { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { background: var(--surface-2); font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: var(--muted); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.acts { white-space: nowrap; text-align: right; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); } .tag.dng { color: var(--danger); } .tag.info { color: var(--info); }
+.tag.preta { background: var(--preta); color: var(--surface); } .tag.vermelha { background: var(--vermelha); color: #fff; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; overflow-x: auto; }
+.tabs button { border: 0; background: none; padding: 8px 14px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); white-space: nowrap; }
+.tabs button.on { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.empty { padding: 28px; text-align: center; color: var(--muted); }
+.escala td { padding: 4px 6px; }
+.escala td.dia { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.escala tr.v td.dia { color: var(--vermelha); font-weight: 600; }
+.escala tr.hoje td { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.escala select { padding: 4px 6px; font-size: 13px; min-width: 150px; }
+.alerta { color: var(--warn); cursor: help; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 50; overflow-y: auto; }
+.modal { background: var(--surface); border-radius: 14px; width: 100%; max-width: 640px; padding: 18px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.modal h3 { margin-top: 0; }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--muted); font-weight: 600; min-width: 0; }
+.form .full { grid-column: 1 / -1; }
+.form .req::after { content: " *"; color: var(--danger); }
+.checks { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 2px 10px; font-weight: 400; color: var(--text); }
+.checks label { flex-direction: row; align-items: center; font-weight: 400; color: var(--text); gap: 6px; }
+.modal .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+#toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+#toast div { background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,.25); max-width: 90vw; }
+#toast div.err { background: var(--danger); color: #fff; }
+.loading { padding: 60px; text-align: center; color: var(--muted); }
+.ad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.parte { margin-top: 14px; }
+.parte .bar { margin-bottom: 6px; }
+.demo { background: var(--warn); color: #fff; font-size: 12px; padding: 4px 16px; text-align: center; }
+.muted { color: var(--muted); }
+.right { text-align: right; }
+#print { display: none; }
+@media (max-width: 760px) {
+  .layout { flex-direction: column; }
+  nav.side { width: 100%; display: flex; overflow-x: auto; padding: 6px; border-right: 0; border-bottom: 1px solid var(--border); position: sticky; top: 48px; z-index: 10; }
+  nav.side button { width: auto; flex: none; padding: 8px 10px; }
+  nav.side button span { display: none; }
+  nav.side button.on span { display: inline; }
+  main { padding: 16px; }
+  .form, .ad-grid { grid-template-columns: 1fr; }
+  header.top .user { display: none; }
+}
+@media print {
+  body { background: #fff; color: #000; }
+  body > *:not(#print) { display: none !important; }
+  #print { display: block; font: 12pt/1.5 "Times New Roman", serif; color: #000; }
+  #print table { font-size: 10pt; }
+  #print th, #print td { border: 1px solid #000; padding: 3px 6px; color: #000; background: none; position: static; }
+  #print .c { text-align: center; } #print .b { font-weight: bold; } #print .r { text-align: right; }
+  #print p { margin: 0 0 6px; text-align: justify; white-space: pre-wrap; }
+  @page { margin: 18mm 15mm 18mm 25mm; }
+}
+</style>
+</head>
+<body>
+<div id="demo-bar" class="demo" hidden>Modo demonstração — os dados ficam só neste navegador. Publique no Google Apps Script para usar a planilha.</div>
+<header class="top">
+  <h1 id="titulo">Sistema da Companhia</h1>
+  <div class="user" id="user"></div>
+</header>
+<div class="layout">
+  <nav class="side" id="nav"></nav>
+  <main id="app"><div class="loading">Carregando dados da planilha…</div></main>
+</div>
+<div id="modal"></div>
+<div id="dialog"></div>
+<div id="toast"></div>
+<div id="print"></div>
+
+<script>
+// ============================================================ utilidades
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const isoDe = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dataDe = iso => new Date(iso + 'T12:00:00');
+const hoje = () => isoDe(new Date());
+const addDias = (iso, n) => { const d = dataDe(iso); d.setDate(d.getDate() + n); return isoDe(d); };
+const MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+const MESES_EXT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SEMANA = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+const SEM_CURTA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
+const fmtMil = iso => { if (!iso) return ''; const d = dataDe(iso); return `${pad(d.getDate())} ${MESES[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`; };
+const fmtExt = iso => { const d = dataDe(iso); return `${d.getDate()} de ${MESES_EXT[d.getMonth()]} de ${d.getFullYear()}`; };
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isNaN(n) ? 0 : n; };
+const sim = v => !/^(n|nao|não|false|0|inativo)$/i.test(String(v ?? 'Sim').trim());
+const ids = v => String(v ?? '').split(',').map(s => s.trim()).filter(Boolean);
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function toast(msg, erro) {
+  const el = document.createElement('div');
+  el.textContent = msg; if (erro) el.className = 'err';
+  $('#toast').appendChild(el);
+  setTimeout(() => el.remove(), erro ? 6000 : 3000);
+}
+
+const ICONES = {
+  painel: '<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',
+  efetivo: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M16 3.1a4 4 0 0 1 0 7.8M22 21v-2a4 4 0 0 0-3-3.9"/>',
+  escala: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>',
+  missoes: '<path d="M4 22V4a1 1 0 0 1 1-1h12l-2 4 2 4H5"/>',
+  aditamentos: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/>',
+  material: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+  config: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
+};
+const icone = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONES[n]}</svg>`;
+
+// ============================================================ acesso aos dados
+// No Google Apps Script usa google.script.run; fora dele, um modo demonstração em localStorage.
+const NO_GOOGLE = typeof google !== 'undefined' && google.script && google.script.run;
+
+function gas(fn, ...args) {
+  return new Promise((ok, falha) => google.script.run.withSuccessHandler(ok).withFailureHandler(e => falha(e && e.message ? e : new Error(String(e))))[fn](...args));
+}
+
+const CHAVE = { Usuarios: 'email', Config: 'chave', Feriados: 'data' };
+const chaveDe = t => CHAVE[t] || 'id';
+
+const Demo = {
+  KEY: 'sistema-cia-demo-v1',
+  ler() { try { return JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { return null; } },
+  gravar(db) { try { localStorage.setItem(this.KEY, JSON.stringify(db)); } catch (e) { /* sem armazenamento: segue só em memória */ } this.mem = db; },
+  db() { return this.mem || this.ler() || (this.mem = semente()); },
+  async bootstrap() { const db = this.db(); this.gravar(db); return { usuario: { email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, dados: JSON.parse(JSON.stringify(db)) }; },
+  async salvarLote(t, lista, excluir) {
+    const db = this.db(); const k = chaveDe(t); db[t] = (db[t] || []).filter(r => !excluir.includes(String(r[k])));
+    const salvos = lista.map(o => { o = { ...o }; if (k === 'id' && !o.id) o.id = uid(); const i = db[t].findIndex(r => String(r[k]) === String(o[k])); if (i >= 0) db[t][i] = { ...db[t][i], ...o }; else db[t].push(o); return o; });
+    this.gravar(db); return salvos;
+  },
+  async uploadArquivo(nome) { return { url: '#', nome, id: uid() }; },
+  async importarDePlanilha() { throw new Error('A importação direto do Google Drive só funciona com o sistema publicado no Google. Use um arquivo .xlsx ou .csv.'); },
+  async criarDocAditamento() { throw new Error('A geração de Google Docs só funciona com o sistema publicado no Google. Use "Imprimir / PDF".'); },
+  resetar() { localStorage.removeItem(this.KEY); this.mem = null; }
+};
+const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
+
+// ============================================================ estado
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Usuarios', 'Config'];
+const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
+const pode = () => ['admin', 'editor'].includes(S.user?.perfil);
+const admin = () => S.user?.perfil === 'admin';
+const cfg = k => (S.db.Config.find(c => c.chave === k) || {}).valor || '';
+
+async function salvar(tabela, lista, excluir = []) {
+  try {
+    const salvos = await api('salvarLote', tabela, lista, excluir.map(String));
+    const k = chaveDe(tabela);
+    S.db[tabela] = S.db[tabela].filter(r => !excluir.map(String).includes(String(r[k])));
+    salvos.forEach(o => { const i = S.db[tabela].findIndex(r => String(r[k]) === String(o[k])); if (i >= 0) S.db[tabela][i] = { ...S.db[tabela][i], ...o }; else S.db[tabela].push(o); });
+    indexar();
+    return salvos;
+  } catch (e) { toast('Erro ao salvar: ' + e.message, true); throw e; }
+}
+
+// ============================================================ domínio
+const POSTOS = ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', 'ST', '1º Sgt', '2º Sgt', '3º Sgt', 'Cb', 'Sd'];
+const TIPOS_IMPED = ['Férias', 'Dispensa médica', 'Dispensa', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
+const TIPOS_MISSAO = ['Operação', 'Apoio', 'Instrução', 'Representação', 'Transporte', 'Guarda/Segurança', 'Outra'];
+const STATUS_MISSAO = ['Planejada', 'Em andamento', 'Concluída', 'Cancelada'];
+const CATEGORIAS = ['Armamento', 'Munição', 'Comunicações', 'Viatura', 'Intendência', 'Saúde', 'Engenharia', 'Informática', 'Mobiliário', 'Outro'];
+const ESTADOS = ['Bom', 'Regular', 'Em manutenção', 'Inservível'];
+
+let MIL = {}, MAT = {}, TIPO = {}, FERIADO = {}, ESC_DIA = {};
+function indexar() {
+  MIL = Object.fromEntries(S.db.Militares.map(m => [m.id, m]));
+  MAT = Object.fromEntries(S.db.Material.map(m => [m.id, m]));
+  TIPO = Object.fromEntries(S.db.TiposServico.map(t => [t.id, t]));
+  FERIADO = Object.fromEntries(S.db.Feriados.map(f => [f.data, f.descricao]));
+  ESC_DIA = {};
+  S.db.Escala.forEach(e => { (ESC_DIA[e.data] ||= []).push(e); });
+}
+const postoIdx = p => { const i = POSTOS.indexOf(p); return i < 0 ? 99 : i; };
+const nomeMil = m => { m = typeof m === 'string' ? MIL[m] : m; return m ? [m.postoGrad, m.numero, m.nomeGuerra].filter(Boolean).join(' ') : '—'; };
+const ordemMil = (a, b) => postoIdx(a.postoGrad) - postoIdx(b.postoGrad) || num(a.antiguidade) - num(b.antiguidade) || String(a.nomeGuerra).localeCompare(b.nomeGuerra);
+const militaresAtivos = () => S.db.Militares.filter(m => sim(m.ativo)).sort(ordemMil);
+const tiposAtivos = () => S.db.TiposServico.filter(t => sim(t.ativo)).sort((a, b) => num(a.ordem) - num(b.ordem));
+const corDoDia = iso => { const w = dataDe(iso).getDay(); return (w === 0 || w === 6 || FERIADO[iso]) ? 'V' : 'P'; };
+const missaoAtiva = m => m.status !== 'Cancelada' && m.status !== 'Concluída';
+
+/** Situação do militar numa data: impedimento, missão ou pronto. */
+function situacao(militarId, iso) {
+  const imp = S.db.Impedimentos.find(i => i.militarId === militarId && i.inicio <= iso && (i.fim || i.inicio) >= iso);
+  if (imp) return { tipo: 'imp', texto: imp.tipo, ate: imp.fim };
+  const mis = S.db.Missoes.find(m => m.status !== 'Cancelada' && ids(m.militaresIds).concat(m.responsavelId || []).includes(militarId) && m.inicio <= iso && (m.fim || m.inicio) >= iso);
+  if (mis) return { tipo: 'missao', texto: 'Missão: ' + mis.titulo, ate: mis.fim };
+  return { tipo: 'pronto', texto: 'Pronto' };
+}
+const tagSituacao = s => `<span class="tag ${s.tipo === 'pronto' ? 'ok' : s.tipo === 'missao' ? 'info' : 'warn'}">${esc(s.texto)}${s.ate ? ' até ' + fmt(s.ate) : ''}</span>`;
+const aptoPara = (m, tipo) => ids(tipo.postos).includes(m.postoGrad);
+
+/**
+ * Folga = quantidade de dias da mesma cor (preta = dias úteis, vermelha = sáb/dom/feriado)
+ * desde o último serviço do militar naquele tipo de serviço. Quem nunca tirou tem folga infinita.
+ */
+function calcFolga(militarId, tipoId, cor, iso, entradas) {
+  let ultimo = null;
+  for (const e of entradas) if (e.militarId === militarId && e.tipoId === tipoId && corDoDia(e.data) === cor && e.data < iso && (!ultimo || e.data > ultimo)) ultimo = e.data;
+  if (!ultimo) return { folga: Infinity, ultimo: null };
+  let n = 0;
+  for (let d = addDias(ultimo, 1); d < iso; d = addDias(d, 1)) if (corDoDia(d) === cor) n++;
+  return { folga: n, ultimo };
+}
+
+/**
+ * Preenche os serviços vazios entre `inicio` e `fim` escolhendo, para cada dia e tipo,
+ * o militar apto e disponível com maior folga na cor do dia. Empate: o mais moderno.
+ * Regras: não escala impedido/em missão, nem em dois serviços no mesmo dia, nem em dias seguidos.
+ */
+function gerarEscala(inicio, fim, existentes) {
+  const entradas = existentes.slice();
+  const ocupado = new Set(entradas.map(e => e.militarId + '|' + e.data));
+  const novos = [], faltas = [];
+  for (let d = inicio; d <= fim; d = addDias(d, 1)) {
+    const cor = corDoDia(d);
+    for (const tipo of tiposAtivos()) {
+      if (entradas.some(e => e.data === d && e.tipoId === tipo.id)) continue;
+      const cands = militaresAtivos().filter(m => aptoPara(m, tipo)
+        && situacao(m.id, d).tipo === 'pronto'
+        && !ocupado.has(m.id + '|' + d) && !ocupado.has(m.id + '|' + addDias(d, -1)) && !ocupado.has(m.id + '|' + addDias(d, 1)));
+      if (!cands.length) { faltas.push(`${fmt(d)} – ${tipo.nome}`); continue; }
+      const escolhido = cands.map(m => ({ m, f: calcFolga(m.id, tipo.id, cor, d, entradas).folga }))
+        .sort((a, b) => b.f - a.f || postoIdx(b.m.postoGrad) - postoIdx(a.m.postoGrad) || num(b.m.antiguidade) - num(a.m.antiguidade))[0].m;
+      const e = { id: uid(), data: d, tipoId: tipo.id, militarId: escolhido.id, cor, obs: '' };
+      entradas.push(e); novos.push(e); ocupado.add(escolhido.id + '|' + d);
+    }
+  }
+  return { novos, faltas };
+}
+
+function alertasEscala(e) {
+  const a = [];
+  const s = situacao(e.militarId, e.data);
+  if (s.tipo !== 'pronto') a.push(s.texto);
+  const doMil = S.db.Escala.filter(x => x.militarId === e.militarId && x.id !== e.id);
+  if (doMil.some(x => x.data === e.data)) a.push('dois serviços no mesmo dia');
+  if (doMil.some(x => x.data === addDias(e.data, -1) || x.data === addDias(e.data, 1))) a.push('serviço em dias seguidos');
+  return a;
+}
+
+// ============================================================ componentes genéricos
+function fecharModal() { $('#modal').innerHTML = ''; }
+
+function campoHTML(c, v) {
+  const id = 'f_' + c.k, req = c.req ? 'required' : '';
+  const val = v ?? c.padrao ?? '';
+  let input;
+  if (c.t === 'select') {
+    const ops = typeof c.o === 'function' ? c.o() : c.o;
+    input = `<select id="${id}" ${req}>${c.vazio !== false ? '<option value=""></option>' : ''}${ops.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}" ${String(ov) === String(val) ? 'selected' : ''}>${esc(ol)}</option>`; }).join('')}</select>`;
+  } else if (c.t === 'militar') {
+    input = `<select id="${id}" ${req}><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === val ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select>`;
+  } else if (c.t === 'material') {
+    input = `<select id="${id}" ${req}><option value=""></option>${S.db.Material.slice().sort((a, b) => a.descricao.localeCompare(b.descricao)).map(m => `<option value="${m.id}" ${m.id === val ? 'selected' : ''}>${esc((m.patrimonio ? m.patrimonio + ' – ' : '') + m.descricao)} (disp. ${disponivel(m)})</option>`).join('')}</select>`;
+  } else if (c.t === 'militares') {
+    const sel = ids(val);
+    input = `<div><input type="search" placeholder="Filtrar…" oninput="filtrarChecks(this)" style="margin-bottom:6px"><div class="checks" id="${id}">${militaresAtivos().map(m => `<label data-n="${esc(norm(nomeMil(m)))}"><input type="checkbox" value="${m.id}" ${sel.includes(m.id) ? 'checked' : ''}> ${esc(nomeMil(m))}</label>`).join('')}</div></div>`;
+  } else if (c.t === 'textarea') {
+    input = `<textarea id="${id}" ${req}>${esc(val)}</textarea>`;
+  } else if (c.t === 'file') {
+    input = `<input type="file" id="${id}">${val ? `<small><a href="${esc(val)}" target="_blank">arquivo atual</a></small>` : ''}`;
+  } else {
+    input = `<input type="${c.t || 'text'}" id="${id}" value="${esc(val)}" ${req} ${c.t === 'number' ? 'step="any"' : ''}>`;
+  }
+  return `<label class="${c.full || ['textarea', 'militares'].includes(c.t) ? 'full' : ''}"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</label>`;
+}
+function filtrarChecks(inp) { const q = norm(inp.value); $$('label', inp.nextElementSibling).forEach(l => l.style.display = l.dataset.n.includes(q) ? '' : 'none'); }
+
+function lerArquivoBase64(file) {
+  return new Promise((ok, falha) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = falha; r.readAsDataURL(file); });
+}
+async function enviarArquivo(file) {
+  if (!file) return null;
+  if (file.size > 25 * 1024 * 1024) throw new Error('Arquivo maior que 25 MB.');
+  toast('Enviando arquivo para o Drive…');
+  const r = await api('uploadArquivo', file.name, file.type, await lerArquivoBase64(file));
+  return r.url;
+}
+
+/** Abre um formulário em modal. `aoSalvar(obj)` recebe os valores e deve gravar. */
+function abrirForm({ titulo, campos, valores = {}, aoSalvar, extra = '' }) {
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm">
+    <h3>${esc(titulo)}</h3><div class="form">${campos.map(c => campoHTML(c, valores[c.k])).join('')}</div>${extra}
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" ${pode() ? '' : 'disabled'}>Salvar</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $('#frm .btn.pri'); btn.disabled = true;
+    try {
+      const obj = { ...valores };
+      for (const c of campos) {
+        const el = $('#f_' + c.k);
+        if (c.t === 'militares') obj[c.k] = $$('input:checked', el).map(i => i.value).join(',');
+        else if (c.t === 'file') { const url = await enviarArquivo(el.files[0]); if (url) obj[c.k] = url; }
+        else obj[c.k] = el.value.trim();
+      }
+      await aoSalvar(obj);
+      fecharModal(); render();
+    } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
+  };
+  const primeiro = $('#frm input, #frm select, #frm textarea'); if (primeiro) primeiro.focus();
+}
+
+/** Diálogo da própria página (o navegador pode bloquear confirm/prompt). Com `campo`, devolve o valor digitado ou null. */
+function dialogo({ msg, campo, valor, ok = 'Confirmar' }) {
+  return new Promise(res => {
+    const el = $('#dialog');
+    el.innerHTML = `<div class="modal-bg" style="z-index:70"><form class="modal" id="dlg" style="max-width:440px"><p style="margin-top:0">${esc(msg)}</p>${campo ? `<input type="${campo}" id="dlg_v" value="${esc(valor || '')}">` : ''}
+      <div class="acts"><button type="button" class="btn" id="dlg_nao">Cancelar</button><button class="btn pri">${esc(ok)}</button></div></form></div>`;
+    const fim = v => { el.innerHTML = ''; res(v); };
+    $('#dlg_nao').onclick = () => fim(campo ? null : false);
+    $('#dlg').onsubmit = e => { e.preventDefault(); fim(campo ? $('#dlg_v').value : true); };
+    (campo ? $('#dlg_v') : $('#dlg .pri')).focus();
+  });
+}
+const confirmar = msg => dialogo({ msg });
+
+/** Tabela genérica. cols: [{l, v: row => html, c: classe}] */
+function tabela(linhas, cols, acoes) {
+  if (!linhas.length) return '<div class="tw"><div class="empty">Nenhum registro.</div></div>';
+  return `<div class="tw"><table><thead><tr>${cols.map(c => `<th class="${c.c || ''}">${esc(c.l)}</th>`).join('')}${acoes ? '<th></th>' : ''}</tr></thead><tbody>
+    ${linhas.map(r => `<tr>${cols.map(c => `<td class="${c.c || ''}">${c.v(r)}</td>`).join('')}${acoes ? `<td class="acts">${acoes(r)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+}
+const linkArq = u => u ? `<a href="${esc(u)}" target="_blank" title="Abrir arquivo">📎</a>` : '';
+const abas = (chave, lista) => `<div class="tabs">${lista.map(([k, l]) => `<button class="${(S.sub[chave] || lista[0][0]) === k ? 'on' : ''}" onclick="S.sub['${chave}']='${k}';render()">${esc(l)}</button>`).join('')}</div>`;
+const aba = (chave, padrao) => S.sub[chave] || padrao;
+const busca = (chave, ph) => `<input type="search" placeholder="${esc(ph || 'Buscar…')}" value="${esc(S.filtro[chave] || '')}" oninput="S.filtro['${chave}']=this.value;clearTimeout(window._bt);window._bt=setTimeout(()=>{render();const i=$('input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)">`;
+const casa = (chave, ...textos) => { const q = norm(S.filtro[chave]); return !q || textos.some(t => norm(t).includes(q)); };
+
+function imprimir(html) {
+  $('#print').innerHTML = html;
+  setTimeout(() => window.print(), 50);
+}
+function cabecalhoDoc() { return cfg('cabecalho').split('\n').filter(Boolean); }
+
+// ============================================================ navegação
+const VIEWS = [
+  ['painel', 'Painel'], ['efetivo', 'Efetivo'], ['escala', 'Escala de serviço'], ['missoes', 'Missões'],
+  ['aditamentos', 'Aditamentos'], ['material', 'Material'], ['config', 'Configurações']
+];
+function irPara(v) { S.view = v; try { localStorage.setItem('cia-view', v); } catch (e) { } render(); window.scrollTo(0, 0); }
+function render() {
+  $('#nav').innerHTML = VIEWS.map(([k, l]) => `<button class="${S.view === k ? 'on' : ''}" onclick="irPara('${k}')" title="${l}">${icone(k)}<span>${l}</span></button>`).join('');
+  $('#titulo').textContent = cfg('nomeCia') ? 'Sistema – ' + cfg('nomeCia') : 'Sistema da Companhia';
+  $('#app').innerHTML = (VIEWS_FN[S.view] || vPainel)();
+}
+
+// ============================================================ painel
+function vPainel() {
+  const d = hoje(), amanha = addDias(d, 1);
+  const mil = militaresAtivos();
+  const sits = mil.map(m => situacao(m.id, d));
+  const prontos = sits.filter(s => s.tipo === 'pronto').length;
+  const emMissao = sits.filter(s => s.tipo === 'missao').length;
+  const imped = mil.map(m => ({ m, s: situacao(m.id, d) })).filter(x => x.s.tipo === 'imp');
+  const servico = dia => tiposAtivos().map(t => { const e = (ESC_DIA[dia] || []).find(e => e.tipoId === t.id); return `<li><span class="muted">${esc(t.nome)}</span><b>${e ? esc(nomeMil(e.militarId)) : '<span class="tag warn">vazio</span>'}</b></li>`; }).join('');
+  const missoes = S.db.Missoes.filter(m => missaoAtiva(m) && m.inicio <= addDias(d, 7) && (m.fim || m.inicio) >= d).sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const abertas = S.db.Cautelas.filter(c => c.status !== 'Devolvida');
+  const vencidas = abertas.filter(c => c.previsaoDevolucao && c.previsaoDevolucao < d);
+  const manut = S.db.Material.filter(m => m.estado === 'Em manutenção' || m.estado === 'Inservível');
+  return `<h2>Painel</h2><p class="sub">${esc(SEMANA[dataDe(d).getDay()])}, ${fmtExt(d)} · escala <span class="tag ${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}">${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}</span>${FERIADO[d] ? ' · ' + esc(FERIADO[d]) : ''}</p>
+  <div class="cards">
+    <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
+    <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
+    <div class="card"><h4>Cautelas abertas</h4><div class="big">${abertas.length}</div><div class="${vencidas.length ? 'tag dng' : 'muted'}">${vencidas.length} vencida(s)</div></div>
+    <div class="card"><h4>Material</h4><div class="big">${S.db.Material.length}<span class="muted" style="font-size:16px"> itens</span></div><div class="muted">${manut.length} em manutenção/inservível</div></div>
+  </div>
+  <div class="cards">
+    <div class="card"><h4>Serviço de hoje</h4><ul class="list">${servico(d) || '<li class="muted">Cadastre os tipos de serviço em Configurações.</li>'}</ul></div>
+    <div class="card"><h4>Serviço de amanhã · ${fmt(amanha)}</h4><ul class="list">${servico(amanha)}</ul></div>
+    <div class="card"><h4>Impedidos hoje</h4><ul class="list">${imped.map(x => `<li><span>${esc(nomeMil(x.m))}</span>${tagSituacao(x.s)}</li>`).join('') || '<li class="muted">Ninguém impedido.</li>'}</ul></div>
+    <div class="card"><h4>Missões</h4><ul class="list">${missoes.map(m => `<li><span>${esc(m.titulo)}</span><span class="muted">${fmt(m.inicio)}</span></li>`).join('') || '<li class="muted">Nenhuma nos próximos 7 dias.</li>'}</ul></div>
+  </div>
+  ${vencidas.length ? `<h3>Cautelas vencidas</h3>${tabelaCautelas(vencidas)}` : ''}`;
+}
+
+// ============================================================ efetivo
+const CAMPOS_MIL = [
+  { k: 'postoGrad', l: 'Posto/Graduação', t: 'select', o: POSTOS, req: true },
+  { k: 'numero', l: 'Número' },
+  { k: 'nomeGuerra', l: 'Nome de guerra', req: true },
+  { k: 'nomeCompleto', l: 'Nome completo' },
+  { k: 'antiguidade', l: 'Antiguidade (1 = mais antigo)', t: 'number' },
+  { k: 'idt', l: 'Identidade' },
+  { k: 'pelotao', l: 'Pelotão/Seção' },
+  { k: 'funcao', l: 'Função' },
+  { k: 'telefone', l: 'Telefone' },
+  { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], padrao: 'Sim', vazio: false },
+  { k: 'obs', l: 'Observações', full: true }
+];
+const CAMPOS_IMP = [
+  { k: 'militarId', l: 'Militar', t: 'militar', req: true },
+  { k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_IMPED, req: true },
+  { k: 'inicio', l: 'Início', t: 'date', req: true },
+  { k: 'fim', l: 'Fim', t: 'date', req: true },
+  { k: 'obs', l: 'Observações', full: true }
+];
+function vEfetivo() {
+  const t = aba('efetivo', 'mil'), d = hoje();
+  let corpo = '';
+  if (t === 'mil') {
+    const lista = S.db.Militares.slice().sort(ordemMil).filter(m => casa('mil', nomeMil(m), m.nomeCompleto, m.pelotao, m.funcao));
+    corpo = `<div class="bar">${busca('mil', 'Buscar militar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarMil()">+ Militar</button>' : ''}</div>
+    ${tabela(lista, [
+      { l: 'Militar', v: m => `<b>${esc(nomeMil(m))}</b><div class="muted">${esc(m.nomeCompleto)}</div>` },
+      { l: 'Pel/Seç', v: m => esc(m.pelotao) }, { l: 'Função', v: m => esc(m.funcao) },
+      { l: 'Situação hoje', v: m => sim(m.ativo) ? tagSituacao(situacao(m.id, d)) : '<span class="tag">Inativo</span>' },
+      { l: 'Telefone', v: m => esc(m.telefone) }
+    ], pode() ? m => `<button class="btn sm" onclick="editarMil('${m.id}')">Editar</button> <button class="btn sm" onclick="editarImp(null,'${m.id}')">Afastar</button>` : null)}
+    <p class="muted">${lista.length} militar(es).</p>`;
+  } else if (t === 'imp') {
+    const lista = S.db.Impedimentos.slice().sort((a, b) => b.inicio.localeCompare(a.inicio)).filter(i => casa('imp', nomeMil(i.militarId), i.tipo));
+    corpo = `<div class="bar">${busca('imp', 'Buscar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarImp()">+ Afastamento</button>' : ''}</div>
+    ${tabela(lista, [
+      { l: 'Militar', v: i => esc(nomeMil(i.militarId)) }, { l: 'Tipo', v: i => esc(i.tipo) },
+      { l: 'Período', v: i => `${fmt(i.inicio)} a ${fmt(i.fim)}` },
+      { l: 'Situação', v: i => i.fim < d ? '<span class="tag">Encerrado</span>' : i.inicio > d ? '<span class="tag info">Previsto</span>' : '<span class="tag warn">Em curso</span>' },
+      { l: 'Obs', v: i => esc(i.obs) }
+    ], pode() ? i => `<button class="btn sm" onclick="editarImp('${i.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('Impedimentos','${i.id}')">Excluir</button>` : null)}`;
+  } else {
+    corpo = vImportar('Militares');
+  }
+  return `<h2>Efetivo</h2><p class="sub">Militares da subunidade, férias, dispensas e demais afastamentos.</p>
+  ${abas('efetivo', [['mil', 'Militares'], ['imp', 'Afastamentos'], ...(pode() ? [['imp-x', 'Importar planilha']] : [])])}${corpo}`;
+}
+function editarMil(id) {
+  const m = id ? MIL[id] : {};
+  abrirForm({ titulo: id ? 'Editar militar' : 'Novo militar', campos: CAMPOS_MIL, valores: m, aoSalvar: o => salvar('Militares', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Militares','${id}',true)">Excluir militar</button></div>` : '' });
+}
+function editarImp(id, militarId) {
+  abrirForm({ titulo: id ? 'Editar afastamento' : 'Novo afastamento', campos: CAMPOS_IMP, valores: id ? S.db.Impedimentos.find(i => i.id === id) : { militarId, inicio: hoje() },
+    aoSalvar: o => { if (o.fim < o.inicio) throw new Error('O fim não pode ser antes do início.'); return salvar('Impedimentos', [o]); } });
+}
+async function excluir(tabela, id, modal) {
+  if (!await confirmar('Excluir este registro? Esta ação não pode ser desfeita.')) return;
+  await salvar(tabela, [], [id]);
+  if (modal) fecharModal();
+  toast('Excluído.'); render();
+}
+
+// ============================================================ escala
+function diasDoMes(ym) { const [y, m] = ym.split('-').map(Number); const n = new Date(y, m, 0).getDate(); return Array.from({ length: n }, (_, i) => `${ym}-${pad(i + 1)}`); }
+
+function vEscala() {
+  const t = aba('escala', 'mes');
+  const tipos = tiposAtivos();
+  const dias = diasDoMes(S.mes);
+  const titulo = `<h2>Escala de serviço</h2><p class="sub">Escala <b>preta</b> (dias úteis) e <b>vermelha</b> (sábados, domingos e feriados), com controle automático de folga.</p>`;
+  if (!tipos.length) return titulo + '<div class="card">Cadastre os tipos de serviço em <a href="#" onclick="irPara(\'config\')">Configurações</a>.</div>';
+  const barra = `<div class="bar"><input type="month" value="${S.mes}" onchange="S.mes=this.value;render()">
+    <button class="btn" onclick="mudarMes(-1)">◀</button><button class="btn" onclick="mudarMes(1)">▶</button><span class="grow"></span>
+    ${pode() ? `<button class="btn pri" onclick="gerarMes()">Gerar dias vazios</button><button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
+    <button class="btn" onclick="imprimirEscala()">Imprimir</button></div>`;
+  if (t === 'folgas') return titulo + abas('escala', [['mes', 'Escala do mês'], ['folgas', 'Quadro de folgas']]) + barra + vFolgas(dias[0]);
+  const linhas = dias.map(d => {
+    const cor = corDoDia(d), w = dataDe(d).getDay();
+    return `<tr class="${cor === 'V' ? 'v' : ''} ${d === hoje() ? 'hoje' : ''}"><td class="dia">${d.slice(8)} ${SEM_CURTA[w]}${FERIADO[d] ? ` <span title="${esc(FERIADO[d])}">★</span>` : ''}</td>
+    ${tipos.map(tp => {
+      const e = (ESC_DIA[d] || []).find(x => x.tipoId === tp.id);
+      const al = e ? alertasEscala(e) : [];
+      const aviso = al.length ? ` <span class="alerta" title="${esc(al.join('; '))}">⚠</span>` : '';
+      if (!pode()) return `<td>${e ? esc(nomeMil(e.militarId)) : '<span class="muted">—</span>'}${aviso}</td>`;
+      const ops = militaresAtivos().filter(m => aptoPara(m, tp) || (e && e.militarId === m.id))
+        .map(m => { const s = situacao(m.id, d); return `<option value="${m.id}" ${e && e.militarId === m.id ? 'selected' : ''}>${esc(nomeMil(m))}${s.tipo !== 'pronto' ? ' (' + esc(s.texto) + ')' : ''}</option>`; }).join('');
+      return `<td><select onchange="trocarServico('${d}','${tp.id}',this.value)"><option value="">—</option>${ops}</select>${aviso}</td>`;
+    }).join('')}</tr>`;
+  }).join('');
+  const vazios = dias.reduce((n, d) => n + tipos.filter(tp => !(ESC_DIA[d] || []).some(e => e.tipoId === tp.id)).length, 0);
+  return titulo + abas('escala', [['mes', 'Escala do mês'], ['folgas', 'Quadro de folgas']]) + barra +
+    `<div class="tw escala"><table><thead><tr><th>Dia</th>${tipos.map(tp => `<th>${esc(tp.nome)}</th>`).join('')}</tr></thead><tbody>${linhas}</tbody></table></div>
+    <p class="muted">${vazios} serviço(s) sem militar neste mês. ⚠ = conflito (impedimento, missão ou dias seguidos). ★ = feriado.</p>`;
+}
+function mudarMes(n) { const [y, m] = S.mes.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); S.mes = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; render(); }
+
+async function trocarServico(data, tipoId, militarId) {
+  const e = (ESC_DIA[data] || []).find(x => x.tipoId === tipoId);
+  try {
+    if (!militarId) { if (e) await salvar('Escala', [], [e.id]); }
+    else await salvar('Escala', [{ ...(e || { id: uid(), data, tipoId, obs: '' }), militarId, cor: corDoDia(data) }]);
+    toast('Escala atualizada.'); render();
+  } catch (err) { render(); }
+}
+async function gerarMes() {
+  const dias = diasDoMes(S.mes);
+  const { novos, faltas } = gerarEscala(dias[0], dias[dias.length - 1], S.db.Escala);
+  if (!novos.length) return toast(faltas.length ? 'Sem militares disponíveis para: ' + faltas.slice(0, 3).join(', ') : 'O mês já está completo.', !!faltas.length);
+  await salvar('Escala', novos);
+  toast(`${novos.length} serviço(s) gerado(s).` + (faltas.length ? ` ${faltas.length} sem militar disponível.` : ''));
+  render();
+}
+async function refazerDesde() {
+  const dias = diasDoMes(S.mes);
+  const sugestao = hoje() > dias[0] && hoje() <= dias[dias.length - 1] ? addDias(hoje(), 1) : dias[0];
+  const inicio = await dialogo({ msg: 'Apagar e gerar novamente a escala a partir de qual data até o fim do mês? Trocas manuais nesse período serão perdidas.', campo: 'date', valor: sugestao, ok: 'Refazer escala' });
+  if (!inicio) return;
+  const fim = dias[dias.length - 1];
+  if (inicio < dias[0] || inicio > fim) return toast('Escolha uma data dentro do mês exibido.', true);
+  const remover = S.db.Escala.filter(e => e.data >= inicio && e.data <= fim);
+  const { novos } = gerarEscala(inicio, fim, S.db.Escala.filter(e => !(e.data >= inicio && e.data <= fim)));
+  await salvar('Escala', novos, remover.map(e => e.id));
+  toast(`Escala refeita de ${fmt(inicio)} a ${fmt(fim)}.`); render();
+}
+function vFolgas(dataRef) {
+  const data = S.filtro.folgaData || hoje();
+  return `<div class="bar"><label class="muted">Folgas na data <input type="date" value="${data}" onchange="S.filtro.folgaData=this.value;render()"></label></div>` +
+    tiposAtivos().map(tp => {
+      const lista = militaresAtivos().filter(m => aptoPara(m, tp)).map(m => {
+        const p = calcFolga(m.id, tp.id, 'P', data, S.db.Escala), v = calcFolga(m.id, tp.id, 'V', data, S.db.Escala);
+        const mes = S.db.Escala.filter(e => e.militarId === m.id && e.tipoId === tp.id && e.data.slice(0, 7) === S.mes).length;
+        return { m, p, v, mes };
+      }).sort((a, b) => b.p.folga - a.p.folga);
+      const f = x => x.folga === Infinity ? '<span class="muted">nunca</span>' : x.folga;
+      return `<h3>${esc(tp.nome)}</h3>${tabela(lista, [
+        { l: 'Militar', v: x => esc(nomeMil(x.m)) }, { l: 'Situação', v: x => tagSituacao(situacao(x.m.id, data)) },
+        { l: 'Último (preta)', v: x => fmt(x.p.ultimo) }, { l: 'Folga preta', v: x => f(x.p), c: 'num' },
+        { l: 'Último (vermelha)', v: x => fmt(x.v.ultimo) }, { l: 'Folga vermelha', v: x => f(x.v), c: 'num' },
+        { l: 'Serviços no mês', v: x => x.mes, c: 'num' }
+      ])}`;
+    }).join('');
+}
+function imprimirEscala() {
+  const tipos = tiposAtivos(), [y, m] = S.mes.split('-');
+  imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">ESCALA DE SERVIÇO – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}</p>
+  <table style="width:100%;border-collapse:collapse"><thead><tr><th>Dia</th><th>Cor</th>${tipos.map(t => `<th>${esc(t.nome)}</th>`).join('')}</tr></thead><tbody>
+  ${diasDoMes(S.mes).map(d => `<tr><td>${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}</td><td>${corDoDia(d) === 'V' ? 'V' : 'P'}</td>${tipos.map(t => { const e = (ESC_DIA[d] || []).find(x => x.tipoId === t.id); return `<td>${e ? esc(nomeMil(e.militarId)) : ''}</td>`; }).join('')}</tr>`).join('')}
+  </tbody></table>${assinatura()}`);
+}
+const assinatura = () => `<div class="c" style="margin-top:48px"><div class="b">${esc(cfg('cmtNome'))}</div><div>${esc(cfg('cmtFuncao'))}</div></div>`;
+
+// ============================================================ missões
+const CAMPOS_MISSAO = [
+  { k: 'titulo', l: 'Missão', req: true, full: true },
+  { k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_MISSAO },
+  { k: 'status', l: 'Situação', t: 'select', o: STATUS_MISSAO, padrao: 'Planejada', vazio: false },
+  { k: 'inicio', l: 'Início', t: 'date', req: true },
+  { k: 'fim', l: 'Término', t: 'date' },
+  { k: 'horario', l: 'Horário de apresentação' },
+  { k: 'local', l: 'Local' },
+  { k: 'responsavelId', l: 'Comandante/Responsável', t: 'militar' },
+  { k: 'viaturas', l: 'Viaturas' },
+  { k: 'militaresIds', l: 'Pessoal empregado', t: 'militares' },
+  { k: 'material', l: 'Material', t: 'textarea' },
+  { k: 'descricao', l: 'Descrição / ordem', t: 'textarea' },
+  { k: 'arquivoUrl', l: 'Anexo (ordem de missão, croqui…)', t: 'file', full: true }
+];
+function vMissoes() {
+  const st = S.filtro.missaoStatus || 'ativas';
+  const lista = S.db.Missoes.filter(m => (st === 'todas' || (st === 'ativas' ? missaoAtiva(m) : m.status === st)) && casa('mis', m.titulo, m.local, m.tipo))
+    .sort((a, b) => b.inicio.localeCompare(a.inicio));
+  const tagSt = s => `<span class="tag ${s === 'Em andamento' ? 'info' : s === 'Concluída' ? 'ok' : s === 'Cancelada' ? 'dng' : 'warn'}">${esc(s || 'Planejada')}</span>`;
+  return `<h2>Missões</h2><p class="sub">Planejamento e controle de missões, com o pessoal empregado (fica automaticamente indisponível para a escala).</p>
+  <div class="bar">${busca('mis', 'Buscar missão…')}<select onchange="S.filtro.missaoStatus=this.value;render()">${[['ativas', 'Planejadas e em andamento'], ...STATUS_MISSAO.map(s => [s, s]), ['todas', 'Todas']].map(([v, l]) => `<option value="${v}" ${st === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+  <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarMissao()">+ Missão</button>' : ''}</div>
+  ${tabela(lista, [
+    { l: 'Missão', v: m => `<b>${esc(m.titulo)}</b> ${linkArq(m.arquivoUrl)}<div class="muted">${esc(m.tipo)}${m.local ? ' · ' + esc(m.local) : ''}</div>` },
+    { l: 'Período', v: m => `${fmt(m.inicio)}${m.fim && m.fim !== m.inicio ? ' a ' + fmt(m.fim) : ''}${m.horario ? '<div class="muted">' + esc(m.horario) + '</div>' : ''}` },
+    { l: 'Responsável', v: m => esc(m.responsavelId ? nomeMil(m.responsavelId) : '') },
+    { l: 'Efetivo', v: m => ids(m.militaresIds).length, c: 'num' },
+    { l: 'Situação', v: m => tagSt(m.status) }
+  ], m => `${pode() ? `<button class="btn sm" onclick="editarMissao('${m.id}')">Editar</button> ` : ''}<button class="btn sm" onclick="imprimirMissao('${m.id}')">Imprimir</button>${pode() ? ` <button class="btn sm dng" onclick="excluir('Missoes','${m.id}')">Excluir</button>` : ''}`)}`;
+}
+function editarMissao(id) {
+  abrirForm({ titulo: id ? 'Editar missão' : 'Nova missão', campos: CAMPOS_MISSAO, valores: id ? S.db.Missoes.find(m => m.id === id) : { inicio: hoje(), status: 'Planejada' },
+    aoSalvar: async o => {
+      if (o.fim && o.fim < o.inicio) throw new Error('O término não pode ser antes do início.');
+      const conflitos = ids(o.militaresIds).map(mid => ({ mid, s: situacao(mid, o.inicio) })).filter(x => x.s.tipo === 'imp');
+      if (conflitos.length && !await confirmar('Atenção: ' + conflitos.map(x => nomeMil(x.mid) + ' (' + x.s.texto + ')').join(', ') + ' está(ão) impedido(s) no início da missão. Salvar mesmo assim?')) throw new Error('Cancelado.');
+      return salvar('Missoes', [o]);
+    } });
+}
+function imprimirMissao(id) {
+  const m = S.db.Missoes.find(x => x.id === id);
+  const pessoal = ids(m.militaresIds).map(i => MIL[i]).filter(Boolean).sort(ordemMil);
+  imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">ORDEM DE MISSÃO – ${esc(m.titulo.toUpperCase())}</p>
+  <p><b>1. Tipo:</b> ${esc(m.tipo)}<br><b>2. Local:</b> ${esc(m.local)}<br><b>3. Período:</b> ${fmtMil(m.inicio)}${m.fim ? ' a ' + fmtMil(m.fim) : ''}${m.horario ? ' – apresentação: ' + esc(m.horario) : ''}<br>
+  <b>4. Comandante:</b> ${esc(m.responsavelId ? nomeMil(m.responsavelId) : '')}<br><b>5. Viaturas:</b> ${esc(m.viaturas)}</p>
+  <p><b>6. Missão:</b>\n${esc(m.descricao)}</p><p><b>7. Material:</b>\n${esc(m.material)}</p>
+  <p class="b">8. Pessoal empregado (${pessoal.length}):</p><table style="width:100%;border-collapse:collapse"><tr><th>Nº</th><th>Posto/Grad</th><th>Nome</th><th>Identidade</th></tr>
+  ${pessoal.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.postoGrad)}</td><td>${esc(p.nomeCompleto || p.nomeGuerra)}</td><td>${esc(p.idt)}</td></tr>`).join('')}</table>
+  <p class="r" style="margin-top:16px">${esc(cfg('cidade'))}, ${fmtExt(hoje())}.</p>${assinatura()}`);
+}
+
+// ============================================================ aditamentos
+const PARTES = ['1ª PARTE – SERVIÇOS DIÁRIOS', '2ª PARTE – INSTRUÇÃO', '3ª PARTE – ASSUNTOS GERAIS E ADMINISTRATIVOS', '4ª PARTE – JUSTIÇA E DISCIPLINA'];
+function vAditamentos() {
+  if (S.adEdit) return vEditorAditamento();
+  const lista = S.db.Aditamentos.slice().sort((a, b) => b.data.localeCompare(a.data) || num(b.numero) - num(a.numero)).filter(a => casa('ad', a.numero, a.biNumero, a.parte1, a.parte3));
+  return `<h2>Aditamentos</h2><p class="sub">Aditamentos ao Boletim Interno, com a 1ª e 3ª partes montadas a partir da escala, afastamentos e missões.</p>
+  <div class="bar">${busca('ad', 'Buscar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novoAditamento()">+ Aditamento</button>' : ''}</div>
+  ${tabela(lista, [
+    { l: 'Nº', v: a => `<b>${esc(a.numero)}</b>`, c: 'num' }, { l: 'Data', v: a => fmt(a.data) }, { l: 'Ao BI nº', v: a => esc(a.biNumero) },
+    { l: 'Serviço para', v: a => fmt(a.dataServico) },
+    { l: 'Situação', v: a => `<span class="tag ${a.status === 'Publicado' ? 'ok' : 'warn'}">${esc(a.status || 'Rascunho')}</span>` },
+    { l: 'Doc', v: a => a.docUrl ? `<a href="${esc(a.docUrl)}" target="_blank">Google Doc</a>` : '' }
+  ], a => `<button class="btn sm" onclick="abrirAditamento('${a.id}')">${pode() ? 'Abrir' : 'Ver'}</button> <button class="btn sm" onclick="imprimirAditamento('${a.id}')">Imprimir</button>`)}`;
+}
+function novoAditamento() {
+  const d = hoje(), ano = d.slice(0, 4);
+  const n = S.db.Aditamentos.filter(a => (a.data || '').slice(0, 4) === ano).reduce((mx, a) => Math.max(mx, num(a.numero)), 0) + 1;
+  S.adEdit = { id: '', numero: String(n), data: d, biNumero: '', dataServico: addDias(d, 1), parte1: '', parte2: 'Sem alteração.', parte3: '', parte4: 'Sem alteração.', status: 'Rascunho', autor: S.user.email };
+  S.adEdit.parte1 = textoParte1(S.adEdit.dataServico);
+  S.adEdit.parte3 = textoParte3(S.adEdit.data, S.adEdit.dataServico);
+  render();
+}
+function abrirAditamento(id) { S.adEdit = { ...S.db.Aditamentos.find(a => a.id === id) }; render(); }
+
+function textoParte1(dia) {
+  const cor = corDoDia(dia);
+  const linhas = tiposAtivos().map(t => { const e = (ESC_DIA[dia] || []).find(x => x.tipoId === t.id); return `${t.nome}: ${e ? nomeMil(e.militarId) : '(não escalado)'}`; });
+  return `SERVIÇOS DIÁRIOS PARA ${fmtMil(dia)} (${SEMANA[dataDe(dia).getDay()]}) – ESCALA ${cor === 'V' ? 'VERMELHA' : 'PRETA'}${FERIADO[dia] ? ' – ' + FERIADO[dia].toUpperCase() : ''}\n` + linhas.join('\n');
+}
+function textoParte3(de, ate) {
+  const blocos = [];
+  const imps = S.db.Impedimentos.filter(i => i.inicio >= de && i.inicio <= ate).sort((a, b) => a.tipo.localeCompare(b.tipo));
+  if (imps.length) {
+    const porTipo = {};
+    imps.forEach(i => (porTipo[i.tipo] ||= []).push(i));
+    blocos.push('1. AFASTAMENTOS\n' + Object.entries(porTipo).map(([tipo, l], k) =>
+      `${'abcdefghij'[k]}. ${tipo}\n` + l.map(i => `- ${nomeMil(i.militarId)}: de ${fmtMil(i.inicio)} a ${fmtMil(i.fim)}${i.obs ? ' (' + i.obs + ')' : ''}.`).join('\n')).join('\n'));
+  }
+  const retornos = S.db.Impedimentos.filter(i => i.fim && addDias(i.fim, 1) >= de && addDias(i.fim, 1) <= ate);
+  if (retornos.length) blocos.push(`${blocos.length + 1}. APRESENTAÇÃO / RETORNO\n` + retornos.map(i => `- ${nomeMil(i.militarId)}, por término de ${i.tipo.toLowerCase()}, em ${fmtMil(addDias(i.fim, 1))}.`).join('\n'));
+  const mis = S.db.Missoes.filter(m => m.status !== 'Cancelada' && m.inicio >= de && m.inicio <= ate);
+  if (mis.length) blocos.push(`${blocos.length + 1}. MISSÕES\n` + mis.map((m, k) => {
+    const pessoal = ids(m.militaresIds).map(i => MIL[i]).filter(Boolean).sort(ordemMil).map(nomeMil);
+    return `${'abcdefghij'[k]}. ${m.titulo}\nDesigno os militares abaixo para a missão em epígrafe, ${m.local ? 'em ' + m.local + ', ' : ''}no período de ${fmtMil(m.inicio)}${m.fim && m.fim !== m.inicio ? ' a ' + fmtMil(m.fim) : ''}${m.responsavelId ? ', sob o comando do ' + nomeMil(m.responsavelId) : ''}:\n${pessoal.map(p => '- ' + p).join('\n') || '- (pessoal a definir)'}`;
+  }).join('\n'));
+  const caut = S.db.Cautelas.filter(c => c.dataSaida >= de && c.dataSaida <= ate);
+  if (caut.length) blocos.push(`${blocos.length + 1}. MATERIAL – CAUTELAS\n` + caut.map(c => { const m = MAT[c.materialId] || {}; return `- ${c.quantidade} ${m.unidade || 'un'} de ${m.descricao || '?'}${m.patrimonio ? ' (patr. ' + m.patrimonio + ')' : ''} ao ${nomeMil(c.militarId)}.`; }).join('\n'));
+  return blocos.join('\n\n') || 'Sem alteração.';
+}
+
+function vEditorAditamento() {
+  const a = S.adEdit, ro = !pode();
+  const area = (k, i) => `<div class="parte"><div class="bar"><b class="grow">${PARTES[i]}</b>
+    ${!ro && k === 'parte1' ? '<button class="btn sm" onclick="preencherParte(1)">Preencher pela escala</button>' : ''}
+    ${!ro && k === 'parte3' ? '<button class="btn sm" onclick="preencherParte(3)">Preencher (afastamentos, missões, cautelas)</button>' : ''}</div>
+    <textarea id="ad_${k}" rows="${k === 'parte3' ? 12 : 6}" ${ro ? 'readonly' : ''} oninput="S.adEdit.${k}=this.value">${esc(a[k])}</textarea></div>`;
+  const campo = (k, l, t = 'text') => `<label class="muted"><b>${l}</b><input type="${t}" value="${esc(a[k])}" ${ro ? 'readonly' : ''} onchange="S.adEdit.${k}=this.value"></label>`;
+  return `<div class="bar"><button class="btn" onclick="S.adEdit=null;render()">◀ Voltar</button><h2 class="grow" style="margin:0">Aditamento nº ${esc(a.numero)}</h2>
+    <span class="tag ${a.status === 'Publicado' ? 'ok' : 'warn'}">${esc(a.status)}</span></div>
+  <div class="card"><div class="ad-grid">${campo('numero', 'Número')}${campo('data', 'Data', 'date')}${campo('biNumero', 'Ao BI nº')}${campo('dataServico', 'Serviço / fatos até', 'date')}</div>
+  ${PARTES.map((_, i) => area('parte' + (i + 1), i)).join('')}
+  <div class="bar" style="margin-top:14px">${!ro ? `<button class="btn pri" onclick="salvarAditamento()">Salvar</button>
+    <button class="btn" onclick="salvarAditamento('Publicado')">Salvar como publicado</button>` : ''}
+    <button class="btn" onclick="imprimirAditamento()">Imprimir / PDF</button>
+    ${!ro ? '<button class="btn" onclick="gerarDocAditamento()">Gerar Google Doc</button>' : ''}
+    ${a.docUrl ? `<a class="btn" href="${esc(a.docUrl)}" target="_blank">Abrir Google Doc</a>` : ''}
+    <span class="grow"></span>${!ro && a.id ? `<button class="btn dng" onclick="excluirAditamento()">Excluir</button>` : ''}</div></div>`;
+}
+async function preencherParte(n) {
+  const a = S.adEdit;
+  const atual = a['parte' + n];
+  if (atual && atual !== 'Sem alteração.' && !await confirmar('Substituir o texto atual desta parte?')) return;
+  a['parte' + n] = n === 1 ? textoParte1(a.dataServico) : textoParte3(a.data, a.dataServico);
+  render();
+}
+async function salvarAditamento(status) {
+  const a = S.adEdit;
+  if (!a.numero || !a.data) return toast('Informe número e data.', true);
+  if (status) a.status = status;
+  const [salvo] = await salvar('Aditamentos', [a]);
+  S.adEdit = { ...a, id: salvo.id };
+  toast('Aditamento salvo.'); render();
+  return S.adEdit;
+}
+async function excluirAditamento() { if (!await confirmar('Excluir este aditamento?')) return; await salvar('Aditamentos', [], [S.adEdit.id]); S.adEdit = null; render(); }
+
+/** Estrutura do documento: usada tanto na impressão quanto no Google Doc. */
+function paragrafosAditamento(a) {
+  const P = [];
+  cabecalhoDoc().forEach(l => P.push({ texto: l, centro: true, negrito: true }));
+  P.push({ texto: '' });
+  P.push({ texto: `ADITAMENTO Nº ${a.numero} AO BOLETIM INTERNO Nº ${a.biNumero || '___'}`, centro: true, negrito: true });
+  P.push({ texto: `${cfg('cidade')}, ${fmtExt(a.data)}.`, centro: true });
+  P.push({ texto: '' });
+  P.push({ texto: 'Para conhecimento desta Subunidade e devida execução, publico o seguinte:' });
+  PARTES.forEach((t, i) => {
+    P.push({ texto: '' }); P.push({ texto: t, centro: true, negrito: true });
+    String(a['parte' + (i + 1)] || 'Sem alteração.').split('\n').forEach(l => P.push({ texto: l }));
+  });
+  P.push({ texto: '' }); P.push({ texto: '' });
+  P.push({ texto: cfg('cmtNome'), centro: true, negrito: true });
+  P.push({ texto: cfg('cmtFuncao'), centro: true });
+  return P;
+}
+function imprimirAditamento(id) {
+  const a = id ? S.db.Aditamentos.find(x => x.id === id) : S.adEdit;
+  imprimir(paragrafosAditamento(a).map(p => `<p class="${p.centro ? 'c' : ''} ${p.negrito ? 'b' : ''}">${esc(p.texto) || '&nbsp;'}</p>`).join(''));
+}
+async function gerarDocAditamento() {
+  try {
+    const a = await salvarAditamento();
+    toast('Gerando Google Doc…');
+    const url = await api('criarDocAditamento', a.id, `Aditamento ${a.numero} - ${fmt(a.data)}`, paragrafosAditamento(a));
+    S.adEdit.docUrl = url;
+    const reg = S.db.Aditamentos.find(x => x.id === a.id); if (reg) reg.docUrl = url;
+    toast('Google Doc criado.'); render();
+    window.open(url, '_blank');
+  } catch (e) { toast(e.message, true); }
+}
+
+// ============================================================ material
+const CAMPOS_MAT = [
+  { k: 'patrimonio', l: 'Nº de patrimônio / série' },
+  { k: 'descricao', l: 'Descrição', req: true },
+  { k: 'categoria', l: 'Categoria', t: 'select', o: CATEGORIAS },
+  { k: 'quantidade', l: 'Quantidade', t: 'number', req: true, padrao: '1' },
+  { k: 'unidade', l: 'Unidade', padrao: 'un' },
+  { k: 'localizacao', l: 'Localização (reserva, depósito…)' },
+  { k: 'estado', l: 'Estado', t: 'select', o: ESTADOS, padrao: 'Bom' },
+  { k: 'valor', l: 'Valor unitário (R$)', t: 'number' },
+  { k: 'ultimaConferencia', l: 'Última conferência', t: 'date' },
+  { k: 'obs', l: 'Observações', full: true },
+  { k: 'arquivoUrl', l: 'Anexo (foto, termo, nota fiscal…)', t: 'file', full: true }
+];
+const CAMPOS_CAUT = [
+  { k: 'materialId', l: 'Material', t: 'material', req: true, full: true },
+  { k: 'militarId', l: 'Militar (cautelado a)', t: 'militar', req: true },
+  { k: 'quantidade', l: 'Quantidade', t: 'number', req: true, padrao: '1' },
+  { k: 'dataSaida', l: 'Data de saída', t: 'date', req: true },
+  { k: 'previsaoDevolucao', l: 'Previsão de devolução', t: 'date' },
+  { k: 'obs', l: 'Observações', full: true },
+  { k: 'arquivoUrl', l: 'Termo de cautela assinado (digitalizado)', t: 'file', full: true }
+];
+const cauteladoDe = m => S.db.Cautelas.filter(c => c.materialId === m.id && c.status !== 'Devolvida').reduce((s, c) => s + num(c.quantidade), 0);
+const disponivel = m => num(m.quantidade) - cauteladoDe(m);
+
+function vMaterial() {
+  const t = aba('material', 'inv');
+  let corpo;
+  if (t === 'inv') {
+    const cat = S.filtro.cat || '';
+    const lista = S.db.Material.filter(m => (!cat || m.categoria === cat) && casa('mat', m.patrimonio, m.descricao, m.localizacao, m.categoria))
+      .sort((a, b) => String(a.categoria).localeCompare(b.categoria) || a.descricao.localeCompare(b.descricao));
+    const total = lista.reduce((s, m) => s + num(m.valor) * num(m.quantidade), 0);
+    corpo = `<div class="bar">${busca('mat', 'Buscar material ou patrimônio…')}<select onchange="S.filtro.cat=this.value;render()"><option value="">Todas as categorias</option>${CATEGORIAS.map(c => `<option ${c === cat ? 'selected' : ''}>${c}</option>`).join('')}</select>
+      <span class="grow"></span><button class="btn" onclick="imprimirInventario()">Imprimir relação</button>${pode() ? '<button class="btn pri" onclick="editarMat()">+ Material</button>' : ''}</div>
+    ${tabela(lista, [
+      { l: 'Patrimônio', v: m => esc(m.patrimonio) },
+      { l: 'Descrição', v: m => `<b>${esc(m.descricao)}</b> ${linkArq(m.arquivoUrl)}<div class="muted">${esc(m.categoria)}${m.localizacao ? ' · ' + esc(m.localizacao) : ''}</div>` },
+      { l: 'Qtd', v: m => `${esc(m.quantidade)} ${esc(m.unidade)}`, c: 'num' },
+      { l: 'Disponível', v: m => { const d = disponivel(m); return `<span class="${d < num(m.quantidade) ? 'tag info' : ''}">${d}</span>`; }, c: 'num' },
+      { l: 'Estado', v: m => `<span class="tag ${m.estado === 'Bom' ? 'ok' : m.estado === 'Inservível' ? 'dng' : 'warn'}">${esc(m.estado || '—')}</span>` },
+      { l: 'Conferido em', v: m => fmt(m.ultimaConferencia) }
+    ], pode() ? m => `<button class="btn sm" onclick="conferir('${m.id}')" title="Marcar como conferido hoje">✔</button> <button class="btn sm" onclick="novaCautela('${m.id}')">Cautelar</button> <button class="btn sm" onclick="editarMat('${m.id}')">Editar</button>` : null)}
+    <p class="muted">${lista.length} item(ns)${total ? ' · valor total R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''}.</p>`;
+  } else if (t === 'caut') {
+    const ver = S.filtro.cautVer || 'abertas';
+    const lista = S.db.Cautelas.filter(c => (ver === 'todas' || (c.status !== 'Devolvida')) && casa('caut', nomeMil(c.militarId), (MAT[c.materialId] || {}).descricao, (MAT[c.materialId] || {}).patrimonio))
+      .sort((a, b) => b.dataSaida.localeCompare(a.dataSaida));
+    corpo = `<div class="bar">${busca('caut', 'Buscar militar ou material…')}<select onchange="S.filtro.cautVer=this.value;render()"><option value="abertas">Em aberto</option><option value="todas" ${ver === 'todas' ? 'selected' : ''}>Todas</option></select>
+      <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novaCautela()">+ Cautela</button>' : ''}</div>${tabelaCautelas(lista)}`;
+  } else {
+    corpo = vImportar('Material');
+  }
+  return `<h2>Material</h2><p class="sub">Inventário físico, cautelas (saída e devolução) e anexos guardados no Google Drive.</p>
+  ${abas('material', [['inv', 'Inventário'], ['caut', 'Cautelas'], ...(pode() ? [['imp', 'Importar planilha']] : [])])}${corpo}`;
+}
+function tabelaCautelas(lista) {
+  const d = hoje();
+  return tabela(lista, [
+    { l: 'Material', v: c => { const m = MAT[c.materialId] || {}; return `<b>${esc(m.descricao || '(excluído)')}</b> ${linkArq(c.arquivoUrl)}<div class="muted">${esc(m.patrimonio)}</div>`; } },
+    { l: 'Qtd', v: c => esc(c.quantidade), c: 'num' },
+    { l: 'Militar', v: c => esc(nomeMil(c.militarId)) },
+    { l: 'Saída', v: c => fmt(c.dataSaida) },
+    { l: 'Devolução', v: c => c.status === 'Devolvida' ? `<span class="tag ok">Devolvida ${fmt(c.dataDevolucao)}</span>` : c.previsaoDevolucao && c.previsaoDevolucao < d ? `<span class="tag dng">Vencida ${fmt(c.previsaoDevolucao)}</span>` : `<span class="tag warn">Prev. ${fmt(c.previsaoDevolucao) || '—'}</span>` }
+  ], c => `<button class="btn sm" onclick="imprimirCautela('${c.id}')">Termo</button>${pode() && c.status !== 'Devolvida' ? ` <button class="btn sm" onclick="devolver('${c.id}')">Devolver</button> <button class="btn sm" onclick="editarCautela('${c.id}')">Editar</button>` : ''}`);
+}
+function editarMat(id) {
+  abrirForm({ titulo: id ? 'Editar material' : 'Novo material', campos: CAMPOS_MAT, valores: id ? MAT[id] : {}, aoSalvar: o => salvar('Material', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Material','${id}',true)">Excluir material</button></div>` : '' });
+}
+async function conferir(id) { await salvar('Material', [{ ...MAT[id], ultimaConferencia: hoje() }]); toast('Conferência registrada.'); render(); }
+function novaCautela(materialId) { editarCautela(null, materialId); }
+function editarCautela(id, materialId) {
+  const atual = id ? S.db.Cautelas.find(c => c.id === id) : { materialId, dataSaida: hoje(), status: 'Aberta' };
+  abrirForm({ titulo: id ? 'Editar cautela' : 'Nova cautela', campos: CAMPOS_CAUT, valores: atual,
+    aoSalvar: o => {
+      const m = MAT[o.materialId];
+      const livre = disponivel(m) + (id ? num(atual.quantidade) : 0);
+      if (num(o.quantidade) <= 0) throw new Error('Quantidade inválida.');
+      if (num(o.quantidade) > livre) throw new Error(`Só há ${livre} disponível(is) deste material.`);
+      return salvar('Cautelas', [{ ...o, status: o.status || 'Aberta' }]);
+    } });
+}
+async function devolver(id) {
+  const c = S.db.Cautelas.find(x => x.id === id);
+  const data = await dialogo({ msg: 'Data da devolução:', campo: 'date', valor: hoje(), ok: 'Registrar devolução' });
+  if (!data) return;
+  await salvar('Cautelas', [{ ...c, status: 'Devolvida', dataDevolucao: data }]);
+  toast('Devolução registrada.'); render();
+}
+function imprimirCautela(id) {
+  const c = S.db.Cautelas.find(x => x.id === id), m = MAT[c.materialId] || {}, mil = MIL[c.militarId] || {};
+  imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">TERMO DE CAUTELA DE MATERIAL</p>
+  <p>Declaro ter recebido, em ${fmtExt(c.dataSaida)}, o material abaixo relacionado, pelo qual me responsabilizo, comprometendo-me a devolvê-lo nas mesmas condições${c.previsaoDevolucao ? ' até ' + fmtExt(c.previsaoDevolucao) : ''}.</p>
+  <table style="width:100%;border-collapse:collapse"><tr><th>Patrimônio</th><th>Descrição</th><th>Qtd</th><th>Estado</th></tr>
+  <tr><td>${esc(m.patrimonio)}</td><td>${esc(m.descricao)}</td><td>${esc(c.quantidade)} ${esc(m.unidade)}</td><td>${esc(m.estado)}</td></tr></table>
+  ${c.obs ? `<p>Obs: ${esc(c.obs)}</p>` : ''}<p class="r" style="margin-top:16px">${esc(cfg('cidade'))}, ${fmtExt(c.dataSaida)}.</p>
+  <div class="c" style="margin-top:48px">_______________________________________<div class="b">${esc(mil.nomeCompleto || nomeMil(mil))} – ${esc(mil.postoGrad)}</div><div>Idt ${esc(mil.idt)}</div></div>
+  ${c.status === 'Devolvida' ? `<p style="margin-top:24px">Material devolvido em ${fmtExt(c.dataDevolucao)}.</p>` : ''}`);
+}
+function imprimirInventario() {
+  const lista = S.db.Material.slice().sort((a, b) => String(a.categoria).localeCompare(b.categoria) || a.descricao.localeCompare(b.descricao));
+  imprimir(`${cabecalhoDoc().map(l => `<div class="c b">${esc(l)}</div>`).join('')}<p class="c b" style="margin-top:12px">RELAÇÃO DE MATERIAL – ${fmtMil(hoje())}</p>
+  <table style="width:100%;border-collapse:collapse"><tr><th>Nº</th><th>Patrimônio</th><th>Descrição</th><th>Categoria</th><th>Qtd</th><th>Cautelado</th><th>Local</th><th>Estado</th><th>Conferido</th></tr>
+  ${lista.map((m, i) => `<tr><td>${i + 1}</td><td>${esc(m.patrimonio)}</td><td>${esc(m.descricao)}</td><td>${esc(m.categoria)}</td><td>${esc(m.quantidade)} ${esc(m.unidade)}</td><td>${cauteladoDe(m) || ''}</td><td>${esc(m.localizacao)}</td><td>${esc(m.estado)}</td><td>${fmt(m.ultimaConferencia)}</td></tr>`).join('')}</table>${assinatura()}`);
+}
+
+// ============================================================ importação de planilhas (xlsx, csv ou Google Sheets)
+const IMPORT = {
+  Material: { chaves: ['patrimonio', 'descricao'], campos: CAMPOS_MAT.filter(c => c.t !== 'file'),
+    sin: { patrimonio: ['patrimonio', 'nrpatrimonio', 'numeropatrimonio', 'serie', 'nserie', 'numero', 'registro'], descricao: ['descricao', 'material', 'item', 'nomenclatura', 'especificacao', 'nome'], quantidade: ['quantidade', 'qtd', 'qtde', 'quant', 'existencia'], unidade: ['unidade', 'un', 'und', 'unid'], localizacao: ['local', 'localizacao', 'deposito', 'reserva', 'setor'], estado: ['estado', 'situacao', 'condicao'], valor: ['valor', 'valorunitario', 'preco', 'vlunit'], categoria: ['categoria', 'classe', 'tipo', 'grupo'] } },
+  Militares: { chaves: ['idt', 'nomeGuerra'], campos: CAMPOS_MIL,
+    sin: { postoGrad: ['posto', 'postograd', 'pg', 'graduacao', 'postograduacao'], nomeGuerra: ['nomedeguerra', 'nomeguerra', 'guerra'], nomeCompleto: ['nomecompleto', 'nome'], idt: ['idt', 'identidade', 'idtmil'], numero: ['numero', 'nr', 'num'], pelotao: ['pelotao', 'pel', 'secao', 'fracao'], telefone: ['telefone', 'celular', 'fone', 'tel'], funcao: ['funcao', 'cargo'], antiguidade: ['antiguidade', 'ant'] } }
+};
+function vImportar(tabelaAlvo) {
+  const st = S.imp && S.imp.tabela === tabelaAlvo ? S.imp : null;
+  const cfgI = IMPORT[tabelaAlvo];
+  let html = `<div class="card"><p>Traga sua planilha atual (do computador ou do Google Drive). Na próxima etapa você confere qual coluna vai para qual campo. Registros com o mesmo <b>${cfgI.chaves.join(' / ')}</b> são atualizados em vez de duplicados.</p>
+    <div class="bar"><input type="file" accept=".xlsx,.xls,.csv,.ods" onchange="importarArquivo(this.files[0],'${tabelaAlvo}')">
+    <span class="muted">ou</span><input type="text" id="imp_url" placeholder="Link da planilha Google (docs.google.com/spreadsheets/…)" style="flex:1;min-width:220px">
+    <button class="btn" onclick="importarGoogle('${tabelaAlvo}')">Ler do Drive</button></div></div>`;
+  if (st) {
+    const cab = st.linhas[0] || [];
+    const corpo = st.linhas.slice(1).filter(l => l.some(v => String(v).trim()));
+    html += `<h3>Associação de colunas — ${corpo.length} linha(s) em "${esc(st.origem)}"</h3><div class="card"><div class="form">
+      ${cfgI.campos.map(c => `<label>${esc(c.l)}<select id="map_${c.k}"><option value="">(não importar)</option>${cab.map((h, i) => `<option value="${i}" ${st.mapa[c.k] === i ? 'selected' : ''}>${esc(h || 'Coluna ' + (i + 1))}</option>`).join('')}</select></label>`).join('')}
+      </div><div class="bar" style="margin-top:12px"><span class="grow"></span><button class="btn" onclick="S.imp=null;render()">Cancelar</button><button class="btn pri" onclick="confirmarImportacao()">Importar ${corpo.length} linha(s)</button></div></div>
+      <h3>Prévia</h3>${tabela(corpo.slice(0, 5), cab.map((h, i) => ({ l: h || 'Coluna ' + (i + 1), v: l => esc(l[i]) })))}`;
+  }
+  return html;
+}
+function prepararImportacao(tabelaAlvo, linhas, origem) {
+  // Procura a linha de cabeçalho entre as 10 primeiras (planilhas costumam ter título acima).
+  const sin = IMPORT[tabelaAlvo].sin;
+  let melhor = 0, pts = -1;
+  linhas.slice(0, 10).forEach((l, i) => { const p = l.filter(h => Object.values(sin).some(s => s.includes(norm(h)))).length; if (p > pts) { pts = p; melhor = i; } });
+  linhas = linhas.slice(melhor).map(l => l.map(v => v == null ? '' : String(v)));
+  const cab = linhas[0].map(norm), mapa = {};
+  IMPORT[tabelaAlvo].campos.forEach(c => {
+    const opcoes = [norm(c.k), norm(c.l), ...(sin[c.k] || [])];
+    const i = cab.findIndex(h => h && opcoes.includes(h));
+    if (i >= 0 && !Object.values(mapa).includes(i)) mapa[c.k] = i;
+  });
+  S.imp = { tabela: tabelaAlvo, linhas, mapa, origem };
+  render();
+}
+function carregarSheetJS() {
+  if (window.XLSX) return Promise.resolve();
+  return new Promise((ok, falha) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = () => falha(new Error('Não foi possível carregar o leitor de planilhas.')); document.head.appendChild(s); });
+}
+async function importarArquivo(file, tabelaAlvo) {
+  if (!file) return;
+  try {
+    await carregarSheetJS();
+    // CSV vai como texto UTF-8; lido como binário, os acentos do cabeçalho se perdem.
+    const wb = /\.csv$/i.test(file.name)
+      ? XLSX.read(await file.text(), { type: 'string', cellDates: true })
+      : XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+    const sh = wb.Sheets[wb.SheetNames[0]];
+    const linhas = XLSX.utils.sheet_to_json(sh, { header: 1, raw: false, defval: '', dateNF: 'yyyy-mm-dd' });
+    prepararImportacao(tabelaAlvo, linhas, file.name);
+  } catch (e) { toast('Erro ao ler arquivo: ' + e.message, true); }
+}
+async function importarGoogle(tabelaAlvo) {
+  const url = $('#imp_url').value.trim();
+  if (!url) return toast('Cole o link da planilha.', true);
+  try { toast('Lendo planilha…'); prepararImportacao(tabelaAlvo, await api('importarDePlanilha', url), 'Google Drive'); }
+  catch (e) { toast(e.message, true); }
+}
+function dataImportada(v) {
+  v = String(v).trim();
+  let m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${pad(m[2])}-${pad(m[1])}`;
+  m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : v;
+}
+async function confirmarImportacao() {
+  const st = S.imp, cfgI = IMPORT[st.tabela];
+  const mapa = {};
+  cfgI.campos.forEach(c => { const v = $('#map_' + c.k).value; if (v !== '') mapa[c.k] = +v; });
+  const obrig = cfgI.campos.filter(c => c.req).map(c => c.k).filter(k => !(k in mapa));
+  if (obrig.length) return toast('Associe os campos obrigatórios: ' + obrig.join(', '), true);
+  const existentes = S.db[st.tabela];
+  const registros = st.linhas.slice(1).filter(l => l.some(v => String(v).trim())).map(l => {
+    const o = {};
+    Object.entries(mapa).forEach(([k, i]) => { let v = String(l[i] ?? '').trim(); const c = cfgI.campos.find(x => x.k === k); if (c.t === 'date') v = dataImportada(v); if (c.t === 'number') v = v ? String(num(v.replace(/\.(?=\d{3}(\D|$))/g, ''))) : v; o[k] = v; });
+    if (st.tabela === 'Militares') { const p = POSTOS.find(p => norm(p) === norm(o.postoGrad)); if (p) o.postoGrad = p; o.ativo = o.ativo || 'Sim'; }
+    if (st.tabela === 'Material') { o.quantidade = o.quantidade || '1'; o.unidade = o.unidade || 'un'; }
+    const chave = cfgI.chaves.find(k => o[k]);
+    const igual = chave && existentes.find(r => norm(r[chave]) === norm(o[chave]));
+    return igual ? { ...igual, ...o } : o;
+  }).filter(o => cfgI.campos.filter(c => c.req).every(c => o[c.k]));
+  if (!registros.length) return toast('Nenhuma linha válida para importar.', true);
+  if (!await confirmar(`Importar ${registros.length} registro(s) para ${st.tabela}?`)) return;
+  await salvar(st.tabela, registros);
+  S.imp = null; toast(`${registros.length} registro(s) importado(s).`); render();
+}
+
+// ============================================================ configurações
+const CAMPOS_CFG = [
+  { k: 'nomeCia', l: 'Nome curto da subunidade (aparece no topo)' },
+  { k: 'cabecalho', l: 'Cabeçalho dos documentos (uma linha por linha)', t: 'textarea' },
+  { k: 'cidade', l: 'Local (ex.: Quartel em Resende-RJ)' },
+  { k: 'cmtNome', l: 'Nome do comandante (assinatura)' },
+  { k: 'cmtFuncao', l: 'Função (assinatura)' }
+];
+function vConfig() {
+  const t = aba('config', 'tipos');
+  let corpo = '';
+  if (t === 'geral') {
+    corpo = `<div class="card"><div class="form">${CAMPOS_CFG.map(c => campoHTML(c, cfg(c.k))).join('')}</div>
+      <div class="bar" style="margin-top:12px"><span class="grow"></span>${admin() ? '<button class="btn pri" onclick="salvarConfig()">Salvar</button>' : '<span class="muted">Somente o administrador altera.</span>'}</div></div>`;
+  } else if (t === 'tipos') {
+    corpo = `<p class="muted">Cada tipo de serviço gera uma coluna na escala. Em "Postos/graduações" informe quem concorre, separados por vírgula (${POSTOS.join(', ')}).</p>
+      <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarTipo()">+ Tipo de serviço</button>' : ''}</div>
+      ${tabela(S.db.TiposServico.slice().sort((a, b) => num(a.ordem) - num(b.ordem)), [
+        { l: 'Ordem', v: x => esc(x.ordem), c: 'num' }, { l: 'Serviço', v: x => `<b>${esc(x.nome)}</b>` }, { l: 'Concorrem', v: x => esc(x.postos) },
+        { l: 'Aptos', v: x => militaresAtivos().filter(m => aptoPara(m, x)).length, c: 'num' }, { l: 'Ativo', v: x => sim(x.ativo) ? 'Sim' : 'Não' }
+      ], pode() ? x => `<button class="btn sm" onclick="editarTipo('${x.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('TiposServico','${x.id}')">Excluir</button>` : null)}`;
+  } else if (t === 'feriados') {
+    corpo = `<p class="muted">Feriados e dias sem expediente entram na escala vermelha.</p>
+      <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn" onclick="feriadosNacionais()">Incluir feriados nacionais do ano</button><button class="btn pri" onclick="editarFeriado()">+ Feriado</button>' : ''}</div>
+      ${tabela(S.db.Feriados.slice().sort((a, b) => a.data.localeCompare(b.data)), [{ l: 'Data', v: f => `${fmt(f.data)} <span class="muted">${SEM_CURTA[dataDe(f.data).getDay()]}</span>` }, { l: 'Descrição', v: f => esc(f.descricao) }],
+        pode() ? f => `<button class="btn sm dng" onclick="excluir('Feriados','${f.data}')">Excluir</button>` : null)}`;
+  } else if (t === 'usuarios') {
+    corpo = `<p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta. Quem não estiver na lista não entra. A planilha também precisa estar compartilhada com a pessoa.</p>
+      <div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarUsuario()">+ Usuário</button></div>
+      ${tabela(S.db.Usuarios || [], [{ l: 'E-mail', v: u => esc(u.email) }, { l: 'Nome', v: u => esc(u.nome) }, { l: 'Perfil', v: u => `<span class="tag">${esc(u.perfil)}</span>` }],
+        u => `<button class="btn sm" onclick="editarUsuario('${esc(u.email)}')">Editar</button> <button class="btn sm dng" onclick="excluir('Usuarios','${esc(u.email)}')">Excluir</button>`)}`;
+  } else {
+    corpo = `<div class="card"><p>Baixe uma cópia de todos os dados em JSON (além do histórico de versões que o próprio Google Sheets guarda).</p>
+      <button class="btn" onclick="baixarBackup()">Baixar backup</button>
+      ${!NO_GOOGLE ? '<p class="muted" style="margin-top:16px">Modo demonstração: <button class="btn sm dng" onclick="confirmar(\'Apagar os dados de demonstração?\').then(s=>{if(s){Demo.resetar();iniciar()}})">Recomeçar demonstração</button></p>' : ''}</div>`;
+  }
+  return `<h2>Configurações</h2><p class="sub">Tipos de serviço, feriados, cabeçalho dos documentos e usuários.</p>
+  ${abas('config', [['tipos', 'Tipos de serviço'], ['feriados', 'Feriados'], ['geral', 'Documentos'], ...(admin() ? [['usuarios', 'Usuários']] : []), ['backup', 'Backup']])}${corpo}`;
+}
+async function salvarConfig() {
+  await salvar('Config', CAMPOS_CFG.map(c => ({ chave: c.k, valor: $('#f_' + c.k).value.trim() })));
+  toast('Configurações salvas.'); render();
+}
+function editarTipo(id) {
+  abrirForm({ titulo: id ? 'Editar tipo de serviço' : 'Novo tipo de serviço', valores: id ? TIPO[id] : { ordem: String(S.db.TiposServico.length + 1), ativo: 'Sim' },
+    campos: [{ k: 'nome', l: 'Nome do serviço', req: true }, { k: 'ordem', l: 'Ordem na escala', t: 'number' }, { k: 'postos', l: 'Postos/graduações que concorrem (separados por vírgula)', req: true, full: true }, { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], vazio: false }],
+    aoSalvar: o => { o.postos = ids(o.postos).map(p => POSTOS.find(x => norm(x) === norm(p)) || p).join(','); return salvar('TiposServico', [o]); } });
+}
+function editarFeriado() {
+  abrirForm({ titulo: 'Novo feriado', campos: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'descricao', l: 'Descrição', req: true }], aoSalvar: o => salvar('Feriados', [o]) });
+}
+async function feriadosNacionais() {
+  const y = +S.mes.slice(0, 4);
+  // Páscoa (algoritmo de Meeus) para os feriados móveis.
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3),
+    h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+    mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1;
+  const pascoa = `${y}-${pad(mes)}-${pad(dia)}`;
+  const lista = [[`${y}-01-01`, 'Confraternização Universal'], [addDias(pascoa, -48), 'Carnaval'], [addDias(pascoa, -47), 'Carnaval'], [addDias(pascoa, -2), 'Sexta-feira Santa'],
+    [`${y}-04-21`, 'Tiradentes'], [`${y}-05-01`, 'Dia do Trabalho'], [addDias(pascoa, 60), 'Corpus Christi'], [`${y}-09-07`, 'Independência do Brasil'],
+    [`${y}-10-12`, 'Nossa Senhora Aparecida'], [`${y}-11-02`, 'Finados'], [`${y}-11-15`, 'Proclamação da República'], [`${y}-11-20`, 'Dia da Consciência Negra'], [`${y}-12-25`, 'Natal']]
+    .filter(([dt]) => !FERIADO[dt]).map(([data, descricao]) => ({ data, descricao }));
+  if (!lista.length) return toast('Os feriados nacionais de ' + y + ' já estão cadastrados.');
+  await salvar('Feriados', lista); toast(`${lista.length} feriado(s) de ${y} incluído(s).`); render();
+}
+function editarUsuario(email) {
+  abrirForm({ titulo: email ? 'Editar usuário' : 'Novo usuário', valores: email ? S.db.Usuarios.find(u => u.email === email) : { perfil: 'editor' },
+    campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome' }, { k: 'perfil', l: 'Perfil', t: 'select', o: ['admin', 'editor', 'leitor'], vazio: false }],
+    aoSalvar: o => { o.email = o.email.toLowerCase(); return salvar('Usuarios', [o]); } });
+}
+function baixarBackup() {
+  const blob = new Blob([JSON.stringify(S.db, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup-sistema-cia-${hoje()}.json`; a.click();
+}
+
+const VIEWS_FN = { painel: vPainel, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, material: vMaterial, config: vConfig };
+
+// ============================================================ dados de demonstração
+function semente() {
+  const d = hoje(), ano = d.slice(0, 4);
+  const mil = [
+    ['Cap', '', 'MOURA', 'Ricardo Moura Lima', 1], ['1º Ten', '', 'SANTANA', 'Paulo Santana Reis', 1], ['2º Ten', '', 'ARAÚJO', 'Bruno Araújo Costa', 1], ['2º Ten', '', 'FREITAS', 'Lucas Freitas Melo', 2], ['Asp', '', 'TAVARES', 'Igor Tavares Pinto', 1],
+    ['1º Sgt', '', 'NUNES', 'Carlos Nunes Prado', 1], ['2º Sgt', '', 'BATISTA', 'Rafael Batista Cruz', 1], ['3º Sgt', '', 'ROCHA', 'Diego Rocha Alves', 1], ['3º Sgt', '', 'PEIXOTO', 'Mateus Peixoto Dias', 2], ['3º Sgt', '', 'VIEIRA', 'André Vieira Gomes', 3],
+    ['Cb', '201', 'LOPES', 'João Lopes Silva', 1], ['Cb', '202', 'MACEDO', 'Felipe Macedo Ramos', 2], ['Cb', '203', 'CARDOSO', 'Tiago Cardoso Neves', 3], ['Cb', '204', 'BRITO', 'Renan Brito Sales', 4],
+    ['Sd', '301', 'SOUZA', 'Gabriel Souza Lima', 1], ['Sd', '302', 'MENDES', 'Caio Mendes Rocha', 2], ['Sd', '303', 'BARROS', 'Vitor Barros Faria', 3], ['Sd', '304', 'TEIXEIRA', 'Enzo Teixeira Luz', 4],
+    ['Sd', '305', 'MONTEIRO', 'Davi Monteiro Sá', 5], ['Sd', '306', 'CAMPOS', 'Pedro Campos Leal', 6], ['Sd', '307', 'RIBEIRO', 'Hugo Ribeiro Paz', 7], ['Sd', '308', 'FARIAS', 'Ian Farias Rego', 8]
+  ].map(([postoGrad, numero, nomeGuerra, nomeCompleto, antiguidade], i) => ({ id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, antiguidade: String(antiguidade), idt: String(1000000000 + i * 7919), pelotao: i < 5 ? 'Cmdo' : (i % 2 ? '1º Pel' : '2º Pel'), funcao: '', telefone: '', ativo: 'Sim', obs: '' }));
+  const db = {
+    Militares: mil,
+    Impedimentos: [{ id: 'i1', militarId: 'm8', tipo: 'Férias', inicio: addDias(d, -3), fim: addDias(d, 20), obs: '1ª parcela' }, { id: 'i2', militarId: 'm16', tipo: 'Dispensa médica', inicio: d, fim: addDias(d, 2), obs: '' }],
+    TiposServico: [{ id: 'of-dia', nome: 'Oficial de Dia', postos: 'Cap,1º Ten,2º Ten,Asp', ordem: '1', ativo: 'Sim' }, { id: 'sgt-dia', nome: 'Sargento de Dia', postos: 'ST,1º Sgt,2º Sgt,3º Sgt', ordem: '2', ativo: 'Sim' }, { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: '3', ativo: 'Sim' }, { id: 'plantao', nome: 'Plantão', postos: 'Sd', ordem: '4', ativo: 'Sim' }],
+    Escala: [],
+    Feriados: [[`${ano}-11-02`, 'Finados'], [`${ano}-11-15`, 'Proclamação da República'], [`${ano}-11-20`, 'Dia da Consciência Negra'], [`${ano}-12-25`, 'Natal']].map(([data, descricao]) => ({ data, descricao })),
+    Missoes: [{ id: 'x1', titulo: 'Apoio à Operação Carro-Pipa', tipo: 'Apoio', local: 'Campo de instrução', inicio: addDias(d, 1), fim: addDias(d, 4), horario: '06h00', responsavelId: 'm3', militaresIds: 'm9,m13,m19,m20', viaturas: 'VTNE 5 t', material: 'Rádios portáteis (2)', descricao: 'Prestar apoio logístico conforme ordem do escalão superior.', status: 'Planejada', arquivoUrl: '' }],
+    Aditamentos: [],
+    Material: [
+      ['FZ-0001', 'Fuzil 7,62 M964 (FAL)', 'Armamento', 30, 'un', 'Reserva de armamento'], ['PT-0101', 'Pistola 9 mm', 'Armamento', 8, 'un', 'Reserva de armamento'],
+      ['RD-2201', 'Rádio portátil VHF', 'Comunicações', 6, 'un', 'Seção de comunicações'], ['', 'Barraca de campanha 2 praças', 'Intendência', 40, 'un', 'Depósito da Cia'],
+      ['', 'Colete balístico', 'Intendência', 25, 'un', 'Depósito da Cia'], ['NB-0042', 'Notebook', 'Informática', 3, 'un', 'Sala do Cmt'],
+      ['', 'Lanterna de cabeça', 'Intendência', 15, 'un', 'Depósito da Cia'], ['', 'Gerador portátil 3 kVA', 'Engenharia', 1, 'un', 'Garagem']
+    ].map(([patrimonio, descricao, categoria, q, unidade, localizacao], i) => ({ id: 'mt' + (i + 1), patrimonio, descricao, categoria, quantidade: String(q), unidade, localizacao, estado: i === 7 ? 'Em manutenção' : 'Bom', valor: '', ultimaConferencia: addDias(d, -10), obs: '', arquivoUrl: '' })),
+    Cautelas: [{ id: 'c1', materialId: 'mt3', militarId: 'm7', quantidade: '2', dataSaida: addDias(d, -12), previsaoDevolucao: addDias(d, -2), dataDevolucao: '', status: 'Aberta', obs: 'Exercício no terreno', arquivoUrl: '' },
+      { id: 'c2', materialId: 'mt6', militarId: 'm2', quantidade: '1', dataSaida: addDias(d, -5), previsaoDevolucao: addDias(d, 25), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' }],
+    Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }],
+    Config: [{ chave: 'cabecalho', valor: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\nNOME DA OM\nCOMPANHIA DE COMANDO E SERVIÇOS' }, { chave: 'nomeCia', valor: 'CCSv (demonstração)' }, { chave: 'cidade', valor: 'Quartel em Cidade-UF' }, { chave: 'cmtNome', valor: 'RICARDO MOURA LIMA - Cap' }, { chave: 'cmtFuncao', valor: 'Comandante da Companhia' }]
+  };
+  // Gera um mês de escala para a demonstração já abrir com dados.
+  S.db = db; indexar();
+  const ini = addDias(d, -15);
+  db.Escala = gerarEscala(ini, addDias(d, 15), []).novos;
+  return db;
+}
+
+// ============================================================ início
+async function iniciar() {
+  $('#demo-bar').hidden = !!NO_GOOGLE;
+  try { S.view = localStorage.getItem('cia-view') || 'painel'; } catch (e) { }
+  try {
+    const r = await api('bootstrap');
+    S.user = r.usuario;
+    S.db = Object.fromEntries(TABS.map(t => [t, r.dados[t] || []]));
+    indexar();
+    $('#user').innerHTML = `${esc(S.user.nome || S.user.email)}<br><span style="opacity:.8">${esc(S.user.perfil)}</span>`;
+    render();
+  } catch (e) {
+    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+iniciar();
+</script>
+</body>
+</html>
