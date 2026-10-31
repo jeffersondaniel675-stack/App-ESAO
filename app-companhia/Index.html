@@ -231,6 +231,7 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .pm-t input[type=number] { width: 64px; height: 32px; }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.aviso-leitor { background: color-mix(in srgb, var(--ouro) 22%, var(--surface)); border-left: 4px solid var(--ouro); padding: 10px 14px; border-radius: 4px; margin: 0 0 14px; font-size: 14px; }
 .escala td { position: relative; }
 .escala td.dia { position: sticky; left: 0; z-index: 1; background: var(--surface); }
 .escala tr.hoje td.dia { background: color-mix(in srgb, var(--ouro) 18%, var(--surface)); }
@@ -1196,7 +1197,9 @@ function render() {
   const sub = subsDe(S.view).find(i => !i.acao && subAtivo(S.view, i)) || (S.view === 'aditamentos' && S.adEdit ? { l: 'Aditamento nº ' + S.adEdit.numero } : null);
   $('#crumb').innerHTML = `<nav class="crumb" aria-label="Você está aqui"><a onclick="irPara('painel')" title="Painel">${ICO.casa}</a>
     ${S.view !== 'painel' ? `<span class="sep">›</span>${sub ? `<a onclick="irPara('${S.view}')">${esc(nome)}</a><span class="sep">›</span><span>${esc(sub.l)}</span>` : `<span>${esc(nome)}</span>`}` : '<span class="sep">›</span><span>Painel</span>'}</nav>`;
-  $('#app').innerHTML = (VIEWS_FN[S.view] || vPainel)();
+  // Leitor só consulta: deixa isso claro em todas as telas, para não parecer defeito.
+  const avisoLeitor = S.user && S.user.perfil === 'leitor' && NO_GOOGLE ? `<div class="aviso-leitor">Você entrou como <b>leitor</b> (${esc(S.user.email)}): pode consultar e imprimir, mas não alterar. Para lançar e editar, o administrador precisa mudar o seu perfil para <b>editor</b> em Configurações → Usuários.</div>` : '';
+  $('#app').innerHTML = avisoLeitor + (VIEWS_FN[S.view] || vPainel)();
   if (S.menu) renderMenu();
 }
 
@@ -2997,6 +3000,8 @@ function telaSemAcesso({ email, pendente, podePedir, detalhe }) {
     <div class="bar" style="margin-top:12px">${podePedir ? '<button class="btn pri" onclick="enviarPedidoAcesso()">Pedir acesso</button>' : ''}
       <a class="btn" id="pa_zap" href="${HTTPS}wa.me/" target="_blank" onclick="linkWhatsApp(this)">Enviar pelo WhatsApp</a></div>
     <p class="muted" style="margin-top:12px">${podePedir ? '"Pedir acesso" deixa o pedido no sistema para o administrador aprovar.' : 'Envie o seu e-mail ao administrador pelo WhatsApp ou pessoalmente.'} Depois de aprovado, recarregue esta página.</p>`}
+    ${!email ? `<div class="aviso-leitor" style="margin-top:12px"><b>O sistema não conseguiu ler o seu e-mail Google.</b> Para o administrador: na implantação do Apps Script, o campo <i>Executar como</i> precisa estar em <b>Usuário que acessa o app da Web</b> e <i>Quem pode acessar</i> em <b>Qualquer pessoa com Conta do Google</b> (Implantar → Gerenciar implantações → editar → Nova versão).</div>` : ''}
+    <p class="muted" style="font-size:13px;margin-top:12px">Já foi cadastrado e o e-mail acima não é o seu? O navegador está usando outra conta Google. Abra o link numa <b>janela anônima</b> (Ctrl+Shift+N) e entre só com o e-mail cadastrado.</p>
     ${detalhe ? `<p class="muted" style="font-size:12px">Detalhe técnico: ${esc(detalhe)}</p>` : ''}</div>`;
 }
 /** Mensagem pronta para mandar ao administrador (o link abre o WhatsApp para escolher o contato). */
@@ -3142,7 +3147,8 @@ async function iniciar() {
     try { email = (await api('quemSou')).email; } catch (e2) { email = ''; }
     S.user = { email, perfil: 'bloqueado' };
     if (/permiss|permission|acesso|access|autoriz/i.test(e.message)) return telaSemAcesso({ email, podePedir: false, detalhe: e.message });
-    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>${email ? `<p class="muted">Seu e-mail Google: <b>${esc(email)}</b></p>` : ''}</div>`;
+    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>${email ? `<p class="muted">Seu e-mail Google: <b>${esc(email)}</b></p>` : ''}
+      <p class="muted">Se o navegador tem mais de uma conta Google aberta, abra o link numa <b>janela anônima</b> (Ctrl+Shift+N) e entre só com o e-mail cadastrado no sistema.</p></div>`;
   }
 }
 iniciar();
