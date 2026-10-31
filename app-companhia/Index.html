@@ -232,6 +232,27 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .escala td { position: relative; }
+.escala td.dia { position: sticky; left: 0; z-index: 1; background: var(--surface); }
+.escala tr.hoje td.dia { background: color-mix(in srgb, var(--ouro) 18%, var(--surface)); }
+.escala thead th:first-child { left: 0; z-index: 3; background: var(--surface-2); }
+.escala td.dia { box-shadow: 1px 0 0 var(--border); }
+.dias-esc { display: grid; gap: 10px; }
+.dia-card { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px 10px; background: var(--surface); scroll-margin-top: 190px; }
+.dia-card.v h4 { color: #d0021b; }
+.dia-card.hoje { border: 2px solid var(--azul); }
+.dia-card h4 { margin: 0 0 6px; font-size: 16px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.dia-card h4 span { font-weight: 400; }
+.dia-card h4 em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 400; color: var(--muted); }
+.dia-card .srv { display: grid; grid-template-columns: minmax(96px, 34%) 1fr; gap: 8px; align-items: center; padding: 4px 0; border-top: 1px solid var(--cinza-5); position: relative; }
+.dia-card .srv .nm { font-size: 13px; font-weight: 600; }
+.dia-card .srv > div { position: relative; padding-right: 30px; min-height: 36px; }
+.dia-card .srv > div.muted { padding-top: 8px; }
+.dia-card select { width: 100%; height: 40px; }
+.dia-card .vaga + .vaga { margin-top: 4px; }
+.dia-card .mais { position: absolute; top: 8px; right: 0; width: 24px; height: 24px; line-height: 21px; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--azul); font-size: 16px; font-weight: 700; padding: 0; opacity: .6; }
+.dia-card .troca { font-size: 12px; color: var(--azul); }
+@media (hover: none) { .escala .mais { width: 24px; height: 24px; line-height: 21px; opacity: .55; } .escala td:has(.mais) { padding-right: 28px; } }
+@media (max-width: 600px) { .bar .btn { min-height: 40px; } }
 .escala .vaga + .vaga { margin-top: 3px; }
 .escala .troca { font-size: 11.5px; color: var(--azul); margin-top: 1px; }
 .escala select.branco { color: var(--muted, #888); font-style: italic; }
@@ -1398,6 +1419,22 @@ function lerParcelas(texto, periodo, anoPadrao) {
 // ============================================================ escala
 function diasDoMes(ym) { const [y, m] = ym.split('-').map(Number); const n = new Date(y, m, 0).getDate(); return Array.from({ length: n }, (_, i) => `${ym}-${pad(i + 1)}`); }
 
+/** Uma célula da escala (serviço × dia): as vagas com o militar, a troca e o botão de mais uma vaga. */
+function celulaEscala(tp, d) {
+  const l = lancamentos(d, tp.id), extra = (S.vagaExtra || {})[d + '|' + tp.id] || 0, n = vagasDoDia(tp, d) + extra;
+  if (!n) return `<td class="muted" title="Este serviço não ocorre neste dia">·${pode() ? `<button class="mais" title="Lançar mesmo assim" aria-label="Lançar ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
+  const vagas = Array.from({ length: n }, (_, k) => {
+    const e = l[k], al = e ? alertasEscala(e) : [];
+    const aviso = al.length ? ` <span class="alerta" title="${esc(al.join('; '))}">⚠</span>` : '';
+    const trc = e && e.troca ? `<div class="troca" title="Troca de serviço${e.trocaMotivo ? ': ' + esc(e.trocaMotivo) : ''}. A folga continua contando para o escalado.">⇄ tira: <b>${esc(nomeMil(e.troca))}</b></div>` : '';
+    if (!pode()) return `<div>${e ? (emBranco(e) ? '<span class="muted">em branco</span>' : esc(nomeMil(e.militarId))) : '<span class="muted">—</span>'}${aviso}${trc}</div>`;
+    const ops = militaresAtivos().filter(m => aptoPara(m, tp) || (e && e.militarId === m.id))
+      .map(m => { const s = situacao(m.id, d); return `<option value="${m.id}" ${e && e.militarId === m.id ? 'selected' : ''}>${esc(nomeMil(m))}${s.tipo !== 'pronto' ? ' (' + esc(s.texto) + ')' : ''}</option>`; }).join('');
+    const sobra = k >= (aplica(tp, d) ? qtdTipo(tp) : 0);
+    return `<div class="vaga"><select class="${e && emBranco(e) ? 'branco' : ''}" aria-label="${esc(tp.nome)}${n > 1 ? ' ' + (k + 1) : ''} em ${fmt(d)}" onchange="${e && !emBranco(e) ? `if(this.value==='${TROCA}'){this.value='${e.militarId}';trocaServico('${e.id}')}else ` : ''}trocarServico('${d}','${tp.id}',${k},this.value)"><option value="">${sobra ? '— tirar esta vaga —' : '—'}</option><option value="${BRANCO}" ${e && emBranco(e) ? 'selected' : ''}>Em branco</option>${e && !emBranco(e) ? `<option value="${TROCA}">⇄ ${e.troca ? 'Troca de serviço (alterar ou desfazer)…' : 'Troca de serviço…'}</option>` : ''}${ops}</select>${aviso}${trc}</div>`;
+  }).join('');
+  return `<td>${vagas}${pode() ? `<button class="mais" title="Mais um militar neste dia" aria-label="Mais um ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
+}
 function vEscala() {
   const t = aba('escala', 'mes');
   const tipos = tiposAtivos();
@@ -1415,26 +1452,19 @@ function vEscala() {
   const linhas = dias.map(d => {
     const cor = corDoDia(d), w = dataDe(d).getDay();
     return `<tr class="${cor === 'V' ? 'v' : ''} ${d === hoje() ? 'hoje' : ''}"><td class="dia">${d.slice(8)} ${SEM_CURTA[w]}${FERIADO[d] ? ` <span title="${esc(FERIADO[d])}">★</span>` : ''}</td>
-    ${tipos.map(tp => {
-      const l = lancamentos(d, tp.id), extra = (S.vagaExtra || {})[d + '|' + tp.id] || 0, n = vagasDoDia(tp, d) + extra;
-      if (!n) return `<td class="muted" title="Este serviço não ocorre neste dia">·${pode() ? `<button class="mais" title="Lançar mesmo assim" aria-label="Lançar ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
-      const vagas = Array.from({ length: n }, (_, k) => {
-        const e = l[k], al = e ? alertasEscala(e) : [];
-        const aviso = al.length ? ` <span class="alerta" title="${esc(al.join('; '))}">⚠</span>` : '';
-        const trc = e && e.troca ? `<div class="troca" title="Troca de serviço${e.trocaMotivo ? ': ' + esc(e.trocaMotivo) : ''}. A folga continua contando para o escalado.">⇄ tira: <b>${esc(nomeMil(e.troca))}</b></div>` : '';
-        if (!pode()) return `<div>${e ? (emBranco(e) ? '<span class="muted">em branco</span>' : esc(nomeMil(e.militarId))) : '<span class="muted">—</span>'}${aviso}${trc}</div>`;
-        const ops = militaresAtivos().filter(m => aptoPara(m, tp) || (e && e.militarId === m.id))
-          .map(m => { const s = situacao(m.id, d); return `<option value="${m.id}" ${e && e.militarId === m.id ? 'selected' : ''}>${esc(nomeMil(m))}${s.tipo !== 'pronto' ? ' (' + esc(s.texto) + ')' : ''}</option>`; }).join('');
-        const sobra = k >= (aplica(tp, d) ? qtdTipo(tp) : 0);
-        return `<div class="vaga"><select class="${e && emBranco(e) ? 'branco' : ''}" aria-label="${esc(tp.nome)}${n > 1 ? ' ' + (k + 1) : ''} em ${fmt(d)}" onchange="${e && !emBranco(e) ? `if(this.value==='${TROCA}'){this.value='${e.militarId}';trocaServico('${e.id}')}else ` : ''}trocarServico('${d}','${tp.id}',${k},this.value)"><option value="">${sobra ? '— tirar esta vaga —' : '—'}</option><option value="${BRANCO}" ${e && emBranco(e) ? 'selected' : ''}>Em branco</option>${e && !emBranco(e) ? `<option value="${TROCA}">⇄ ${e.troca ? 'Troca de serviço (alterar ou desfazer)…' : 'Troca de serviço…'}</option>` : ''}${ops}</select>${aviso}${trc}</div>`;
-      }).join('');
-      return `<td>${vagas}${pode() ? `<button class="mais" title="Mais um militar neste dia" aria-label="Mais um ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
-    }).join('')}</tr>`;
+    ${tipos.map(tp => celulaEscala(tp, d)).join('')}</tr>`;
   }).join('');
   const vazios = dias.reduce((n, d) => n + tipos.reduce((s, tp) => s + faltamNoDia(tp, d), 0), 0);
+  // No celular, a escala sai "por dia" (um cartão por dia, serviços um embaixo do outro); no tablet e no computador, em grade.
+  const porDia = (S.escVista || (innerWidth < 700 ? 'dia' : 'grade')) === 'dia';
+  const vista = `<div class="bar vista-esc"><span class="muted">Ver:</span><button class="btn sm ${porDia ? '' : 'pri'}" onclick="S.escVista='grade';render()">Grade</button><button class="btn sm ${porDia ? 'pri' : ''}" onclick="S.escVista='dia';render()">Por dia</button>${porDia ? `<button class="btn sm" onclick="document.querySelector('.dia-card.hoje')?.scrollIntoView({behavior:'smooth',block:'start'})">Ir para hoje</button>` : ''}</div>`;
+  if (porDia) return titulo + abasEsc + barra + vista + `<div class="dias-esc">${dias.map(d => { const cor = corDoDia(d), w = dataDe(d).getDay();
+    return `<section class="dia-card ${cor === 'V' ? 'v' : ''} ${d === hoje() ? 'hoje' : ''}"><h4>${d.slice(8)} <span>${SEMANA[w]}</span>${FERIADO[d] ? ` <small>★ ${esc(FERIADO[d])}</small>` : ''}<em>${cor === 'V' ? 'vermelha' : 'preta'}</em></h4>
+      ${tipos.map(tp => { const c = celulaEscala(tp, d); return /title="Este serviço não ocorre/.test(c) && !pode() ? '' : `<div class="srv"><span class="nm">${esc(tp.nome)}</span>${c.replace(/^<td/, '<div').replace(/<\/td>$/, '</div>')}</div>`; }).join('')}</section>`; }).join('')}</div>
+    <p class="muted">${vazios} vaga(s) sem militar neste mês.</p>`;
   const grupoTit = tp => `<th title="${esc(tp.grupo || 'Externo')} · ${esc(tp.dias || 'Todos')}">${esc(tp.nome)}<div style="font-weight:400;font-size:11px">${qtdTipo(tp) > 1 ? qtdTipo(tp) + ' por dia · ' : ''}${esc(tp.grupo || 'Externo')}${tp.dias && tp.dias !== 'Todos' ? ' · só ' + tp.dias.toLowerCase() : ''}</div></th>`;
   return titulo + abasEsc + barra +
-    `<div class="tw escala"><table><thead><tr><th>Dia</th>${tipos.map(grupoTit).join('')}</tr></thead><tbody>${linhas}</tbody></table></div>
+    vista + `<div class="tw escala"><table><thead><tr><th>Dia</th>${tipos.map(grupoTit).join('')}</tr></thead><tbody>${linhas}</tbody></table></div>
     <p class="muted">${vazios} vaga(s) sem militar neste mês. ⚠ = conflito (impedimento, missão ou dias seguidos). ★ = feriado. · = o serviço não ocorre no dia.${pode() ? ' <b>+</b> = mais um militar no serviço naquele dia (ex.: dois sentinelas). <b>Em branco</b> = ninguém escalado de propósito: a geração automática não preenche e o serviço não sai no aditamento.' : ''}</p>`;
 }
 function mudarMes(n) { const [y, m] = S.mes.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); S.mes = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; render(); }

@@ -62,6 +62,8 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Sistema da Companhia')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .addMetaTag('mobile-web-app-capable', 'yes')
+    .addMetaTag('apple-mobile-web-app-capable', 'yes')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

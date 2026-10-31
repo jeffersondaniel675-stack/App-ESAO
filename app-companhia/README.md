@@ -58,6 +58,19 @@ O caminho inverso, de planilha para o sistema, aceita **.xlsx, .xls, .ods, .csv 
 
 > **Ao alterar o código depois**, use **Implantar → Gerenciar implantações → editar (lápis) → Versão: nova versão**, assim o link continua o mesmo.
 
+## Celular e tablet
+
+É o mesmo sistema e o mesmo link (o `/exec` da implantação). Não precisa instalar nada nem publicar outra versão.
+
+- **Celular:** a escala abre **por dia** (um cartão por dia, com os serviços um embaixo do outro) e o botão **Ir para hoje**. Para ver a grade completa, toque em **Ver: Grade**.
+- **Tablet:** a escala abre em grade. Ao rolar para o lado, a coluna do dia fica fixa.
+- As demais telas (efetivo, material, cautelas, pedidos, aditamentos) se ajustam à largura da tela.
+- **Ícone na tela inicial**, para abrir como um aplicativo:
+  - **Android (Chrome):** abra o link, toque em ⋮ → **Adicionar à tela inicial**.
+  - **iPhone/iPad (Safari):** abra o link, toque em **Compartilhar** → **Adicionar à Tela de Início**.
+- É preciso estar logado no Google com o e-mail cadastrado no sistema, como no computador.
+- Em celular sem internet o sistema não abre, porque os dados ficam na planilha do Google.
+
 ## Usuários e acesso
 
 Só o **admin** cadastra pessoas e muda perfis. Pode haver mais de um admin, por exemplo o Sgte ou o S1.
