@@ -970,7 +970,7 @@ const SUBMENU = {
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
-  material: [{ l: 'Inventário e relação carga', aba: 'inv' }, { l: 'Cautelas', aba: 'caut' }, { l: 'Pedidos de material', aba: 'ped' }, { l: 'Importar planilha', aba: 'imp', editor: true }],
+  material: [{ l: 'Inventário e relação carga', aba: 'inv' }, { l: 'Cautelas', aba: 'caut' }, { l: 'Pedidos de material', aba: 'ped' }, { l: 'Importar planilha', aba: 'imp', filtro: ['impMat', 'planilha'], editor: true }, { l: 'Importar relação do SISCOFIS (PDF)', aba: 'imp', filtro: ['impMat', 'siscofis'], editor: true }, { l: 'Importar PDF de pedido', aba: 'imp', filtro: ['impMat', 'pedido'], editor: true }],
   arquivo: [{ l: 'Todos os documentos', filtro: ['docTipo', ''] }, ...TIPOS_DOC_MENU()],
   config: [{ l: 'Tipos de serviço', aba: 'tipos' }, { l: 'Feriados', aba: 'feriados' }, { l: 'Documentos (cabeçalho e assinatura)', aba: 'geral' }, { l: 'Usuários', aba: 'usuarios', admin: true }, { l: 'Backup', aba: 'backup' }]
 };
@@ -979,7 +979,8 @@ const subsDe = v => (SUBMENU[v] || []).filter(i => (!i.editor || pode()) && (!i.
 function subAtivo(v, i) {
   const lista = subsDe(v);
   if (i.ativo) return !!i.ativo();
-  if (i.aba) return (S.sub[v] || lista.find(x => x.aba).aba) === i.aba;
+  if (i.aba && (S.sub[v] || lista.find(x => x.aba).aba) !== i.aba) return false;
+  if (i.aba && !i.filtro) return true;
   if (i.filtro) { const [f, val] = i.filtro; const pad0 = lista.find(x => x.filtro && x.filtro[0] === f).filtro[1]; return (S.filtro[f] ?? pad0) === val; }
   return false;
 }
@@ -1770,7 +1771,7 @@ function vMaterial() {
     corpo = `<div class="bar">${busca('mat', 'Buscar material, ficha ou patrimônio…')}
       <select onchange="S.filtro.tipoMat=this.value;render()" aria-label="Tipo"><option value="">Todos os tipos</option>${TIPOS_MATERIAL.map(c => `<option ${c === tm ? 'selected' : ''}>${c}</option>`).join('')}</select>
       <select onchange="S.filtro.cat=this.value;render()" aria-label="Categoria"><option value="">Todas as categorias</option>${CATEGORIAS.map(c => `<option ${c === cat ? 'selected' : ''}>${c}</option>`).join('')}</select>
-      <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarMat()">+ Material</button>' : ''}</div>
+      <span class="grow"></span>${pode() ? `<button class="btn" onclick="S.filtro.impMat='siscofis';S.sub.material='imp';render()">Importar relação do SISCOFIS (PDF)</button><button class="btn pri" onclick="editarMat()">+ Material</button>` : ''}</div>
     <div class="bar"><span class="muted grow">Relação de material carga (formato SISCOFIS), por dependência:</span>${botoesDocGrandes('relacao', S.filtro.dep || '', 'relacao')}
       <select onchange="S.filtro.dep=this.value;render()" aria-label="Dependência"><option value="">Todas as dependências</option>${dependencias().map(d => `<option ${d === S.filtro.dep ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select></div>
     ${tabela(lista, [
@@ -1790,17 +1791,19 @@ function vMaterial() {
       <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novaCautela()">+ Cautela</button>' : ''}</div>${tabelaCautelas(lista)}`;
   } else if (t === 'ped') {
     const lista = S.db.Pedidos.slice().sort((a, b) => b.data.localeCompare(a.data) || String(b.numero).localeCompare(String(a.numero))).filter(p => casa('ped', p.numero, p.de, p.para, p.itens));
-    corpo = `<div class="bar">${busca('ped', 'Buscar pedido…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarPedido()">+ Pedido de material</button>' : ''}</div>
+    corpo = `<div class="bar">${busca('ped', 'Buscar pedido…')}<span class="grow"></span>${pode() ? `<button class="btn" onclick="S.filtro.impMat='pedido';S.sub.material='imp';render()">Importar PDF de pedido</button><button class="btn pri" onclick="editarPedido()">+ Pedido de material</button>` : ''}</div>
     ${tabela(lista, [
       { l: 'Nº', v: p => `<b>${esc(p.numero)}</b>` }, { l: 'Data', v: p => fmt(p.data) }, { l: 'Do / ao', v: p => `${esc(p.de)}<div class="muted">ao ${esc(p.para)}</div>` },
       { l: 'Itens', v: p => { const it = itensPedido(p); return `${it.length} item(ns)<div class="muted">${esc(it.slice(0, 3).map(i => i.esp).join(', '))}${it.length > 3 ? '…' : ''}</div>`; } },
       { l: 'Situação', v: p => `<span class="tag ${p.status === 'Recebido' ? 'ok' : p.status === 'Negado' ? 'dng' : p.status === 'Autorizado' ? 'info' : 'warn'}">${esc(p.status || 'Rascunho')}</span>` }
     ], p => `${pode() ? `<button class="btn sm" onclick="editarPedido('${p.id}')">Abrir</button> ` : ''}${botoesDoc('pedido', p.id)}`)}`;
   } else {
-    corpo = vImportar('Material');
+    const modo = S.filtro.impMat || 'planilha';
+    corpo = `<div class="tabs" style="margin-top:-6px">${[['planilha', 'Planilha (Excel, CSV ou Google)'], ['siscofis', 'Relação do SISCOFIS (PDF)'], ['pedido', 'Pedido de material (PDF)']]
+      .map(([k, l]) => `<button class="${modo === k ? 'on' : ''}" onclick="S.filtro.impMat='${k}';render()">${l}</button>`).join('')}</div>` + (modo === 'planilha' ? vImportar('Material') : vImportarPdf(modo));
   }
   return `<h2>Material</h2><p class="sub">Material carga da subunidade, cautelas, pedidos de material e relação carga, com anexos no Google Drive.</p>
-  ${abas('material', [['inv', 'Inventário'], ['caut', 'Cautelas'], ['ped', 'Pedidos de material'], ...(pode() ? [['imp', 'Importar planilha']] : [])])}${corpo}`;
+  ${abas('material', [['inv', 'Inventário'], ['caut', 'Cautelas'], ['ped', 'Pedidos de material'], ...(pode() ? [['imp', 'Importar']] : [])])}${corpo}`;
 }
 const dependencias = () => [...new Set(S.db.Material.map(m => m.localizacao).filter(Boolean))].sort();
 function tabelaCautelas(lista) {
@@ -2120,6 +2123,257 @@ async function importarFerias(corpo, mapa) {
   if (!await confirmar(`Lançar ${lanc.length} parcela(s) de férias (referência ${ref})?${faltando.length ? ` ${faltando.length} nome(s) não encontrado(s) no efetivo: ${faltando.slice(0, 5).join(', ')}${faltando.length > 5 ? '…' : ''}.` : ''}`)) return;
   await salvar('Impedimentos', lanc);
   S.imp = null; S.sub.efetivo = 'ferias'; toast(`${lanc.length} parcela(s) de férias lançada(s).`); render();
+}
+
+// ============================================================ importação de PDF: relação do SISCOFIS e pedido de material
+// O PDF é lido no navegador com o pdf.js. O "worker" roda na própria página, porque o Apps Script não deixa criar workers de outro endereço.
+function carregarPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve();
+  const base = HTTPS + 'cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  const carrega = src => new Promise((ok, falha) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => falha(new Error('Não foi possível carregar o leitor de PDF.')); document.head.appendChild(s); });
+  return carrega(base + 'pdf.worker.min.js').then(() => carrega(base + 'pdf.min.js')).then(() => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js'; });
+}
+/** Pedaços de texto de cada página do PDF, com a posição (x, y) e onde terminam (fim). */
+async function itensDoPdf(file) {
+  await carregarPdfJs();
+  const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const paginas = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const conteudo = await (await pdf.getPage(n)).getTextContent();
+    paginas.push(conteudo.items.filter(it => it.str && it.str.trim()).map(it => ({ x: it.transform[4], y: it.transform[5], s: it.str.trim(), fim: it.transform[4] + (it.width || 0) })));
+  }
+  if (!paginas.some(pg => pg.length)) throw new Error('Este PDF não tem texto (parece digitalizado como imagem). Use o PDF original, gerado pelo sistema de origem.');
+  return paginas;
+}
+/** Texto em linhas, na ordem de leitura (agrupa os pedaços pela altura na página). */
+function linhasDe(paginas) {
+  const linhas = [];
+  paginas.forEach(itens => {
+    const porAltura = [];
+    itens.forEach(it => { let l = porAltura.find(g => Math.abs(g.y - it.y) < 2.5); if (!l) porAltura.push(l = { y: it.y, itens: [] }); l.itens.push(it); });
+    porAltura.sort((a, b) => b.y - a.y).forEach(l => {
+      l.itens.sort((a, b) => a.x - b.x);
+      let texto = '', fim = null;
+      l.itens.forEach(i => { if (fim !== null && i.x - fim > 1) texto += ' '; texto += i.s; fim = i.fim; });
+      linhas.push(texto.replace(/\s+/g, ' ').trim());
+    });
+  });
+  return linhas;
+}
+const numBR = v => num(String(v ?? '').replace(/\./g, '').replace(',', '.'));
+
+/**
+ * Relação de material carga do SISCOFIS. Material permanente: "NOME  Nr Ficha  Cod Mat  Conta  Acervo  Qtd  Valor Unit  Valor Total",
+ * seguido de "Nr Patrimoniais:" e as linhas com os números. Uso duradouro/consumo: "Nr Ficha  Cod Mat  Conta  NOME  Qtd  Valor Unit  Valor Total".
+ * Nomes longos continuam na linha de baixo.
+ */
+function lerSiscofis(linhas) {
+  const PERM = /^(.+?)\s+(\w{6,8})\s+(\d{6,12})\s+(\d{9})\s+([NS])\s+(\d+)\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})$/;
+  const DUR = /^(\w{6,8})\s+(\d{6,12})\s+(\d{9})\s+(.+?)\s+(\d+)\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})$/;
+  const IGNORAR = /^(p[áa]gina \d|minist[ée]rio da defesa|ex[ée]rcito brasileiro|nome material|nr ficha|rela[çc][ãa]o dos patrim|rela[çc][ãa]o emitida|rel mat carga|observa[çc][ãa]o|movimento|n[úu]mero total|valor total|detentor)/i;
+  const ehPatrimonios = l => { const p = l.split(/[,\s]+/).filter(Boolean); return p.length > 0 && p.every(x => /^\d{6,20}$/.test(x)); };
+  const itens = [];
+  let atual = null, tipo = 'Permanente', dep = '', detentor = '', depoisDosNumeros = false;
+  linhas.forEach((l, i) => {
+    let m;
+    if (/RELA[ÇC][ÃA]O DE MATERIAL CARGA DA DEPEND[ÊE]NCIA/i.test(l)) { dep = l.replace(/.*DEPEND[ÊE]NCIA\s*/i, '').trim(); return; }
+    if (/^\d\.\s*MATERIAL PERMANENTE/i.test(l)) { tipo = 'Permanente'; atual = null; return; }
+    if (/^\d\.\s*MATERIAL DE USO DURADOURO/i.test(l) || /^\d\.\s*MATERIAL DURADOURO/i.test(l)) { tipo = 'Uso duradouro'; atual = null; return; }
+    if (/^\d\.\s*MATERIAL DE CONSUMO/i.test(l)) { tipo = 'Consumo'; atual = null; return; }
+    if (/detentor direto/i.test(l)) { detentor = String(linhas[i - 1] || '').replace(/\s*-\s*$/, '').trim(); atual = null; return; }
+    if (/^nr patrimoniais:?$/i.test(l)) { depoisDosNumeros = true; return; }
+    if (atual && ehPatrimonios(l)) { atual.patrimonios.push(...l.split(/[,\s]+/).filter(Boolean)); return; }
+    if ((m = l.match(DUR))) {
+      atual = { tipoMaterial: tipo === 'Consumo' ? 'Consumo' : 'Uso duradouro', descricao: m[4], nrFicha: m[1], codMat: m[2], contaContabil: m[3], acervo: 'N', quantidade: m[5], valor: numBR(m[6]), patrimonios: [] };
+      itens.push(atual); depoisDosNumeros = false; return;
+    }
+    if ((m = l.match(PERM))) {
+      atual = { tipoMaterial: 'Permanente', descricao: m[1], nrFicha: m[2], codMat: m[3], contaContabil: m[4], acervo: m[5], quantidade: m[6], valor: numBR(m[7]), patrimonios: [] };
+      itens.push(atual); depoisDosNumeros = false; return;
+    }
+    if (/^(observa[çc][ãa]o|n[úu]mero total|valor total)/i.test(l)) atual = null;
+    if (IGNORAR.test(l)) return;
+    // Continuação do nome do material (o SISCOFIS quebra nomes longos na linha de baixo, antes dos patrimônios).
+    if (atual && !depoisDosNumeros && !atual.patrimonios.length && l === l.toUpperCase() && /[A-ZÀ-Ú]/.test(l) && l.length < 140) atual.descricao += ' ' + l;
+  });
+  itens.forEach(it => { it.descricao = it.descricao.replace(/\s*\/\s*\.$/, '').replace(/\s+/g, ' ').trim(); });
+  return { itens, dep, detentor };
+}
+
+/** Uma linha de item do pedido: "[nº] especificação  quantidade  unidade  [obs]". */
+const UNIDADES = 'unid\\w*|uni\\w*|un|und|pe[çc]as?|metros?|mts?|m|litros?|lts?|l|pacotes?|pcts?|caixas?|cxs?|kgs?|kg|gramas?|g|rolos?|pares?|resmas?|frascos?|gal[õo]es?|latas?|jogos?|kits?|folhas?|blocos?|sacos?|fardos?|tubos?|d[úu]zias?|cento|com';
+function lerItemPedido(l) {
+  const s = l.replace(/^\d{1,3}\s*[.)\-–]?\s+(?=\D)/, '').trim();
+  if (!s) return null;
+  const re = new RegExp('(^|\\s)(\\d+(?:[.,]\\d+)?)\\s+(' + UNIDADES + ')\\b(.*)$', 'i');
+  const m = s.match(re);
+  if (m) {
+    const esp = s.slice(0, m.index).trim();
+    if (esp) return { esp, qtd: String(numBR(m[2])), un: (m[3] + m[4]).trim(), obs: '' };
+  }
+  const n = s.match(/^(.*\D)\s+(\d+(?:[.,]\d+)?)\s*$/);
+  if (n) return { esp: n[1].trim(), qtd: String(numBR(n[2])), un: '', obs: '' };
+  return { cont: s };
+}
+/**
+ * Pedido em tabela: usa a posição das colunas do cabeçalho (ESPECIFICAÇÃO, QUANTIDADE, OBS). Cada número na coluna de
+ * quantidade é uma linha da tabela; o que estiver na mesma faixa de altura entra como especificação, unidade ou obs.
+ * Assim, uma especificação escrita em duas linhas continua no mesmo item.
+ */
+function lerPedidoTabela(paginas) {
+  const itens = [];
+  let b1 = null, b2 = Infinity;
+  paginas.forEach(pg => {
+    const achar = re => pg.find(i => re.test(i.s));
+    const hEsp = achar(/^ESPECIFICA/i), hQtd = achar(/^QUANTIDADE/i), hObs = achar(/^OBS/i), hFim = achar(/^RECEBI/i);
+    if (hEsp && hQtd) { b1 = (hEsp.fim + hQtd.x) / 2; b2 = hObs ? (hQtd.fim + hObs.x) / 2 : Infinity; }
+    if (b1 === null) return;
+    const topo = hEsp ? Math.min(hEsp.y, hQtd.y) - 3 : Infinity, base = hFim ? hFim.y + 3 : -Infinity;
+    const corpo = pg.filter(i => i.y < topo && i.y > base);
+    const ancoras = corpo.filter(i => i.x >= b1 && i.x < b2 && /^\d+([.,]\d+)?$/.test(i.s)).sort((a, b) => b.y - a.y);
+    ancoras.forEach((a, k) => {
+      const cima = k === 0 ? topo : (ancoras[k - 1].y + a.y) / 2, baixo = k === ancoras.length - 1 ? Math.max(base, a.y - 14) : (a.y + ancoras[k + 1].y) / 2;
+      const faixa = corpo.filter(i => i !== a && i.y <= cima && i.y > baixo).sort((p, q) => q.y - p.y || p.x - q.x);
+      const junta = l => l.map(i => i.s).join(' ').replace(/\s+/g, ' ').trim();
+      const esp = junta(faixa.filter(i => i.fim <= b1 + 20 && !(/^\d{1,3}\.?$/.test(i.s) && i.x < b1 / 2) && !/^N[º°o.]?\s*ORD/i.test(i.s)));
+      if (esp) itens.push({ esp, qtd: String(numBR(a.s)), un: junta(faixa.filter(i => i.x >= b1 && i.x < b2)), obs: junta(faixa.filter(i => i.x >= b2)) });
+    });
+  });
+  return itens;
+}
+/** Cabeçalho do pedido (nº, do, ao), pegando cada campo do próprio pedaço de texto quando existir. */
+function cabecalhoPedido(paginas, linhas) {
+  const todos = paginas.flat(), texto = linhas.join('\n');
+  const pedaco = re => { const i = todos.find(t => re.test(t.s)); return i ? i.s.replace(re, '').trim() : ''; };
+  return { numero: ((texto.match(/N[º°o.]?\s*(\d{1,4}\s*\/\s*\d{2,4})/i) || [])[1] || '').replace(/\s+/g, ''), de: pedaco(/^DO:\s*/i), para: pedaco(/^AO:\s*/i) };
+}
+function lerPedidoPdf(linhas) {
+  const texto = linhas.join('\n');
+  const pega = re => ((texto.match(re) || [])[1] || '').trim();
+  const itens = [];
+  let dentro = false;
+  linhas.forEach(l => {
+    if (/ESPECIFICA/i.test(l)) { dentro = true; return; }
+    if (/^RECEBI|LOCAL E DATA|^QUARTEL EM|^ASSINATURA/i.test(l)) { dentro = false; return; }
+    if (!dentro || /^OBS:?$/i.test(l)) return;
+    const it = lerItemPedido(l);
+    if (!it) return;
+    if (it.cont) { if (itens.length && !/^\d+$/.test(it.cont)) itens[itens.length - 1].esp += ' ' + it.cont; return; }
+    itens.push(it);
+  });
+  return {
+    numero: pega(/N[º°o.]?\s*(\d{1,4}\s*\/\s*\d{2,4})/i), de: pega(/\bDO:\s*(.+)/i).replace(/\s*AO:.*$/i, ''), para: pega(/\bAO:\s*(.+)/i),
+    itens
+  };
+}
+
+/** Telas de importação de PDF (Material → Importar). */
+function vImportarPdf(tipo) {
+  const st = S.impPdf && S.impPdf.tipo === tipo ? S.impPdf : null;
+  const titulo = tipo === 'siscofis'
+    ? '<p>Traga o PDF da <b>Relação de Material Carga</b> emitido pelo <b>SISCOFIS</b>. O sistema lê o material permanente (com os Nr Patrimoniais) e o de uso duradouro, e mostra a lista para você conferir e escolher o que entra no inventário.</p>'
+    : '<p>Traga o PDF de um <b>pedido de material</b>. O sistema lê os itens (especificação, quantidade e unidade) e você escolhe quais incluir, podendo registrar como pedido no sistema ou lançar direto no inventário.</p>';
+  let html = `<div class="card">${titulo}<div class="bar"><input type="file" accept=".pdf" onchange="lerPdfImportacao(this.files[0],'${tipo}')" aria-label="Arquivo PDF"></div></div>`;
+  if (!st) return html;
+  const sel = st.itens.filter(i => i.sel).length;
+  const marcar = `<button class="btn sm" onclick="marcarImpPdf(true)">Marcar todos</button><button class="btn sm" onclick="marcarImpPdf(false)">Desmarcar todos</button>`;
+  const cx = (i, campo, w, tipoCampo = 'text') => `<input type="${tipoCampo}" value="${esc(st.itens[i][campo])}" onchange="S.impPdf.itens[${i}].${campo}=this.value" style="height:32px;${w ? 'min-width:' + w + 'px' : ''}" aria-label="${campo}">`;
+  if (tipo === 'siscofis') {
+    const novos = st.itens.filter(i => i.sel && !i.existe).length;
+    html += `<h3>${esc(st.arquivo)} — ${st.itens.length} item(ns) encontrados</h3>
+    <div class="card"><div class="form">
+      <label>Dependência (vai para o campo Dependência / local)<input type="text" id="imp_dep" value="${esc(st.dep)}" onchange="S.impPdf.dep=this.value"></label>
+      <label style="justify-content:flex-end"><span style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="imp_atualiza" ${st.atualiza !== false ? 'checked' : ''} onchange="S.impPdf.atualiza=this.checked"> Atualizar quantidade e patrimônios dos itens que já existem</span></label>
+      ${st.detentor ? `<label class="full"><span style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="imp_detentor" checked> Usar "${esc(st.detentor)}" como detentor direto do material carga</span></label>` : ''}
+    </div>
+    <div class="bar" style="margin-top:12px">${marcar}<span class="grow"></span><span class="muted">${novos} novo(s) · ${sel - novos} já existe(m)</span><button class="btn pri" id="btnImpPdf" onclick="confirmarImpSiscofis()">Importar ${sel} item(ns)</button></div></div>
+    <div class="tw" style="max-height:560px;overflow:auto"><table><thead><tr><th></th><th>Tipo</th><th>Nome material</th><th>Nr Ficha</th><th>Cod Mat</th><th>Conta</th><th class="num">Qtd</th><th class="num">Valor unit.</th><th>Patrimônios</th><th>Situação</th></tr></thead><tbody>
+    ${st.itens.map((it, i) => `<tr><td><input type="checkbox" ${it.sel ? 'checked' : ''} onchange="S.impPdf.itens[${i}].sel=this.checked;contarImpPdf()" aria-label="Incluir item"></td>
+      <td>${esc(it.tipoMaterial)}</td><td>${cx(i, 'descricao', 260)}</td><td>${esc(it.nrFicha)}</td><td>${esc(it.codMat)}</td><td>${esc(it.contaContabil)}</td>
+      <td class="num">${cx(i, 'quantidade', 60, 'number')}</td><td class="num">${reais(it.valor)}</td>
+      <td>${it.patrimonios.length ? `<span title="${esc(it.patrimonios.join(', '))}">${it.patrimonios.length} nº</span>` : '<span class="muted">—</span>'}</td>
+      <td>${it.existe ? '<span class="tag info">atualiza</span>' : '<span class="tag ok">novo</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  } else {
+    html += `<h3>${esc(st.arquivo)} — ${st.itens.length} item(ns) encontrados</h3>
+    <div class="card"><div class="form">
+      <label>O que fazer com os itens marcados<select id="imp_destino" onchange="S.impPdf.destino=this.value;render()">
+        <option value="pedido" ${st.destino !== 'inventario' ? 'selected' : ''}>Registrar como pedido de material no sistema</option>
+        <option value="inventario" ${st.destino === 'inventario' ? 'selected' : ''}>Lançar no inventário (material de consumo)</option></select></label>
+      ${st.destino === 'inventario'
+        ? `<label>Dependência / local<input type="text" value="${esc(st.dep)}" onchange="S.impPdf.dep=this.value"></label>`
+        : `<label>Nº do pedido<input type="text" value="${esc(st.numero)}" onchange="S.impPdf.numero=this.value"></label>
+           <label>Do<input type="text" value="${esc(st.de)}" onchange="S.impPdf.de=this.value"></label><label>Ao<input type="text" value="${esc(st.para)}" onchange="S.impPdf.para=this.value"></label>
+           <label>Situação<select onchange="S.impPdf.status=this.value">${['Rascunho', 'Enviado', 'Autorizado', 'Recebido'].map(x => `<option ${x === (st.status || 'Enviado') ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`}
+    </div>
+    <div class="bar" style="margin-top:12px">${marcar}<button class="btn sm" onclick="S.impPdf.itens.push({esp:'',qtd:'1',un:'Unidades',obs:'',sel:true});render()">+ Linha</button><span class="grow"></span>
+      <button class="btn pri" id="btnImpPdf" onclick="confirmarImpPedido()">Incluir ${sel} item(ns)</button></div></div>
+    <div class="tw"><table class="itens"><thead><tr><th></th><th>Especificação</th><th>Quantidade</th><th>Unidade</th><th>Obs</th></tr></thead><tbody>
+    ${st.itens.map((it, i) => `<tr><td><input type="checkbox" ${it.sel ? 'checked' : ''} onchange="S.impPdf.itens[${i}].sel=this.checked;contarImpPdf()" aria-label="Incluir item"></td>
+      <td>${cx(i, 'esp', 260)}</td><td style="width:11%">${cx(i, 'qtd', 60, 'number')}</td><td style="width:20%">${cx(i, 'un', 90)}</td><td style="width:20%">${cx(i, 'obs', 80)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="muted">Confira a especificação e a quantidade de cada linha: o PDF não guarda as colunas da tabela, então o sistema separa pelo número e pela unidade.</p>`;
+  }
+  return html;
+}
+function contarImpPdf() { const n = S.impPdf.itens.filter(i => i.sel).length, b = $('#btnImpPdf'); if (b) b.textContent = (S.impPdf.tipo === 'siscofis' ? 'Importar ' : 'Incluir ') + n + ' item(ns)'; }
+function marcarImpPdf(v) { S.impPdf.itens.forEach(i => { i.sel = v; }); render(); }
+/** Mesmo item no inventário: mesma ficha, mesmo código e mesmo valor unitário (a relação repete a ficha quando o valor muda). */
+const materialIgual = it => S.db.Material.find(m => norm(m.nrFicha) === norm(it.nrFicha) && norm(m.codMat) === norm(it.codMat) && Math.abs(num(m.valor) - num(it.valor)) < 0.005);
+async function lerPdfImportacao(file, tipo) {
+  if (!file) return;
+  try {
+    toast('Lendo o PDF…');
+    const paginas = await itensDoPdf(file), linhas = linhasDe(paginas);
+    if (tipo === 'siscofis') {
+      const r = lerSiscofis(linhas);
+      if (!r.itens.length) return toast('Não reconheci itens de relação de material carga neste PDF. Confira se é a relação emitida pelo SISCOFIS.', true);
+      r.itens.forEach(it => { it.sel = true; it.existe = !!materialIgual(it); });
+      S.impPdf = { tipo, arquivo: file.name, itens: r.itens, dep: r.dep || cfg('dependencia'), detentor: r.detentor, atualiza: true };
+    } else {
+      const tabela = lerPedidoTabela(paginas), cab = cabecalhoPedido(paginas, linhas);
+      const r = tabela.length ? { ...cab, itens: tabela } : { ...lerPedidoPdf(linhas), ...Object.fromEntries(Object.entries(cab).filter(([, v]) => v)) };
+      if (!r.itens.length) return toast('Não reconheci itens de pedido neste PDF. Ele precisa ter a tabela com ESPECIFICAÇÃO e QUANTIDADE.', true);
+      r.itens.forEach(it => { it.sel = true; });
+      S.impPdf = { tipo, arquivo: file.name, itens: r.itens, numero: r.numero || proximoNumero(S.db.Pedidos.map(x => x.numero), hoje().slice(0, 4)), de: r.de || cfg('pedidoDe'), para: r.para || cfg('pedidoPara'), destino: 'pedido', status: 'Enviado', dep: cfg('dependencia') };
+    }
+    render();
+  } catch (e) { toast('Erro ao ler o PDF: ' + e.message, true); }
+}
+async function confirmarImpSiscofis() {
+  const st = S.impPdf, escolhidos = st.itens.filter(i => i.sel);
+  if (!escolhidos.length) return toast('Marque pelo menos um item.', true);
+  const dep = ($('#imp_dep') || {}).value || st.dep, atualiza = $('#imp_atualiza') ? $('#imp_atualiza').checked : true;
+  const lista = [];
+  escolhidos.forEach(it => {
+    const igual = materialIgual(it);
+    const dados = { descricao: it.descricao.trim(), tipoMaterial: it.tipoMaterial, nrFicha: it.nrFicha, codMat: it.codMat, contaContabil: it.contaContabil, acervo: it.acervo, quantidade: String(num(it.quantidade)), valor: String(it.valor), localizacao: dep, patrimonio: it.patrimonios.join(', ') };
+    if (igual) { if (atualiza) lista.push({ ...igual, ...dados, descricao: igual.descricao || dados.descricao }); }
+    else lista.push({ ...dados, unidade: 'un', estado: 'Bom', categoria: '', ultimaConferencia: hoje(), obs: 'importado do SISCOFIS' });
+  });
+  if (!lista.length) return toast('Nada a importar: os itens marcados já existem e "atualizar" está desmarcado.', true);
+  const novos = lista.filter(x => !x.id).length;
+  if (!await confirmar(`Importar ${lista.length} item(ns) da relação do SISCOFIS: ${novos} novo(s) e ${lista.length - novos} atualizado(s), na dependência "${dep}"?`)) return;
+  await salvar('Material', lista);
+  if ($('#imp_detentor') && $('#imp_detentor').checked && st.detentor) await salvar('Config', [{ chave: 'detentorNome', valor: st.detentor }]);
+  S.impPdf = null; S.sub.material = 'inv'; S.filtro.dep = dep;
+  toast(`${lista.length} item(ns) importado(s) do SISCOFIS.`); render();
+}
+async function confirmarImpPedido() {
+  const st = S.impPdf, escolhidos = st.itens.filter(i => i.sel && String(i.esp).trim());
+  if (!escolhidos.length) return toast('Marque pelo menos um item com especificação.', true);
+  if (st.destino === 'inventario') {
+    const lista = escolhidos.map(it => {
+      const igual = S.db.Material.find(m => norm(m.descricao) === norm(it.esp));
+      return igual ? { ...igual, quantidade: String(num(igual.quantidade) + num(it.qtd)) }
+        : { descricao: it.esp.trim(), tipoMaterial: 'Consumo', quantidade: String(num(it.qtd) || 1), unidade: it.un || 'un', localizacao: st.dep, estado: 'Bom', obs: [it.obs, 'pedido ' + (st.numero || '')].filter(Boolean).join(' · '), ultimaConferencia: hoje() };
+    });
+    const somados = lista.filter(x => x.id).length;
+    if (!await confirmar(`Lançar ${lista.length} item(ns) no inventário? ${somados ? somados + ' já existe(m) e terá(ão) a quantidade somada.' : 'Todos entram como itens novos de consumo.'}`)) return;
+    await salvar('Material', lista);
+    S.impPdf = null; S.sub.material = 'inv'; toast(`${lista.length} item(ns) lançado(s) no inventário.`); return render();
+  }
+  if (S.db.Pedidos.some(p => p.numero === st.numero) && !await confirmar(`Já existe um pedido nº ${st.numero}. Registrar outro com o mesmo número?`)) return;
+  await salvar('Pedidos', [{ numero: st.numero, data: hoje(), de: st.de, para: st.para, status: st.status || 'Enviado', itens: JSON.stringify(escolhidos.map(({ esp, qtd, un, obs }) => ({ esp: esp.trim(), qtd, un, obs }))), obs: 'importado de ' + st.arquivo, autor: S.user.email }]);
+  S.impPdf = null; S.sub.material = 'ped'; toast(`Pedido nº ${st.numero} registrado com ${escolhidos.length} item(ns).`); render();
 }
 
 // ============================================================ configurações

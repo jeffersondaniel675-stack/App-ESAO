@@ -35,6 +35,8 @@ O caminho inverso, de planilha para o sistema, aceita **.xlsx, .xls, .ods, .csv 
 | Efetivo → Importar planilha → *Plano de férias* | Lê a coluna "Dia/mês", seja uma data de início com o "Período" ("30 dias"), sejam parcelas escritas ("- 10 a 19 FEV 27", "01 DEZ a 15 JAN 27"). Avisa os nomes que não encontrar no efetivo. |
 | Escala → Importar planilha antiga | Lê a planilha de escala no formato de colunas por dia (Sgt Dia, Cabo de Dia…): cada **0 é um dia de serviço**. Recria o histórico, então as folgas continuam de onde estavam. Cadastra os militares que faltarem. |
 | Material → Importar planilha | Relação de material (nome, Nr ficha, cód. material, conta contábil, quantidade, valor, Nr patrimoniais, dependência…). |
+| Material → Importar → *Relação do SISCOFIS (PDF)* | Lê o PDF da relação carga gerado pelo SISCOFIS: material permanente (com os Nr patrimoniais) e de uso duradouro, Nr ficha, cód. material, conta contábil, quantidade e valor. Mostra a lista para você **marcar o que entra** e corrigir antes de gravar; avisa os itens que já estão no inventário (pode atualizá-los). |
+| Material → Importar → *Pedido de material (PDF)* | Lê a tabela do pedido (especificação, quantidade, unidade, obs), mesmo com a especificação em duas linhas. Você **escolhe os itens** e o destino: **registrar como pedido** ou **lançar no inventário** como material de consumo (soma a quantidade se o item já existir). |
 
 ## Instalação (uns 10 minutos)
 
@@ -109,7 +111,7 @@ Depois de corrigir o código, **publique uma nova versão** (Implantar → Geren
    Ao criar ou editar um serviço, **marque as caixinhas** dos postos e graduações que concorrem, escolha se é externo ou interno e em que dias ocorre (todos, só dias úteis ou só sábado, domingo e feriado). O botão **Restaurar serviços padrão** volta a esta lista.
 4. **Efetivo → Importar planilha:** primeiro o **tripão**, depois o **plano de férias**. Preencha a **antiguidade** (1 = mais antigo) para o desempate da escala.
 5. **Escala → Importar planilha antiga:** traga a planilha de escala atual para manter as folgas.
-6. **Material → Importar planilha** com a relação carga.
+6. **Material → Importar → Relação do SISCOFIS (PDF)** com a relação carga.
 7. **Escala → Gerar dias vazios.**
 
 ## Arquivo de PDFs (backup dos documentos)
