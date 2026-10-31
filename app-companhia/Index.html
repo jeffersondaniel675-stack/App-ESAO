@@ -12,7 +12,22 @@
   // Se o script principal falhar (por exemplo, arquivo colado incompleto no Apps Script), mostra o erro em vez de ficar em "Carregando…".
   window.__erros = [];
   window.addEventListener('error', function (e) {
-    window.__erros.push((e.message || 'erro desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ')' : ''));
+    var msg = (e.message || 'erro desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ', coluna ' + e.colno + ')' : '');
+    try {
+      // Localiza a linha do erro dentro do script principal e mostra o trecho, com caracteres especiais visíveis como \uXXXX.
+      var html = document.documentElement.outerHTML, scripts = document.getElementsByTagName('script'), extra = document.doctype ? 1 : 0;
+      for (var i = 0; i < scripts.length; i++) {
+        var txt = scripts[i].text; if (txt.length < 5000) continue;
+        var pos = html.indexOf(txt.slice(0, 300)); if (pos < 0) continue;
+        var inicio = html.slice(0, pos).split('\n').length + extra, linhas = txt.split('\n');
+        for (var d = -4; d <= 4; d++) {
+          var l = linhas[e.lineno - inicio + d]; if (l === undefined) continue;
+          var mostra = l.replace(/[^\x20-\x7e]/g, function (c) { var h = c.charCodeAt(0).toString(16); return c.charCodeAt(0) > 0xff ? '\\u' + ('0000' + h).slice(-4) : c; });
+          msg += '\n' + (d === 0 ? '>> ' : '   ') + (e.lineno + d) + ': ' + mostra.slice(0, 160);
+        }
+      }
+    } catch (x) { /* só diagnóstico */ }
+    window.__erros.push(msg);
     var mostrar = function () {
       var app = document.getElementById('app'); if (!app) return;
       var fim = /end of input|Unexpected end|missing \}|unterminated/i.test(window.__erros.join(' '));
@@ -312,7 +327,9 @@ const SEM_CURTA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
 const fmtMil = iso => { if (!iso) return ''; const d = dataDe(iso); return `${pad(d.getDate())} ${MESES[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`; };
 const fmtExt = iso => { const d = dataDe(iso); return `${d.getDate()} de ${MESES_EXT[d.getMonth()]} de ${d.getFullYear()}`; };
-const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+// Tira acentos e símbolos comparando o código de cada caractere (sem regex de acentos, que o Apps Script pode estragar).
+const soAscii = s => Array.from(String(s ?? '').normalize('NFD')).filter(c => c.charCodeAt(0) < 128).join('');
+const norm = s => soAscii(s).toLowerCase().replace(/[^a-z0-9]/g, '');
 const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isNaN(n) ? 0 : n; };
 const sim = v => !/^(n|nao|não|false|0|inativo)$/i.test(String(v ?? 'Sim').trim());
 const ids = v => String(v ?? '').split(',').map(s => s.trim()).filter(Boolean);
@@ -701,7 +718,7 @@ function avisoArquivo(reg, onde, titulo, botao, dica = '') {
 }
 
 /** Nome de arquivo seguro para download: o navegador descarta nomes com "ª", "º" e afins. */
-const nomeArquivo = n => String(n).replace(/ª/g, 'a').replace(/[º°]/g, 'o').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w .()-]/g, '-');
+const nomeArquivo = n => soAscii(String(n).replace(/ª/g, 'a').replace(/[º°]/g, 'o')).replace(/[^\w .()-]/g, '-');
 /** Listas exportáveis para Excel: cada função devolve { nome, cab: [...], linhas: [[...]] }. */
 const LISTAS = {};
 async function exportarExcel(chave, arg) {
