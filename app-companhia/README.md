@@ -79,6 +79,14 @@ Se a pessoa ainda não tem acesso nem à planilha, o botão "Pedir acesso" não 
 
 > Quem já tinha instalado antes desta versão: depois de colar o código novo, rode `setup` mais uma vez no editor para criar a aba `Acessos` e proteger as abas.
 
+## Se a página ficar parada em "Carregando…"
+
+O sistema mostra na tela o que aconteceu:
+- **"O arquivo Index está incompleto no Apps Script"**: a colagem parou no meio. Abra o `Index.html` no Bloco de Notas, **Ctrl+A** e **Ctrl+C**. No editor do Apps Script, clique dentro do arquivo **Index**, **Ctrl+A**, **Delete** e **Ctrl+V**. Aperte **Ctrl+End** e confira que a última linha é `</html>`, com cerca de 2.200 linhas no total. Salve com **Ctrl+S**.
+- **"O sistema encontrou um erro ao carregar"**: mande um print da mensagem.
+
+Depois de corrigir o código, **publique uma nova versão** (Implantar → Gerenciar implantações → ✏️ → Versão: Nova versão → Implantar). O link `/exec` só mostra a última versão *publicada*. Para testar sem publicar, use **Implantar → Testar implantações**: esse link termina em `/dev` e sempre usa o código salvo.
+
 ## Primeiros passos dentro do sistema
 
 1. **Configurações → Documentos:** confira o cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / 11º DEPÓSITO DE SUPRIMENTO / 1ª COMPANHIA), acrescente a linha do escalão superior se a OM usa, e preencha o nome do Cmt Cia, o setor da cautela, as assinaturas e o detentor do material carga. O Brasão da República já vem como padrão nos documentos, e o **distintivo do 11º D Sup** aparece no topo do sistema. Os dois podem ser trocados ali mesmo.

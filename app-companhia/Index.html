@@ -9,6 +9,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap">
 <script>
+  // Se o script principal falhar (por exemplo, arquivo colado incompleto no Apps Script), mostra o erro em vez de ficar em "Carregando…".
+  window.__erros = [];
+  window.addEventListener('error', function (e) {
+    window.__erros.push((e.message || 'erro desconhecido') + (e.lineno ? ' (linha ' + e.lineno + ')' : ''));
+    var mostrar = function () {
+      var app = document.getElementById('app'); if (!app) return;
+      var fim = /end of input|Unexpected end|missing \}|unterminated/i.test(window.__erros.join(' '));
+      app.innerHTML = '<div style="max-width:680px;margin:24px auto;padding:16px 20px;border:2px solid #e52207;border-radius:8px;background:#fff;color:#333;font:15px/1.5 sans-serif">'
+        + '<b style="color:#e52207">O sistema encontrou um erro ao carregar.</b>'
+        + '<pre style="white-space:pre-wrap;background:#f3f3f3;padding:8px;border-radius:4px">' + window.__erros.join('\n').replace(/</g, '&lt;') + '</pre>'
+        + (fim ? '<p><b>O arquivo Index foi colado incompleto no Apps Script.</b> Abra o arquivo Index no editor, apague tudo, cole de novo o Index.html inteiro (a última linha tem que ser &lt;/html&gt;), salve e publique uma nova versão.</p>'
+               : '<p>Mande um print desta mensagem para quem instalou o sistema.</p>') + '</div>';
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mostrar); else mostrar();
+  });
+  // Script colado pela metade não roda e não gera erro: se o script principal não começou, avisa que o arquivo está incompleto.
+  window.addEventListener('load', function () {
+    if (window.__scriptOk || window.__erros.length) return;
+    var app = document.getElementById('app');
+    if (app) app.innerHTML = '<div style="max-width:680px;margin:24px auto;padding:16px 20px;border:2px solid #e52207;border-radius:8px;background:#fff;color:#333;font:15px/1.5 sans-serif">'
+      + '<b style="color:#e52207">O arquivo Index está incompleto no Apps Script.</b>'
+      + '<p>A colagem parou no meio do arquivo. No editor do Apps Script, abra o arquivo <b>Index</b>, apague tudo (Ctrl+A, Delete), cole de novo o <b>Index.html</b> inteiro e confira que a <b>última linha é &lt;/html&gt;</b>. Salve (Ctrl+S) e publique uma nova versão (Implantar → Gerenciar implantações → editar → Nova versão).</p></div>';
+  });
+  // Aviso se o carregamento demorar demais (sem erro aparente).
+  setTimeout(function () {
+    var app = document.getElementById('app');
+    if (app && /Carregando dados da planilha/.test(app.textContent) && !window.__erros.length) app.insertAdjacentHTML('beforeend',
+      '<p style="max-width:640px;margin:16px auto;color:#636363;font:14px sans-serif;text-align:center">Está demorando mais que o normal. Confira se o arquivo <b>Index</b> foi colado inteiro no Apps Script (a última linha é &lt;/html&gt;) e se a função <b>setup</b> foi executada. No computador, aperte F12 → aba Console e mande um print das mensagens em vermelho.</p>');
+  }, 20000);
   // Tema escolhido neste aparelho: claro (padrão) ou preto.
   try { document.documentElement.dataset.theme = localStorage.getItem('cia-tema') === 'dark' ? 'dark' : 'light'; } catch (e) { document.documentElement.dataset.theme = 'light'; }
 </script>
@@ -188,6 +217,7 @@ td.acts { white-space: nowrap; text-align: right; }
 .right { text-align: right; }
 .res h3 { display: flex; gap: 8px; align-items: center; }
 #print { display: none; }
+.anexo { font-size: 12px; font-weight: 600; text-decoration: none; border: 1px solid currentColor; border-radius: 100em; padding: 0 7px; }
 .campo-postos { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
 .form .campo-postos .req::after { content: " *"; color: var(--danger); }
 .postos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
@@ -262,6 +292,7 @@ td.acts { white-space: nowrap; text-align: right; }
 <div id="print"></div>
 
 <script>
+window.__scriptOk = true;
 // ============================================================ utilidades
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -558,7 +589,7 @@ function tabela(linhas, cols, acoes) {
   return `<div class="tw"><table><thead><tr>${cols.map(c => `<th class="${c.c || ''}">${esc(c.l)}</th>`).join('')}${acoes ? '<th></th>' : ''}</tr></thead><tbody>
     ${linhas.map(r => `<tr>${cols.map(c => `<td class="${c.c || ''}">${c.v(r)}</td>`).join('')}${acoes ? `<td class="acts">${acoes(r)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
 }
-const linkArq = u => u ? `<a href="${esc(u)}" target="_blank" title="Abrir arquivo">📎</a>` : '';
+const linkArq = u => u ? `<a href="${esc(u)}" target="_blank" title="Abrir anexo" class="anexo">anexo</a>` : '';
 const abas = (chave, lista) => `<div class="tabs">${lista.map(([k, l]) => `<button class="${(S.sub[chave] || lista[0][0]) === k ? 'on' : ''}" onclick="S.sub['${chave}']='${k}';render()">${esc(l)}</button>`).join('')}</div>`;
 const aba = (chave, padrao) => S.sub[chave] || padrao;
 const busca = (chave, ph) => `<input type="search" placeholder="${esc(ph || 'Buscar…')}" value="${esc(S.filtro[chave] || '')}" oninput="S.filtro['${chave}']=this.value;clearTimeout(window._bt);window._bt=setTimeout(()=>{render();const i=$('input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)">`;
