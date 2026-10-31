@@ -24,6 +24,7 @@ const TABELAS = {
   Config: ['chave', 'valor'],
   Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
   Acessos: ['email', 'nome', 'data', 'status'],
+  Locais: ['id', 'nome', 'ordem'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 

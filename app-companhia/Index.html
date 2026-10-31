@@ -205,6 +205,9 @@ td.acts { white-space: nowrap; text-align: right; }
 .tabs button:hover { color: var(--azul); background: var(--azul-claro); }
 .tabs button.on { color: var(--azul); border-bottom-color: var(--azul); }
 .empty { padding: 28px; text-align: center; color: var(--muted); }
+.ord-th { cursor: pointer; user-select: none; white-space: nowrap; }
+.ord-th .ord-ic { margin-left: 4px; font-size: 10px; opacity: .35; }
+.ord-th[aria-sort="ascending"] .ord-ic, .ord-th[aria-sort="descending"] .ord-ic, .ord-th:hover .ord-ic { opacity: 1; }
 .itens-caut { display: grid; gap: 8px; counter-reset: item; }
 .item-caut { display: grid; grid-template-columns: 26px 90px 1fr 1fr 36px; gap: 6px 10px; align-items: end; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; counter-increment: item; }
 .item-caut label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; font-weight: 600; margin: 0; }
@@ -428,7 +431,7 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => ['admin', 'editor'].includes(S.user?.perfil);
 const admin = () => S.user?.perfil === 'admin';
@@ -588,6 +591,9 @@ function campoHTML(c, v) {
   } else if (c.t === 'militares') {
     const sel = ids(val);
     input = `<div><input type="search" placeholder="Filtrar…" oninput="filtrarChecks(this)" style="margin-bottom:6px"><div class="checks" id="${id}">${militaresAtivos().map(m => `<label data-n="${esc(norm(nomeMil(m)))}"><input type="checkbox" value="${m.id}" ${sel.includes(m.id) ? 'checked' : ''}> ${esc(nomeMil(m))}</label>`).join('')}</div></div>`;
+  } else if (c.t === 'local') {
+    const l = nomesLocais(); if (val && !l.includes(val)) l.push(val);
+    input = `<select id="${id}" ${req} onchange="if(this.value==='${NOVO_LOCAL}')novoLocal(this)"><option value=""></option>${l.map(x => `<option ${x === val ? 'selected' : ''}>${esc(x)}</option>`).join('')}${pode() ? `<option value="${NOVO_LOCAL}">+ Adicionar local…</option>` : ''}</select>`;
   } else if (c.t === 'textarea') {
     input = `<textarea id="${id}" ${req}>${esc(val)}</textarea>`;
   } else if (c.t === 'file') {
@@ -651,9 +657,30 @@ function dialogo({ msg, campo, valor, ok = 'Confirmar' }) {
 const confirmar = msg => dialogo({ msg });
 
 /** Tabela genérica. cols: [{l, v: row => html, c: classe}] */
+/** Ordenação das listas: clicar no título da coluna ordena (de novo, inverte; terceira vez, volta à ordem padrão). */
+const textoCel = h => String(h ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+function valorOrd(t) {
+  let m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})/); if (m) return { d: m[3] + m[2] + m[1] };
+  m = t.match(/^-?[\d.]+(,\d+)?(?=\s|$)/); if (m) return { n: num(m[0].replace(/\./g, '').replace(',', '.')) };
+  return { t };
+}
+function compararOrd(a, b) {
+  if (a.d !== undefined && b.d !== undefined) return a.d.localeCompare(b.d);
+  if (a.n !== undefined && b.n !== undefined) return a.n - b.n;
+  const x = a.t ?? a.d ?? String(a.n), y = b.t ?? b.d ?? String(b.n);
+  return !x ? 1 : !y ? -1 : x.localeCompare(y, 'pt-BR', { numeric: true, sensitivity: 'base' });
+}
+function ordenar(th) {
+  S.ordem ||= {};
+  const k = th.dataset.k, i = +th.dataset.i, o = S.ordem[k];
+  S.ordem[k] = !o || o.i !== i ? { i, dir: 1 } : o.dir === 1 ? { i, dir: -1 } : null;
+  render();
+}
 function tabela(linhas, cols, acoes) {
   if (!linhas.length) return '<div class="tw"><div class="empty">Nenhum registro.</div></div>';
-  return `<div class="tw"><table><thead><tr>${cols.map(c => `<th class="${c.c || ''}">${esc(c.l)}</th>`).join('')}${acoes ? '<th></th>' : ''}</tr></thead><tbody>
+  const k = S.view + '|' + (S.sub[S.view] || '') + '|' + cols.map(c => c.l).join(','), o = (S.ordem || {})[k];
+  if (o && cols[o.i]) { const c = cols[o.i]; linhas = linhas.map(r => [r, valorOrd(textoCel(c.s ? c.s(r) : c.v(r)))]).sort((x, y) => compararOrd(x[1], y[1]) * o.dir).map(x => x[0]); }
+  return `<div class="tw"><table><thead><tr>${cols.map((c, i) => `<th class="${c.c || ''} ord-th" data-k="${esc(k)}" data-i="${i}" onclick="ordenar(this)" title="Ordenar por ${esc(c.l)}" aria-sort="${o && o.i === i ? (o.dir === 1 ? 'ascending' : 'descending') : 'none'}">${esc(c.l)}<span class="ord-ic">${o && o.i === i ? (o.dir === 1 ? '▲' : '▼') : '↕'}</span></th>`).join('')}${acoes ? '<th></th>' : ''}</tr></thead><tbody>
     ${linhas.map(r => `<tr>${cols.map(c => `<td class="${c.c || ''}">${c.v(r)}</td>`).join('')}${acoes ? `<td class="acts">${acoes(r)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
 }
 const linkArq = u => u ? `<a href="${esc(u)}" target="_blank" title="Abrir anexo" class="anexo">anexo</a>` : '';
@@ -1015,7 +1042,7 @@ const SUBMENU = {
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
-  material: [{ l: 'Inventário e relação carga', aba: 'inv' }, { l: 'Cautelas', aba: 'caut' }, { l: 'Pedidos de material', aba: 'ped' }, { l: 'Importar planilha', aba: 'imp', filtro: ['impMat', 'planilha'], editor: true }, { l: 'Importar relação do SISCOFIS (PDF)', aba: 'imp', filtro: ['impMat', 'siscofis'], editor: true }, { l: 'Importar PDF de pedido', aba: 'imp', filtro: ['impMat', 'pedido'], editor: true }],
+  material: [{ l: 'Inventário e relação carga', aba: 'inv' }, { l: 'Cautelas', aba: 'caut' }, { l: 'Pedidos de material', aba: 'ped' }, { l: 'Locais (instalações)', aba: 'locais' }, { l: 'Importar planilha', aba: 'imp', filtro: ['impMat', 'planilha'], editor: true }, { l: 'Importar relação do SISCOFIS (PDF)', aba: 'imp', filtro: ['impMat', 'siscofis'], editor: true }, { l: 'Importar PDF de pedido', aba: 'imp', filtro: ['impMat', 'pedido'], editor: true }],
   arquivo: [{ l: 'Todos os documentos', filtro: ['docTipo', ''] }, ...TIPOS_DOC_MENU()],
   config: [{ l: 'Tipos de serviço', aba: 'tipos' }, { l: 'Feriados', aba: 'feriados' }, { l: 'Documentos (cabeçalho e assinatura)', aba: 'geral' }, { l: 'Usuários', aba: 'usuarios', admin: true }, { l: 'Backup', aba: 'backup' }]
 };
@@ -1850,7 +1877,7 @@ const CAMPOS_MAT = [
   { k: 'unidade', l: 'Unidade', padrao: 'un' },
   { k: 'estoqueMinimo', l: 'Estoque mínimo (para o pedido de reposição)', t: 'number' },
   { k: 'valor', l: 'Valor unitário (R$)', t: 'number' },
-  { k: 'localizacao', l: 'Dependência / local' },
+  { k: 'localizacao', l: 'Dependência / local', t: 'local' },
   { k: 'estado', l: 'Estado', t: 'select', o: ESTADOS, padrao: 'Bom' },
   { k: 'ultimaConferencia', l: 'Última conferência', t: 'date' },
   { k: 'patrimonio', l: 'Nr patrimoniais (separados por vírgula)', t: 'textarea' },
@@ -1919,15 +1946,93 @@ function vMaterial() {
       { l: 'Itens', v: p => { const it = itensPedido(p); return `${it.length} item(ns)<div class="muted">${esc(it.slice(0, 3).map(i => i.esp).join(', '))}${it.length > 3 ? '…' : ''}</div>`; } },
       { l: 'Situação', v: p => `<span class="tag ${/^(Recebido|Atendido)$/.test(p.status) ? 'ok' : p.status === 'Negado' ? 'dng' : /Autorizado|parcial/.test(p.status) ? 'info' : 'warn'}">${esc(p.status || (rec ? 'Pendente' : 'Rascunho'))}</span>` }
     ], p => `${pode() && rec && !/^(Atendido|Negado)$/.test(p.status) ? `<button class="btn sm pri" onclick="atenderPedido('${p.id}')">Atender</button> ` : ''}${pode() && !rec && !/^(Recebido|Negado)$/.test(p.status) ? `<button class="btn sm pri" onclick="entradaPedido('${p.id}')">Dar entrada</button> ` : ''}${pode() ? `<button class="btn sm" onclick="editarPedido('${p.id}')">Abrir</button> ` : ''}${botoesDoc('pedido', p.id)}`)}`;
+  } else if (t === 'locais') {
+    corpo = gerenciarLocais();
   } else {
     const modo = S.filtro.impMat || 'planilha';
     corpo = `<div class="tabs" style="margin-top:-6px">${[['planilha', 'Planilha (Excel, CSV ou Google)'], ['siscofis', 'Relação do SISCOFIS (PDF)'], ['pedido', 'Pedido de material (PDF)']]
       .map(([k, l]) => `<button class="${modo === k ? 'on' : ''}" onclick="S.filtro.impMat='${k}';render()">${l}</button>`).join('')}</div>` + (modo === 'planilha' ? vImportar('Material') : vImportarPdf(modo));
   }
   return `<h2>Material</h2><p class="sub">Material carga da subunidade, cautelas, pedidos de material e relação carga, com anexos no Google Drive.</p>
-  ${abas('material', [['inv', 'Inventário'], ['caut', 'Cautelas'], ['ped', 'Pedidos de material'], ...(pode() ? [['imp', 'Importar']] : [])])}${corpo}`;
+  ${abas('material', [['inv', 'Inventário'], ['caut', 'Cautelas'], ['ped', 'Pedidos de material'], ['locais', 'Locais'], ...(pode() ? [['imp', 'Importar']] : [])])}${corpo}`;
 }
 const dependencias = () => [...new Set(S.db.Material.map(m => m.localizacao).filter(Boolean))].sort();
+// ---------- instalações da Cia (locais do material): lista própria, que editores também podem aumentar
+const LOCAIS_PADRAO = ['Enc Mat', 'Furriel', 'Sargenteação', 'Reserva de armamento', 'Depósito da 1ª Cia', 'Sala do Cmt Cia', 'Alojamento', 'Pel Sup'];
+const NOVO_LOCAL = '__novo_local';
+/** Locais cadastrados (na ordem) mais os que já aparecem no inventário. */
+const nomesLocais = () => [...new Set([...((S.db.Locais || []).length ? S.db.Locais : LOCAIS_PADRAO.map((nome, i) => ({ nome, ordem: i + 1 }))).slice().sort((a, b) => num(a.ordem) - num(b.ordem) || a.nome.localeCompare(b.nome)).map(l => l.nome), ...dependencias()])];
+async function novoLocal(sel) {
+  const nome = ((await dialogo({ msg: 'Nome do novo local (instalação da Cia):', campo: 'text', ok: 'Adicionar' })) || '').trim();
+  if (!nome) { sel.value = ''; return; }
+  const igual = nomesLocais().find(x => norm(x) === norm(nome));
+  if (!igual) await salvar('Locais', comPadrao({ id: uid(), nome }));
+  const v = igual || nome;
+  if (![...sel.options].some(o => o.value === v)) sel.insertAdjacentHTML('beforeend', `<option>${esc(v)}</option>`), sel.appendChild(sel.querySelector(`option[value="${NOVO_LOCAL}"]`));
+  sel.value = v; toast(igual ? `"${igual}" já existia e foi escolhido.` : `Local "${nome}" adicionado.`);
+}
+function gerenciarLocais() {
+  const usados = l => S.db.Material.filter(m => m.localizacao === l.nome).length;
+  if (!(S.db.Locais || []).length && pode()) return `<div class="card"><h3 style="margin-top:0">Locais do material (instalações da Cia)</h3><p>Por enquanto o sistema usa a lista padrão: <b>${LOCAIS_PADRAO.join(', ')}</b>.</p><button class="btn pri" onclick="locaisPadrao()">Começar a editar a lista</button></div>`;
+  const lista = (S.db.Locais || []).slice().sort((a, b) => num(a.ordem) - num(b.ordem));
+  return `<div class="card"><h3 style="margin-top:0">Locais do material (instalações da Cia)</h3>
+    <p class="muted" style="margin-top:0">Aparecem para escolher no cadastro do material, nos pedidos e nas cautelas. Também dá para adicionar na hora, pela opção "+ Adicionar local…".</p>
+    ${tabela(lista, [{ l: 'Local', v: l => `<b>${esc(l.nome)}</b>` }, { l: 'Itens no inventário', v: l => usados(l), c: 'num' }],
+      pode() ? l => `<button class="btn sm" onclick="moverLocal('${l.id}',-1)" title="Subir" aria-label="Subir">▲</button> <button class="btn sm" onclick="moverLocal('${l.id}',1)" title="Descer" aria-label="Descer">▼</button> <button class="btn sm" onclick="renomearLocal('${l.id}')">Renomear</button> <button class="btn sm dng" onclick="excluir('Locais','${l.id}')">Excluir</button>` : null)}
+    ${pode() ? `<div class="bar" style="margin-top:8px"><button class="btn sm pri" onclick="maisLocal()">+ Local</button></div>` : ''}</div>`;
+}
+/** Primeiro local criado: grava junto a lista padrão, para ela não sumir. */
+function comPadrao(novo) {
+  const base = (S.db.Locais || []).length ? [] : LOCAIS_PADRAO.filter(n => norm(n) !== norm(novo.nome)).map((nome, i) => ({ id: uid(), nome, ordem: String(i + 1) }));
+  return [...base, { ...novo, ordem: String((S.db.Locais || []).length + base.length + 1) }];
+}
+async function maisLocal() {
+  const nome = ((await dialogo({ msg: 'Nome do novo local (instalação da Cia):', campo: 'text', ok: 'Adicionar' })) || '').trim();
+  if (!nome) return;
+  if (nomesLocais().some(x => norm(x) === norm(nome)) && (S.db.Locais || []).some(l => norm(l.nome) === norm(nome))) return toast('Esse local já existe.', true);
+  await salvar('Locais', comPadrao({ id: uid(), nome })); render();
+}
+async function locaisPadrao() { await salvar('Locais', LOCAIS_PADRAO.filter(n => !(S.db.Locais || []).some(l => norm(l.nome) === norm(n))).map((nome, i) => ({ id: uid(), nome, ordem: String(i + 1) }))); render(); }
+/** Ordem em que os locais aparecem para escolher. */
+async function moverLocal(id, d) {
+  const l = S.db.Locais.slice().sort((a, b) => num(a.ordem) - num(b.ordem)), i = l.findIndex(x => x.id === id), j = i + d;
+  if (j < 0 || j >= l.length) return;
+  [l[i], l[j]] = [l[j], l[i]];
+  await salvar('Locais', l.map((x, k) => ({ ...x, ordem: String(k + 1) }))); render();
+}
+async function renomearLocal(id) {
+  const l = S.db.Locais.find(x => x.id === id), nome = ((await dialogo({ msg: `Novo nome para "${l.nome}" (os materiais desse local mudam junto):`, campo: 'text', valor: l.nome, ok: 'Renomear' })) || '').trim();
+  if (!nome || nome === l.nome) return;
+  const mats = S.db.Material.filter(m => m.localizacao === l.nome).map(m => ({ ...m, localizacao: nome }));
+  await salvar('Locais', [{ ...l, nome }]); if (mats.length) await salvar('Material', mats);
+  toast('Local renomeado.'); render();
+}
+/** Nome para comparar materiais: sem acento, maiúscula, espaço e plural simples ("Vassouras" = "vassoura"). */
+const chaveMat = s => soAscii(s).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map(w => w.length > 3 ? w.replace(/(oes|aes|ais|eis|res|zes|ns|s)$/, x => ({ oes: 'ao', aes: 'ao', ais: 'al', eis: 'el', res: 'r', zes: 'z', ns: 'm', s: '' })[x]) : w).join(' ');
+const materialParecido = (desc, id) => S.db.Material.find(m => m.id !== id && chaveMat(m.descricao) === chaveMat(desc));
+/** Cadastro rápido de material numa janela por cima (ex.: no meio de um pedido). Devolve o material criado ou o já existente. */
+function materialRapido(desc) {
+  return new Promise(res => {
+    const campos = CAMPOS_MAT.filter(c => !['patrimonio', 'ultimaConferencia', 'arquivoUrl', 'nrFicha', 'codMat', 'contaContabil', 'acervo', 'valor'].includes(c.k)).map(c => ({ ...c, k: 'nm_' + c.k, req: c.k === 'descricao' }));
+    const val = { nm_descricao: desc, nm_tipoMaterial: 'Consumo', nm_categoria: 'Intendência', nm_quantidade: '0', nm_unidade: 'un', nm_estado: 'Bom', nm_localizacao: cfg('dependencia') };
+    const el = document.createElement('div'); el.id = 'modal2'; document.body.appendChild(el);
+    el.innerHTML = `<div class="modal-bg" style="z-index:65"><form class="modal" id="frm2" style="max-width:640px"><h3>Cadastrar material</h3>
+      <p class="muted" style="margin-top:0">O item entra no cadastro de material (com quantidade 0 se ainda não tem no estoque) e fica disponível nos próximos pedidos, sem duplicar.</p>
+      <div class="form">${campos.map(c => campoHTML(c, val[c.k])).join('')}</div>
+      <div class="acts"><button type="button" class="btn" id="nm_nao">Cancelar</button><button class="btn pri">Cadastrar</button></div></form></div>`;
+    const fim = v => { el.remove(); res(v); };
+    $('#nm_nao').onclick = () => fim(null);
+    $('#f_nm_descricao').focus();
+    $('#frm2').onsubmit = async ev => {
+      ev.preventDefault();
+      const o = Object.fromEntries(campos.map(c => [c.k.slice(3), $('#f_' + c.k).value.trim()]));
+      if (!o.descricao) return toast('Escreva o nome do material.', true);
+      const igual = materialParecido(o.descricao);
+      if (igual) { toast(`Já existe "${igual.descricao}" no cadastro: foi usado esse.`); return fim(igual); }
+      try { const [m] = await salvar('Material', [{ ...o, ultimaConferencia: hoje() }]); fim(m); } catch (e) { }
+    };
+  });
+}
 function tabelaCautelas(lista) {
   const d = hoje();
   return tabela(lista, [
@@ -1939,7 +2044,12 @@ function tabelaCautelas(lista) {
   ], g => `${botoesDoc('cautela', g.numero, 'Cautela')}${pode() && g.aberta ? ` <button class="btn sm" onclick="devolver('${esc(g.numero)}')">Devolver</button> <button class="btn sm" onclick="editarCautela('${esc(g.numero)}')">Editar</button>` : ''}`);
 }
 function editarMat(id) {
-  abrirForm({ titulo: id ? 'Editar material' : 'Novo material', campos: CAMPOS_MAT, valores: id ? MAT[id] : {}, aoSalvar: o => salvar('Material', [o]),
+  abrirForm({ titulo: id ? 'Editar material' : 'Novo material', campos: CAMPOS_MAT, valores: id ? MAT[id] : { localizacao: cfg('dependencia') },
+    aoSalvar: async o => {
+      const igual = materialParecido(o.descricao, id);
+      if (igual && !await confirmar(`Já existe "${igual.descricao}" (${igual.quantidade} ${igual.unidade || ''}${igual.localizacao ? ', ' + igual.localizacao : ''}). Para não duplicar, o melhor é editar o que já existe. Cadastrar este mesmo assim?`)) throw new Error('Cadastro cancelado: use o material que já existe.');
+      return salvar('Material', [o]);
+    },
     extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Material','${id}',true)">Excluir material</button></div>` : '' });
 }
 async function conferir(id) { await salvar('Material', [{ ...MAT[id], ultimaConferencia: hoje() }]); toast('Conferência registrada.'); render(); }
@@ -2092,7 +2202,7 @@ const itensPedido = p => { try { return JSON.parse(p.itens || '[]'); } catch (e)
 const sentidoPedido = p => p.sentido === 'Recebido' ? 'Recebido' : 'Enviado';
 const STATUS_PED = { Recebido: ['Pendente', 'Atendido parcialmente', 'Atendido', 'Negado'], Enviado: ['Rascunho', 'Enviado', 'Autorizado', 'Recebido parcialmente', 'Recebido', 'Negado'] };
 /** Material do inventário com o mesmo nome do item do pedido. */
-const materialDoItem = it => S.db.Material.find(m => norm(m.descricao) === norm(it.esp));
+const materialDoItem = it => (it.materialId && MAT[it.materialId]) || S.db.Material.find(m => chaveMat(m.descricao) === chaveMat(it.esp));
 function novoPedido(sentido, extra = {}) {
   const daSentido = S.db.Pedidos.filter(x => sentidoPedido(x) === sentido).map(x => x.numero);
   return sentido === 'Recebido'
@@ -2104,7 +2214,8 @@ function editarPedido(id, sentido = 'Enviado', base) {
   sentido = sentidoPedido(p);
   const fracoes = [...new Set(S.db.Pedidos.filter(x => sentidoPedido(x) === 'Recebido').map(x => x.de).concat(S.db.Militares.map(m => m.pelotao)).filter(Boolean))].sort();
   const itens = itensPedido(p); if (!itens.length) itens.push({ esp: '', qtd: '', un: 'Unidades', obs: '' });
-  const linha = (it, i) => `<tr data-i="${i}"><td><input type="text" id="pi_esp_${i}" value="${esc(it.esp)}" list="lista_mat" aria-label="Especificação"></td>
+  itens.forEach(it => { const m = !it.materialId && it.esp && materialDoItem(it); if (m) it.materialId = m.id; });
+  const linha = (it, i) => `<tr data-i="${i}"><td><input type="text" id="pi_esp_${i}" value="${esc(it.materialId && MAT[it.materialId] ? rotuloPed(MAT[it.materialId]) : it.esp)}" list="lista_mat" aria-label="Especificação" autocomplete="off" placeholder="Digite para buscar no cadastro de material" oninput="itemPedido(${i})" onchange="itemPedido(${i},true)"><input type="hidden" id="pi_mat_${i}" value="${esc(it.materialId || '')}"><small class="muted" id="pi_info_${i}"></small></td>
     <td style="width:11%"><input type="number" id="pi_qtd_${i}" value="${esc(it.qtd)}" min="0" step="any" aria-label="Quantidade"></td>
     <td style="width:16%"><input type="text" id="pi_un_${i}" value="${esc(it.un)}" aria-label="Unidade"></td>
     <td style="width:20%"><input type="text" id="pi_obs_${i}" value="${esc(it.obs)}" aria-label="Obs"></td>
@@ -2116,19 +2227,23 @@ function editarPedido(id, sentido = 'Enviado', base) {
       ${campoHTML({ k: 'de', l: sentido === 'Recebido' ? 'Do (pelotão / seção que pede)' : 'Do (quem pede)', req: true }, p.de).replace('id="f_de"', 'id="f_de" list="lista_fracoes"')}${campoHTML({ k: 'para', l: 'Ao (quem autoriza)', req: true }, p.para)}
       ${campoHTML({ k: 'status', l: 'Situação', t: 'select', o: STATUS_PED[sentido], vazio: false }, p.status || STATUS_PED[sentido][0])}</div>
     <datalist id="lista_fracoes">${(sentido === 'Recebido' ? fracoes : []).map(f => `<option value="${esc(f)}">`).join('')}</datalist>
-    <datalist id="lista_mat">${[...new Set(S.db.Material.map(m => m.descricao))].map(d => `<option value="${esc(d)}">`).join('')}</datalist>
-    <h3 style="font-size:15px">Itens</h3>
+    <datalist id="lista_mat">${S.db.Material.slice().sort((a, b) => a.descricao.localeCompare(b.descricao)).map(m => `<option value="${esc(rotuloPed(m))}">`).join('')}</datalist>
+    <h3 style="font-size:15px;margin-bottom:2px">Itens</h3><p class="muted" style="margin:0 0 6px">Escolha os itens do cadastro de material, para não ter nomes repetidos (ex.: "Vassoura" e "Vassouras"). Item novo: escreva o nome e clique em <b>Cadastrar</b>.</p>
     <div class="tw"><table><thead><tr><th>Especificação</th><th>Quantidade</th><th>Unidade</th><th>Obs</th><th></th></tr></thead><tbody id="itens">${itens.map(linha).join('')}</tbody></table></div>
     <div class="bar" style="margin-top:8px"><button type="button" class="btn sm" id="maisItem">+ Item</button></div>
     <div class="form">${campoHTML({ k: 'obs', l: 'Observações', full: true }, p.obs)}${campoHTML({ k: 'arquivoUrl', l: 'Pedido assinado (digitalizado)', t: 'file', full: true }, p.arquivoUrl)}</div>
     <div class="acts">${id ? `<button type="button" class="btn dng" onclick="excluir('Pedidos','${id}',true)">Excluir</button><span class="grow"></span>` : ''}<button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar pedido</button></div></form></div>`;
-  $('#maisItem').onclick = () => $('#itens').insertAdjacentHTML('beforeend', linha({ un: 'Unidades' }, n++));
+  $('#maisItem').onclick = () => { $('#itens').insertAdjacentHTML('beforeend', linha({ un: 'Unidades' }, n)); $('#pi_esp_' + n++).focus(); };
+  itens.forEach((_, i) => itemPedido(i));
   $('#frm').onsubmit = async ev => {
     ev.preventDefault();
     const btn = $('#frm .btn.pri'); btn.disabled = true;
     try {
-      const it = $$('#itens tr').map(tr => { const i = tr.dataset.i; return { ...(itens[i] || {}), esp: $('#pi_esp_' + i).value.trim(), qtd: $('#pi_qtd_' + i).value, un: $('#pi_un_' + i).value.trim(), obs: $('#pi_obs_' + i).value.trim() }; }).filter(x => x.esp);
+      const it = $$('#itens tr').map(tr => { const i = tr.dataset.i, mid = $('#pi_mat_' + i).value, m = MAT[mid];
+        return { ...(itens[i] || {}), materialId: m ? mid : '', esp: m ? m.descricao : $('#pi_esp_' + i).value.trim(), qtd: $('#pi_qtd_' + i).value, un: $('#pi_un_' + i).value.trim(), obs: $('#pi_obs_' + i).value.trim() }; }).filter(x => x.esp);
       if (!it.length) throw new Error('Inclua pelo menos um item.');
+      const soltos = it.filter(x => !x.materialId);
+      if (sentido === 'Enviado' && soltos.length) throw new Error(`Cadastre no material antes de pedir ao S4: ${soltos.map(x => x.esp).join(', ')}. Use o botão Cadastrar ao lado do item.`);
       const arquivo = await enviarArquivo($('#f_arquivoUrl').files[0]);
       const o = { ...p, sentido, numero: $('#f_numero').value.trim(), data: $('#f_data').value, de: $('#f_de').value.trim(), para: $('#f_para').value.trim(), status: $('#f_status').value, obs: $('#f_obs').value.trim(), itens: JSON.stringify(it), autor: p.autor || S.user.email };
       if (arquivo) o.arquivoUrl = arquivo;
@@ -2180,7 +2295,7 @@ function entradaPedido(id) {
     <div class="tw"><table><thead><tr><th>Item</th><th>Pedido</th><th>No inventário</th><th>Chegou</th></tr></thead><tbody>${itens.map((it, i) => { const m = materialDoItem(it), falta = Math.max(0, num(it.qtd) - num(it.rec));
       return `<tr><td>${esc(it.esp)}</td><td class="num">${esc(it.qtd)} ${esc(it.un || '')}${num(it.rec) ? `<div class="muted">já chegou ${esc(it.rec)}</div>` : ''}</td><td>${m ? `${esc(m.quantidade)} ${esc(m.unidade || '')}` : '<span class="tag ok">novo</span>'}</td>
       <td><input type="number" id="en_${i}" value="${falta}" min="0" step="any" style="width:90px" aria-label="Chegou"></td></tr>`; }).join('')}</tbody></table></div>
-    <div class="form">${campoHTML({ k: 'en_dep', l: 'Dependência dos itens novos' }, cfg('dependencia'))}</div>
+    <div class="form">${campoHTML({ k: 'en_dep', l: 'Local dos itens novos', t: 'local' }, cfg('dependencia'))}</div>
     <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Dar entrada no estoque</button></div></form></div>`;
   $('#frm').onsubmit = async ev => {
     ev.preventDefault();
@@ -2215,6 +2330,21 @@ function pedidoReposicao() {
   const sug = sugestoesReposicao();
   if (!sug.length) toast('Nada a repor agora: nenhum pedido dos Pel/Seç com falta e nenhum material abaixo do estoque mínimo. O pedido abre em branco.');
   editarPedido(null, 'Enviado', novoPedido('Enviado', { obs: sug.length ? 'Reposição de estoque' : '', itens: JSON.stringify(sug.map(x => ({ esp: x.esp, qtd: String(x.qtd), un: x.un || 'Unidades', obs: x.motivos.join('; ').slice(0, 120) }))) }));
+}
+const rotuloPed = m => `${m.descricao} · ${m.unidade || 'un'}${m.localizacao ? ' · ' + m.localizacao : ''} · tem ${m.quantidade || 0}`;
+/** Item do pedido: liga ao cadastro de material quando bate com a sugestão; senão oferece cadastrar. */
+function itemPedido(i, saiu) {
+  const inp = $('#pi_esp_' + i); if (!inp) return;
+  const v = inp.value.trim(), m = S.db.Material.find(x => rotuloPed(x) === v) || (saiu && v ? materialParecido(v) : null);
+  $('#pi_mat_' + i).value = m ? m.id : '';
+  if (m) { if (inp.value !== rotuloPed(m)) inp.value = rotuloPed(m); const un = $('#pi_un_' + i); if (!un.value || un.value === 'Unidades') un.value = m.unidade || un.value; }
+  $('#pi_info_' + i).innerHTML = m ? '' : v ? `Não está no cadastro. <button type="button" class="btn sm" onclick="cadastrarItemPedido(${i})">Cadastrar</button>` : '';
+}
+async function cadastrarItemPedido(i) {
+  const m = await materialRapido($('#pi_esp_' + i).value.trim());
+  if (!m) return;
+  $('#lista_mat').insertAdjacentHTML('beforeend', `<option value="${esc(rotuloPed(m))}">`);
+  $('#pi_esp_' + i).value = rotuloPed(m); itemPedido(i); $('#pi_qtd_' + i).focus();
 }
 DOCS.pedido = id => {
   const p = S.db.Pedidos.find(x => x.id === id), it = itensPedido(p);
@@ -2910,6 +3040,7 @@ function semente() {
     Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, { email: 'sgte.exemplo@exemplo.com', nome: '1º Sgt Nunes', perfil: 'editor' }],
     Acessos: [{ email: 'sd.gama.exemplo@exemplo.com', nome: 'Sd EP Gama', data: `${d} 07:42`, status: 'Pendente' }],
     Documentos: [],
+    Locais: [],
     Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
   };
   // Gera um mês de escala para a demonstração já abrir com dados.
