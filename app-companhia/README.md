@@ -81,7 +81,7 @@ Se a pessoa ainda não tem acesso nem à planilha, o botão "Pedir acesso" não 
 
 ## Primeiros passos dentro do sistema
 
-1. **Configurações → Documentos:** confira o cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / 11º DEPÓSITO DE SUPRIMENTO / 1ª COMPANHIA), acrescente a linha do escalão superior se a OM usa, e preencha o nome do Cmt Cia, o setor da cautela, as assinaturas e o detentor do material carga. O Brasão da República já vem como padrão.
+1. **Configurações → Documentos:** confira o cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / 11º DEPÓSITO DE SUPRIMENTO / 1ª COMPANHIA), acrescente a linha do escalão superior se a OM usa, e preencha o nome do Cmt Cia, o setor da cautela, as assinaturas e o detentor do material carga. O Brasão da República já vem como padrão nos documentos, e o **distintivo do 11º D Sup** aparece no topo do sistema. Os dois podem ser trocados ali mesmo.
 2. **Configurações → Feriados:** "Incluir feriados nacionais do ano" e acrescente os locais.
 3. **Configurações → Tipos de serviço:** ajuste os serviços (vêm Adj Of Dia, Cmt Gda, Cb Gda e Sd Gda como externos; Cb Dia, Plantão e Permanência como internos), os dias de cada um e quem concorre.
 4. **Efetivo → Importar planilha:** primeiro o **tripão**, depois o **plano de férias**. Preencha a **antiguidade** (1 = mais antigo) para o desempate da escala.
