@@ -13,7 +13,7 @@ const TABELAS = {
     'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo'],
   Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
   TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico', 'qtd', 'folga', 'contagem'],
-  Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs'],
+  Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs', 'troca', 'trocaMotivo'],
   Feriados: ['data', 'descricao'],
   Missoes: ['id', 'titulo', 'tipo', 'local', 'inicio', 'fim', 'horario', 'responsavelId', 'militaresIds', 'viaturas', 'material', 'descricao', 'status', 'arquivoUrl'],
   Aditamentos: ['id', 'numero', 'data', 'biNumero', 'dataServico', 'parte1', 'parte2', 'parte3', 'parte4', 'status', 'docUrl', 'pdfUrl', 'autor', 'servicoAte', 'servicos'],
