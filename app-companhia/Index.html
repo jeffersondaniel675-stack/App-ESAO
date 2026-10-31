@@ -205,11 +205,26 @@ td.acts { white-space: nowrap; text-align: right; }
 .tabs button:hover { color: var(--azul); background: var(--azul-claro); }
 .tabs button.on { color: var(--azul); border-bottom-color: var(--azul); }
 .empty { padding: 28px; text-align: center; color: var(--muted); }
+.itens-caut { display: grid; gap: 8px; counter-reset: item; }
+.item-caut { display: grid; grid-template-columns: 26px 90px 1fr 1fr 36px; gap: 6px 10px; align-items: end; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; counter-increment: item; }
+.item-caut label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; font-weight: 600; margin: 0; }
+.item-caut input { width: 100%; }
+.item-caut .ord { grid-row: 1 / 3; align-self: start; padding-top: 24px; font-weight: 700; color: var(--muted); }
+.item-caut .ord::before { content: counter(item, decimal-leading-zero); }
+.item-caut .ic-esp { grid-column: 2 / 6; }
+.item-caut .ic-x { grid-column: 5; grid-row: 2; height: 40px; }
+.item-caut .ic-info { grid-column: 2 / 6; font-size: 12px; }
+.item-caut .ic-info:empty { display: none; }
+@media (max-width: 600px) { .item-caut { grid-template-columns: 22px 70px 1fr 36px; } .item-caut .ic-esp, .item-caut .ic-info { grid-column: 2 / 5; } .item-caut .ic-dest { grid-column: 2 / 4; } .item-caut .ic-x { grid-column: 4; grid-row: auto; } }
 .escala td { padding: 4px 6px; }
 .escala td.dia { white-space: nowrap; font-variant-numeric: tabular-nums; padding-left: 12px; }
 .escala tr.v td.dia { color: var(--vermelha); font-weight: 700; }
 .escala tr.hoje td { background: color-mix(in srgb, var(--ouro) 18%, transparent); }
-.escala select { height: 34px; padding: 0 6px; font-size: 13.5px; min-width: 128px; }
+.escala select { height: 34px; padding: 0 6px; font-size: 13.5px; min-width: 150px; }
+fieldset.pm { border: 1px solid var(--border); border-radius: 6px; margin: 12px 0 0; padding: 8px 12px 10px; }
+fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
+.pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .escala td { position: relative; }
 .escala .vaga + .vaga { margin-top: 3px; }
 .escala select.branco { color: var(--muted, #888); font-style: italic; }
@@ -438,8 +453,8 @@ const TIPOS_PADRAO = [
   { id: 'adj', nome: 'Adjunto', postos: '1º Sgt,2º Sgt', ordem: 2, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
   { id: 'sgt-dia', nome: 'Sargento de Dia', postos: '3º Sgt', ordem: 3, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1 },
   { id: 'cmt-gda', nome: 'Comandante da Guarda', postos: '3º Sgt', ordem: 4, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
-  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
-  { id: 'cb-dia', nome: 'Cabo de Dia', postos: 'Cb', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Cabos' },
+  { id: 'cb-dia', nome: 'Cabo de Dia', postos: 'Cb', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Cabos' },
   { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' },
   { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' }
 ];
@@ -510,17 +525,17 @@ function calcFolga(militarId, tipoId, cor, iso, entradas) {
  * o militar apto e disponível com maior folga na cor do dia. Empate: o mais moderno.
  * Regras: não escala impedido/em missão, nem em dois serviços no mesmo dia, nem em dias seguidos.
  */
-function gerarEscala(inicio, fim, existentes) {
+function gerarEscala(inicio, fim, existentes, filtro = {}) {
   const entradas = existentes.slice();
   const ocupado = new Set(entradas.map(e => e.militarId + '|' + e.data));
   const novos = [], faltas = [];
   for (let d = inicio; d <= fim; d = addDias(d, 1)) {
     const cor = corDoDia(d);
     for (const tipo of tiposAtivos()) {
-      if (tipo.automatico === 'Não' || !aplica(tipo, d)) continue;
+      if (tipo.automatico === 'Não' || !aplica(tipo, d) || (filtro.tipos && !filtro.tipos.includes(tipo.id))) continue;
       // vagas já lançadas (com militar ou em branco) contam como preenchidas
       for (let k = entradas.filter(e => e.data === d && e.tipoId === tipo.id).length; k < qtdTipo(tipo); k++) {
-        const cands = militaresAtivos().filter(m => aptoPara(m, tipo)
+        const cands = militaresAtivos().filter(m => aptoPara(m, tipo) && (!filtro.postos || filtro.postos.includes(m.postoGrad))
           && situacao(m.id, d).tipo === 'pronto'
           && !ocupado.has(m.id + '|' + d) && !ocupado.has(m.id + '|' + addDias(d, -1)) && !ocupado.has(m.id + '|' + addDias(d, 1)));
         if (!cands.length) { faltas.push(`${fmt(d)} – ${tipo.nome}`); break; }
@@ -1393,13 +1408,36 @@ async function trocarServico(data, tipoId, k, valor) {
   } catch (err) { render(); }
 }
 function maisVaga(data, tipoId) { S.vagaExtra ||= {}; const c = data + '|' + tipoId; S.vagaExtra[c] = (S.vagaExtra[c] || 0) + 1; render(); }
-async function gerarMes() {
-  const dias = diasDoMes(S.mes);
-  const { novos, faltas } = gerarEscala(dias[0], dias[dias.length - 1], S.db.Escala);
-  if (!novos.length) return toast(faltas.length ? 'Sem militares disponíveis para: ' + faltas.slice(0, 3).join(', ') : 'O mês já está completo.', !!faltas.length);
-  await salvar('Escala', novos);
-  toast(`${novos.length} serviço(s) gerado(s).` + (faltas.length ? ` ${faltas.length} sem militar disponível.` : ''));
-  render();
+/** Pré-montagem: escolhe o período, os serviços e os postos/graduações; só preenche vagas vazias. */
+function gerarMes() {
+  const dias = diasDoMes(S.mes), tipos = tiposAtivos().filter(t => t.automatico !== 'Não');
+  const postos = POSTOS.filter(pg => tipos.some(t => ids(t.postos).includes(pg)));
+  const qtd = pg => militaresAtivos().filter(m => m.postoGrad === pg).length;
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:640px">
+    <h3>Pré-montar a escala pela folga</h3>
+    <p class="muted" style="margin-top:0">Preenche só as vagas vazias, pelo quadro de folga (maior folga na cor do dia; empate: o mais moderno). O que você já lançou e as vagas <i>em branco</i> ficam como estão.</p>
+    <div class="form">${campoHTML({ k: 'pm_ini', l: 'De', t: 'date', req: true }, dias[0])}${campoHTML({ k: 'pm_fim', l: 'Até', t: 'date', req: true }, dias[dias.length - 1])}</div>
+    <fieldset class="pm"><legend>Postos e graduações</legend><div class="pm-l">${postos.map(pg => `<label><input type="checkbox" name="pm_pg" value="${esc(pg)}" checked onchange="pmSincronizar()"> ${esc(pg)} <span class="muted">(${qtd(pg)})</span></label>`).join('')}</div></fieldset>
+    <fieldset class="pm"><legend>Serviços</legend><div class="pm-l">${tipos.map(t => `<label><input type="checkbox" name="pm_tp" value="${t.id}" checked> ${esc(t.nome)} <span class="muted">${esc(ids(t.postos).join(', '))}</span></label>`).join('')}</div></fieldset>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Pré-montar</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const ini = $('#f_pm_ini').value, fim = $('#f_pm_fim').value;
+    const pgs = $$('input[name=pm_pg]:checked').map(x => x.value), tps = $$('input[name=pm_tp]:checked').map(x => x.value);
+    if (!ini || !fim || fim < ini) return toast('Confira o período.', true);
+    if (!pgs.length || !tps.length) return toast('Marque pelo menos um posto/graduação e um serviço.', true);
+    const { novos, faltas } = gerarEscala(ini, fim, S.db.Escala, { tipos: tps, postos: pgs });
+    if (!novos.length) return toast(faltas.length ? 'Sem militares disponíveis para: ' + faltas.slice(0, 3).join(', ') : 'Não há vagas vazias para esses serviços no período.', !!faltas.length);
+    fecharModal();
+    await salvar('Escala', novos);
+    toast(`${novos.length} serviço(s) pré-montado(s).` + (faltas.length ? ` ${faltas.length} vaga(s) sem militar disponível (folga de dias seguidos, impedimento ou missão).` : ''));
+    render();
+  };
+}
+/** Desmarcar um posto desmarca os serviços que ficaram sem nenhum posto marcado (e vice-versa). */
+function pmSincronizar() {
+  const pgs = $$('input[name=pm_pg]:checked').map(x => x.value);
+  $$('input[name=pm_tp]').forEach(x => { x.checked = ids(TIPO[x.value].postos).some(pg => pgs.includes(pg)); });
 }
 async function refazerDesde() {
   const dias = diasDoMes(S.mes);
@@ -1680,7 +1718,7 @@ function textoParte3(de, ate) {
     return `${'abcdefghij'[k]}. ${m.titulo}\nDesigno os militares abaixo para a missão em epígrafe, ${m.local ? 'em ' + m.local + ', ' : ''}no período de ${fmtMil(m.inicio)}${m.fim && m.fim !== m.inicio ? ' a ' + fmtMil(m.fim) : ''}${m.responsavelId ? ', sob o comando do ' + nomeMil(m.responsavelId) : ''}:\n${pessoal.map(p => '- ' + p).join('\n') || '- (pessoal a definir)'}`;
   }).join('\n'));
   const caut = gruposCautela().filter(g => g.dataSaida >= de && g.dataSaida <= ate);
-  if (caut.length) blocos.push(`${blocos.length + 1}. MATERIAL – CAUTELAS\n` + caut.map(g => `- Cautela nº ${g.numero} ao ${nomeMil(g.militarId)}: ${g.itens.map(c => `${c.quantidade} ${(MAT[c.materialId] || {}).unidade || 'un'} de ${(MAT[c.materialId] || {}).descricao || '?'}`).join('; ')}.`).join('\n'));
+  if (caut.length) blocos.push(`${blocos.length + 1}. MATERIAL – CAUTELAS\n` + caut.map(g => `- Cautela nº ${g.numero} ao ${nomeMil(g.militarId)}: ${g.itens.map(c => `${c.quantidade} ${(MAT[c.materialId] || {}).unidade || 'un'} de ${descCautela(c)}`).join('; ')}.`).join('\n'));
   return blocos.join('\n\n') || SEM_ALT;
 }
 
@@ -1785,6 +1823,7 @@ const CAMPOS_MAT = [
   { k: 'obs', l: 'Observações', full: true },
   { k: 'arquivoUrl', l: 'Anexo (foto, nota fiscal…)', t: 'file', full: true }
 ];
+const descCautela = c => (MAT[c.materialId] || {}).descricao || c.especificacao || '(excluído)';
 const cauteladoDe = m => S.db.Cautelas.filter(c => c.materialId === m.id && c.status !== 'Devolvida').reduce((s, c) => s + num(c.quantidade), 0);
 const disponivel = m => num(m.quantidade) - cauteladoDe(m);
 const reais = v => num(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1830,7 +1869,7 @@ function vMaterial() {
     <p class="muted">${lista.length} item(ns)${total ? ' · valor total R$ ' + reais(total) : ''}.</p>`;
   } else if (t === 'caut') {
     const ver = S.filtro.cautVer || 'abertas';
-    const lista = gruposCautela().filter(g => (ver === 'todas' || g.aberta) && casa('caut', g.numero, nomeMil(g.militarId), ...g.itens.map(c => (MAT[c.materialId] || {}).descricao)));
+    const lista = gruposCautela().filter(g => (ver === 'todas' || g.aberta) && casa('caut', g.numero, nomeMil(g.militarId), ...g.itens.map(descCautela)));
     corpo = `<div class="bar">${busca('caut', 'Buscar nº, militar ou material…')}<select onchange="S.filtro.cautVer=this.value;render()" aria-label="Quais cautelas"><option value="abertas">Em aberto</option><option value="todas" ${ver === 'todas' ? 'selected' : ''}>Todas</option></select>
       <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novaCautela()">+ Cautela</button>' : ''}</div>${tabelaCautelas(lista)}`;
   } else if (t === 'ped') {
@@ -1854,7 +1893,7 @@ function tabelaCautelas(lista) {
   const d = hoje();
   return tabela(lista, [
     { l: 'Nº', v: g => `<b>${esc(g.numero.length > 12 ? '—' : g.numero)}</b>` },
-    { l: 'Material', v: g => g.itens.map(c => `<div>${esc(c.quantidade)} × ${esc((MAT[c.materialId] || {}).descricao || '(excluído)')}${c.numeracao ? ` <span class="muted">${esc(c.numeracao)}</span>` : ''}${c.status === 'Devolvida' && g.aberta ? ' <span class="tag ok">devolvido</span>' : ''}</div>`).join('') + ' ' + linkArq(g.arquivoUrl) },
+    { l: 'Material', v: g => g.itens.map(c => `<div>${esc(c.quantidade)} × ${esc(descCautela(c))}${c.numeracao ? ` <span class="muted">${esc(c.numeracao)}</span>` : ''}${c.status === 'Devolvida' && g.aberta ? ' <span class="tag ok">devolvido</span>' : ''}</div>`).join('') + ' ' + linkArq(g.arquivoUrl) },
     { l: 'Militar', v: g => esc(nomeMil(g.militarId)) },
     { l: 'Saída', v: g => fmt(g.dataSaida) },
     { l: 'Devolução', v: g => !g.aberta ? `<span class="tag ok">Devolvida ${fmt(g.dataDevolucao)}</span>` : g.previsaoDevolucao && g.previsaoDevolucao < d ? `<span class="tag dng">Vencida ${fmt(g.previsaoDevolucao)}</span>` : `<span class="tag warn">Prev. ${fmt(g.previsaoDevolucao) || '—'}</span>` }
@@ -1873,22 +1912,33 @@ function editarCautela(numero, materialId) {
   const ano = hoje().slice(0, 4);
   const cab = g ? { ...g } : { numero: proximoNumero(gruposCautela().map(x => x.numero), ano), dataSaida: hoje(), previsaoDevolucao: '', militarId: '', obs: '' };
   const itens = g ? g.itens.map(c => ({ ...c })) : [{ materialId: materialId || '', quantidade: '1', numeracao: '', destino: '' }];
-  const linhaItem = (it, i) => `<tr data-i="${i}"><td style="width:42%">${campoHTML({ k: 'it_mat_' + i, l: '', t: 'material' }, it.materialId).replace(/<label[^>]*><span[^>]*><\/span>/, '').replace(/<\/label>$/, '')}</td>
-    <td style="width:12%"><input type="number" id="it_qtd_${i}" value="${esc(it.quantidade)}" min="1" step="any" aria-label="Quantidade"></td>
-    <td><input type="text" id="it_num_${i}" value="${esc(it.numeracao)}" placeholder="série / patrimônio" aria-label="Numeração"></td>
-    <td><input type="text" id="it_dest_${i}" value="${esc(it.destino)}" aria-label="Destino"></td>
-    <td><button type="button" class="btn sm dng" onclick="this.closest('tr').remove()" aria-label="Remover item">×</button></td></tr>`;
+  // Especificação: busca no inventário enquanto digita (ou texto livre, para material que não está no inventário).
+  const rotulo = m => `${m.descricao}${m.nrFicha ? ' · Ficha ' + m.nrFicha : ''} · disp. ${disponivel(m)}${m.unidade ? ' ' + m.unidade : ''}`;
+  const mats = S.db.Material.slice().sort((x, y) => x.descricao.localeCompare(y.descricao));
+  const linhaItem = (it, i) => `<div class="item-caut" data-i="${i}">
+    <span class="ord" aria-hidden="true"></span>
+    <label class="ic-esp"><span>Especificação do material</span><input type="text" id="it_esp_${i}" list="dl_mat" value="${esc(it.materialId && MAT[it.materialId] ? rotulo(MAT[it.materialId]) : it.especificacao || '')}" placeholder="Digite para buscar no inventário (nome, ficha ou patrimônio) ou escreva o material" autocomplete="off" oninput="itemCautela(${i})"><input type="hidden" id="it_mat_${i}" value="${esc(it.materialId || '')}"></label>
+    <label class="ic-qtd"><span>Qnt</span><input type="number" id="it_qtd_${i}" value="${esc(it.quantidade)}" min="1" step="any"></label>
+    <label class="ic-num"><span>Numeração</span><input type="text" id="it_num_${i}" value="${esc(it.numeracao)}" placeholder="série / patrimônio" list="dl_pat_${i}" autocomplete="off"><datalist id="dl_pat_${i}"></datalist></label>
+    <label class="ic-dest"><span>Destino</span><input type="text" id="it_dest_${i}" value="${esc(it.destino)}" placeholder="ex.: Pel Sup"></label>
+    <button type="button" class="btn sm dng ic-x" onclick="this.closest('.item-caut').remove()" aria-label="Remover item" title="Remover item">×</button>
+    <small class="muted ic-info" id="it_info_${i}"></small></div>`;
   window._itensCautela = itens.length;
+  window._rotuloMat = rotulo;
+  window._cautelaAtual = g;
   $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:860px">
     <h3>${g ? 'Editar cautela nº ' + esc(g.numero) : 'Nova cautela de material'}</h3>
     <div class="form">${campoHTML({ k: 'numero', l: 'Nº da cautela', req: true }, cab.numero)}${campoHTML({ k: 'militarId', l: 'Militar responsável', t: 'militar', req: true }, cab.militarId)}
       ${campoHTML({ k: 'dataSaida', l: 'Data', t: 'date', req: true }, cab.dataSaida)}${campoHTML({ k: 'previsaoDevolucao', l: 'Devolução prevista para', t: 'date' }, cab.previsaoDevolucao)}</div>
-    <h3 style="font-size:15px">Material</h3>
-    <div class="tw"><table class="itens"><thead><tr><th>Especificação do material</th><th>Qnt</th><th>Numeração</th><th>Destino</th><th></th></tr></thead><tbody id="itens">${itens.map(linhaItem).join('')}</tbody></table></div>
+    <h3 style="font-size:15px;margin-bottom:4px">Material</h3>
+    ${mats.length ? '' : '<p class="muted" style="margin:0 0 6px">O inventário está vazio: escreva o material à mão ou importe a relação do SISCOFIS em Material → Importar.</p>'}
+    <datalist id="dl_mat">${mats.map(m => `<option value="${esc(rotulo(m))}">${esc(patrimonios(m).slice(0, 3).join(', '))}</option>`).join('')}</datalist>
+    <div id="itens" class="itens-caut">${itens.map(linhaItem).join('')}</div>
     <div class="bar" style="margin-top:8px"><button type="button" class="btn sm" id="maisItem">+ Item</button></div>
     <div class="form">${campoHTML({ k: 'obs', l: 'Observações', full: true }, cab.obs)}${campoHTML({ k: 'arquivoUrl', l: 'Cautela assinada (digitalizada)', t: 'file', full: true }, cab.arquivoUrl)}</div>
     <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar cautela</button></div></form></div>`;
-  $('#maisItem').onclick = () => { $('#itens').insertAdjacentHTML('beforeend', linhaItem({ quantidade: '1' }, window._itensCautela++)); };
+  $('#maisItem').onclick = () => { const i = window._itensCautela++; $('#itens').insertAdjacentHTML('beforeend', linhaItem({ quantidade: '1' }, i)); $('#it_esp_' + i).focus(); };
+  itens.forEach((_, i) => itemCautela(i));
   $('#frm').onsubmit = async ev => {
     ev.preventDefault();
     const btn = $('#frm .btn.pri'); btn.disabled = true;
@@ -1897,22 +1947,37 @@ function editarCautela(numero, materialId) {
       if (!comum.numero || !comum.militarId || !comum.dataSaida) throw new Error('Preencha número, militar e data.');
       if (!g && gruposCautela().some(x => x.numero === comum.numero)) throw new Error(`Já existe a cautela nº ${comum.numero}.`);
       const arquivo = await enviarArquivo($('#f_arquivoUrl').files[0]);
-      const novos = $$('#itens tr').map(tr => { const i = tr.dataset.i; return { materialId: $('#f_it_mat_' + i).value, quantidade: $('#it_qtd_' + i).value, numeracao: $('#it_num_' + i).value.trim(), destino: $('#it_dest_' + i).value.trim(), _id: (itens[i] || {}).id }; })
-        .filter(x => x.materialId);
+      const novos = $$('#itens .item-caut').map(el => { const i = el.dataset.i, mid = $('#it_mat_' + i).value;
+        return { materialId: mid, especificacao: mid && MAT[mid] ? MAT[mid].descricao : $('#it_esp_' + i).value.trim(), quantidade: $('#it_qtd_' + i).value, numeracao: $('#it_num_' + i).value.trim(), destino: $('#it_dest_' + i).value.trim(), _id: (itens[i] || {}).id }; })
+        .filter(x => x.materialId || x.especificacao);
       if (!novos.length) throw new Error('Inclua pelo menos um item de material.');
       // Disponibilidade por material, devolvendo à conta o que esta cautela já segurava.
       const porMat = {};
-      novos.forEach(x => { if (num(x.quantidade) <= 0) throw new Error('Quantidade inválida.'); porMat[x.materialId] = (porMat[x.materialId] || 0) + num(x.quantidade); });
+      novos.forEach(x => { if (num(x.quantidade) <= 0) throw new Error('Quantidade inválida em ' + x.especificacao + '.'); if (x.materialId) porMat[x.materialId] = (porMat[x.materialId] || 0) + num(x.quantidade); });
       Object.entries(porMat).forEach(([mid, q]) => {
         const livre = disponivel(MAT[mid]) + (g ? g.itens.filter(c => c.materialId === mid && c.status !== 'Devolvida').reduce((s, c) => s + num(c.quantidade), 0) : 0);
         if (q > livre) throw new Error(`Só há ${livre} disponível(is) de ${MAT[mid].descricao}.`);
       });
-      const lista = novos.map(x => ({ ...comum, id: x._id || uid(), materialId: x.materialId, quantidade: x.quantidade, numeracao: x.numeracao, destino: x.destino, arquivoUrl: arquivo || (g ? g.arquivoUrl : ''), dataDevolucao: '' }));
+      const lista = novos.map(x => ({ ...comum, id: x._id || uid(), materialId: x.materialId, especificacao: x.especificacao, quantidade: x.quantidade, numeracao: x.numeracao, destino: x.destino, arquivoUrl: arquivo || (g ? g.arquivoUrl : ''), dataDevolucao: '' }));
       const remover = g ? g.itens.map(c => c.id).filter(id => !lista.some(x => x.id === id)) : [];
       await salvar('Cautelas', lista, remover);
       fecharModal(); toast('Cautela salva.'); S.sub.material = 'caut'; render();
     } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
   };
+}
+/** Ao digitar a especificação: liga ao material do inventário quando bate com uma sugestão e mostra disponível e patrimônios livres. */
+function itemCautela(i) {
+  const inp = $('#it_esp_' + i); if (!inp) return;
+  const v = inp.value.trim(), m = S.db.Material.find(x => window._rotuloMat(x) === v || x.descricao === v);
+  $('#it_mat_' + i).value = m ? m.id : '';
+  if (m && inp.value !== window._rotuloMat(m)) inp.value = window._rotuloMat(m);
+  const g = window._cautelaAtual, emUso = new Set(gruposCautela().filter(x => x !== g && (!g || x.numero !== g.numero)).flatMap(x => x.itens.filter(c => c.status !== 'Devolvida').flatMap(c => ids(String(c.numeracao || '').replace(/[;\n]/g, ',')))));
+  const livres = m ? patrimonios(m).filter(p => !emUso.has(p)) : [];
+  $('#dl_pat_' + i).innerHTML = livres.map(p => `<option value="${esc(p)}">`).join('');
+  const info = $('#it_info_' + i);
+  info.innerHTML = m ? `Do inventário${m.nrFicha ? ' · Ficha ' + esc(m.nrFicha) : ''}${m.codMat ? ' · Cód ' + esc(m.codMat) : ''} · <b>${disponivel(m)}</b> disponível(is)${livres.length ? ` · ${livres.length} patrimônio(s) livre(s): clique em Numeração para escolher` : ''}`
+    : v ? 'Fora do inventário: entra só com a descrição escrita (não controla o disponível).' : '';
+  if (m && livres.length === 1 && !$('#it_num_' + i).value) $('#it_num_' + i).value = livres[0];
 }
 async function devolver(numero) {
   const g = gruposCautela().find(x => x.numero === numero);
@@ -1925,7 +1990,7 @@ const TEXTO_CAUTELA = 'Declaro estar ciente de que será lavrada uma Sindicânci
 DOCS.cautela = numero => {
   const g = gruposCautela().find(x => x.numero === numero), mil = MIL[g.militarId] || {};
   const setor = cfg('cautelaSetor');
-  const itens = g.itens.map((c, i) => [pad(i + 1), { v: (MAT[c.materialId] || {}).descricao || '', l: 1 }, c.quantidade, c.numeracao || '', c.destino || '']);
+  const itens = g.itens.map((c, i) => [pad(i + 1), { v: descCautela(c), l: 1 }, c.quantidade, c.numeracao || '', c.destino || '']);
   while (itens.length < 6) itens.push([pad(itens.length + 1), '', '', '', '']);
   const prev = g.previsaoDevolucao ? fmt(g.previsaoDevolucao) : '____ / ____ / ______';
   return { tipo: 'Cautelas', ref: g.numero, titulo: `Cautela ${g.numero.replace('/', '-')} - ${mil.nomeGuerra || ''} - ${g.dataSaida}`, blocos: [
@@ -2717,12 +2782,13 @@ function semente() {
 // ============================================================ início
 /** Planilhas criadas antes da escala de folga compartilhada: Sentinela e Permanência passam a dividir a folga (uma vez só). */
 async function migrarFolgaSoldados() {
-  if (!admin() || cfg('folgaCompartilhada')) return;
-  const l = S.db.TiposServico.filter(t => ['sentinela', 'permanencia'].includes(t.id) && !t.folga);
+  if (!admin() || cfg('folgaCompartilhada') === 'Sim2') return;
+  const pares = [['Soldados', ['sentinela', 'permanencia']], ['Cabos', ['cb-gda', 'cb-dia']]];
+  const mudar = pares.flatMap(([nome, l]) => { const t = S.db.TiposServico.filter(x => l.includes(x.id) && !x.folga); return t.length === 2 ? t.map(x => ({ ...x, folga: nome })) : []; });
   try {
-    if (l.length === 2) await salvar('TiposServico', l.map(t => ({ ...t, folga: 'Soldados' })));
-    await salvar('Config', [{ chave: 'folgaCompartilhada', valor: 'Sim' }]);
-    if (l.length === 2) { toast('Sentinela e Permanência agora dividem a mesma escala de folga (Soldados).'); render(); }
+    if (mudar.length) await salvar('TiposServico', mudar);
+    await salvar('Config', [{ chave: 'folgaCompartilhada', valor: 'Sim2' }]);
+    if (mudar.length) { toast('Agora dividem a mesma escala de folga: ' + [...new Set(mudar.map(x => x.folga))].join(' e ') + '.'); render(); }
   } catch (e) { }
 }
 async function iniciar() {
