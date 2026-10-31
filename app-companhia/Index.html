@@ -210,6 +210,12 @@ td.acts { white-space: nowrap; text-align: right; }
 .escala tr.v td.dia { color: var(--vermelha); font-weight: 700; }
 .escala tr.hoje td { background: color-mix(in srgb, var(--ouro) 18%, transparent); }
 .escala select { height: 34px; padding: 0 6px; font-size: 13.5px; min-width: 128px; }
+.escala td { position: relative; }
+.escala .vaga + .vaga { margin-top: 3px; }
+.escala select.branco { color: var(--muted, #888); font-style: italic; }
+.escala td:has(.mais) { padding-right: 20px; }
+.escala .mais { position: absolute; top: 12px; right: 2px; width: 17px; height: 17px; line-height: 15px; padding: 0; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: var(--azul, #1351b4); opacity: .35; font-size: 14px; font-weight: 700; cursor: pointer; }
+.escala td:hover .mais, .escala .mais:focus { opacity: 1; }
 .alerta { color: var(--warn); cursor: help; }
 .modal-bg { position: fixed; inset: 0; background: rgba(7, 29, 65, .55); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 50; overflow-y: auto; }
 .modal { background: var(--surface); border-radius: 8px; width: 100%; max-width: 680px; padding: 20px 24px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
@@ -428,14 +434,14 @@ const POSTO_ALIAS = { cabo: 'Cb', soldado: 'Sd', sdep: 'Sd EP', sdev: 'Sd EV', s
 const postoNorm = p => { const n = norm(p); return n ? (POSTOS.find(x => norm(x) === n) || POSTO_ALIAS[n] || '') : ''; };
 // Serviços da 1ª Cia (iguais aos do Code.gs): usados na demonstração e em "Restaurar serviços padrão".
 const TIPOS_PADRAO = [
-  { id: 'of-dia', nome: 'Oficial de Dia', postos: '1º Ten,2º Ten', ordem: 1, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
-  { id: 'adj', nome: 'Adjunto', postos: '1º Sgt,2º Sgt', ordem: 2, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
-  { id: 'sgt-dia', nome: 'Sargento de Dia', postos: '3º Sgt', ordem: 3, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' },
-  { id: 'cmt-gda', nome: 'Comandante da Guarda', postos: '3º Sgt', ordem: 4, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
-  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
-  { id: 'cb-dia', nome: 'Cabo de Dia', postos: 'Cb', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' },
-  { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
-  { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' }
+  { id: 'of-dia', nome: 'Oficial de Dia', postos: '1º Ten,2º Ten', ordem: 1, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'adj', nome: 'Adjunto', postos: '1º Sgt,2º Sgt', ordem: 2, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'sgt-dia', nome: 'Sargento de Dia', postos: '3º Sgt', ordem: 3, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'cmt-gda', nome: 'Comandante da Guarda', postos: '3º Sgt', ordem: 4, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'cb-dia', nome: 'Cabo de Dia', postos: 'Cb', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' },
+  { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' }
 ];
 const TIPOS_IMPED = ['Férias', 'Dispensa médica', 'Dispensa', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
 const TIPOS_MISSAO = ['Operação', 'Apoio', 'Instrução', 'Representação', 'Transporte', 'Guarda/Segurança', 'Outra'];
@@ -472,14 +478,27 @@ const tagSituacao = s => `<span class="tag ${s.tipo === 'pronto' ? 'ok' : s.tipo
 const aptoPara = (m, tipo) => ids(tipo.postos).includes(m.postoGrad);
 /** O serviço ocorre neste dia? (todos, só dias úteis/preta ou só sáb-dom-feriado/vermelha) */
 const aplica = (tipo, iso) => !tipo.dias || tipo.dias === 'Todos' || (tipo.dias === 'Preta') === (corDoDia(iso) === 'P');
+/** Quantos militares o serviço tem por dia (ex.: 2 sentinelas). */
+const qtdTipo = tipo => Math.max(1, Math.floor(num(tipo.qtd)) || 1);
+/** Lançamentos de um serviço num dia. militarId vazio = vaga deixada em branco de propósito (não sai no aditamento). */
+/** Serviços que dividem a mesma escala de folga (ex.: Sentinela e Permanência, ambos "Soldados"). */
+const chaveFolga = t => t && t.folga ? 'g:' + norm(t.folga) : (t || {}).id;
+const tiposDaFolga = tipoId => { const k = chaveFolga(TIPO[tipoId]); return S.db.TiposServico.filter(t => chaveFolga(t) === k).map(t => t.id).concat(TIPO[tipoId] ? [] : [tipoId]); };
+const nomeFolga = tipoId => { const tp = TIPO[tipoId], l = tiposDaFolga(tipoId).map(id => TIPO[id]).filter(t => t && sim(t.ativo)); return tp && tp.folga && l.length > 1 ? `${tp.folga} (${l.map(t => t.nome).join(' + ')})` : (tp || {}).nome || ''; };
+const lancamentos = (iso, tipoId) => (ESC_DIA[iso] || []).filter(x => x.tipoId === tipoId);
+const emBranco = e => !e.militarId;
+/** Vagas do dia: a quantidade do serviço (se ocorre no dia) ou mais, se foram lançadas vagas extras. */
+const vagasDoDia = (tipo, iso) => Math.max(aplica(tipo, iso) ? qtdTipo(tipo) : 0, lancamentos(iso, tipo.id).length);
+const faltamNoDia = (tipo, iso) => Math.max(0, (aplica(tipo, iso) ? qtdTipo(tipo) : 0) - lancamentos(iso, tipo.id).length);
 
 /**
  * Folga = quantidade de dias da mesma cor (preta = dias úteis, vermelha = sáb/dom/feriado)
- * desde o último serviço do militar naquele tipo de serviço. Quem nunca tirou tem folga infinita.
+ * desde o último serviço do militar naquele serviço (ou em qualquer serviço da mesma escala de folga). Quem nunca tirou tem folga infinita.
  */
 function calcFolga(militarId, tipoId, cor, iso, entradas) {
   let ultimo = null;
-  for (const e of entradas) if (e.militarId === militarId && e.tipoId === tipoId && corDoDia(e.data) === cor && e.data < iso && (!ultimo || e.data > ultimo)) ultimo = e.data;
+  const grupo = new Set(tiposDaFolga(tipoId));
+  for (const e of entradas) if (e.militarId === militarId && grupo.has(e.tipoId) && corDoDia(e.data) === cor && e.data < iso && (!ultimo || e.data > ultimo)) ultimo = e.data;
   if (!ultimo) return { folga: Infinity, ultimo: null };
   let n = 0;
   for (let d = addDias(ultimo, 1); d < iso; d = addDias(d, 1)) if (corDoDia(d) === cor) n++;
@@ -498,15 +517,18 @@ function gerarEscala(inicio, fim, existentes) {
   for (let d = inicio; d <= fim; d = addDias(d, 1)) {
     const cor = corDoDia(d);
     for (const tipo of tiposAtivos()) {
-      if (tipo.automatico === 'Não' || !aplica(tipo, d) || entradas.some(e => e.data === d && e.tipoId === tipo.id)) continue;
-      const cands = militaresAtivos().filter(m => aptoPara(m, tipo)
-        && situacao(m.id, d).tipo === 'pronto'
-        && !ocupado.has(m.id + '|' + d) && !ocupado.has(m.id + '|' + addDias(d, -1)) && !ocupado.has(m.id + '|' + addDias(d, 1)));
-      if (!cands.length) { faltas.push(`${fmt(d)} – ${tipo.nome}`); continue; }
-      const escolhido = cands.map(m => ({ m, f: calcFolga(m.id, tipo.id, cor, d, entradas).folga }))
-        .sort((a, b) => b.f - a.f || postoIdx(b.m.postoGrad) - postoIdx(a.m.postoGrad) || num(b.m.antiguidade) - num(a.m.antiguidade))[0].m;
-      const e = { id: uid(), data: d, tipoId: tipo.id, militarId: escolhido.id, cor, obs: '' };
-      entradas.push(e); novos.push(e); ocupado.add(escolhido.id + '|' + d);
+      if (tipo.automatico === 'Não' || !aplica(tipo, d)) continue;
+      // vagas já lançadas (com militar ou em branco) contam como preenchidas
+      for (let k = entradas.filter(e => e.data === d && e.tipoId === tipo.id).length; k < qtdTipo(tipo); k++) {
+        const cands = militaresAtivos().filter(m => aptoPara(m, tipo)
+          && situacao(m.id, d).tipo === 'pronto'
+          && !ocupado.has(m.id + '|' + d) && !ocupado.has(m.id + '|' + addDias(d, -1)) && !ocupado.has(m.id + '|' + addDias(d, 1)));
+        if (!cands.length) { faltas.push(`${fmt(d)} – ${tipo.nome}`); break; }
+        const escolhido = cands.map(m => ({ m, f: calcFolga(m.id, tipo.id, cor, d, entradas).folga }))
+          .sort((a, b) => b.f - a.f || postoIdx(b.m.postoGrad) - postoIdx(a.m.postoGrad) || num(b.m.antiguidade) - num(a.m.antiguidade))[0].m;
+        const e = { id: uid(), data: d, tipoId: tipo.id, militarId: escolhido.id, cor, obs: '' };
+        entradas.push(e); novos.push(e); ocupado.add(escolhido.id + '|' + d);
+      }
     }
   }
   return { novos, faltas };
@@ -514,6 +536,7 @@ function gerarEscala(inicio, fim, existentes) {
 
 function alertasEscala(e) {
   const a = [];
+  if (emBranco(e)) return a;
   const s = situacao(e.militarId, e.data);
   if (s.tipo !== 'pronto') a.push(s.texto);
   const doMil = S.db.Escala.filter(x => x.militarId === e.militarId && x.id !== e.id);
@@ -549,8 +572,9 @@ function campoHTML(c, v) {
   } else if (c.t === 'file') {
     input = `<input type="file" id="${id}">${val ? `<small><a href="${esc(val)}" target="_blank">arquivo atual</a></small>` : ''}`;
   } else {
-    input = `<input type="${c.t || 'text'}" id="${id}" value="${esc(val)}" ${req} ${c.t === 'number' ? 'step="any"' : ''}>`;
+    input = `<input type="${c.t || 'text'}" id="${id}" value="${esc(val)}" ${req} ${c.t === 'number' ? 'step="any"' : ''}${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}>`;
   }
+  if (c.ajuda) input += `<small class="muted" style="font-weight:400">${esc(c.ajuda)}</small>`;
   if (c.t === 'postos') return `<div class="full campo-postos"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</div>`;
   return `<label class="${c.full || ['textarea', 'militares'].includes(c.t) ? 'full' : ''}"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</label>`;
 }
@@ -1112,7 +1136,12 @@ function vPainel() {
   const prontos = sits.filter(s => s.tipo === 'pronto').length;
   const emMissao = sits.filter(s => s.tipo === 'missao').length;
   const imped = mil.map(m => ({ m, s: situacao(m.id, d) })).filter(x => x.s.tipo === 'imp');
-  const servico = dia => tiposAtivos().map(t => { const e = (ESC_DIA[dia] || []).find(e => e.tipoId === t.id); return `<li><span class="muted">${esc(t.nome)}</span><b>${e ? esc(nomeMil(e.militarId)) : '<span class="tag warn">vazio</span>'}</b></li>`; }).join('');
+  const servico = dia => tiposAtivos().map(t => {
+    const l = lancamentos(dia, t.id), nomes = l.filter(e => !emBranco(e)).map(e => esc(nomeMil(e.militarId)));
+    const falta = faltamNoDia(t, dia) ? ' <span class="tag warn">vazio</span>' : '';
+    if (!l.length && !aplica(t, dia)) return '';
+    return `<li><span class="muted">${esc(t.nome)}</span><b>${nomes.join(', ') || (falta ? '' : '<span class="muted">em branco</span>')}${falta}</b></li>`;
+  }).join('');
   const missoes = S.db.Missoes.filter(m => missaoAtiva(m) && m.inicio <= addDias(d, 7) && (m.fim || m.inicio) >= d).sort((a, b) => a.inicio.localeCompare(b.inicio));
   const abertas = gruposCautela().filter(g => g.aberta);
   const vencidas = abertas.filter(g => g.previsaoDevolucao && g.previsaoDevolucao < d);
@@ -1320,39 +1349,50 @@ function vEscala() {
   if (t === 'imp') return titulo + abasEsc + vImportarHistorico();
   const barra = `<div class="bar"><input type="month" value="${S.mes}" onchange="S.mes=this.value;render()">
     <button class="btn" onclick="mudarMes(-1)" aria-label="Mês anterior">◀</button><button class="btn" onclick="mudarMes(1)" aria-label="Próximo mês">▶</button><span class="grow"></span>
-    ${t === 'mes' && pode() ? `<button class="btn pri" onclick="gerarMes()">Gerar dias vazios</button><button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
+    ${t === 'mes' && pode() ? `<button class="btn pri" onclick="gerarMes()" title="Preenche as vagas vazias do mês pelo quadro de folga, mantendo o que você já lançou">Pré-montar pela folga</button><button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
     ${t === 'mes' ? botoesDocGrandes('escala', S.mes, 'escala') : botoesDocGrandes('folgas', folgaTipo(), 'folgas')}</div>`;
   if (t === 'folgas') return titulo + abasEsc + barra + vFolgas();
   const linhas = dias.map(d => {
     const cor = corDoDia(d), w = dataDe(d).getDay();
     return `<tr class="${cor === 'V' ? 'v' : ''} ${d === hoje() ? 'hoje' : ''}"><td class="dia">${d.slice(8)} ${SEM_CURTA[w]}${FERIADO[d] ? ` <span title="${esc(FERIADO[d])}">★</span>` : ''}</td>
     ${tipos.map(tp => {
-      const e = (ESC_DIA[d] || []).find(x => x.tipoId === tp.id);
-      if (!e && !aplica(tp, d)) return '<td class="muted" title="Este serviço não ocorre neste dia">·</td>';
-      const al = e ? alertasEscala(e) : [];
-      const aviso = al.length ? ` <span class="alerta" title="${esc(al.join('; '))}">⚠</span>` : '';
-      if (!pode()) return `<td>${e ? esc(nomeMil(e.militarId)) : '<span class="muted">—</span>'}${aviso}</td>`;
-      const ops = militaresAtivos().filter(m => aptoPara(m, tp) || (e && e.militarId === m.id))
-        .map(m => { const s = situacao(m.id, d); return `<option value="${m.id}" ${e && e.militarId === m.id ? 'selected' : ''}>${esc(nomeMil(m))}${s.tipo !== 'pronto' ? ' (' + esc(s.texto) + ')' : ''}</option>`; }).join('');
-      return `<td><select aria-label="${esc(tp.nome)} em ${fmt(d)}" onchange="trocarServico('${d}','${tp.id}',this.value)"><option value="">—</option>${ops}</select>${aviso}</td>`;
+      const l = lancamentos(d, tp.id), extra = (S.vagaExtra || {})[d + '|' + tp.id] || 0, n = vagasDoDia(tp, d) + extra;
+      if (!n) return `<td class="muted" title="Este serviço não ocorre neste dia">·${pode() ? `<button class="mais" title="Lançar mesmo assim" aria-label="Lançar ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
+      const vagas = Array.from({ length: n }, (_, k) => {
+        const e = l[k], al = e ? alertasEscala(e) : [];
+        const aviso = al.length ? ` <span class="alerta" title="${esc(al.join('; '))}">⚠</span>` : '';
+        if (!pode()) return `<div>${e ? (emBranco(e) ? '<span class="muted">em branco</span>' : esc(nomeMil(e.militarId))) : '<span class="muted">—</span>'}${aviso}</div>`;
+        const ops = militaresAtivos().filter(m => aptoPara(m, tp) || (e && e.militarId === m.id))
+          .map(m => { const s = situacao(m.id, d); return `<option value="${m.id}" ${e && e.militarId === m.id ? 'selected' : ''}>${esc(nomeMil(m))}${s.tipo !== 'pronto' ? ' (' + esc(s.texto) + ')' : ''}</option>`; }).join('');
+        const sobra = k >= (aplica(tp, d) ? qtdTipo(tp) : 0);
+        return `<div class="vaga"><select class="${e && emBranco(e) ? 'branco' : ''}" aria-label="${esc(tp.nome)}${n > 1 ? ' ' + (k + 1) : ''} em ${fmt(d)}" onchange="trocarServico('${d}','${tp.id}',${k},this.value)"><option value="">${sobra ? '— tirar esta vaga —' : '—'}</option><option value="${BRANCO}" ${e && emBranco(e) ? 'selected' : ''}>Em branco</option>${ops}</select>${aviso}</div>`;
+      }).join('');
+      return `<td>${vagas}${pode() ? `<button class="mais" title="Mais um militar neste dia" aria-label="Mais um ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
     }).join('')}</tr>`;
   }).join('');
-  const vazios = dias.reduce((n, d) => n + tipos.filter(tp => aplica(tp, d) && !(ESC_DIA[d] || []).some(e => e.tipoId === tp.id)).length, 0);
-  const grupoTit = tp => `<th title="${esc(tp.grupo || 'Externo')} · ${esc(tp.dias || 'Todos')}">${esc(tp.nome)}<div style="font-weight:400;font-size:11px">${esc(tp.grupo || 'Externo')}${tp.dias && tp.dias !== 'Todos' ? ' · só ' + tp.dias.toLowerCase() : ''}</div></th>`;
+  const vazios = dias.reduce((n, d) => n + tipos.reduce((s, tp) => s + faltamNoDia(tp, d), 0), 0);
+  const grupoTit = tp => `<th title="${esc(tp.grupo || 'Externo')} · ${esc(tp.dias || 'Todos')}">${esc(tp.nome)}<div style="font-weight:400;font-size:11px">${qtdTipo(tp) > 1 ? qtdTipo(tp) + ' por dia · ' : ''}${esc(tp.grupo || 'Externo')}${tp.dias && tp.dias !== 'Todos' ? ' · só ' + tp.dias.toLowerCase() : ''}</div></th>`;
   return titulo + abasEsc + barra +
     `<div class="tw escala"><table><thead><tr><th>Dia</th>${tipos.map(grupoTit).join('')}</tr></thead><tbody>${linhas}</tbody></table></div>
-    <p class="muted">${vazios} serviço(s) sem militar neste mês. ⚠ = conflito (impedimento, missão ou dias seguidos). ★ = feriado. · = o serviço não ocorre no dia.</p>`;
+    <p class="muted">${vazios} vaga(s) sem militar neste mês. ⚠ = conflito (impedimento, missão ou dias seguidos). ★ = feriado. · = o serviço não ocorre no dia.${pode() ? ' <b>+</b> = mais um militar no serviço naquele dia (ex.: dois sentinelas). <b>Em branco</b> = ninguém escalado de propósito: a geração automática não preenche e o serviço não sai no aditamento.' : ''}</p>`;
 }
 function mudarMes(n) { const [y, m] = S.mes.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); S.mes = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; render(); }
 
-async function trocarServico(data, tipoId, militarId) {
-  const e = (ESC_DIA[data] || []).find(x => x.tipoId === tipoId);
+const BRANCO = 'em-branco';
+/** Troca o militar da vaga k do serviço no dia: vazio tira o lançamento, BRANCO deixa a vaga em branco de propósito. */
+async function trocarServico(data, tipoId, k, valor) {
+  const l = lancamentos(data, tipoId), e = l[k], chave = data + '|' + tipoId;
+  const extra = () => { S.vagaExtra ||= {}; if (S.vagaExtra[chave]) S.vagaExtra[chave]--; };
   try {
-    if (!militarId) { if (e) await salvar('Escala', [], [e.id]); }
-    else await salvar('Escala', [{ ...(e || { id: uid(), data, tipoId, obs: '' }), militarId, cor: corDoDia(data) }]);
+    if (!valor) { if (e) await salvar('Escala', [], [e.id]); else extra(); }
+    else {
+      if (!e && k >= vagasDoDia(TIPO[tipoId], data)) extra();
+      await salvar('Escala', [{ ...(e || { id: uid(), data, tipoId, obs: '' }), militarId: valor === BRANCO ? '' : valor, cor: corDoDia(data) }]);
+    }
     toast('Escala atualizada.'); render();
   } catch (err) { render(); }
 }
+function maisVaga(data, tipoId) { S.vagaExtra ||= {}; const c = data + '|' + tipoId; S.vagaExtra[c] = (S.vagaExtra[c] || 0) + 1; render(); }
 async function gerarMes() {
   const dias = diasDoMes(S.mes);
   const { novos, faltas } = gerarEscala(dias[0], dias[dias.length - 1], S.db.Escala);
@@ -1375,14 +1415,16 @@ async function refazerDesde() {
 }
 
 // ---------- quadro de folgas no formato da planilha: militares x dias, contador por cor, 0 no dia do serviço
-const folgaTipo = () => S.filtro.folgaTipo && TIPO[S.filtro.folgaTipo] ? S.filtro.folgaTipo : (tiposAtivos()[0] || {}).id;
+const folgaTipo = () => { const t = S.filtro.folgaTipo && TIPO[S.filtro.folgaTipo] ? S.filtro.folgaTipo : (tiposAtivos()[0] || {}).id; return t && (opcoesFolga().find(o => tiposDaFolga(o).includes(t)) || t); };
+/** Um item por escala de folga: serviços que dividem a folga aparecem juntos. */
+const opcoesFolga = () => { const vistos = new Set(); return tiposAtivos().filter(t => !vistos.has(chaveFolga(t)) && vistos.add(chaveFolga(t))).map(t => t.id); };
 const SIGLA_IMP = { 'Férias': 'FÉR', 'Dispensa médica': 'DM', 'Dispensa': 'DISP', 'Licença': 'LIC', 'Curso/Estágio': 'CURSO', 'Trânsito': 'TRÂNS', 'Outro': 'IMP' };
 /** Matriz do quadro: para cada militar apto, o valor de cada dia do mês. */
 function matrizFolgas(tipoId, ym) {
   const tp = TIPO[tipoId], dias = diasDoMes(ym);
-  const servicos = S.db.Escala.filter(e => e.tipoId === tipoId);
+  const grupo = tiposDaFolga(tipoId), servicos = S.db.Escala.filter(e => grupo.includes(e.tipoId));
   const serviu = new Set(servicos.map(e => e.militarId + '|' + e.data));
-  return militaresAtivos().filter(m => aptoPara(m, tp)).map(m => {
+  return militaresAtivos().filter(m => grupo.some(id => TIPO[id] && aptoPara(m, TIPO[id]))).map(m => {
     // Contador = dias da mesma cor desde o último serviço, contando o próprio dia (como na planilha).
     const c = { P: calcFolga(m.id, tipoId, 'P', dias[0], servicos).folga, V: calcFolga(m.id, tipoId, 'V', dias[0], servicos).folga };
     const celulas = dias.map(d => {
@@ -1403,7 +1445,7 @@ function vFolgas() {
   const dias = diasDoMes(S.mes), mat = matrizFolgas(tid, S.mes);
   // De hoje em diante, destaca quem está "na vez": maior folga entre os disponíveis (quem nunca tirou vem primeiro).
   const vez = dias.map((d, j) => { if (d < hoje()) return null; let mx = -1, quem = null; mat.forEach((l, i) => { const n = l.celulas[j].n; if (n !== undefined && n > mx) { mx = n; quem = i; } }); return quem; });
-  return `<div class="bar"><label class="muted">Serviço <select onchange="S.filtro.folgaTipo=this.value;render()">${tiposAtivos().map(t => `<option value="${t.id}" ${t.id === tid ? 'selected' : ''}>${esc(t.nome)}</option>`).join('')}</select></label>
+  return `<div class="bar"><label class="muted">Serviço <select onchange="S.filtro.folgaTipo=this.value;render()">${opcoesFolga().map(id => `<option value="${id}" ${id === tid ? 'selected' : ''}>${esc(nomeFolga(id))}</option>`).join('')}</select></label>
     <span class="muted">Cada célula mostra a folga na cor do dia (preta ou vermelha). <span class="tag" style="background:var(--ouro);color:#071d41">0</span> = dia do serviço · contorno azul = quem está na vez (de hoje em diante) · FÉR, DM, MIS… = afastado.</span></div>
     <div class="tw quadro"><table><thead><tr><th>Ant</th><th>P/G</th><th>Nome</th>${dias.map(d => `<th class="${corDoDia(d) === 'V' ? 'v' : ''}" title="${fmt(d)}${FERIADO[d] ? ' – ' + esc(FERIADO[d]) : ''}">${d.slice(8)}<div>${SEM_CURTA[dataDe(d).getDay()][0]}</div></th>`).join('')}</tr></thead>
     <tbody>${mat.map((l, i) => `<tr><td class="num">${esc(l.m.antiguidade)}</td><td>${esc(l.m.postoGrad)}</td><td style="white-space:nowrap"><b>${esc(l.m.nomeGuerra)}</b></td>${l.celulas.map((c, j) =>
@@ -1411,20 +1453,20 @@ function vFolgas() {
 }
 LISTAS.folgas = tipoId => {
   const tp = TIPO[tipoId], dias = diasDoMes(S.mes);
-  return { nome: `Quadro de folgas ${tp.nome} ${S.mes}`, cab: ['Ant', 'P/G', 'Nome', ...dias.map(d => `${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}${corDoDia(d) === 'V' ? ' (V)' : ''}`)],
+  return { nome: `Quadro de folgas ${tp.folga || tp.nome} ${S.mes}`, cab: ['Ant', 'P/G', 'Nome', ...dias.map(d => `${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}${corDoDia(d) === 'V' ? ' (V)' : ''}`)],
     linhas: matrizFolgas(tipoId, S.mes).map(l => [l.m.antiguidade, l.m.postoGrad, l.m.nomeGuerra, ...l.celulas.map(c => c.v)]) };
 };
 DOCS.folgas = tipoId => {
   const l = LISTAS.folgas(tipoId), [y, m] = S.mes.split('-');
   return { tipo: 'Escalas', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
-    { p: `QUADRO DE FOLGAS – ${TIPO[tipoId].nome.toUpperCase()} – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}`, c: 1, b: 1 }, { esp: 1 },
+    { p: `QUADRO DE FOLGAS – ${nomeFolga(tipoId).toUpperCase()} – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}`, c: 1, b: 1 }, { esp: 1 },
     { t: [l.cab.map((h, i) => i < 3 ? h : h.slice(0, 2)), ...l.linhas.map(r => r.map(String))], h: 1, sz: 6.5, w: [4, 7, 13, ...l.cab.slice(3).map(() => 76 / (l.cab.length - 3))] },
     { p: 'Folga contada por cor (P = dias úteis, V = sábados, domingos e feriados). 0 = dia do serviço.', sz: 8, mt: 4, l: 1 }] };
 };
 LISTAS.escala = ym => {
   const tipos = tiposAtivos();
   return { nome: `Escala de servico ${ym}`, cab: ['Dia', 'Cor', ...tipos.map(t => t.nome)],
-    linhas: diasDoMes(ym).map(d => [`${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}`, corDoDia(d) === 'V' ? 'V' : 'P', ...tipos.map(t => { const e = (ESC_DIA[d] || []).find(x => x.tipoId === t.id); return e ? nomeMil(e.militarId) : aplica(t, d) ? '' : '·'; })]) };
+    linhas: diasDoMes(ym).map(d => [`${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}`, corDoDia(d) === 'V' ? 'V' : 'P', ...tipos.map(t => { const l = lancamentos(d, t.id); return l.length ? l.filter(e => !emBranco(e)).map(e => nomeMil(e.militarId)).join(' / ') || '—' : aplica(t, d) ? '' : '·'; })]) };
 };
 DOCS.escala = ym => {
   const l = LISTAS.escala(ym), [y, m] = ym.split('-');
@@ -1578,8 +1620,10 @@ function periodoPadrao(data) {
 function montarServicos(ini, fim) {
   const dias = [];
   for (let d = ini; d && d <= (fim || ini); d = addDias(d, 1)) {
-    const linhas = tiposAtivos().map(t => ({ t, e: (ESC_DIA[d] || []).find(x => x.tipoId === t.id) })).filter(x => x.e || aplica(x.t, d));
-    const lado = g => linhas.filter(x => (x.t.grupo || 'Externo') === g).map(x => [x.t.nome, x.e ? nomeMil(x.e.militarId) : '(a designar)']);
+    // uma linha por militar; vaga em branco não sai; vaga sem lançamento sai como "(a designar)"
+    const linhas = tiposAtivos().flatMap(t => [...lancamentos(d, t.id).filter(e => !emBranco(e)).map(e => ({ t, nome: nomeMil(e.militarId) })),
+      ...Array.from({ length: faltamNoDia(t, d) }, () => ({ t, nome: '(a designar)' }))]);
+    const lado = g => linhas.filter(x => (x.t.grupo || 'Externo') === g).map(x => [x.t.nome, x.nome]);
     dias.push({ data: d, ext: lado('Externo'), int: lado('Interno') });
   }
   return dias;
@@ -2476,9 +2520,11 @@ async function trocarImagem(chave, file) {
   } catch (e) { toast(e.message, true); }
 }
 function editarTipo(id) {
-  abrirForm({ titulo: id ? 'Editar tipo de serviço' : 'Novo tipo de serviço', valores: id ? TIPO[id] : { ordem: String(S.db.TiposServico.length + 1), ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  abrirForm({ titulo: id ? 'Editar tipo de serviço' : 'Novo tipo de serviço', valores: id ? { qtd: '1', ...TIPO[id] } : { ordem: String(S.db.TiposServico.length + 1), qtd: '1', ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
     campos: [{ k: 'nome', l: 'Nome do serviço (como sai no aditamento)', req: true }, { k: 'ordem', l: 'Ordem', t: 'number' },
       { k: 'grupo', l: 'Grupo no aditamento', t: 'select', o: ['Externo', 'Interno'], vazio: false }, { k: 'dias', l: 'Em que dias ocorre', t: 'select', o: [['Todos', 'Todos os dias'], ['Preta', 'Só dias úteis (preta)'], ['Vermelha', 'Só sáb, dom e feriados (vermelha)']], vazio: false },
+      { k: 'qtd', l: 'Militares por dia (ex.: 2 sentinelas)', t: 'number', padrao: '1' },
+      { k: 'folga', full: true, l: 'Escala de folga compartilhada (opcional)', ph: 'ex.: Soldados', ajuda: 'Serviços com o mesmo nome aqui dividem a folga: quem tirou Sentinela ontem conta como de serviço também para a Permanência.' },
       { k: 'postos', l: 'Postos/graduações que concorrem a este serviço', t: 'postos', req: true },
       { k: 'automatico', l: 'Preencher na geração automática', t: 'select', o: [['Sim', 'Sim, pela folga'], ['Não', 'Não, lançamento manual']], vazio: false },
       { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], vazio: false }],
@@ -2669,6 +2715,16 @@ function semente() {
 }
 
 // ============================================================ início
+/** Planilhas criadas antes da escala de folga compartilhada: Sentinela e Permanência passam a dividir a folga (uma vez só). */
+async function migrarFolgaSoldados() {
+  if (!admin() || cfg('folgaCompartilhada')) return;
+  const l = S.db.TiposServico.filter(t => ['sentinela', 'permanencia'].includes(t.id) && !t.folga);
+  try {
+    if (l.length === 2) await salvar('TiposServico', l.map(t => ({ ...t, folga: 'Soldados' })));
+    await salvar('Config', [{ chave: 'folgaCompartilhada', valor: 'Sim' }]);
+    if (l.length === 2) { toast('Sentinela e Permanência agora dividem a mesma escala de folga (Soldados).'); render(); }
+  } catch (e) { }
+}
 async function iniciar() {
   if (!$('#css-doc')) document.head.insertAdjacentHTML('beforeend', `<style id="css-doc">${CSS_DOC}</style>`);
   $$('[data-ico]').forEach(el => { el.outerHTML = ICO[el.dataset.ico]; });
@@ -2684,6 +2740,7 @@ async function iniciar() {
     $('#user').textContent = (S.user.nome || S.user.email || 'Usuário').split(' ')[0];
     if (S.user.perfil === 'bloqueado') { $('#titulo').textContent = cfg('nomeCia'); return telaSemAcesso({ email: S.user.email, pendente: r.pendente, podePedir: true }); }
     render();
+    migrarFolgaSoldados();
   } catch (e) {
     // Sem acesso nem à planilha (ainda não compartilhada): mostra o e-mail para o administrador cadastrar.
     let email = '';
