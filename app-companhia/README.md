@@ -83,7 +83,20 @@ Se a pessoa ainda não tem acesso nem à planilha, o botão "Pedir acesso" não 
 
 1. **Configurações → Documentos:** confira o cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / 11º DEPÓSITO DE SUPRIMENTO / 1ª COMPANHIA), acrescente a linha do escalão superior se a OM usa, e preencha o nome do Cmt Cia, o setor da cautela, as assinaturas e o detentor do material carga. O Brasão da República já vem como padrão nos documentos, e o **distintivo do 11º D Sup** aparece no topo do sistema. Os dois podem ser trocados ali mesmo.
 2. **Configurações → Feriados:** "Incluir feriados nacionais do ano" e acrescente os locais.
-3. **Configurações → Tipos de serviço:** ajuste os serviços (vêm Adj Of Dia, Cmt Gda, Cb Gda e Sd Gda como externos; Cb Dia, Plantão e Permanência como internos), os dias de cada um e quem concorre.
+3. **Configurações → Tipos de serviço:** os serviços da 1ª Cia já vêm prontos:
+
+   | Serviço | Concorrem | Grupo no aditamento |
+   |---|---|---|
+   | Oficial de Dia | 1º Ten, 2º Ten | Externo |
+   | Adjunto | 1º Sgt, 2º Sgt | Externo |
+   | Sargento de Dia | 3º Sgt | Interno |
+   | Comandante da Guarda | 3º Sgt | Externo |
+   | Cabo da Guarda | Cb | Externo |
+   | Cabo de Dia | Cb | Interno |
+   | Sentinela | Sd EP, Sd EV, Sd | Externo |
+   | Permanência | Sd EP, Sd EV, Sd | Interno |
+
+   Ao criar ou editar um serviço, **marque as caixinhas** dos postos e graduações que concorrem, escolha se é externo ou interno e em que dias ocorre (todos, só dias úteis ou só sábado, domingo e feriado). O botão **Restaurar serviços padrão** volta a esta lista.
 4. **Efetivo → Importar planilha:** primeiro o **tripão**, depois o **plano de férias**. Preencha a **antiguidade** (1 = mais antigo) para o desempate da escala.
 5. **Escala → Importar planilha antiga:** traga a planilha de escala atual para manter as folgas.
 6. **Material → Importar planilha** com a relação carga.

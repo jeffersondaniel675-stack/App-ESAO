@@ -188,6 +188,12 @@ td.acts { white-space: nowrap; text-align: right; }
 .right { text-align: right; }
 .res h3 { display: flex; gap: 8px; align-items: center; }
 #print { display: none; }
+.campo-postos { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+.form .campo-postos .req::after { content: " *"; color: var(--danger); }
+.postos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.postos fieldset { border: 1px solid var(--border); border-radius: 6px; margin: 0; padding: 6px 10px 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.postos legend { font-size: 12.5px; color: var(--muted); padding: 0 4px; }
+.postos label { flex-direction: row !important; align-items: center; gap: 5px !important; font-weight: 400 !important; color: var(--text) !important; }
 .sem-acesso .hamb, .sem-acesso .links, .sem-acesso .vsep, .sem-acesso .pop-wrap, .sem-acesso .busca { display: none; }
 .form .secao { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--border); font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--azul-escuro); }
 .adprev { background: #fff; color: #000; border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px 14px; max-height: 420px; overflow: auto; }
@@ -312,7 +318,7 @@ const CHAVE = { Usuarios: 'email', Config: 'chave', Feriados: 'data' };
 const chaveDe = t => CHAVE[t] || 'id';
 
 const Demo = {
-  KEY: 'sistema-cia-demo-v1',
+  KEY: 'sistema-cia-demo-v2',
   ler() { try { return JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { return null; } },
   gravar(db) { try { localStorage.setItem(this.KEY, JSON.stringify(db)); } catch (e) { /* sem armazenamento: segue só em memória */ } this.mem = db; },
   db() { return this.mem || this.ler() || (this.mem = semente()); },
@@ -367,6 +373,17 @@ const POSTOS = ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', '
 const POSTO_ALIAS = { cabo: 'Cb', soldado: 'Sd', sdep: 'Sd EP', sdev: 'Sd EV', subtenente: 'ST', aspirante: 'Asp', capitao: 'Cap', major: 'Maj', coronel: 'Cel', tenentecoronel: 'TC', '1ten': '1º Ten', '2ten': '2º Ten', '1sgt': '1º Sgt', '2sgt': '2º Sgt', '3sgt': '3º Sgt' };
 /** Posto/graduação como o sistema usa ("3° SGT" → "3º Sgt", "CABO" → "Cb"); vazio se não reconhecer. */
 const postoNorm = p => { const n = norm(p); return n ? (POSTOS.find(x => norm(x) === n) || POSTO_ALIAS[n] || '') : ''; };
+// Serviços da 1ª Cia (iguais aos do Code.gs): usados na demonstração e em "Restaurar serviços padrão".
+const TIPOS_PADRAO = [
+  { id: 'of-dia', nome: 'Oficial de Dia', postos: '1º Ten,2º Ten', ordem: 1, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'adj', nome: 'Adjunto', postos: '1º Sgt,2º Sgt', ordem: 2, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'sgt-dia', nome: 'Sargento de Dia', postos: '3º Sgt', ordem: 3, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' },
+  { id: 'cmt-gda', nome: 'Comandante da Guarda', postos: '3º Sgt', ordem: 4, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'cb-dia', nome: 'Cabo de Dia', postos: 'Cb', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' },
+  { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
+  { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim' }
+];
 const TIPOS_IMPED = ['Férias', 'Dispensa médica', 'Dispensa', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
 const TIPOS_MISSAO = ['Operação', 'Apoio', 'Instrução', 'Representação', 'Transporte', 'Guarda/Segurança', 'Outra'];
 const STATUS_MISSAO = ['Planejada', 'Em andamento', 'Concluída', 'Cancelada'];
@@ -467,6 +484,10 @@ function campoHTML(c, v) {
     input = `<select id="${id}" ${req}><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === val ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select>`;
   } else if (c.t === 'material') {
     input = `<select id="${id}" ${req}><option value=""></option>${S.db.Material.slice().sort((a, b) => a.descricao.localeCompare(b.descricao)).map(m => `<option value="${m.id}" ${m.id === val ? 'selected' : ''}>${esc((m.patrimonio ? m.patrimonio + ' – ' : '') + m.descricao)} (disp. ${disponivel(m)})</option>`).join('')}</select>`;
+  } else if (c.t === 'postos') {
+    const sel = ids(val);
+    const grupos = [['Oficiais', ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp']], ['Subtenentes e sargentos', ['ST', '1º Sgt', '2º Sgt', '3º Sgt']], ['Cabos e soldados', ['Cb', 'Sd EP', 'Sd EV', 'Sd']]];
+    input = `<div id="${id}" class="postos">${grupos.map(([g, l]) => `<fieldset><legend>${g}</legend>${l.map(pg => `<label><input type="checkbox" value="${esc(pg)}" ${sel.includes(pg) ? 'checked' : ''}> ${esc(pg)}</label>`).join('')}</fieldset>`).join('')}</div>`;
   } else if (c.t === 'militares') {
     const sel = ids(val);
     input = `<div><input type="search" placeholder="Filtrar…" oninput="filtrarChecks(this)" style="margin-bottom:6px"><div class="checks" id="${id}">${militaresAtivos().map(m => `<label data-n="${esc(norm(nomeMil(m)))}"><input type="checkbox" value="${m.id}" ${sel.includes(m.id) ? 'checked' : ''}> ${esc(nomeMil(m))}</label>`).join('')}</div></div>`;
@@ -477,6 +498,7 @@ function campoHTML(c, v) {
   } else {
     input = `<input type="${c.t || 'text'}" id="${id}" value="${esc(val)}" ${req} ${c.t === 'number' ? 'step="any"' : ''}>`;
   }
+  if (c.t === 'postos') return `<div class="full campo-postos"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</div>`;
   return `<label class="${c.full || ['textarea', 'militares'].includes(c.t) ? 'full' : ''}"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</label>`;
 }
 function filtrarChecks(inp) { const q = norm(inp.value); $$('label', inp.nextElementSibling).forEach(l => l.style.display = l.dataset.n.includes(q) ? '' : 'none'); }
@@ -504,9 +526,10 @@ function abrirForm({ titulo, campos, valores = {}, aoSalvar, extra = '' }) {
       const obj = { ...valores };
       for (const c of campos.filter(x => x.k)) {
         const el = $('#f_' + c.k);
-        if (c.t === 'militares') obj[c.k] = $$('input:checked', el).map(i => i.value).join(',');
+        if (c.t === 'militares' || c.t === 'postos') obj[c.k] = $$('input:checked', el).map(i => i.value).join(',');
         else if (c.t === 'file') { const url = await enviarArquivo(el.files[0]); if (url) obj[c.k] = url; }
         else obj[c.k] = el.value.trim();
+        if (c.t === 'postos' && c.req && !obj[c.k]) throw new Error('Marque pelo menos um posto ou graduação.');
       }
       await aoSalvar(obj);
       fecharModal(); render();
@@ -1875,11 +1898,11 @@ function vConfig() {
         <span class="muted">Aparece no alto de todos os documentos.</span></div></div></div>
       <div class="bar" style="margin-top:12px"><span class="grow"></span>${admin() ? '<button class="btn pri" onclick="salvarConfig()">Salvar</button>' : '<span class="muted">Somente o administrador altera.</span>'}</div></div>`;
   } else if (t === 'tipos') {
-    corpo = `<p class="muted">Cada tipo de serviço é uma coluna na escala e uma linha na 1ª parte do aditamento (em "Serviços externos" ou "Serviços internos"). Em "Concorrem" informe os postos/graduações, separados por vírgula (${POSTOS.join(', ')}).</p>
-      <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarTipo()">+ Tipo de serviço</button>' : ''}</div>
+    corpo = `<p class="muted">Cada tipo de serviço é uma coluna na escala e uma linha na 1ª parte do aditamento (em "Serviços externos" ou "Serviços internos"). Ao cadastrar ou editar um serviço, marque os postos e graduações que concorrem a ele.</p>
+      <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn" onclick="restaurarServicosPadrao()">Restaurar serviços padrão</button><button class="btn pri" onclick="editarTipo()">+ Tipo de serviço</button>' : ''}</div>
       ${tabela(S.db.TiposServico.slice().sort((a, b) => num(a.ordem) - num(b.ordem)), [
         { l: 'Ordem', v: x => esc(x.ordem), c: 'num' }, { l: 'Serviço', v: x => `<b>${esc(x.nome)}</b>` }, { l: 'Grupo', v: x => esc(x.grupo || 'Externo') },
-        { l: 'Dias', v: x => esc(x.dias || 'Todos') }, { l: 'Concorrem', v: x => esc(x.postos) },
+        { l: 'Dias', v: x => esc(x.dias || 'Todos') }, { l: 'Concorrem', v: x => esc(ids(x.postos).join(', ')) },
         { l: 'Aptos', v: x => militaresAtivos().filter(m => aptoPara(m, x)).length, c: 'num' }, { l: 'Gera sozinho', v: x => x.automatico === 'Não' ? 'Não' : 'Sim' }, { l: 'Ativo', v: x => sim(x.ativo) ? 'Sim' : 'Não' }
       ], pode() ? x => `<button class="btn sm" onclick="editarTipo('${x.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('TiposServico','${x.id}')">Excluir</button>` : null)}`;
   } else if (t === 'feriados') {
@@ -1934,10 +1957,20 @@ function editarTipo(id) {
   abrirForm({ titulo: id ? 'Editar tipo de serviço' : 'Novo tipo de serviço', valores: id ? TIPO[id] : { ordem: String(S.db.TiposServico.length + 1), ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim' },
     campos: [{ k: 'nome', l: 'Nome do serviço (como sai no aditamento)', req: true }, { k: 'ordem', l: 'Ordem', t: 'number' },
       { k: 'grupo', l: 'Grupo no aditamento', t: 'select', o: ['Externo', 'Interno'], vazio: false }, { k: 'dias', l: 'Em que dias ocorre', t: 'select', o: [['Todos', 'Todos os dias'], ['Preta', 'Só dias úteis (preta)'], ['Vermelha', 'Só sáb, dom e feriados (vermelha)']], vazio: false },
-      { k: 'postos', l: 'Postos/graduações que concorrem (separados por vírgula)', req: true, full: true },
+      { k: 'postos', l: 'Postos/graduações que concorrem a este serviço', t: 'postos', req: true },
       { k: 'automatico', l: 'Preencher na geração automática', t: 'select', o: [['Sim', 'Sim, pela folga'], ['Não', 'Não, lançamento manual']], vazio: false },
       { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], vazio: false }],
-    aoSalvar: o => { o.postos = ids(o.postos).map(p => postoNorm(p) || p).join(','); return salvar('TiposServico', [o]); } });
+    aoSalvar: o => salvar('TiposServico', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('TiposServico','${id}',true)">Excluir serviço</button></div>` : '' });
+}
+/** Volta aos serviços padrão da 1ª Cia. Serviços antigos que já têm escala lançada são desativados em vez de apagados. */
+async function restaurarServicosPadrao() {
+  if (!await confirmar('Voltar aos serviços padrão da 1ª Cia (Oficial de Dia, Adjunto, Sargento de Dia, Comandante da Guarda, Cabo da Guarda, Cabo de Dia, Sentinela e Permanência)? Os serviços que você criou e que já têm escala lançada ficam desativados; os outros são apagados.')) return;
+  const padrao = TIPOS_PADRAO.map(t => t.id);
+  const extras = S.db.TiposServico.filter(t => !padrao.includes(t.id));
+  const comEscala = new Set(S.db.Escala.map(e => e.tipoId));
+  await salvar('TiposServico', [...TIPOS_PADRAO.map(t => ({ ...t })), ...extras.filter(t => comEscala.has(t.id)).map(t => ({ ...t, ativo: 'Não' }))], extras.filter(t => !comEscala.has(t.id)).map(t => t.id));
+  toast('Serviços padrão restaurados.'); render();
 }
 function editarFeriado() {
   abrirForm({ titulo: 'Novo feriado', campos: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'descricao', l: 'Descrição', req: true }], aoSalvar: o => salvar('Feriados', [o]) });
@@ -2065,7 +2098,8 @@ function semente() {
     ['Cb', '', 'Lopes', 'João Lopes Silva'], ['Cb', '', 'Macedo', 'Felipe Macedo Ramos'], ['Cb', '', 'Cardoso', 'Tiago Cardoso Neves'], ['Cb', '', 'Brito', 'Renan Brito Sales'], ['Cb', '', 'Fontes', 'Ígor Fontes Lima'], ['Cb', '', 'Aguiar', 'Rui Aguiar Melo'],
     ['Sd EP', '', 'Souza', 'Gabriel Souza Lima'], ['Sd EP', '', 'Mendes', 'Caio Mendes Rocha'], ['Sd EP', '', 'Barros', 'Vitor Barros Faria'], ['Sd EP', '', 'Teixeira', 'Enzo Teixeira Luz'], ['Sd EP', '', 'Gama', 'Luan Gama Prado'],
     ['Sd EV', '', 'Monteiro', 'Davi Monteiro Sá'], ['Sd EV', '', 'Campos', 'Pedro Campos Leal'], ['Sd EV', '', 'Ribeiro', 'Hugo Ribeiro Paz'], ['Sd EV', '', 'Farias', 'Ian Farias Rego'],
-    ['Sd EV', '', 'Nogueira', 'Breno Nogueira Cruz'], ['Sd EV', '', 'Pinheiro', 'Kauã Pinheiro Dias'], ['Sd EV', '', 'Coelho', 'Levi Coelho Brandão'], ['Sd EV', '', 'Dantas', 'Murilo Dantas Reis']
+    ['Sd EV', '', 'Nogueira', 'Breno Nogueira Cruz'], ['Sd EV', '', 'Pinheiro', 'Kauã Pinheiro Dias'], ['Sd EV', '', 'Coelho', 'Levi Coelho Brandão'], ['Sd EV', '', 'Dantas', 'Murilo Dantas Reis'],
+    ['2º Ten', '', 'Lacerda', 'Vinícius Lacerda Rocha'], ['2º Ten', '', 'Barreto', 'Caio Barreto Lins'], ['3º Sgt', '', 'Moraes', 'Elias Moraes Sá'], ['3º Sgt', '', 'Pacheco', 'Ítalo Pacheco Reis'], ['3º Sgt', '', 'Teles', 'Rômulo Teles Alves']
   ].map(([postoGrad, numero, nomeGuerra, nomeCompleto], i) => ({
     id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
     dataNascimento: `${1975 + (i * 7) % 30}-${pad(1 + i % 12)}-${pad(1 + (i * 5) % 28)}`, cpf: '', precCp: '', tipoSanguineo: TIPOS_SANGUE[i % 8], peso: String(62 + (i * 3) % 30),
@@ -2073,10 +2107,7 @@ function semente() {
     cttEmergencia: `(61) 9${String(92000000 + i * 15731).slice(0, 4)}-${String(2000 + i * 53).slice(-4)}`, nomeCtt: ['Ana', 'Maria', 'José', 'Paula', 'Luís'][i % 5], parentesco: PARENTES[i % 5],
     cnh: i % 3 ? 'B' : 'AD', motoristaMilitar: i % 4 === 0 ? 'Sim' : 'Não', veiculo: i % 2 ? 'Carro' : ''
   }));
-  const tipos = [
-    ['adj', 'Adj Of Dia', '1º Sgt,2º Sgt,3º Sgt', 'Externo', 'Todos'], ['cmt-gda', 'Cmt Gda', '2º Sgt,3º Sgt', 'Externo', 'Vermelha'], ['cb-gda', 'Cb Gda', 'Cb', 'Externo', 'Todos'],
-    ['sd-gda', 'Sd Gda', 'Sd EP,Sd EV', 'Externo', 'Todos'], ['cb-dia', 'Cb Dia', 'Cb', 'Interno', 'Vermelha'], ['plantao', 'Plantão', 'Sd EP,Sd EV', 'Interno', 'Todos'], ['permanencia', 'Permanência', 'Cb,Sd EP', 'Interno', 'Todos']
-  ].map(([id, nome, postos, grupo, dias], i) => ({ id, nome, postos, ordem: String(i + 1), ativo: 'Sim', grupo, dias, automatico: 'Sim' }));
+  const tipos = TIPOS_PADRAO.map(t => ({ ...t }));
   const mat = (descricao, tipoMaterial, categoria, q, nrFicha, codMat, conta, valor, localizacao, patr = '') => ({ descricao, tipoMaterial, categoria, quantidade: String(q), unidade: 'un', nrFicha, codMat, contaContabil: conta, acervo: 'N', valor: String(valor), localizacao, patrimonio: patr, estado: 'Bom', ultimaConferencia: addDias(d, -10), obs: '', arquivoUrl: '' });
   const material = [
     mat('Fuzil 7,62 M964 (FAL)', 'Permanente', 'Armamento', 4, '010231', '00123001010', '123110105', 3150, 'Reserva de armamento', 'FIC0001001, FIC0001002, FIC0001003, FIC0001004'),
