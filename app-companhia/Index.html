@@ -177,6 +177,7 @@ td.acts { white-space: nowrap; text-align: right; }
 .right { text-align: right; }
 .res h3 { display: flex; gap: 8px; align-items: center; }
 #print { display: none; }
+.sem-acesso .hamb, .sem-acesso .links, .sem-acesso .vsep, .sem-acesso .pop-wrap, .sem-acesso .busca { display: none; }
 .form .secao { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--border); font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--azul-escuro); }
 .adprev { background: #fff; color: #000; border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px 14px; max-height: 420px; overflow: auto; }
 .quadro table { font-size: 12px; } .quadro th, .quadro td { padding: 3px 4px; text-align: center; border-right: 1px solid var(--cinza-5); }
@@ -304,6 +305,20 @@ const Demo = {
     const salvos = lista.map(o => { o = { ...o }; if (k === 'id' && !o.id) o.id = uid(); const i = db[t].findIndex(r => String(r[k]) === String(o[k])); if (i >= 0) db[t][i] = { ...db[t][i], ...o }; else db[t].push(o); return o; });
     this.gravar(db); return salvos;
   },
+  async quemSou() { return { email: 'demo@exemplo.com' }; },
+  async pedirAcesso() { return { situacao: 'registrado' }; },
+  async concederAcesso(email, nome, perfil) {
+    const db = this.db();
+    if (perfil !== 'admin' && !(db.Usuarios || []).some(u => u.perfil === 'admin' && u.email !== email)) throw new Error('O sistema precisa de pelo menos um administrador. Cadastre outro admin antes.');
+    const [usuario] = await this.salvarLote('Usuarios', [{ email, nome, perfil }], []);
+    const pedido = (db.Acessos || []).find(a => a.email === email); if (pedido) await this.salvarLote('Acessos', [{ ...pedido, status: 'Aprovado' }], []);
+    return { usuario, aviso: '' };
+  },
+  async removerAcesso(email) {
+    if (email === 'demo@exemplo.com') throw new Error('Você não pode remover o seu próprio acesso.');
+    await this.salvarLote('Usuarios', [], [email]); return { aviso: '' };
+  },
+  async recusarAcesso(email) { const a = (this.db().Acessos || []).find(x => x.email === email); if (a) await this.salvarLote('Acessos', [{ ...a, status: 'Recusado' }], []); return true; },
   async uploadArquivo(nome) { return { url: '#', nome, id: uid() }; },
   async importarDePlanilha() { throw new Error('A importação direto do Google Drive só funciona com o sistema publicado no Google. Use um arquivo .xlsx ou .csv.'); },
   async salvarPdf(tipo, titulo, html, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'PDF' }], []))[0]; },
@@ -313,11 +328,11 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Config', 'Documentos'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => ['admin', 'editor'].includes(S.user?.perfil);
 const admin = () => S.user?.perfil === 'admin';
-const cfg = k => (S.db.Config.find(c => c.chave === k) || {}).valor || PADRAO_CFG[k] || '';
+const cfg = k => ((S.db.Config || []).find(c => c.chave === k) || {}).valor || PADRAO_CFG[k] || '';
 
 async function salvar(tabela, lista, excluir = []) {
   try {
@@ -761,7 +776,8 @@ function vPainel() {
   const abertas = gruposCautela().filter(g => g.aberta);
   const vencidas = abertas.filter(g => g.previsaoDevolucao && g.previsaoDevolucao < d);
   const manut = S.db.Material.filter(m => m.estado === 'Em manutenção' || m.estado === 'Inservível');
-  return `<h2>Painel</h2><p class="sub">${esc(SEMANA[dataDe(d).getDay()])}, ${fmtExt(d)} · escala <span class="tag ${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}">${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}</span>${FERIADO[d] ? ' · ' + esc(FERIADO[d]) : ''}</p>
+  const pedidosAcesso = admin() ? (S.db.Acessos || []).filter(x => x.status === 'Pendente').length : 0;
+  return `${pedidosAcesso ? `<div class="card" style="border-left:4px solid var(--ouro);margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><b class="grow">${pedidosAcesso} pedido(s) de acesso aguardando aprovação.</b><button class="btn sm pri" onclick="S.sub.config='usuarios';irPara('config')">Ver pedidos</button></div>` : ''}<h2>Painel</h2><p class="sub">${esc(SEMANA[dataDe(d).getDay()])}, ${fmtExt(d)} · escala <span class="tag ${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}">${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}</span>${FERIADO[d] ? ' · ' + esc(FERIADO[d]) : ''}</p>
   <div class="cards">
     <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
     <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
@@ -1820,10 +1836,14 @@ function vConfig() {
       ${tabela(S.db.Feriados.slice().sort((a, b) => a.data.localeCompare(b.data)), [{ l: 'Data', v: f => `${fmt(f.data)} <span class="muted">${SEM_CURTA[dataDe(f.data).getDay()]}</span>` }, { l: 'Descrição', v: f => esc(f.descricao) }],
         pode() ? f => `<button class="btn sm dng" onclick="excluir('Feriados','${f.data}')">Excluir</button>` : null)}`;
   } else if (t === 'usuarios') {
-    corpo = `<p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta (não vê o tripão). Quem não estiver na lista não entra. A planilha também precisa estar compartilhada com a pessoa.</p>
+    const pend = (S.db.Acessos || []).filter(a => a.status === 'Pendente');
+    corpo = `${pend.length ? `<h3 style="margin-top:0">Pedidos de acesso <span class="tag warn">${pend.length}</span></h3>
+      ${tabela(pend, [{ l: 'Pedido em', v: a => `${fmt(a.data.slice(0, 10))} <span class="muted">${esc(a.data.slice(11))}</span>` }, { l: 'Nome informado', v: a => `<b>${esc(a.nome || '—')}</b>` }, { l: 'E-mail Google', v: a => esc(a.email) }],
+        a => `<button class="btn sm pri" onclick="aprovarAcesso('${esc(a.email)}')">Aprovar…</button> <button class="btn sm dng" onclick="recusarAcesso('${esc(a.email)}')">Recusar</button>`)}<h3>Usuários cadastrados</h3>` : ''}
+      <p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta (não vê o tripão). Ao salvar, o sistema já compartilha a planilha e a pasta do Drive com a pessoa (editor/admin como Editor, leitor como Leitor), e ao excluir, tira o compartilhamento.</p>
       <div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarUsuario()">+ Usuário</button></div>
-      ${tabela(S.db.Usuarios || [], [{ l: 'E-mail', v: u => esc(u.email) }, { l: 'Nome', v: u => esc(u.nome) }, { l: 'Perfil', v: u => `<span class="tag">${esc(u.perfil)}</span>` }],
-        u => `<button class="btn sm" onclick="editarUsuario('${esc(u.email)}')">Editar</button> <button class="btn sm dng" onclick="excluir('Usuarios','${esc(u.email)}')">Excluir</button>`)}`;
+      ${tabela((S.db.Usuarios || []).slice().sort((a, b) => PERFIS.indexOf(a.perfil) - PERFIS.indexOf(b.perfil) || String(a.nome).localeCompare(b.nome)), [{ l: 'Nome', v: u => `<b>${esc(u.nome)}</b>${u.email === S.user.email ? ' <span class="tag info">você</span>' : ''}` }, { l: 'E-mail', v: u => esc(u.email) }, { l: 'Perfil', v: u => `<span class="tag ${u.perfil === 'admin' ? 'info' : u.perfil === 'editor' ? 'ok' : ''}">${esc(u.perfil)}</span>` }],
+        u => `<button class="btn sm" onclick="editarUsuario('${esc(u.email)}')">Editar</button>${u.email !== S.user.email ? ` <button class="btn sm dng" onclick="removerUsuario('${esc(u.email)}')">Excluir</button>` : ''}`)}`;
   } else {
     corpo = `<div class="card"><p>Baixe uma cópia de todos os dados em JSON (além do histórico de versões que o próprio Google Sheets guarda).</p>
       <button class="btn" onclick="baixarBackup()">Baixar backup</button>
@@ -1878,10 +1898,77 @@ async function feriadosNacionais() {
   if (!lista.length) return toast('Os feriados nacionais de ' + y + ' já estão cadastrados.');
   await salvar('Feriados', lista); toast(`${lista.length} feriado(s) de ${y} incluído(s).`); render();
 }
-function editarUsuario(email) {
-  abrirForm({ titulo: email ? 'Editar usuário' : 'Novo usuário', valores: email ? S.db.Usuarios.find(u => u.email === email) : { perfil: 'editor' },
-    campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome' }, { k: 'perfil', l: 'Perfil', t: 'select', o: ['admin', 'editor', 'leitor'], vazio: false }],
-    aoSalvar: o => { o.email = o.email.toLowerCase(); return salvar('Usuarios', [o]); } });
+// ---------- usuários: cadastrar, aprovar pedidos e remover (o servidor também ajusta o compartilhamento)
+const PERFIS = ['admin', 'editor', 'leitor'];
+const OPCOES_PERFIL = [['editor', 'editor – lança e altera dados'], ['leitor', 'leitor – só consulta'], ['admin', 'admin – tudo, inclusive usuários']];
+function editarUsuario(email, padrao = {}) {
+  const atual = email ? S.db.Usuarios.find(u => u.email === email) : null;
+  abrirForm({ titulo: atual ? 'Editar usuário' : (padrao.email ? 'Aprovar pedido de acesso' : 'Novo usuário'), valores: atual || { perfil: 'editor', ...padrao },
+    campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome (posto/grad e nome de guerra)', req: true }, { k: 'perfil', l: 'Perfil', t: 'select', o: OPCOES_PERFIL, vazio: false }],
+    extra: '<p class="muted" style="margin:12px 0 0">Ao salvar, a planilha e a pasta do sistema no Drive são compartilhadas com este e-mail. O Google avisa a pessoa por e-mail.</p>',
+    aoSalvar: async o => {
+      const mail = o.email.trim().toLowerCase();
+      if (atual && mail !== atual.email) throw new Error('Para trocar o e-mail, exclua o usuário e cadastre de novo.');
+      toast('Salvando e compartilhando…');
+      const r = await api('concederAcesso', mail, o.nome, o.perfil);
+      S.db.Usuarios = S.db.Usuarios.filter(u => u.email !== mail).concat(r.usuario);
+      const ped = (S.db.Acessos || []).find(a => a.email === mail); if (ped) ped.status = 'Aprovado';
+      toast(r.aviso ? 'Usuário salvo, mas ' + r.aviso + '. Compartilhe manualmente.' : `${o.nome || mail} cadastrado como ${o.perfil}.`, !!r.aviso);
+    } });
+}
+function aprovarAcesso(email) { const a = S.db.Acessos.find(x => x.email === email); editarUsuario(null, { email, nome: a.nome, perfil: 'leitor' }); }
+async function recusarAcesso(email) {
+  if (!await confirmar(`Recusar o pedido de acesso de ${email}?`)) return;
+  try { await api('recusarAcesso', email); S.db.Acessos.find(a => a.email === email).status = 'Recusado'; toast('Pedido recusado.'); render(); }
+  catch (e) { toast(e.message, true); }
+}
+async function removerUsuario(email) {
+  if (!await confirmar(`Tirar o acesso de ${email}? A planilha e a pasta do Drive também deixam de ser compartilhadas com esse e-mail.`)) return;
+  try {
+    const r = await api('removerAcesso', email);
+    S.db.Usuarios = S.db.Usuarios.filter(u => u.email !== email);
+    toast(r.aviso ? 'Acesso removido, mas ' + r.aviso + '.' : 'Acesso removido.', !!r.aviso); render();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ---------- tela de quem ainda não tem acesso
+function telaSemAcesso({ email, pendente, podePedir, detalhe }) {
+  const app = cfg('nomeCia') || 'Sistema da Companhia';
+  S.semAcesso = { email };
+  document.body.classList.add('sem-acesso');
+  $('#sigla').innerHTML = ICO.escudo + esc(sigla());
+  $('#org').innerHTML = cabecalhoDoc().filter(l => !/minist[eé]rio/i.test(l)).slice(0, 3).map(esc).join('<br>');
+  $('#crumb').innerHTML = '';
+  $('#app').innerHTML = `<div class="card" style="max-width:640px;margin:24px auto">
+    <h2 style="font-size:22px">Você ainda não tem acesso</h2>
+    <p>Para entrar no ${esc(app)}, o administrador precisa cadastrar o seu e-mail Google:</p>
+    <div class="bar"><code id="meu-email" style="font-size:17px;font-weight:700;padding:8px 12px;background:var(--cinza-5);border-radius:6px;user-select:all">${esc(email || 'e-mail não identificado')}</code>
+      <button class="btn sm" onclick="copiarEmail()">Copiar e-mail</button></div>
+    ${pendente ? '<p class="tag ok" style="white-space:normal;padding:8px 12px">Seu pedido já foi enviado. Avise o administrador para aprovar e recarregue esta página depois.</p>' : `
+    <div class="form" style="margin-top:12px"><label class="full">Posto/graduação e nome de guerra<input type="text" id="pa_nome" placeholder="Ex.: 3º Sgt Fulano"></label></div>
+    <div class="bar" style="margin-top:12px">${podePedir ? '<button class="btn pri" onclick="enviarPedidoAcesso()">Pedir acesso</button>' : ''}
+      <a class="btn" id="pa_zap" href="https://wa.me/" target="_blank" onclick="linkWhatsApp(this)">Enviar pelo WhatsApp</a></div>
+    <p class="muted" style="margin-top:12px">${podePedir ? '"Pedir acesso" deixa o pedido no sistema para o administrador aprovar.' : 'Envie o seu e-mail ao administrador pelo WhatsApp ou pessoalmente.'} Depois de aprovado, recarregue esta página.</p>`}
+    ${detalhe ? `<p class="muted" style="font-size:12px">Detalhe técnico: ${esc(detalhe)}</p>` : ''}</div>`;
+}
+/** Mensagem pronta para mandar ao administrador (o link abre o WhatsApp para escolher o contato). */
+function linkWhatsApp(a) {
+  const nome = ($('#pa_nome') ? $('#pa_nome').value : '').trim();
+  a.href = 'https://wa.me/?text=' + encodeURIComponent(`Solicito acesso ao ${cfg('nomeCia')}.\nNome: ${nome || '(informe posto/grad e nome de guerra)'}\nE-mail Google: ${S.semAcesso.email}`);
+}
+function copiarEmail() {
+  const t = $('#meu-email').textContent;
+  const sel = () => { const r = document.createRange(); r.selectNodeContents($('#meu-email')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('E-mail selecionado: use Ctrl+C para copiar.'); };
+  try { navigator.clipboard.writeText(t).then(() => toast('E-mail copiado.'), sel); } catch (e) { sel(); }
+}
+async function enviarPedidoAcesso() {
+  const nome = $('#pa_nome').value.trim();
+  if (!nome) return toast('Informe o posto/graduação e o nome de guerra.', true);
+  try {
+    await api('pedirAcesso', nome);
+    toast('Pedido enviado ao administrador.');
+    telaSemAcesso({ email: S.user.email, pendente: true, podePedir: true });
+  } catch (e) { toast('Não foi possível registrar o pedido: ' + e.message + '. Use o WhatsApp.', true); }
 }
 function baixarBackup() {
   const blob = new Blob([JSON.stringify(S.db, null, 1)], { type: 'application/json' });
@@ -1959,7 +2046,8 @@ function semente() {
       { id: 'c3', numero: `002/${ano}`, materialId: 'mt3', militarId: 'm2', quantidade: '1', numeracao: 'FIC0003002', destino: 'Sala do S1', dataSaida: addDias(d, -5), previsaoDevolucao: addDias(d, 25), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' }],
     Pedidos: [{ id: 'p1', numero: `001/${ano}`, data: addDias(d, -2), de: 'Cmt Pel Sup da 1ª Cia', para: 'Fiscal Administrativo', status: 'Enviado', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
       itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 6, un: 'com 500 unidades cada', obs: '' }, { esp: 'Toner de tinta preta para impressora', qtd: 2, un: 'Unidades', obs: '' }, { esp: 'Caneta esferográfica', qtd: 30, un: 'Unidades', obs: 'azul e preta' }, { esp: 'Desinfetante', qtd: 3, un: 'Litros', obs: '' }]) }],
-    Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }],
+    Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, { email: 'sgte.exemplo@exemplo.com', nome: '1º Sgt Nunes', perfil: 'editor' }],
+    Acessos: [{ email: 'sd.gama.exemplo@exemplo.com', nome: 'Sd EP Gama', data: `${d} 07:42`, status: 'Pendente' }],
     Documentos: [],
     Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
   };
@@ -1982,9 +2070,15 @@ async function iniciar() {
     S.db = Object.fromEntries(TABS.map(t => [t, r.dados[t] || []]));
     indexar();
     $('#user').textContent = (S.user.nome || S.user.email || 'Usuário').split(' ')[0];
+    if (S.user.perfil === 'bloqueado') { $('#titulo').textContent = cfg('nomeCia'); return telaSemAcesso({ email: S.user.email, pendente: r.pendente, podePedir: true }); }
     render();
   } catch (e) {
-    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p></div>`;
+    // Sem acesso nem à planilha (ainda não compartilhada): mostra o e-mail para o administrador cadastrar.
+    let email = '';
+    try { email = (await api('quemSou')).email; } catch (e2) { /* sem identificação */ }
+    S.user = { email, perfil: 'bloqueado' };
+    if (/permiss|permission|acesso|access|autoriz/i.test(e.message)) return telaSemAcesso({ email, podePedir: false, detalhe: e.message });
+    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>${email ? `<p class="muted">Seu e-mail Google: <b>${esc(email)}</b></p>` : ''}</div>`;
   }
 }
 iniciar();

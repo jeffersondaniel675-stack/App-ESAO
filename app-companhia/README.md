@@ -50,17 +50,34 @@ O caminho inverso, de planilha para o sistema, aceita **.xlsx, .xls, .ods, .csv 
    - *Executar como:* **Usuário que acessa o app da Web**
    - *Quem pode acessar:* **Qualquer pessoa com uma Conta do Google**
    - Clique em **Implantar** e copie o link `https://script.google.com/macros/s/…/exec`. Esse é o endereço do sistema; salve nos favoritos ou na tela inicial do celular.
-6. **Dê acesso aos outros militares.**
-   - Compartilhe a **planilha** e a **pasta "Arquivos - …"** do Drive com o e-mail Google de cada um (como *Editor*).
-   - No sistema, em **Configurações → Usuários**, cadastre o e-mail e o perfil:
-     - `admin`: tudo, inclusive usuários e configurações;
-     - `editor`: lança escala, missões, aditamentos e material;
-     - `leitor`: só consulta.
-   - Quem não estiver na lista não entra no sistema.
+6. **Dê acesso aos outros militares** (veja "Usuários e acesso" abaixo). Mande o link do sistema para a pessoa: ela abre, vê o próprio e-mail e toca em **Pedir acesso** ou manda o e-mail pelo WhatsApp. Você aprova em **Configurações → Usuários**.
 
 > **Primeiro acesso de cada usuário:** o Google mostra "O Google não verificou este app" (porque o app é seu, não publicado na loja). Clique em **Avançado → Acessar (nome do projeto)** e autorize. Só acontece uma vez.
 
 > **Ao alterar o código depois**, use **Implantar → Gerenciar implantações → editar (lápis) → Versão: nova versão**, assim o link continua o mesmo.
+
+## Usuários e acesso
+
+Só o **admin** cadastra pessoas e muda perfis. Pode haver mais de um admin, por exemplo o Sgte ou o S1.
+
+| Perfil | Pode |
+|---|---|
+| **admin** | Tudo, inclusive usuários, perfis e Configurações → Documentos. |
+| **editor** | Lança e altera escala, aditamentos, efetivo, tripão, férias, missões, material, cautelas e pedidos; gera PDF e documento editável. |
+| **leitor** | Só consulta. Não vê o tripão. |
+
+**Como a pessoa entra:**
+1. Ela abre o link do sistema com a conta Google dela. Se ainda não estiver cadastrada, vê **"Você ainda não tem acesso"**, com o e-mail dela, um botão **Pedir acesso** e outro para **Enviar pelo WhatsApp**.
+2. O pedido aparece para o admin no **Painel** ("pedido(s) de acesso aguardando") e em **Configurações → Usuários → Pedidos de acesso**.
+3. O admin clica em **Aprovar…**, escolhe o perfil e salva. Também dá para cadastrar direto em **+ Usuário**, só com o e-mail.
+
+**Ao salvar, o próprio sistema compartilha a planilha e a pasta "Arquivos - …" do Drive**: admin e editor como *Editor*, leitor como *Leitor*. O Google avisa a pessoa por e-mail. Ao mudar o perfil o compartilhamento é ajustado, e ao **Excluir** é retirado.
+
+Se a pessoa ainda não tem acesso nem à planilha, o botão "Pedir acesso" não funciona, porque não há onde gravar o pedido. Nesse caso a tela mostra o e-mail para ela mandar pelo WhatsApp, e o admin cadastra em **+ Usuário**.
+
+**Proteção:** as abas `Usuarios`, `Acessos` e `Config` ficam protegidas na planilha, e só os admins editam. Assim ninguém muda o próprio perfil abrindo a planilha direto. O sistema não deixa ficar sem administrador e não deixa o admin excluir a si mesmo.
+
+> Quem já tinha instalado antes desta versão: depois de colar o código novo, rode `setup` mais uma vez no editor para criar a aba `Acessos` e proteger as abas.
 
 ## Primeiros passos dentro do sistema
 
@@ -107,7 +124,7 @@ O botão **Atalhos** reúne as ações mais usadas (nova missão, novo aditament
 
 ## Como os dados ficam na planilha
 
-Cada aba é uma tabela, com a linha 1 de cabeçalho: `Militares` (com o tripão), `Impedimentos` (férias e afastamentos), `TiposServico`, `Escala`, `Feriados`, `Missoes`, `Aditamentos`, `Material`, `Cautelas` (uma linha por item; o número agrupa a cautela), `Pedidos`, `Usuarios`, `Config`, `Documentos` (PDFs e editáveis) e `Log` (registro de quem alterou o quê). Dá para consultar e filtrar direto na planilha, mas **prefira editar pelo sistema** para não quebrar os vínculos (ids). O histórico de versões do Google Planilhas (Arquivo → Histórico de versões) serve como backup; há também "Configurações → Backup" para baixar tudo em JSON.
+Cada aba é uma tabela, com a linha 1 de cabeçalho: `Militares` (com o tripão), `Impedimentos` (férias e afastamentos), `TiposServico`, `Escala`, `Feriados`, `Missoes`, `Aditamentos`, `Material`, `Cautelas` (uma linha por item; o número agrupa a cautela), `Pedidos`, `Usuarios`, `Acessos` (pedidos de acesso), `Config`, `Documentos` (PDFs e editáveis) e `Log` (registro de quem alterou o quê). Dá para consultar e filtrar direto na planilha, mas **prefira editar pelo sistema** para não quebrar os vínculos (ids). O histórico de versões do Google Planilhas (Arquivo → Histórico de versões) serve como backup; há também "Configurações → Backup" para baixar tudo em JSON.
 
 Anexos (termos de cautela digitalizados, fotos, ordens de missão) e os Google Docs dos aditamentos ficam na pasta **"Arquivos - (nome da planilha)"** do Drive.
 
@@ -120,4 +137,4 @@ Abra o `Index.html` direto no navegador: ele entra em **modo demonstração**, c
 - Feito para o tamanho de uma subunidade (centenas de militares e alguns milhares de lançamentos). Cada abertura carrega todos os dados de uma vez.
 - Arquivos anexados: até 25 MB cada.
 - Não guarde no sistema informação classificada (sigilosa): a planilha fica em conta Google comum.
-- **Dados pessoais (LGPD):** o tripão tem CPF, endereço e telefones. Só `admin` e `editor` veem a aba Tripão. Ainda assim, quem tem acesso à planilha vê tudo, então compartilhe a planilha só com quem precisa. O perfil `leitor` vê o plano de chamada, que é para acionamento.
+- **Dados pessoais (LGPD):** o tripão tem CPF, endereço e telefones. Só `admin` e `editor` veem a aba Tripão no sistema. Ainda assim, quem tem acesso à planilha (inclusive o leitor, como Leitor) consegue abrir as abas direto no Google Sheets, então cadastre só quem precisa. O perfil `leitor` vê o plano de chamada, que é para acionamento.

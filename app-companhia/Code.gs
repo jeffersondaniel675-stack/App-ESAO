@@ -23,11 +23,14 @@ const TABELAS = {
   Usuarios: ['email', 'nome', 'perfil'],
   Config: ['chave', 'valor'],
   Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
+  Acessos: ['email', 'nome', 'data', 'status'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
 const SOMENTE_ADMIN = ['Usuarios', 'Config'];
-const SOMENTE_LEITURA = ['Log'];
+// Usuarios e Acessos só mudam pelas funções de acesso abaixo, que também compartilham a planilha e a pasta.
+const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos'];
+const PERFIS = ['admin', 'editor', 'leitor'];
 
 const CONFIG_PADRAO = {
   cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n11º DEPÓSITO DE SUPRIMENTO\n1ª COMPANHIA',
@@ -103,6 +106,7 @@ function setup() {
 
   const email = Session.getActiveUser().getEmail();
   if (email && !lerTabela_('Usuarios').length) gravar_('Usuarios', [{ email: email, nome: 'Administrador', perfil: 'admin' }], []);
+  protegerAbas_();
 }
 
 // ---------------------------------------------------------------- API chamada pela página
@@ -110,11 +114,16 @@ function setup() {
 /** Carrega tudo o que a página precisa numa única chamada. */
 function bootstrap() {
   const u = usuario_();
-  if (u.perfil === 'bloqueado') throw new Error('Seu e-mail (' + u.email + ') não está autorizado. Peça ao administrador para cadastrá-lo na aba Usuarios.');
+  if (u.perfil === 'bloqueado') {
+    // Quem não está cadastrado vê só a tela de pedido de acesso, com a identificação da Cia.
+    const cfg = configMap_();
+    const pedido = lerTabela_('Acessos').filter(function (a) { return a.email === u.email && a.status === 'Pendente'; })[0];
+    return { usuario: u, pendente: !!pedido, dados: { Config: ['sigla', 'nomeCia', 'cabecalho'].map(function (k) { return { chave: k, valor: cfg[k] || '' }; }) } };
+  }
   const dados = {};
   Object.keys(TABELAS).forEach(function (t) {
     if (t === 'Log') return;
-    if (t === 'Usuarios' && u.perfil !== 'admin') return;
+    if ((t === 'Usuarios' || t === 'Acessos') && u.perfil !== 'admin') return;
     dados[t] = lerTabela_(t);
   });
   return { usuario: u, dados: dados };
@@ -268,6 +277,122 @@ function usuario_() {
   const u = usuarios.filter(function (x) { return String(x.email).toLowerCase() === email; })[0];
   if (!u) return { email: email, nome: email, perfil: 'bloqueado' };
   return { email: email, nome: u.nome || email, perfil: u.perfil || 'leitor' };
+}
+
+// ---------------------------------------------------------------- acesso de usuários
+
+/** E-mail de quem está acessando. Funciona mesmo sem acesso à planilha (tela "sem acesso"). */
+function quemSou() {
+  return { email: (Session.getActiveUser().getEmail() || '').toLowerCase() };
+}
+
+/** Quem não está cadastrado registra o pedido; o e-mail vem da sessão Google, nunca do formulário. */
+function pedirAcesso(nome) {
+  const u = usuario_();
+  if (u.perfil !== 'bloqueado') return { situacao: 'ja-cadastrado' };
+  if (!u.email) throw new Error('Não foi possível identificar o seu e-mail Google.');
+  const atual = lerTabela_('Acessos').filter(function (a) { return a.email === u.email; })[0];
+  if (atual && atual.status === 'Pendente') return { situacao: 'pendente' };
+  const data = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+  gravar_('Acessos', [{ email: u.email, nome: String(nome || '').trim().slice(0, 120), data: data, status: 'Pendente' }], []);
+  registrarLog_('pedir acesso', 'Acessos', u.email);
+  return { situacao: 'registrado' };
+}
+
+/**
+ * Cadastra ou altera um usuário e ajusta o compartilhamento da planilha e da pasta do sistema:
+ * admin e editor como Editor, leitor como Leitor. Admins também podem editar as abas protegidas.
+ */
+function concederAcesso(email, nome, perfil) {
+  exigirAdmin_();
+  email = String(email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('E-mail inválido: ' + email);
+  if (PERFIS.indexOf(perfil) < 0) throw new Error('Perfil inválido: ' + perfil);
+  const anterior = lerTabela_('Usuarios').filter(function (x) { return x.email === email; })[0];
+  if (anterior && anterior.perfil === 'admin' && perfil !== 'admin') garantirOutroAdmin_(email);
+  const registro = { email: email, nome: String(nome || '').trim(), perfil: perfil };
+  gravar_('Usuarios', [registro], []);
+  const pedido = lerTabela_('Acessos').filter(function (a) { return a.email === email; })[0];
+  if (pedido) gravar_('Acessos', [Object.assign({}, pedido, { status: 'Aprovado' })], []);
+  const aviso = compartilhar_(email, perfil);
+  registrarLog_('conceder acesso', 'Usuarios', email + ' ' + perfil);
+  return { usuario: registro, aviso: aviso };
+}
+
+/** Tira o usuário do sistema e o compartilhamento. Não deixa o sistema ficar sem administrador. */
+function removerAcesso(email) {
+  exigirAdmin_();
+  email = String(email || '').trim().toLowerCase();
+  if (email === quemSou().email) throw new Error('Você não pode remover o seu próprio acesso.');
+  const atual = lerTabela_('Usuarios').filter(function (x) { return x.email === email; })[0];
+  if (!atual) return { aviso: '' };
+  if (atual.perfil === 'admin') garantirOutroAdmin_(email);
+  gravar_('Usuarios', [], [email]);
+  const aviso = compartilhar_(email, null);
+  registrarLog_('remover acesso', 'Usuarios', email);
+  return { aviso: aviso };
+}
+
+function recusarAcesso(email) {
+  exigirAdmin_();
+  const pedido = lerTabela_('Acessos').filter(function (a) { return a.email === email; })[0];
+  if (pedido) gravar_('Acessos', [Object.assign({}, pedido, { status: 'Recusado' })], []);
+  registrarLog_('recusar acesso', 'Acessos', email);
+  return true;
+}
+
+function exigirAdmin_() {
+  if (usuario_().perfil !== 'admin') throw new Error('Só o administrador cadastra usuários.');
+}
+function garantirOutroAdmin_(email) {
+  const admins = lerTabela_('Usuarios').filter(function (x) { return x.perfil === 'admin' && x.email !== email; });
+  if (!admins.length) throw new Error('O sistema precisa de pelo menos um administrador. Cadastre outro admin antes.');
+}
+
+/** Ajusta o compartilhamento (perfil null = remove). Devolve um aviso se algo não puder ser feito. */
+function compartilhar_(email, perfil) {
+  const avisos = [];
+  const ss = planilha_();
+  let dono = '';
+  try { dono = ss.getOwner().getEmail().toLowerCase(); } catch (e) { /* planilha em drive compartilhado */ }
+  if (email === dono) return '';
+  const alvos = [['a planilha', ss]];
+  try { alvos.push(['a pasta do Drive', pasta_()]); } catch (e) { avisos.push('pasta do Drive não configurada'); }
+  alvos.forEach(function (par) {
+    const nome = par[0], alvo = par[1];
+    try {
+      const editores = alvo.getEditors().map(function (x) { return x.getEmail().toLowerCase(); });
+      const leitores = alvo.getViewers().map(function (x) { return x.getEmail().toLowerCase(); });
+      if (perfil === 'admin' || perfil === 'editor') {
+        if (editores.indexOf(email) < 0) alvo.addEditor(email);
+      } else {
+        if (editores.indexOf(email) >= 0) alvo.removeEditor(email);
+        if (perfil === 'leitor' && leitores.indexOf(email) < 0) alvo.addViewer(email);
+        if (!perfil && leitores.indexOf(email) >= 0) alvo.removeViewer(email);
+      }
+    } catch (e) { avisos.push('não foi possível ajustar o compartilhamento d' + nome + ' (' + e.message + ')'); }
+  });
+  try { protegerAbas_(); } catch (e) { avisos.push('não foi possível atualizar a proteção das abas (' + e.message + ')'); }
+  return avisos.join('; ');
+}
+
+/** Usuarios, Acessos e Config ficam protegidas na planilha: só os admins editam, mesmo abrindo a planilha direto. */
+function protegerAbas_() {
+  const ss = planilha_();
+  const admins = lerTabela_('Usuarios').filter(function (x) { return x.perfil === 'admin'; }).map(function (x) { return x.email; });
+  ['Usuarios', 'Acessos', 'Config'].forEach(function (nome) {
+    const sh = ss.getSheetByName(nome);
+    if (!sh) return;
+    const prot = sh.getProtections(SpreadsheetApp.ProtectionType.SHEET)[0] || sh.protect().setDescription('Somente administradores do sistema');
+    if (prot.canDomainEdit()) prot.setDomainEdit(false);
+    const atuais = prot.getEditors().map(function (x) { return x.getEmail().toLowerCase(); });
+    const quero = admins.concat([quemSou().email]);
+    try { const dono = ss.getOwner().getEmail().toLowerCase(); quero.push(dono); } catch (e) { /* sem dono pessoal */ }
+    const remover = atuais.filter(function (e) { return quero.indexOf(e) < 0; });
+    const incluir = admins.filter(function (e) { return atuais.indexOf(e) < 0; });
+    if (remover.length) prot.removeEditors(remover);
+    if (incluir.length) prot.addEditors(incluir);
+  });
 }
 
 function exigirEscrita_(tabela) {
