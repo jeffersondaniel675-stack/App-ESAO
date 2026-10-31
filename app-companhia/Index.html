@@ -223,6 +223,9 @@ td.acts { white-space: nowrap; text-align: right; }
 .escala select { height: 34px; padding: 0 6px; font-size: 13.5px; min-width: 150px; }
 fieldset.pm { border: 1px solid var(--border); border-radius: 6px; margin: 12px 0 0; padding: 8px 12px 10px; }
 fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
+.pm-t { display: grid; gap: 6px; margin-bottom: 4px; }
+.pm-t label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.pm-t input[type=number] { width: 64px; height: 32px; }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .escala td { position: relative; }
@@ -500,6 +503,8 @@ const qtdTipo = tipo => Math.max(1, Math.floor(num(tipo.qtd)) || 1);
 const chaveFolga = t => t && t.folga ? 'g:' + norm(t.folga) : (t || {}).id;
 const tiposDaFolga = tipoId => { const k = chaveFolga(TIPO[tipoId]); return S.db.TiposServico.filter(t => chaveFolga(t) === k).map(t => t.id).concat(TIPO[tipoId] ? [] : [tipoId]); };
 const nomeFolga = tipoId => { const tp = TIPO[tipoId], l = tiposDaFolga(tipoId).map(id => TIPO[id]).filter(t => t && sim(t.ativo)); return tp && tp.folga && l.length > 1 ? `${tp.folga} (${l.map(t => t.nome).join(' + ')})` : (tp || {}).nome || ''; };
+/** Folga corrida: conta todos os dias desde o último serviço, sem separar preta e vermelha. */
+const folgaCorrida = tipoId => tiposDaFolga(tipoId).some(id => TIPO[id] && TIPO[id].contagem === 'Corrida');
 const lancamentos = (iso, tipoId) => (ESC_DIA[iso] || []).filter(x => x.tipoId === tipoId);
 const emBranco = e => !e.militarId;
 /** Vagas do dia: a quantidade do serviço (se ocorre no dia) ou mais, se foram lançadas vagas extras. */
@@ -512,11 +517,11 @@ const faltamNoDia = (tipo, iso) => Math.max(0, (aplica(tipo, iso) ? qtdTipo(tipo
  */
 function calcFolga(militarId, tipoId, cor, iso, entradas) {
   let ultimo = null;
-  const grupo = new Set(tiposDaFolga(tipoId));
-  for (const e of entradas) if (e.militarId === militarId && grupo.has(e.tipoId) && corDoDia(e.data) === cor && e.data < iso && (!ultimo || e.data > ultimo)) ultimo = e.data;
+  const grupo = new Set(tiposDaFolga(tipoId)), corrida = folgaCorrida(tipoId);
+  for (const e of entradas) if (e.militarId === militarId && grupo.has(e.tipoId) && (corrida || corDoDia(e.data) === cor) && e.data < iso && (!ultimo || e.data > ultimo)) ultimo = e.data;
   if (!ultimo) return { folga: Infinity, ultimo: null };
   let n = 0;
-  for (let d = addDias(ultimo, 1); d < iso; d = addDias(d, 1)) if (corDoDia(d) === cor) n++;
+  for (let d = addDias(ultimo, 1); d < iso; d = addDias(d, 1)) if (corrida || corDoDia(d) === cor) n++;
   return { folga: n, ultimo };
 }
 
@@ -534,14 +539,15 @@ function gerarEscala(inicio, fim, existentes, filtro = {}) {
     for (const tipo of tiposAtivos()) {
       if (tipo.automatico === 'Não' || !aplica(tipo, d) || (filtro.tipos && !filtro.tipos.includes(tipo.id))) continue;
       // vagas já lançadas (com militar ou em branco) contam como preenchidas
-      for (let k = entradas.filter(e => e.data === d && e.tipoId === tipo.id).length; k < qtdTipo(tipo); k++) {
+      const precisa = filtro.qtd && filtro.qtd[tipo.id] !== undefined ? filtro.qtd[tipo.id] : qtdTipo(tipo);
+      for (let k = entradas.filter(e => e.data === d && e.tipoId === tipo.id).length; k < precisa; k++) {
         const cands = militaresAtivos().filter(m => aptoPara(m, tipo) && (!filtro.postos || filtro.postos.includes(m.postoGrad))
           && situacao(m.id, d).tipo === 'pronto'
           && !ocupado.has(m.id + '|' + d) && !ocupado.has(m.id + '|' + addDias(d, -1)) && !ocupado.has(m.id + '|' + addDias(d, 1)));
         if (!cands.length) { faltas.push(`${fmt(d)} – ${tipo.nome}`); break; }
         const escolhido = cands.map(m => ({ m, f: calcFolga(m.id, tipo.id, cor, d, entradas).folga }))
           .sort((a, b) => b.f - a.f || postoIdx(b.m.postoGrad) - postoIdx(a.m.postoGrad) || num(b.m.antiguidade) - num(a.m.antiguidade))[0].m;
-        const e = { id: uid(), data: d, tipoId: tipo.id, militarId: escolhido.id, cor, obs: '' };
+        const e = { id: uid(), data: d, tipoId: tipo.id, militarId: escolhido.id, cor, obs: filtro.lote ? PRE + filtro.lote : '' };
         entradas.push(e); novos.push(e); ocupado.add(escolhido.id + '|' + d);
       }
     }
@@ -1364,7 +1370,7 @@ function vEscala() {
   if (t === 'imp') return titulo + abasEsc + vImportarHistorico();
   const barra = `<div class="bar"><input type="month" value="${S.mes}" onchange="S.mes=this.value;render()">
     <button class="btn" onclick="mudarMes(-1)" aria-label="Mês anterior">◀</button><button class="btn" onclick="mudarMes(1)" aria-label="Próximo mês">▶</button><span class="grow"></span>
-    ${t === 'mes' && pode() ? `<button class="btn pri" onclick="gerarMes()" title="Preenche as vagas vazias do mês pelo quadro de folga, mantendo o que você já lançou">Pré-montar pela folga</button><button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
+    ${t === 'mes' && pode() ? `<button class="btn pri" onclick="gerarMes()" title="Preenche as vagas vazias do mês pelo quadro de folga, mantendo o que você já lançou">Pré-montar pela folga</button>${lotesPre().length ? '<button class="btn" onclick="desfazerPre()" title="Tira os serviços lançados pela última pré-montagem">Desfazer pré-montagem</button>' : ''}<button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
     ${t === 'mes' ? botoesDocGrandes('escala', S.mes, 'escala') : botoesDocGrandes('folgas', folgaTipo(), 'folgas')}</div>`;
   if (t === 'folgas') return titulo + abasEsc + barra + vFolgas();
   const linhas = dias.map(d => {
@@ -1402,7 +1408,7 @@ async function trocarServico(data, tipoId, k, valor) {
     if (!valor) { if (e) await salvar('Escala', [], [e.id]); else extra(); }
     else {
       if (!e && k >= vagasDoDia(TIPO[tipoId], data)) extra();
-      await salvar('Escala', [{ ...(e || { id: uid(), data, tipoId, obs: '' }), militarId: valor === BRANCO ? '' : valor, cor: corDoDia(data) }]);
+      await salvar('Escala', [{ ...(e || { id: uid(), data, tipoId }), obs: '', militarId: valor === BRANCO ? '' : valor, cor: corDoDia(data) }]);
     }
     toast('Escala atualizada.'); render();
   } catch (err) { render(); }
@@ -1418,7 +1424,8 @@ function gerarMes() {
     <p class="muted" style="margin-top:0">Preenche só as vagas vazias, pelo quadro de folga (maior folga na cor do dia; empate: o mais moderno). O que você já lançou e as vagas <i>em branco</i> ficam como estão.</p>
     <div class="form">${campoHTML({ k: 'pm_ini', l: 'De', t: 'date', req: true }, dias[0])}${campoHTML({ k: 'pm_fim', l: 'Até', t: 'date', req: true }, dias[dias.length - 1])}</div>
     <fieldset class="pm"><legend>Postos e graduações</legend><div class="pm-l">${postos.map(pg => `<label><input type="checkbox" name="pm_pg" value="${esc(pg)}" checked onchange="pmSincronizar()"> ${esc(pg)} <span class="muted">(${qtd(pg)})</span></label>`).join('')}</div></fieldset>
-    <fieldset class="pm"><legend>Serviços</legend><div class="pm-l">${tipos.map(t => `<label><input type="checkbox" name="pm_tp" value="${t.id}" checked> ${esc(t.nome)} <span class="muted">${esc(ids(t.postos).join(', '))}</span></label>`).join('')}</div></fieldset>
+    <fieldset class="pm"><legend>Serviços e quantos por dia neste período</legend><div class="pm-t">${tipos.map(t => `<label><input type="checkbox" name="pm_tp" value="${t.id}" checked> <span class="grow">${esc(t.nome)} <span class="muted">${esc(ids(t.postos).join(', '))}</span></span><input type="number" id="pm_q_${t.id}" value="${qtdTipo(t)}" min="0" max="20" step="1" aria-label="${esc(t.nome)} por dia"></label>`).join('')}</div>
+    <small class="muted">Ex.: recebeu na semana anterior 3 sentinelas e 2 permanências por dia? Escolha o período da semana e ponha 3 e 2.</small></fieldset>
     <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Pré-montar</button></div></form></div>`;
   $('#frm').onsubmit = async ev => {
     ev.preventDefault();
@@ -1426,13 +1433,25 @@ function gerarMes() {
     const pgs = $$('input[name=pm_pg]:checked').map(x => x.value), tps = $$('input[name=pm_tp]:checked').map(x => x.value);
     if (!ini || !fim || fim < ini) return toast('Confira o período.', true);
     if (!pgs.length || !tps.length) return toast('Marque pelo menos um posto/graduação e um serviço.', true);
-    const { novos, faltas } = gerarEscala(ini, fim, S.db.Escala, { tipos: tps, postos: pgs });
+    const qtd = Object.fromEntries(tps.map(id => [id, Math.max(0, Math.floor(num($('#pm_q_' + id).value)))]));
+    const { novos, faltas } = gerarEscala(ini, fim, S.db.Escala, { tipos: tps, postos: pgs, qtd, lote: new Date().toISOString().slice(0, 16).replace('T', ' ') });
     if (!novos.length) return toast(faltas.length ? 'Sem militares disponíveis para: ' + faltas.slice(0, 3).join(', ') : 'Não há vagas vazias para esses serviços no período.', !!faltas.length);
     fecharModal();
     await salvar('Escala', novos);
-    toast(`${novos.length} serviço(s) pré-montado(s).` + (faltas.length ? ` ${faltas.length} vaga(s) sem militar disponível (folga de dias seguidos, impedimento ou missão).` : ''));
+    toast(`${novos.length} serviço(s) pré-montado(s). Para voltar atrás, use "Desfazer pré-montagem".` + (faltas.length ? ` ${faltas.length} vaga(s) sem militar disponível (folga de dias seguidos, impedimento ou missão).` : ''));
     render();
   };
+}
+/** Lançamentos da pré-montagem levam no obs a marca PRE + data/hora; trocar à mão tira a marca (não é desfeito). */
+const PRE = 'pré-montada ';
+const lotesPre = () => [...new Set(S.db.Escala.filter(e => String(e.obs || '').startsWith(PRE)).map(e => e.obs.slice(PRE.length)))].sort();
+async function desfazerPre() {
+  const lote = lotesPre().pop(); if (!lote) return toast('Não há pré-montagem para desfazer.');
+  const l = S.db.Escala.filter(e => e.obs === PRE + lote), [d, h] = lote.split(' ');
+  const datas = l.map(e => e.data).sort();
+  if (!await confirmar(`Desfazer a pré-montagem de ${fmt(d)} às ${h}? Saem ${l.length} serviço(s) lançados por ela (${fmt(datas[0])} a ${fmt(datas[datas.length - 1])}). O que você trocou à mão depois fica.`)) return;
+  await salvar('Escala', [], l.map(e => e.id));
+  toast(`Pré-montagem desfeita: ${l.length} serviço(s) retirado(s).${lotesPre().length ? ' Clique de novo para desfazer a anterior.' : ''}`); render();
 }
 /** Desmarcar um posto desmarca os serviços que ficaram sem nenhum posto marcado (e vice-versa). */
 function pmSincronizar() {
@@ -1460,13 +1479,14 @@ const SIGLA_IMP = { 'Férias': 'FÉR', 'Dispensa médica': 'DM', 'Dispensa': 'DI
 /** Matriz do quadro: para cada militar apto, o valor de cada dia do mês. */
 function matrizFolgas(tipoId, ym) {
   const tp = TIPO[tipoId], dias = diasDoMes(ym);
-  const grupo = tiposDaFolga(tipoId), servicos = S.db.Escala.filter(e => grupo.includes(e.tipoId));
+  const grupo = tiposDaFolga(tipoId), servicos = S.db.Escala.filter(e => grupo.includes(e.tipoId)), corrida = folgaCorrida(tipoId);
   const serviu = new Set(servicos.map(e => e.militarId + '|' + e.data));
   return militaresAtivos().filter(m => grupo.some(id => TIPO[id] && aptoPara(m, TIPO[id]))).map(m => {
     // Contador = dias da mesma cor desde o último serviço, contando o próprio dia (como na planilha).
     const c = { P: calcFolga(m.id, tipoId, 'P', dias[0], servicos).folga, V: calcFolga(m.id, tipoId, 'V', dias[0], servicos).folga };
+    if (corrida) c.V = c.P;
     const celulas = dias.map(d => {
-      const cor = corDoDia(d);
+      const cor = corrida ? 'P' : corDoDia(d);
       if (serviu.has(m.id + '|' + d)) { c[cor] = 0; return { v: 0, servico: true }; }
       c[cor] += 1;
       const s = situacao(m.id, d);
@@ -1484,10 +1504,15 @@ function vFolgas() {
   // De hoje em diante, destaca quem está "na vez": maior folga entre os disponíveis (quem nunca tirou vem primeiro).
   const vez = dias.map((d, j) => { if (d < hoje()) return null; let mx = -1, quem = null; mat.forEach((l, i) => { const n = l.celulas[j].n; if (n !== undefined && n > mx) { mx = n; quem = i; } }); return quem; });
   return `<div class="bar"><label class="muted">Serviço <select onchange="S.filtro.folgaTipo=this.value;render()">${opcoesFolga().map(id => `<option value="${id}" ${id === tid ? 'selected' : ''}>${esc(nomeFolga(id))}</option>`).join('')}</select></label>
-    <span class="muted">Cada célula mostra a folga na cor do dia (preta ou vermelha). <span class="tag" style="background:var(--ouro);color:#071d41">0</span> = dia do serviço · contorno azul = quem está na vez (de hoje em diante) · FÉR, DM, MIS… = afastado.</span></div>
+    ${pode() ? `<label class="muted">Contagem <select onchange="mudarContagem('${tid}',this.value)"><option value="Por cor">por cor (preta e vermelha)</option><option value="Corrida" ${folgaCorrida(tid) ? 'selected' : ''}>corrida (todos os dias)</option></select></label>` : ''}
+    <span class="muted">${folgaCorrida(tid) ? 'Cada célula mostra a folga corrida (dias desde o último serviço, sem separar as cores).' : 'Cada célula mostra a folga na cor do dia (preta ou vermelha).'} <span class="tag" style="background:var(--ouro);color:#071d41">0</span> = dia do serviço · contorno azul = quem está na vez (de hoje em diante) · FÉR, DM, MIS… = afastado.</span></div>
     <div class="tw quadro"><table><thead><tr><th>Ant</th><th>P/G</th><th>Nome</th>${dias.map(d => `<th class="${corDoDia(d) === 'V' ? 'v' : ''}" title="${fmt(d)}${FERIADO[d] ? ' – ' + esc(FERIADO[d]) : ''}">${d.slice(8)}<div>${SEM_CURTA[dataDe(d).getDay()][0]}</div></th>`).join('')}</tr></thead>
     <tbody>${mat.map((l, i) => `<tr><td class="num">${esc(l.m.antiguidade)}</td><td>${esc(l.m.postoGrad)}</td><td style="white-space:nowrap"><b>${esc(l.m.nomeGuerra)}</b></td>${l.celulas.map((c, j) =>
       `<td class="${c.servico ? 'sv' : c.imp ? 'imp' : ''} ${corDoDia(dias[j]) === 'V' ? 'v' : ''} ${vez[j] === i && !c.servico ? 'vez' : ''}"${c.imp ? ` title="${esc(c.imp)}"` : ''}>${esc(c.v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+async function mudarContagem(tipoId, valor) {
+  await salvar('TiposServico', tiposDaFolga(tipoId).filter(id => TIPO[id]).map(id => ({ ...TIPO[id], contagem: valor })));
+  toast(valor === 'Corrida' ? 'Folga corrida: conta todos os dias desde o último serviço.' : 'Folga por cor: preta e vermelha separadas.'); render();
 }
 LISTAS.folgas = tipoId => {
   const tp = TIPO[tipoId], dias = diasDoMes(S.mes);
@@ -1499,7 +1524,7 @@ DOCS.folgas = tipoId => {
   return { tipo: 'Escalas', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
     { p: `QUADRO DE FOLGAS – ${nomeFolga(tipoId).toUpperCase()} – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}`, c: 1, b: 1 }, { esp: 1 },
     { t: [l.cab.map((h, i) => i < 3 ? h : h.slice(0, 2)), ...l.linhas.map(r => r.map(String))], h: 1, sz: 6.5, w: [4, 7, 13, ...l.cab.slice(3).map(() => 76 / (l.cab.length - 3))] },
-    { p: 'Folga contada por cor (P = dias úteis, V = sábados, domingos e feriados). 0 = dia do serviço.', sz: 8, mt: 4, l: 1 }] };
+    { p: folgaCorrida(tipoId) ? 'Folga corrida (todos os dias desde o último serviço). 0 = dia do serviço.' : 'Folga contada por cor (P = dias úteis, V = sábados, domingos e feriados). 0 = dia do serviço.', sz: 8, mt: 4, l: 1 }] };
 };
 LISTAS.escala = ym => {
   const tipos = tiposAtivos();
@@ -2591,6 +2616,7 @@ function editarTipo(id) {
       { k: 'qtd', l: 'Militares por dia (ex.: 2 sentinelas)', t: 'number', padrao: '1' },
       { k: 'folga', full: true, l: 'Escala de folga compartilhada (opcional)', ph: 'ex.: Soldados', ajuda: 'Serviços com o mesmo nome aqui dividem a folga: quem tirou Sentinela ontem conta como de serviço também para a Permanência.' },
       { k: 'postos', l: 'Postos/graduações que concorrem a este serviço', t: 'postos', req: true },
+      { k: 'contagem', l: 'Contagem da folga', t: 'select', o: [['Por cor', 'Por cor (preta e vermelha separadas)'], ['Corrida', 'Corrida (todos os dias, sem separar)']], vazio: false },
       { k: 'automatico', l: 'Preencher na geração automática', t: 'select', o: [['Sim', 'Sim, pela folga'], ['Não', 'Não, lançamento manual']], vazio: false },
       { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], vazio: false }],
     aoSalvar: o => salvar('TiposServico', [o]),
