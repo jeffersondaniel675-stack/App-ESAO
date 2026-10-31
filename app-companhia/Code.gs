@@ -10,7 +10,7 @@
 
 const TABELAS = {
   Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs',
-    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo'],
+    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento'],
   Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
   TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico', 'qtd', 'folga', 'contagem'],
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs', 'troca', 'trocaMotivo'],
@@ -25,6 +25,7 @@ const TABELAS = {
   Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
   Acessos: ['email', 'nome', 'data', 'status'],
   Locais: ['id', 'nome', 'ordem'],
+  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
@@ -129,6 +130,7 @@ function bootstrap() {
   Object.keys(TABELAS).forEach(function (t) {
     if (t === 'Log') return;
     if ((t === 'Usuarios' || t === 'Acessos') && u.perfil !== 'admin') return;
+    if (t === 'Disciplina' && u.perfil === 'leitor') return;
     dados[t] = lerTabela_(t);
   });
   return { usuario: u, dados: dados };

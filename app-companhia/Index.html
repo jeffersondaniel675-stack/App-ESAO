@@ -231,6 +231,13 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .pm-t input[type=number] { width: 64px; height: 32px; }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.grid-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.grid-resumo h3 { margin: 0 0 8px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+.lista-jd { margin: 0; padding-left: 18px; } .lista-jd li { margin-bottom: 8px; } .lista-jd a, .linha-tempo a { cursor: pointer; color: var(--azul); }
+table.mini td { padding: 3px 8px; border: 0; }
+.linha-tempo { list-style: none; padding: 0; margin: 10px 0 0; border-left: 2px solid var(--border); }
+.linha-tempo li { padding: 6px 0 6px 14px; position: relative; } .linha-tempo li::before { content: ''; position: absolute; left: -6px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+.linha-tempo .quando { display: inline-block; min-width: 92px; margin-right: 6px; font-variant-numeric: tabular-nums; color: var(--muted); }
 .aviso-leitor { background: color-mix(in srgb, var(--ouro) 22%, var(--surface)); border-left: 4px solid var(--ouro); padding: 10px 14px; border-radius: 4px; margin: 0 0 14px; font-size: 14px; }
 .escala td { position: relative; }
 .escala td.dia { position: sticky; left: 0; z-index: 1; background: var(--surface); }
@@ -455,7 +462,7 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => ['admin', 'editor'].includes(S.user?.perfil);
 const admin = () => S.user?.perfil === 'admin';
@@ -517,6 +524,8 @@ function situacao(militarId, iso) {
   if (imp) return { tipo: 'imp', texto: imp.tipo, ate: imp.fim };
   const mis = S.db.Missoes.find(m => m.status !== 'Cancelada' && ids(m.militaresIds).concat(m.responsavelId || []).includes(militarId) && m.inicio <= iso && (m.fim || m.inicio) >= iso);
   if (mis) return { tipo: 'missao', texto: 'Missão: ' + mis.titulo, ate: mis.fim };
+  const pun = S.db.Disciplina && punicaoEmCurso(militarId, iso);
+  if (pun) return { tipo: 'imp', texto: 'Cumprindo punição', ate: fimPunicao(pun) };
   return { tipo: 'pronto', texto: 'Pronto' };
 }
 const tagSituacao = s => `<span class="tag ${s.tipo === 'pronto' ? 'ok' : s.tipo === 'missao' ? 'info' : 'warn'}">${esc(s.texto)}${s.ate ? ' até ' + fmt(s.ate) : ''}</span>`;
@@ -1064,7 +1073,7 @@ const VIEWS = [
 ];
 // Itens da 2ª coluna: `aba` liga a uma aba da tela, `filtro` a um filtro, `acao` roda depois de abrir a tela, `editor` = só para quem edita.
 const SUBMENU = {
-  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Justiça e disciplina (em construção)', aba: 'jd' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Justiça e disciplina', aba: 'jd', editor: true }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -1251,6 +1260,8 @@ const CAMPOS_MIL = [
   { k: 'pelotao', l: 'Pelotão/Seção' },
   { k: 'funcao', l: 'Função' },
   { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], padrao: 'Sim', vazio: false },
+  { k: 'dataPraca', l: 'Data de praça', t: 'date' },
+  { k: 'comportamento', l: 'Comportamento (praças)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
   { secao: 'Tripão' },
   { k: 'dataNascimento', l: 'Data de nascimento', t: 'date' },
   { k: 'idt', l: 'Idt militar' },
@@ -1359,19 +1370,13 @@ function vEfetivo() {
       { l: 'Obs', v: i => esc(i.obs) }
     ], pode() ? i => `<button class="btn sm" onclick="editarImp('${i.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('Impedimentos','${i.id}')">Excluir</button>` : null)}`;
   } else if (t === 'jd') {
-    corpo = `<div class="card em-construcao"><span class="tag warn">Em construção</span>
-      <h3 style="margin:10px 0 4px">Justiça e disciplina</h3>
-      <p class="muted" style="margin-top:0">Esta parte ainda está sendo feita. Vai reunir, por militar, o registro disciplinar da subunidade:</p>
-      <ul>${[['Punições', 'advertência, impedimento disciplinar, repreensão, detenção e prisão, com a data, o enquadramento e o boletim de publicação'],
-        ['FATD', 'formulário de apuração de transgressão disciplinar, do relato à decisão, e os prazos de defesa'],
-        ['Elogios', 'individuais e coletivos, com a referência do boletim'],
-        ['Boca Podre', 'controle do comportamento e das anotações de cada militar']].map(([n, d]) => `<li><b>${n}</b>: <span class="muted">${d}.</span></li>`).join('')}</ul></div>`;
+    corpo = vDisciplina();
   } else {
     const alvo = S.filtro.impAlvo || 'Militares';
     corpo = `<div class="bar"><label class="muted">O que importar <select onchange="S.filtro.impAlvo=this.value;S.imp=null;render()">
       ${[['Militares', 'Militares, tripão ou plano de chamada'], ['Ferias', 'Plano de férias']].map(([v, l]) => `<option value="${v}" ${v === alvo ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>` + vImportar(alvo);
   }
-  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], ['jd', 'Justiça e disciplina (em construção)'], ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
+  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], ...(pode() ? [['jd', 'Justiça e disciplina']] : []), ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
   return `<h2>Efetivo</h2><p class="sub">Militares da subunidade, tripão, plano de chamada, plano de férias e demais afastamentos.</p>${abas('efetivo', abasEf)}${corpo}`;
 }
 async function novaRefFerias() {
@@ -1573,7 +1578,7 @@ async function refazerDesde() {
 const folgaTipo = () => { const t = S.filtro.folgaTipo && TIPO[S.filtro.folgaTipo] ? S.filtro.folgaTipo : (tiposAtivos()[0] || {}).id; return t && (opcoesFolga().find(o => tiposDaFolga(o).includes(t)) || t); };
 /** Um item por escala de folga: serviços que dividem a folga aparecem juntos. */
 const opcoesFolga = () => { const vistos = new Set(); return tiposAtivos().filter(t => !vistos.has(chaveFolga(t)) && vistos.add(chaveFolga(t))).map(t => t.id); };
-const SIGLA_IMP = { 'Férias': 'FÉR', 'Dispensa médica': 'DM', 'Dispensa': 'DISP', 'Licença': 'LIC', 'Curso/Estágio': 'CURSO', 'Trânsito': 'TRÂNS', 'Outro': 'IMP' };
+const SIGLA_IMP = { 'Cumprindo punição': 'PUN', 'Férias': 'FÉR', 'Dispensa médica': 'DM', 'Dispensa': 'DISP', 'Licença': 'LIC', 'Curso/Estágio': 'CURSO', 'Trânsito': 'TRÂNS', 'Outro': 'IMP' };
 /** Matriz do quadro: para cada militar apto, o valor de cada dia do mês. */
 function matrizFolgas(tipoId, ym) {
   const tp = TIPO[tipoId], dias = diasDoMes(ym);
@@ -1765,6 +1770,280 @@ DOCS.missao = id => {
     { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] };
 };
 
+// ============================================================ justiça e disciplina (FATD, punições, elogios, Boca Podre)
+// Tudo numa aba "Disciplina", separado pelo campo tipo: FATD (com a decisão e a punição), Elogio e Anotacao (Boca Podre).
+const PUNICOES = ['Advertência', 'Impedimento disciplinar', 'Repreensão', 'Detenção disciplinar', 'Prisão disciplinar'];
+const PUN_COM_DIAS = ['Impedimento disciplinar', 'Detenção disciplinar', 'Prisão disciplinar'];
+const CLASSIF_TRANSG = ['Leve', 'Média', 'Grave'];
+const COMPORTAMENTOS = ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'];
+const TIPOS_ELOGIO = ['Elogio individual', 'Elogio coletivo', 'Referência elogiosa'];
+const TIPOS_ANOT = ['Observação', 'Orientação', 'Falta leve', 'Atraso', 'Apresentação pessoal', 'Outra'];
+const PRAZO_DEFESA = 3;
+const disc = tipo => (S.db.Disciplina || []).filter(x => x.tipo === tipo);
+const ehPraca = m => m && postoIdx(m.postoGrad) >= POSTOS.indexOf('ST');
+/** Soma n dias úteis (pula sábado, domingo e feriado). */
+function addDiasUteis(iso, n) { let d = iso; while (n > 0) { d = addDias(d, 1); if (corDoDia(d) === 'P') n--; } return d; }
+const fimPunicao = f => f.inicio && num(f.dias) > 0 ? addDias(f.inicio, num(f.dias) - 1) : '';
+
+/** Situação da FATD calculada pelas datas: assim não fica status esquecido. */
+function situacaoFatd(f) {
+  if (f.decisao === 'Justificada') return { t: 'Justificada (arquivada)', c: 'ok', fim: 1 };
+  if (f.decisao === 'Punido') {
+    const fim = fimPunicao(f);
+    if (f.inicio && f.inicio <= hoje() && fim >= hoje()) return { t: `Cumprindo ${f.punicao.toLowerCase()} até ${fmt(fim)}`, c: 'dng', fim: 1 };
+    return f.bi ? { t: `Punido · publicado (${f.bi})`, c: 'info', fim: 1 } : { t: 'Punido · falta publicar', c: 'warn', fim: 1 };
+  }
+  if (!f.ciencia) return { t: 'Aguardando ciência do militar', c: 'warn' };
+  const prazo = addDiasUteis(f.ciencia, PRAZO_DEFESA);
+  if (!f.defesaData && prazo >= hoje()) return { t: `Prazo de defesa até ${fmt(prazo)}`, c: 'info', prazo };
+  return { t: f.defesaData ? 'Defesa entregue · para decisão' : 'Prazo de defesa vencido · para decisão', c: 'warn' };
+}
+/** Punição em cumprimento hoje (detenção e prisão tiram o militar da escala). */
+function punicaoEmCurso(militarId, iso) {
+  return disc('FATD').find(f => f.militarId === militarId && f.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(f.punicao) && f.inicio && f.inicio <= iso && fimPunicao(f) >= iso);
+}
+
+/**
+ * Comportamento sugerido para praças, pelas punições (equivalências: 1 prisão = 2 detenções; 1 detenção = 2 repreensões).
+ * Excepcional: 8 anos sem punição · Ótimo: 4 anos com até 1 detenção · Bom: 2 anos com até 2 prisões ·
+ * Insuficiente: 1 ano com até 2 prisões · Mau: 1 ano com mais de 2 prisões. É apoio ao S1: conferir sempre com o RDE.
+ */
+function comportamentoSugerido(m) {
+  if (!ehPraca(m)) return null;
+  const pun = disc('FATD').filter(f => f.militarId === m.id && f.decisao === 'Punido');
+  const peso = p => p === 'Prisão disciplinar' ? 1 : p === 'Detenção disciplinar' ? 0.5 : p === 'Repreensão' ? 0.25 : 0;
+  const desde = anos => { const d = dataDe(hoje()); d.setFullYear(d.getFullYear() - anos); return isoDe(d); };
+  const em = anos => pun.filter(f => (f.dataDecisao || f.dataFato) >= desde(anos));
+  const prisoes = anos => em(anos).reduce((s, f) => s + peso(f.punicao), 0);
+  const servico = m.dataPraca ? (dataDe(hoje()) - dataDe(m.dataPraca)) / 31557600000 : null;
+  const det = anos => `${em(anos).length} punição(ões) em ${anos} ano(s), equivalente a ${String(prisoes(anos)).replace('.', ',')} prisão(ões)`;
+  let c;
+  if (servico !== null && servico >= 8 && !em(8).some(f => peso(f.punicao) > 0)) c = 'Excepcional';
+  else if (servico !== null && servico >= 4 && prisoes(4) <= 0.5) c = 'Ótimo';
+  else if (prisoes(2) <= 2 && (servico === null || servico >= 0)) c = prisoes(1) > 2 ? 'Mau' : 'Bom';
+  else c = prisoes(1) > 2 ? 'Mau' : 'Insuficiente';
+  return { c, motivo: `${det(1)}; ${det(2)}${servico === null ? '. Sem data de praça cadastrada: Excepcional e Ótimo não são calculados.' : '.'}` };
+}
+const tagComp = c => `<span class="tag ${c === 'Excepcional' || c === 'Ótimo' ? 'ok' : c === 'Bom' ? 'info' : c ? 'dng' : ''}">${esc(c || '—')}</span>`;
+
+function vDisciplina() {
+  if (!pode()) return '<div class="card">Justiça e disciplina: só administradores e editores têm acesso.</div>';
+  const t = S.filtro.jd || 'resumo';
+  const abasJd = `<div class="tabs" style="margin-top:-6px">${[['resumo', 'Resumo'], ['fatd', 'FATD'], ['pun', 'Punições'], ['elo', 'Elogios'], ['boca', 'Boca Podre'], ['ficha', 'Ficha do militar']]
+    .map(([k, l]) => `<button class="${t === k ? 'on' : ''}" onclick="S.filtro.jd='${k}';render()">${l}</button>`).join('')}</div>`;
+  let corpo = '';
+  if (t === 'resumo') {
+    const abertas = disc('FATD').filter(f => !situacaoFatd(f).fim).sort((a, b) => a.dataFato.localeCompare(b.dataFato));
+    const cumprindo = disc('FATD').filter(f => f.decisao === 'Punido' && f.inicio && f.inicio <= hoje() && fimPunicao(f) >= hoje());
+    const semBi = disc('FATD').filter(f => f.decisao === 'Punido' && !f.bi).length + disc('Elogio').filter(e => !e.bi).length;
+    const ano = hoje().slice(0, 4);
+    const praças = militaresAtivos().filter(ehPraca);
+    const dist = COMPORTAMENTOS.map(c => [c, praças.filter(m => (m.comportamento || (comportamentoSugerido(m) || {}).c) === c).length]);
+    corpo = `<div class="grid-resumo">
+      <div class="card"><h3>FATD em andamento <span class="tag ${abertas.length ? 'warn' : 'ok'}">${abertas.length}</span></h3>${abertas.length ? `<ul class="lista-jd">${abertas.map(f => { const s = situacaoFatd(f); return `<li><a onclick="editarFatd('${f.id}')">FATD nº ${esc(f.numero)} – ${esc(nomeMil(f.militarId))}</a><br><span class="tag ${s.c}">${esc(s.t)}</span></li>`; }).join('')}</ul>` : '<p class="muted">Nenhuma.</p>'}</div>
+      <div class="card"><h3>Cumprindo punição hoje <span class="tag ${cumprindo.length ? 'dng' : 'ok'}">${cumprindo.length}</span></h3>${cumprindo.length ? `<ul class="lista-jd">${cumprindo.map(f => `<li><b>${esc(nomeMil(f.militarId))}</b><br><span class="muted">${esc(f.punicao)} de ${fmt(f.inicio)} a ${fmt(fimPunicao(f))} (fora da escala)</span></li>`).join('')}</ul>` : '<p class="muted">Ninguém.</p>'}</div>
+      <div class="card"><h3>Para publicar em BI <span class="tag ${semBi ? 'warn' : 'ok'}">${semBi}</span></h3><p class="muted">Punições decididas e elogios ainda sem BI. No aditamento, o botão <b>Preencher</b> da 4ª parte traz esse texto pronto.</p>
+        <p>Em ${ano}: <b>${disc('FATD').filter(f => f.decisao === 'Punido' && (f.dataDecisao || '').startsWith(ano)).length}</b> punição(ões) e <b>${disc('Elogio').filter(e => e.data.startsWith(ano)).length}</b> elogio(s).</p></div>
+      <div class="card"><h3>Comportamento das praças</h3><table class="mini">${dist.map(([c, n]) => `<tr><td>${tagComp(c)}</td><td class="num"><b>${n}</b></td></tr>`).join('')}</table><p class="muted" style="font-size:12px">Usa o comportamento lançado no cadastro do militar; sem ele, o sugerido pelo sistema.</p></div>
+    </div>`;
+  } else if (t === 'fatd') {
+    const ver = S.filtro.fatdVer || 'and';
+    const lista = disc('FATD').filter(f => (ver === 'todas' || !situacaoFatd(f).fim) && casa('fatd', f.numero, nomeMil(f.militarId), f.relato)).sort((a, b) => b.dataFato.localeCompare(a.dataFato) || String(b.numero).localeCompare(a.numero));
+    corpo = `<div class="bar">${busca('fatd', 'Buscar nº, militar ou fato…')}<select onchange="S.filtro.fatdVer=this.value;render()" aria-label="Quais"><option value="and">Em andamento</option><option value="todas" ${ver === 'todas' ? 'selected' : ''}>Todas</option></select><span class="grow"></span><button class="btn pri" onclick="editarFatd()">+ FATD</button></div>
+    ${tabela(lista, [
+      { l: 'Nº', v: f => `<b>${esc(f.numero)}</b>` }, { l: 'Data do fato', v: f => fmt(f.dataFato) }, { l: 'Militar', v: f => esc(nomeMil(f.militarId)) },
+      { l: 'Fato', v: f => `<span class="muted">${esc(String(f.relato || '').slice(0, 90))}${String(f.relato || '').length > 90 ? '…' : ''}</span>` },
+      { l: 'Situação', v: f => { const s = situacaoFatd(f); return `<span class="tag ${s.c}">${esc(s.t)}</span>`; } }
+    ], f => `<button class="btn sm" onclick="editarFatd('${f.id}')">Abrir</button> ${botoesDoc('fatd', f.id, 'FATD')}`)}`;
+  } else if (t === 'pun') {
+    const ano = S.filtro.punAno || hoje().slice(0, 4);
+    const lista = disc('FATD').filter(f => f.decisao === 'Punido' && (ano === 'todos' || (f.dataDecisao || f.dataFato).startsWith(ano)) && casa('pun', nomeMil(f.militarId), f.punicao, f.enquadramento));
+    const anos = [...new Set(disc('FATD').map(f => (f.dataDecisao || f.dataFato || '').slice(0, 4)).concat(hoje().slice(0, 4)))].filter(Boolean).sort().reverse();
+    corpo = `<div class="bar">${busca('pun', 'Buscar militar ou punição…')}<select onchange="S.filtro.punAno=this.value;render()" aria-label="Ano">${anos.map(a => `<option ${a === ano ? 'selected' : ''}>${a}</option>`).join('')}<option value="todos" ${ano === 'todos' ? 'selected' : ''}>Todos os anos</option></select><span class="grow"></span><button class="btn" onclick="editarFatd(null,{historico:'Sim'})" title="Punição de antes do sistema, só para a ficha e o comportamento">+ Punição anterior</button></div>
+    <p class="muted" style="margin-top:0">As punições saem das FATD decididas. Detenção e prisão em cumprimento tiram o militar da escala automaticamente.</p>
+    ${tabela(lista, [
+      { l: 'Militar', v: f => `<b>${esc(nomeMil(f.militarId))}</b>` }, { l: 'Punição', v: f => `${esc(f.punicao)}${num(f.dias) ? ` <span class="muted">${esc(f.dias)} dia(s)</span>` : ''}` },
+      { l: 'Transgressão', v: f => `${esc(f.classificacao || '')}${f.enquadramento ? `<div class="muted">${esc(f.enquadramento)}</div>` : ''}` },
+      { l: 'Decisão', v: f => fmt(f.dataDecisao) }, { l: 'Cumprimento', v: f => f.inicio ? `${fmt(f.inicio)} a ${fmt(fimPunicao(f))}` : '' },
+      { l: 'BI', v: f => f.bi ? esc(f.bi) : '<span class="tag warn">falta publicar</span>' }
+    ], f => `<button class="btn sm" onclick="editarFatd('${f.id}')">Abrir</button>`)}`;
+  } else if (t === 'elo') {
+    const lista = disc('Elogio').filter(e => casa('elo', e.relato, e.subtipo, ...ids(e.militaresIds).map(nomeMil))).sort((a, b) => b.data.localeCompare(a.data));
+    corpo = `<div class="bar">${busca('elo', 'Buscar militar ou texto…')}<span class="grow"></span><button class="btn pri" onclick="editarElogio()">+ Elogio</button></div>
+    ${tabela(lista, [
+      { l: 'Data', v: e => fmt(e.data) }, { l: 'Tipo', v: e => esc(e.subtipo) },
+      { l: 'Militar(es)', v: e => { const l = ids(e.militaresIds).map(nomeMil); return esc(l.slice(0, 3).join(', ')) + (l.length > 3 ? ` <span class="muted">e mais ${l.length - 3}</span>` : ''); } },
+      { l: 'Motivo', v: e => `<span class="muted">${esc(String(e.relato || '').slice(0, 100))}${String(e.relato || '').length > 100 ? '…' : ''}</span>` },
+      { l: 'BI', v: e => e.bi ? esc(e.bi) : '<span class="tag warn">falta publicar</span>' }
+    ], e => `<button class="btn sm" onclick="editarElogio('${e.id}')">Abrir</button>`)}`;
+  } else if (t === 'boca') {
+    const lista = disc('Anotacao').filter(a => casa('boca', nomeMil(a.militarId), a.relato, a.subtipo)).sort((a, b) => b.data.localeCompare(a.data));
+    corpo = `<div class="bar">${busca('boca', 'Buscar militar ou anotação…')}<span class="grow"></span><button class="btn pri" onclick="editarAnotacao()">+ Anotação</button></div>
+    <p class="muted" style="margin-top:0">Registro rápido do dia a dia (observações, orientações, faltas leves), por militar. Se o fato for transgressão, <b>Abrir FATD</b> já leva o relato.</p>
+    ${tabela(lista, [
+      { l: 'Data', v: a => fmt(a.data) }, { l: 'Militar', v: a => `<b>${esc(nomeMil(a.militarId))}</b>` }, { l: 'Tipo', v: a => esc(a.subtipo) },
+      { l: 'Anotação', v: a => esc(a.relato) }, { l: 'Quem anotou', v: a => `<span class="muted">${esc(a.participante || '')}</span>` },
+      { l: 'FATD', v: a => { const f = disc('FATD').find(x => x.origemId === a.id); return f ? `<a onclick="editarFatd('${f.id}')">nº ${esc(f.numero)}</a>` : ''; } }
+    ], a => `${disc('FATD').some(x => x.origemId === a.id) ? '' : `<button class="btn sm" onclick="fatdDaAnotacao('${a.id}')">Abrir FATD</button> `}<button class="btn sm" onclick="editarAnotacao('${a.id}')">Editar</button>`)}`;
+  } else {
+    const mid = S.filtro.jdMil && MIL[S.filtro.jdMil] ? S.filtro.jdMil : '';
+    corpo = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.jdMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label><span class="grow"></span>${mid ? botoesDoc('fichaDisc', mid, 'Imprimir ficha') : ''}</div>` + (mid ? fichaDisciplinar(mid) : '<div class="card muted">Escolha o militar para ver a ficha disciplinar: comportamento, punições, elogios e anotações.</div>');
+  }
+  return `<div class="aviso-leitor" style="background:var(--azul-claro);border-color:var(--azul)">Versão de demonstração da Justiça e Disciplina: teste à vontade e diga o que ajustar antes de ir para o sistema da Cia.</div>${abasJd}${corpo}`;
+}
+
+/** Linha do tempo disciplinar de um militar. */
+function eventosDisc(mid) {
+  const ev = [];
+  disc('FATD').filter(f => f.militarId === mid).forEach(f => {
+    ev.push({ d: f.dataFato, t: `FATD nº ${f.numero}`, x: f.relato, c: 'warn', id: f.id, k: 'fatd' });
+    if (f.decisao === 'Punido') ev.push({ d: f.dataDecisao || f.dataFato, t: `${f.punicao}${num(f.dias) ? ` (${f.dias} dia(s))` : ''}`, x: [f.classificacao && 'Transgressão ' + f.classificacao.toLowerCase(), f.enquadramento, f.bi].filter(Boolean).join(' · '), c: 'dng', id: f.id, k: 'fatd' });
+    if (f.decisao === 'Justificada') ev.push({ d: f.dataDecisao || f.dataFato, t: 'FATD justificada (arquivada)', x: '', c: 'ok', id: f.id, k: 'fatd' });
+  });
+  disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).forEach(e => ev.push({ d: e.data, t: e.subtipo, x: [e.relato, e.bi].filter(Boolean).join(' · '), c: 'ok', id: e.id, k: 'elo' }));
+  disc('Anotacao').filter(a => a.militarId === mid).forEach(a => ev.push({ d: a.data, t: 'Boca Podre: ' + a.subtipo, x: a.relato, c: '', id: a.id, k: 'boca' }));
+  return ev.sort((a, b) => b.d.localeCompare(a.d));
+}
+function fichaDisciplinar(mid) {
+  const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid);
+  const abrir = e => e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
+  return `<div class="card"><div class="bar" style="align-items:flex-start"><div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
+    ${ehPraca(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Oficial: sem classificação de comportamento.</span>'}</div>
+    ${sug ? `<p class="muted" style="font-size:12.5px">${esc(sug.motivo)} Conferir sempre com o RDE.</p>` : ''}
+    <div class="bar"><span class="tag dng">${disc('FATD').filter(f => f.militarId === mid && f.decisao === 'Punido').length} punição(ões)</span><span class="tag ok">${disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).length} elogio(s)</span><span class="tag">${disc('Anotacao').filter(a => a.militarId === mid).length} anotação(ões)</span><span class="grow"></span>
+      <button class="btn sm" onclick="editarFatd(null,{militarId:'${mid}'})">+ FATD</button><button class="btn sm" onclick="editarElogio(null,'${mid}')">+ Elogio</button><button class="btn sm" onclick="editarAnotacao(null,'${mid}')">+ Anotação</button></div>
+    ${ev.length ? `<ul class="linha-tempo">${ev.map(e => `<li><span class="quando">${fmt(e.d)}</span><span class="tag ${e.c}">${esc(e.t)}</span> ${e.x ? `<span class="muted">${esc(e.x)}</span>` : ''} <a onclick="${abrir(e)}">abrir</a></li>`).join('')}</ul>` : '<p class="muted">Nada registrado.</p>'}</div>`;
+}
+async function usarComportamento(mid, c) {
+  if (!await confirmar(`Gravar "${c}" como comportamento de ${nomeMil(mid)} no cadastro?`)) return;
+  await salvar('Militares', [{ ...MIL[mid], comportamento: c }]); toast('Comportamento atualizado.'); render();
+}
+
+/** FATD: fato → ciência (abre o prazo de defesa) → defesa → decisão (justificada ou punido) → publicação em BI. */
+function editarFatd(id, base = {}) {
+  const ano = hoje().slice(0, 4);
+  const f = id ? { ...disc('FATD').find(x => x.id === id) } : { tipo: 'FATD', numero: proximoNumero(disc('FATD').map(x => x.numero), ano), dataFato: hoje(), participante: S.user.nome || '', ...base };
+  const hist = f.historico === 'Sim';
+  const sec = (n, t, html) => `<fieldset class="pm"><legend>${n}. ${t}</legend><div class="form">${html}</div></fieldset>`;
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:820px">
+    <h3>${hist ? 'Punição anterior ao sistema' : id ? 'FATD nº ' + esc(f.numero) : 'Nova FATD'}</h3>
+    ${id && !hist ? `<p style="margin-top:0"><span class="tag ${situacaoFatd(f).c}">${esc(situacaoFatd(f).t)}</span></p>` : hist ? '<p class="muted" style="margin-top:0">Só para a ficha e o cálculo do comportamento.</p>' : ''}
+    ${sec(1, 'Fato', `${campoHTML({ k: 'numero', l: hist ? 'Nº (FATD ou BI)' : 'Nº da FATD', req: true }, f.numero)}${campoHTML({ k: 'dataFato', l: 'Data do fato', t: 'date', req: true }, f.dataFato)}
+      ${campoHTML({ k: 'militarId', l: 'Militar', t: 'militar', req: true }, f.militarId)}${campoHTML({ k: 'participante', l: 'Quem relatou (participante)' }, f.participante)}
+      ${campoHTML({ k: 'relato', l: 'Relato do fato', t: 'textarea', req: !hist }, f.relato)}`)}
+    ${hist ? '' : sec(2, 'Ciência e defesa', `${campoHTML({ k: 'ciencia', l: 'Ciência do militar (entrega da FATD)', t: 'date' }, f.ciencia)}
+      <label><span>Prazo para a defesa</span><input type="text" id="f_prazo" readonly value="${f.ciencia ? fmt(addDiasUteis(f.ciencia, PRAZO_DEFESA)) + ` (${PRAZO_DEFESA} dias úteis)` : 'conta a partir da ciência'}"></label>
+      ${campoHTML({ k: 'defesaData', l: 'Defesa entregue em', t: 'date' }, f.defesaData)}${campoHTML({ k: 'arquivoUrl', l: 'FATD assinada / defesa (digitalizada)', t: 'file' }, f.arquivoUrl)}
+      ${campoHTML({ k: 'defesa', l: 'Resumo da defesa / justificativa', t: 'textarea' }, f.defesa)}`)}
+    ${sec(hist ? 2 : 3, 'Decisão', `${campoHTML({ k: 'decisao', l: 'Decisão', t: 'select', o: hist ? ['Punido'] : [['', 'Ainda não decidida'], ['Justificada', 'Justificada (arquiva)'], ['Punido', 'Punido']], vazio: false }, hist ? 'Punido' : f.decisao)}
+      ${campoHTML({ k: 'dataDecisao', l: 'Data da decisão', t: 'date' }, f.dataDecisao)}
+      ${campoHTML({ k: 'classificacao', l: 'Transgressão', t: 'select', o: CLASSIF_TRANSG }, f.classificacao)}${campoHTML({ k: 'enquadramento', l: 'Enquadramento (nº do Anexo I do RDE)' }, f.enquadramento)}
+      ${campoHTML({ k: 'punicao', l: 'Punição', t: 'select', o: PUNICOES }, f.punicao)}${campoHTML({ k: 'dias', l: 'Dias (impedimento, detenção, prisão)', t: 'number' }, f.dias)}
+      ${campoHTML({ k: 'inicio', l: 'Início do cumprimento', t: 'date' }, f.inicio)}${campoHTML({ k: 'autoridade', l: 'Autoridade que aplicou' }, f.autoridade || cfg('cmtNome'))}`)}
+    ${sec(hist ? 3 : 4, 'Publicação', `${campoHTML({ k: 'bi', l: 'Publicado em (ex.: BI nº 45 / ADT nº 12)' }, f.bi)}${campoHTML({ k: 'obs', l: 'Observações' }, f.obs)}`)}
+    <div class="acts">${id ? `<button type="button" class="btn dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button><span class="grow"></span>` : ''}<button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar</button></div></form></div>`;
+  const ajustar = () => {
+    const pun = $('#f_decisao').value === 'Punido', p = $('#f_punicao').value;
+    ['classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade'].forEach(k => { const el = $('#f_' + k).closest('label'); el.style.display = pun ? '' : 'none'; });
+    $('#f_dias').closest('label').style.display = pun && PUN_COM_DIAS.includes(p) ? '' : 'none';
+    $('#f_inicio').closest('label').style.display = pun && PUN_COM_DIAS.includes(p) ? '' : 'none';
+    if ($('#f_ciencia')) $('#f_prazo').value = $('#f_ciencia').value ? fmt(addDiasUteis($('#f_ciencia').value, PRAZO_DEFESA)) + ` (${PRAZO_DEFESA} dias úteis)` : 'conta a partir da ciência';
+  };
+  ['decisao', 'punicao', 'ciencia'].forEach(k => { if ($('#f_' + k)) $('#f_' + k).onchange = ajustar; });
+  ajustar();
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $('#frm .btn.pri'); btn.disabled = true;
+    try {
+      const v = k => $('#f_' + k) ? $('#f_' + k).value.trim() : (f[k] || '');
+      const o = { ...f, tipo: 'FATD' };
+      ['numero', 'dataFato', 'militarId', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'obs'].forEach(k => { o[k] = v(k); });
+      if (!o.numero || !o.dataFato || !o.militarId) throw new Error('Preencha número, data do fato e militar.');
+      if (o.decisao === 'Punido') {
+        if (!o.punicao) throw new Error('Escolha a punição.');
+        if (!o.dataDecisao) o.dataDecisao = hoje();
+        if (!PUN_COM_DIAS.includes(o.punicao)) { o.dias = ''; o.inicio = ''; }
+        else if (!num(o.dias)) throw new Error('Informe os dias de ' + o.punicao.toLowerCase() + '.');
+      } else ['classificacao', 'enquadramento', 'punicao', 'dias', 'inicio'].forEach(k => { o[k] = ''; });
+      if (o.decisao === 'Justificada' && !o.dataDecisao) o.dataDecisao = hoje();
+      if (!id && disc('FATD').some(x => x.numero === o.numero && !hist)) throw new Error(`Já existe a FATD nº ${o.numero}.`);
+      if ($('#f_arquivoUrl')) { const url = await enviarArquivo($('#f_arquivoUrl').files[0]); if (url) o.arquivoUrl = url; }
+      await salvar('Disciplina', [o]);
+      fecharModal(); toast(o.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(o.punicao) && o.inicio ? 'Salvo. O militar fica fora da escala durante o cumprimento.' : 'FATD salva.'); render();
+    } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
+  };
+}
+function fatdDaAnotacao(id) {
+  const a = disc('Anotacao').find(x => x.id === id);
+  editarFatd(null, { militarId: a.militarId, dataFato: a.data, relato: a.relato, participante: a.participante, origemId: a.id });
+}
+function editarElogio(id, mid) {
+  const e = id ? disc('Elogio').find(x => x.id === id) : { tipo: 'Elogio', data: hoje(), subtipo: 'Elogio individual', militaresIds: mid || '', autoridade: cfg('cmtNome') };
+  abrirForm({ titulo: id ? 'Elogio' : 'Novo elogio', valores: e, campos: [
+    { k: 'data', l: 'Data', t: 'date', req: true }, { k: 'subtipo', l: 'Tipo', t: 'select', o: TIPOS_ELOGIO, vazio: false },
+    { k: 'militaresIds', l: 'Militar(es) elogiado(s)', t: 'militares' }, { k: 'relato', l: 'Texto / motivo do elogio', t: 'textarea' },
+    { k: 'autoridade', l: 'Quem elogiou' }, { k: 'bi', l: 'Publicado em (BI / ADT)' }],
+    aoSalvar: o => { if (!o.militaresIds) throw new Error('Marque pelo menos um militar.'); return salvar('Disciplina', [{ ...o, tipo: 'Elogio' }]); },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+function editarAnotacao(id, mid) {
+  const a = id ? disc('Anotacao').find(x => x.id === id) : { tipo: 'Anotacao', data: hoje(), subtipo: 'Observação', militarId: mid || '', participante: S.user.nome || '' };
+  abrirForm({ titulo: id ? 'Anotação (Boca Podre)' : 'Nova anotação (Boca Podre)', valores: a, campos: [
+    { k: 'data', l: 'Data', t: 'date', req: true }, { k: 'militarId', l: 'Militar', t: 'militar', req: true },
+    { k: 'subtipo', l: 'Tipo', t: 'select', o: TIPOS_ANOT, vazio: false }, { k: 'participante', l: 'Quem anotou' },
+    { k: 'relato', l: 'Anotação', t: 'textarea', req: true }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Anotacao' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+
+/** 4ª parte do aditamento: punições decididas e elogios ainda sem BI. */
+function textoParte4() {
+  const pun = disc('FATD').filter(f => f.decisao === 'Punido' && !f.bi && f.historico !== 'Sim').sort((a, b) => (a.dataDecisao || '').localeCompare(b.dataDecisao || ''));
+  const elo = disc('Elogio').filter(e => !e.bi).sort((a, b) => a.data.localeCompare(b.data));
+  if (!pun.length && !elo.length) return SEM_ALT;
+  const partes = [];
+  if (elo.length) partes.push('ELOGIOS\n' + elo.map(e => `- ${e.subtipo}: ${ids(e.militaresIds).map(nomeMil).join(', ')}. ${e.relato || ''}`.trim()).join('\n'));
+  if (pun.length) partes.push('PUNIÇÕES DISCIPLINARES\n' + pun.map(f => `- ${nomeMil(f.militarId)}: ${f.punicao.toLowerCase()}${num(f.dias) ? ` de ${f.dias} dia(s)` : ''}${f.inicio ? `, a contar de ${fmtMil(f.inicio)}` : ''}, por transgressão ${String(f.classificacao || '').toLowerCase()}${f.enquadramento ? ` (nº ${f.enquadramento} do Anexo I do RDE)` : ''}: ${f.relato || ''}`.trim()).join('\n'));
+  return partes.map((p, i) => `${i + 1}. ${p}`).join('\n\n');
+}
+/** Ao publicar o aditamento, marca as punições e elogios que entraram na 4ª parte. */
+async function marcarPublicados(a) {
+  if (!(S.db.Disciplina || []).length || !a.parte4 || norm(a.parte4) === norm(SEM_ALT)) return;
+  const ref = `ADT nº ${a.numero}${a.biNumero ? ' / BI nº ' + a.biNumero : ''}`;
+  const lista = (S.db.Disciplina || []).filter(x => !x.bi && ((x.tipo === 'FATD' && x.decisao === 'Punido' && a.parte4.includes(nomeMil(x.militarId))) || (x.tipo === 'Elogio' && ids(x.militaresIds).some(m => a.parte4.includes(nomeMil(m))))));
+  if (lista.length) await salvar('Disciplina', lista.map(x => ({ ...x, bi: ref })));
+}
+
+DOCS.fatd = id => {
+  const f = disc('FATD').find(x => x.id === id), m = MIL[f.militarId] || {};
+  const linha = '_______________________________________';
+  return { tipo: 'Disciplina', ref: f.id, titulo: `FATD ${String(f.numero).replace('/', '-')} - ${m.nomeGuerra || ''}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: `FORMULÁRIO DE APURAÇÃO DE TRANSGRESSÃO DISCIPLINAR Nº ${f.numero}`, c: 1, b: 1 }, { esp: 1 },
+    { p: '1. IDENTIFICAÇÃO DO MILITAR', b: 1, l: 1 },
+    { t: [[{ v: 'Posto/Grad', b: 1, l: 1 }, { v: m.postoGrad || '', l: 1 }, { v: 'Idt', b: 1, l: 1 }, { v: m.idt || '', l: 1 }], [{ v: 'Nome', b: 1, l: 1 }, { v: m.nomeCompleto || m.nomeGuerra || '', l: 1, span: 3 }], [{ v: 'Subunidade', b: 1, l: 1 }, { v: `${cfg('sigla')}${m.pelotao ? ' – ' + m.pelotao : ''}`, l: 1, span: 3 }]], w: [16, 34, 12, 38], sz: 9.5 },
+    { p: '2. RELATO DO FATO', b: 1, l: 1, mt: 8 },
+    { p: `Em ${fmtMil(f.dataFato)}, ${f.relato || ''}` }, { p: `Participante: ${f.participante || linha}`, mt: 4 },
+    { p: '3. CIÊNCIA', b: 1, l: 1, mt: 8 },
+    { p: `Recebi a 1ª via deste formulário em ${f.ciencia ? fmtMil(f.ciencia) : '____/____/______'}, ciente de que tenho o prazo de ${PRAZO_DEFESA} (três) dias úteis para apresentar, por escrito, as minhas justificativas ou razões de defesa.` },
+    ...blocosAssinatura('_______________________________', 'Assinatura do militar', 2),
+    { p: '4. JUSTIFICATIVAS / RAZÕES DE DEFESA', b: 1, l: 1, mt: 8 },
+    { p: f.defesa || `${linha}${linha}\n${linha}${linha}\n${linha}${linha}` },
+    { p: '5. DECISÃO DA AUTORIDADE', b: 1, l: 1, mt: 8 },
+    { p: f.decisao === 'Justificada' ? 'Considero justificado o fato e determino o arquivamento deste formulário.'
+      : f.decisao === 'Punido' ? `Aplico ao militar a punição de ${f.punicao.toLowerCase()}${num(f.dias) ? ` de ${f.dias} (${f.dias}) dia(s)` : ''}, por transgressão ${String(f.classificacao || '').toLowerCase()}${f.enquadramento ? `, enquadrada no nº ${f.enquadramento} do Anexo I do RDE` : ''}${f.inicio ? `, a contar de ${fmtMil(f.inicio)}` : ''}.`
+      : `( ) Justificado – arquivar     ( ) Punir: ${linha}` },
+    { esp: 1 }, { p: localData(f.dataDecisao || hoje()), r: 1 }, ...blocosAssinatura(f.autoridade || cfg('cmtNome'), cfg('cmtFuncao'))] };
+};
+DOCS.fichaDisc = mid => {
+  const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid).slice().reverse();
+  return { tipo: 'Disciplina', ref: mid, titulo: `Ficha disciplinar - ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, { esp: 1 },
+    { t: [[{ v: 'Militar', b: 1, l: 1 }, { v: `${nomeMil(m)}${m.nomeCompleto ? ' – ' + m.nomeCompleto : ''}`, l: 1 }], [{ v: 'Comportamento', b: 1, l: 1 }, { v: (m.comportamento || '—') + (sug ? ` (sugerido pelo sistema: ${sug.c})` : ''), l: 1 }]], w: [22, 78], sz: 9.5 },
+    { esp: 1 },
+    { t: [['Data', 'Registro', 'Detalhe'], ...(ev.length ? ev.map(e => [fmt(e.d), { v: e.t, l: 1 }, { v: e.x || '', l: 1 }]) : [['', 'Nada registrado', '']])], h: 1, w: [13, 30, 57], sz: 9 },
+    { esp: 1 }, { p: localData(hoje()), r: 1 }] };
+};
+
 // ============================================================ aditamentos (modelo do ADT: 1ª parte em tabelas por dia, externos e internos)
 const PARTES = [['1ª PARTE', 'SERVIÇOS DIÁRIOS'], ['2ª PARTE', 'INSTRUÇÃO'], ['3ª PARTE', 'ASSUNTOS GERAIS E ADMINISTRATIVOS'], ['4ª PARTE', 'JUSTIÇA E DISCIPLINA']];
 const SEM_ALT = 'sem alteração';
@@ -1849,7 +2128,7 @@ function vEditorAditamento() {
   const a = S.adEdit, ro = !pode();
   const campo = (k, l, t = 'text', on = `S.adEdit.${k}=this.value;render()`) => `<label class="muted"><b>${l}</b><input type="${t}" value="${esc(a[k])}" ${ro ? 'readonly' : ''} onchange="${on}"></label>`;
   const area = (k, i, dica) => `<div class="parte"><div class="bar"><b class="grow">${PARTES[i].join(' – ')}</b>
-    ${!ro && k === 'parte3' ? '<button class="btn sm" onclick="preencherParte3()">Preencher (afastamentos, missões, cautelas)</button>' : ''}</div>
+    ${!ro && k === 'parte3' ? '<button class="btn sm" onclick="preencherParte3()">Preencher (afastamentos, missões, cautelas)</button>' : ''}${!ro && k === 'parte4' && pode() ? '<button class="btn sm" onclick="preencherParte4()">Preencher (punições e elogios a publicar)</button>' : ''}</div>
     ${dica ? `<p class="muted" style="margin:0 0 6px">${dica}</p>` : ''}<textarea id="ad_${k}" rows="${k === 'parte3' ? 10 : k === 'parte1' ? 3 : 4}" ${ro ? 'readonly' : ''} oninput="S.adEdit.${k}=this.value">${esc(a[k])}</textarea></div>`;
   const servicos = servicosDoAditamento(a);
   const previa = htmlDoc(servicos.flatMap(blocosDia));
@@ -1870,6 +2149,11 @@ function vEditorAditamento() {
     ${a.pdfUrl ? `<a class="btn" href="${esc(a.pdfUrl)}" target="_blank">Abrir PDF</a>` : ''}${a.docUrl ? `<a class="btn" href="${esc(a.docUrl)}" target="_blank">Abrir editável</a>` : ''}
     <span class="grow"></span>${!ro && a.id ? `<button class="btn dng" onclick="excluirAditamento()">Excluir</button>` : ''}</div></div>`;
 }
+async function preencherParte4() {
+  const a = S.adEdit;
+  if (a.parte4 && norm(a.parte4) !== norm(SEM_ALT) && !await confirmar('Substituir o texto atual da 4ª parte?')) return;
+  a.parte4 = textoParte4(); render();
+}
 async function preencherParte3() {
   const a = S.adEdit;
   if (a.parte3 && norm(a.parte3) !== norm(SEM_ALT) && !await confirmar('Substituir o texto atual da 3ª parte?')) return;
@@ -1886,6 +2170,7 @@ async function salvarAditamento(status) {
   if (!gravado || gravado.status !== 'Publicado') a.servicos = JSON.stringify(montarServicos(a.dataServico, a.servicoAte));
   if (status) a.status = status;
   const [salvo] = await salvar('Aditamentos', [a]);
+  if (status === 'Publicado') await marcarPublicados(a);
   S.adEdit = { ...a, id: salvo.id };
   toast(status === 'Publicado' ? 'Aditamento publicado.' : 'Aditamento salvo.'); render();
   return S.adEdit;
@@ -3090,7 +3375,7 @@ function semente() {
     ['Sd EV', '', 'Nogueira', 'Breno Nogueira Cruz'], ['Sd EV', '', 'Pinheiro', 'Kauã Pinheiro Dias'], ['Sd EV', '', 'Coelho', 'Levi Coelho Brandão'], ['Sd EV', '', 'Dantas', 'Murilo Dantas Reis'],
     ['2º Ten', '', 'Lacerda', 'Vinícius Lacerda Rocha'], ['2º Ten', '', 'Barreto', 'Caio Barreto Lins'], ['3º Sgt', '', 'Moraes', 'Elias Moraes Sá'], ['3º Sgt', '', 'Pacheco', 'Ítalo Pacheco Reis'], ['3º Sgt', '', 'Teles', 'Rômulo Teles Alves']
   ].map(([postoGrad, numero, nomeGuerra, nomeCompleto], i) => ({
-    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
+    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, dataPraca: `${Number(ano) - (i < 3 ? 15 : i < 11 ? 9 : i < 17 ? 4 : 1)}-03-01`, antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
     dataNascimento: `${1975 + (i * 7) % 30}-${pad(1 + i % 12)}-${pad(1 + (i * 5) % 28)}`, cpf: '', precCp: '', tipoSanguineo: TIPOS_SANGUE[i % 8], peso: String(62 + (i * 3) % 30),
     telefone: `(61) 9${String(81000000 + i * 271357).slice(0, 4)}-${String(1000 + i * 37).slice(-4)}`, email: `${norm(nomeGuerra)}@exemplo.com`, endereco: `Quadra ${10 + i}, Conjunto ${'ABCDE'[i % 5]}, Casa ${i + 2} – Brasília-DF (fictício)`,
     cttEmergencia: `(61) 9${String(92000000 + i * 15731).slice(0, 4)}-${String(2000 + i * 53).slice(-4)}`, nomeCtt: ['Ana', 'Maria', 'José', 'Paula', 'Luís'][i % 5], parentesco: PARENTES[i % 5],
@@ -3132,6 +3417,18 @@ function semente() {
     Acessos: [{ email: 'sd.gama.exemplo@exemplo.com', nome: 'Sd EP Gama', data: `${d} 07:42`, status: 'Pendente' }],
     Documentos: [],
     Locais: [],
+    Disciplina: [
+      { id: 'jd1', tipo: 'FATD', numero: `001/${ano}`, dataFato: addDias(d, -12), militarId: 'm20', participante: '3º Sgt Rocha', relato: 'o militar deixou de comparecer à formatura matinal sem motivo justificado.', ciencia: addDias(d, -11), defesaData: addDias(d, -9), defesa: 'Alegou problema com o transporte, sem comprovação.', decisao: 'Punido', dataDecisao: addDias(d, -6), classificacao: 'Leve', enquadramento: '15', punicao: 'Repreensão', dias: '', inicio: '', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
+      { id: 'jd2', tipo: 'FATD', numero: `002/${ano}`, dataFato: addDias(d, -2), militarId: 'm22', participante: '1º Sgt Nunes', relato: 'o militar apresentou-se para o serviço com o uniforme em desalinho e sem a cobertura.', ciencia: addDias(d, -1), origemId: 'jd8' },
+      { id: 'jd3', tipo: 'FATD', numero: `003/${ano}`, dataFato: addDias(d, -1), militarId: 'm24', participante: 'Cb Brito', relato: 'o militar deixou o posto de sentinela antes da rendição.' },
+      { id: 'jd4', tipo: 'FATD', numero: `004/${ano}`, dataFato: addDias(d, -9), militarId: 'm21', participante: '2º Sgt Leal', relato: 'o militar faltou ao serviço de permanência para o qual estava escalado.', ciencia: addDias(d, -8), defesaData: addDias(d, -6), decisao: 'Punido', dataDecisao: addDias(d, -3), classificacao: 'Média', enquadramento: '22', punicao: 'Detenção disciplinar', dias: '4', inicio: addDias(d, -1), autoridade: 'RICARDO MOURA LIMA – Cap', bi: `BI nº ${Number(d.slice(5, 7)) * 4}` },
+      { id: 'jd5', tipo: 'FATD', numero: `012/${Number(ano) - 1}`, historico: 'Sim', dataFato: `${Number(ano) - 1}-08-14`, militarId: 'm20', relato: 'Atraso reiterado.', decisao: 'Punido', dataDecisao: `${Number(ano) - 1}-08-20`, classificacao: 'Leve', punicao: 'Repreensão', bi: 'BI nº 150' },
+      { id: 'jd6', tipo: 'Elogio', data: addDias(d, -4), subtipo: 'Elogio coletivo', militaresIds: 'm9,m13,m23', relato: 'Pela dedicação e eficiência demonstradas no apoio logístico ao exercício de campanha.', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
+      { id: 'jd7', tipo: 'Elogio', data: addDias(d, -40), subtipo: 'Elogio individual', militaresIds: 'm4', relato: 'Pelo zelo e organização na conferência anual do material carga.', autoridade: 'RICARDO MOURA LIMA – Cap', bi: 'BI nº 180' },
+      { id: 'jd8', tipo: 'Anotacao', data: addDias(d, -2), militarId: 'm22', subtipo: 'Apresentação pessoal', relato: 'Uniforme em desalinho e sem cobertura na troca da guarda.', participante: '1º Sgt Nunes' },
+      { id: 'jd9', tipo: 'Anotacao', data: addDias(d, -3), militarId: 'm25', subtipo: 'Atraso', relato: 'Chegou 10 min atrasado para o expediente. Orientado.', participante: '3º Sgt Vieira' },
+      { id: 'jd10', tipo: 'Anotacao', data: addDias(d, -5), militarId: 'm16', subtipo: 'Orientação', relato: 'Orientado sobre o preenchimento do livro de partes do Cb Gda.', participante: 'ST Arruda' }
+    ],
     Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
   };
   // Gera um mês de escala para a demonstração já abrir com dados.
