@@ -1011,7 +1011,7 @@ const VIEWS = [
 ];
 // Itens da 2ª coluna: `aba` liga a uma aba da tela, `filtro` a um filtro, `acao` roda depois de abrir a tela, `editor` = só para quem edita.
 const SUBMENU = {
-  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Justiça e disciplina (em construção)', aba: 'jd' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -1303,12 +1303,20 @@ function vEfetivo() {
       { l: 'Situação', v: i => i.fim < d ? '<span class="tag">Encerrado</span>' : i.inicio > d ? '<span class="tag info">Previsto</span>' : '<span class="tag warn">Em curso</span>' },
       { l: 'Obs', v: i => esc(i.obs) }
     ], pode() ? i => `<button class="btn sm" onclick="editarImp('${i.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('Impedimentos','${i.id}')">Excluir</button>` : null)}`;
+  } else if (t === 'jd') {
+    corpo = `<div class="card em-construcao"><span class="tag warn">Em construção</span>
+      <h3 style="margin:10px 0 4px">Justiça e disciplina</h3>
+      <p class="muted" style="margin-top:0">Esta parte ainda está sendo feita. Vai reunir, por militar, o registro disciplinar da subunidade:</p>
+      <ul>${[['Punições', 'advertência, impedimento disciplinar, repreensão, detenção e prisão, com a data, o enquadramento e o boletim de publicação'],
+        ['FATD', 'formulário de apuração de transgressão disciplinar, do relato à decisão, e os prazos de defesa'],
+        ['Elogios', 'individuais e coletivos, com a referência do boletim'],
+        ['Boca Podre', 'controle do comportamento e das anotações de cada militar']].map(([n, d]) => `<li><b>${n}</b>: <span class="muted">${d}.</span></li>`).join('')}</ul></div>`;
   } else {
     const alvo = S.filtro.impAlvo || 'Militares';
     corpo = `<div class="bar"><label class="muted">O que importar <select onchange="S.filtro.impAlvo=this.value;S.imp=null;render()">
       ${[['Militares', 'Militares, tripão ou plano de chamada'], ['Ferias', 'Plano de férias']].map(([v, l]) => `<option value="${v}" ${v === alvo ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>` + vImportar(alvo);
   }
-  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
+  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], ['jd', 'Justiça e disciplina (em construção)'], ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
   return `<h2>Efetivo</h2><p class="sub">Militares da subunidade, tripão, plano de chamada, plano de férias e demais afastamentos.</p>${abas('efetivo', abasEf)}${corpo}`;
 }
 async function novaRefFerias() {
