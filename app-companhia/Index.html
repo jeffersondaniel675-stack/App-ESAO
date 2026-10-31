@@ -1261,7 +1261,7 @@ const CAMPOS_MIL = [
   { k: 'funcao', l: 'Função' },
   { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], padrao: 'Sim', vazio: false },
   { k: 'dataPraca', l: 'Data de praça', t: 'date' },
-  { k: 'comportamento', l: 'Comportamento (praças)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
+  { k: 'comportamento', l: 'Comportamento (cabos e soldados)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
   { secao: 'Tripão' },
   { k: 'dataNascimento', l: 'Data de nascimento', t: 'date' },
   { k: 'idt', l: 'Idt militar' },
@@ -1780,7 +1780,8 @@ const TIPOS_ELOGIO = ['Elogio individual', 'Elogio coletivo', 'Referência elogi
 const TIPOS_ANOT = ['Observação', 'Orientação', 'Falta leve', 'Atraso', 'Apresentação pessoal', 'Outra'];
 const PRAZO_DEFESA = 3;
 const disc = tipo => (S.db.Disciplina || []).filter(x => x.tipo === tipo);
-const ehPraca = m => m && postoIdx(m.postoGrad) >= POSTOS.indexOf('ST');
+/** Comportamento só é classificado para cabos e soldados. */
+const temComportamento = m => m && postoIdx(m.postoGrad) >= POSTOS.indexOf('Cb');
 /** Soma n dias úteis (pula sábado, domingo e feriado). */
 function addDiasUteis(iso, n) { let d = iso; while (n > 0) { d = addDias(d, 1); if (corDoDia(d) === 'P') n--; } return d; }
 const fimPunicao = f => f.inicio && num(f.dias) > 0 ? addDias(f.inicio, num(f.dias) - 1) : '';
@@ -1804,12 +1805,12 @@ function punicaoEmCurso(militarId, iso) {
 }
 
 /**
- * Comportamento sugerido para praças, pelas punições (equivalências: 1 prisão = 2 detenções; 1 detenção = 2 repreensões).
+ * Comportamento sugerido para cabos e soldados, pelas punições (equivalências: 1 prisão = 2 detenções; 1 detenção = 2 repreensões).
  * Excepcional: 8 anos sem punição · Ótimo: 4 anos com até 1 detenção · Bom: 2 anos com até 2 prisões ·
  * Insuficiente: 1 ano com até 2 prisões · Mau: 1 ano com mais de 2 prisões. É apoio ao S1: conferir sempre com o RDE.
  */
 function comportamentoSugerido(m) {
-  if (!ehPraca(m)) return null;
+  if (!temComportamento(m)) return null;
   const pun = disc('FATD').filter(f => f.militarId === m.id && f.decisao === 'Punido');
   const peso = p => p === 'Prisão disciplinar' ? 1 : p === 'Detenção disciplinar' ? 0.5 : p === 'Repreensão' ? 0.25 : 0;
   const desde = anos => { const d = dataDe(hoje()); d.setFullYear(d.getFullYear() - anos); return isoDe(d); };
@@ -1837,14 +1838,14 @@ function vDisciplina() {
     const cumprindo = disc('FATD').filter(f => f.decisao === 'Punido' && f.inicio && f.inicio <= hoje() && fimPunicao(f) >= hoje());
     const semBi = disc('FATD').filter(f => f.decisao === 'Punido' && !f.bi).length + disc('Elogio').filter(e => !e.bi).length;
     const ano = hoje().slice(0, 4);
-    const praças = militaresAtivos().filter(ehPraca);
-    const dist = COMPORTAMENTOS.map(c => [c, praças.filter(m => (m.comportamento || (comportamentoSugerido(m) || {}).c) === c).length]);
+    const cbSd = militaresAtivos().filter(temComportamento);
+    const dist = COMPORTAMENTOS.map(c => [c, cbSd.filter(m => (m.comportamento || (comportamentoSugerido(m) || {}).c) === c).length]);
     corpo = `<div class="grid-resumo">
       <div class="card"><h3>FATD em andamento <span class="tag ${abertas.length ? 'warn' : 'ok'}">${abertas.length}</span></h3>${abertas.length ? `<ul class="lista-jd">${abertas.map(f => { const s = situacaoFatd(f); return `<li><a onclick="editarFatd('${f.id}')">FATD nº ${esc(f.numero)} – ${esc(nomeMil(f.militarId))}</a><br><span class="tag ${s.c}">${esc(s.t)}</span></li>`; }).join('')}</ul>` : '<p class="muted">Nenhuma.</p>'}</div>
       <div class="card"><h3>Cumprindo punição hoje <span class="tag ${cumprindo.length ? 'dng' : 'ok'}">${cumprindo.length}</span></h3>${cumprindo.length ? `<ul class="lista-jd">${cumprindo.map(f => `<li><b>${esc(nomeMil(f.militarId))}</b><br><span class="muted">${esc(f.punicao)} de ${fmt(f.inicio)} a ${fmt(fimPunicao(f))} (fora da escala)</span></li>`).join('')}</ul>` : '<p class="muted">Ninguém.</p>'}</div>
       <div class="card"><h3>Para publicar em BI <span class="tag ${semBi ? 'warn' : 'ok'}">${semBi}</span></h3><p class="muted">Punições decididas e elogios ainda sem BI. No aditamento, o botão <b>Preencher</b> da 4ª parte traz esse texto pronto.</p>
         <p>Em ${ano}: <b>${disc('FATD').filter(f => f.decisao === 'Punido' && (f.dataDecisao || '').startsWith(ano)).length}</b> punição(ões) e <b>${disc('Elogio').filter(e => e.data.startsWith(ano)).length}</b> elogio(s).</p></div>
-      <div class="card"><h3>Comportamento das praças</h3><table class="mini">${dist.map(([c, n]) => `<tr><td>${tagComp(c)}</td><td class="num"><b>${n}</b></td></tr>`).join('')}</table><p class="muted" style="font-size:12px">Usa o comportamento lançado no cadastro do militar; sem ele, o sugerido pelo sistema.</p></div>
+      <div class="card"><h3>Comportamento dos cabos e soldados</h3><table class="mini">${dist.map(([c, n]) => `<tr><td>${tagComp(c)}</td><td class="num"><b>${n}</b></td></tr>`).join('')}</table><p class="muted" style="font-size:12px">Usa o comportamento lançado no cadastro do militar; sem ele, o sugerido pelo sistema.</p></div>
     </div>`;
   } else if (t === 'fatd') {
     const ver = S.filtro.fatdVer || 'and';
@@ -1908,7 +1909,7 @@ function fichaDisciplinar(mid) {
   const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid);
   const abrir = e => e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
   return `<div class="card"><div class="bar" style="align-items:flex-start"><div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
-    ${ehPraca(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Oficial: sem classificação de comportamento.</span>'}</div>
+    ${temComportamento(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Sem classificação de comportamento (só cabos e soldados).</span>'}</div>
     ${sug ? `<p class="muted" style="font-size:12.5px">${esc(sug.motivo)} Conferir sempre com o RDE.</p>` : ''}
     <div class="bar"><span class="tag dng">${disc('FATD').filter(f => f.militarId === mid && f.decisao === 'Punido').length} punição(ões)</span><span class="tag ok">${disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).length} elogio(s)</span><span class="tag">${disc('Anotacao').filter(a => a.militarId === mid).length} anotação(ões)</span><span class="grow"></span>
       <button class="btn sm" onclick="editarFatd(null,{militarId:'${mid}'})">+ FATD</button><button class="btn sm" onclick="editarElogio(null,'${mid}')">+ Elogio</button><button class="btn sm" onclick="editarAnotacao(null,'${mid}')">+ Anotação</button></div>
@@ -2038,7 +2039,7 @@ DOCS.fichaDisc = mid => {
   const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid).slice().reverse();
   return { tipo: 'Disciplina', ref: mid, titulo: `Ficha disciplinar - ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 },
     { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, { esp: 1 },
-    { t: [[{ v: 'Militar', b: 1, l: 1 }, { v: `${nomeMil(m)}${m.nomeCompleto ? ' – ' + m.nomeCompleto : ''}`, l: 1 }], [{ v: 'Comportamento', b: 1, l: 1 }, { v: (m.comportamento || '—') + (sug ? ` (sugerido pelo sistema: ${sug.c})` : ''), l: 1 }]], w: [22, 78], sz: 9.5 },
+    { t: [[{ v: 'Militar', b: 1, l: 1 }, { v: `${nomeMil(m)}${m.nomeCompleto ? ' – ' + m.nomeCompleto : ''}`, l: 1 }], ...(sug ? [[{ v: 'Comportamento', b: 1, l: 1 }, { v: (m.comportamento || '—') + ` (sugerido pelo sistema: ${sug.c})`, l: 1 }]] : [])], w: [22, 78], sz: 9.5 },
     { esp: 1 },
     { t: [['Data', 'Registro', 'Detalhe'], ...(ev.length ? ev.map(e => [fmt(e.d), { v: e.t, l: 1 }, { v: e.x || '', l: 1 }]) : [['', 'Nada registrado', '']])], h: 1, w: [13, 30, 57], sz: 9 },
     { esp: 1 }, { p: localData(hoje()), r: 1 }] };
