@@ -87,6 +87,8 @@ O sistema mostra na tela o que aconteceu:
 
 Depois de corrigir o código, **publique uma nova versão** (Implantar → Gerenciar implantações → ✏️ → Versão: Nova versão → Implantar). O link `/exec` só mostra a última versão *publicada*. Para testar sem publicar, use **Implantar → Testar implantações**: esse link termina em `/dev` e sempre usa o código salvo.
 
+> **Para quem for editar o código:** o Apps Script apaga tudo o que vem depois de `//` numa linha, inclusive dentro de textos. Não use barra dupla nem barra-asterisco dentro de textos no `Index.html`: monte endereços com `HTTPS + '...'` e guarde imagens em base64url com `imagemPng(...)`.
+
 ## Primeiros passos dentro do sistema
 
 1. **Configurações → Documentos:** confira o cabeçalho (MINISTÉRIO DA DEFESA / EXÉRCITO BRASILEIRO / 11º DEPÓSITO DE SUPRIMENTO / 1ª COMPANHIA), acrescente a linha do escalão superior se a OM usa, e preencha o nome do Cmt Cia, o setor da cautela, as assinaturas e o detentor do material carga. O Brasão da República já vem como padrão nos documentos, e o **distintivo do 11º D Sup** aparece no topo do sistema. Os dois podem ser trocados ali mesmo.
