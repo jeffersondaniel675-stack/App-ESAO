@@ -1840,6 +1840,7 @@ const CAMPOS_MAT = [
   { k: 'acervo', l: 'Acervo', t: 'select', o: ['N', 'S'], padrao: 'N', vazio: false },
   { k: 'quantidade', l: 'Quantidade', t: 'number', req: true, padrao: '1' },
   { k: 'unidade', l: 'Unidade', padrao: 'un' },
+  { k: 'estoqueMinimo', l: 'Estoque mínimo (para o pedido de reposição)', t: 'number' },
   { k: 'valor', l: 'Valor unitário (R$)', t: 'number' },
   { k: 'localizacao', l: 'Dependência / local' },
   { k: 'estado', l: 'Estado', t: 'select', o: ESTADOS, padrao: 'Bom' },
@@ -1898,13 +1899,18 @@ function vMaterial() {
     corpo = `<div class="bar">${busca('caut', 'Buscar nº, militar ou material…')}<select onchange="S.filtro.cautVer=this.value;render()" aria-label="Quais cautelas"><option value="abertas">Em aberto</option><option value="todas" ${ver === 'todas' ? 'selected' : ''}>Todas</option></select>
       <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novaCautela()">+ Cautela</button>' : ''}</div>${tabelaCautelas(lista)}`;
   } else if (t === 'ped') {
-    const lista = S.db.Pedidos.slice().sort((a, b) => b.data.localeCompare(a.data) || String(b.numero).localeCompare(String(a.numero))).filter(p => casa('ped', p.numero, p.de, p.para, p.itens));
-    corpo = `<div class="bar">${busca('ped', 'Buscar pedido…')}<span class="grow"></span>${pode() ? `<button class="btn" onclick="S.filtro.impMat='pedido';S.sub.material='imp';render()">Importar PDF de pedido</button><button class="btn pri" onclick="editarPedido()">+ Pedido de material</button>` : ''}</div>
+    const sent = S.filtro.pedSent || 'rec', rec = sent === 'rec';
+    const lista = S.db.Pedidos.filter(p => sentidoPedido(p) === (rec ? 'Recebido' : 'Enviado')).sort((a, b) => b.data.localeCompare(a.data) || String(b.numero).localeCompare(String(a.numero))).filter(p => casa('ped', p.numero, p.de, p.para, p.itens));
+    const pend = S.db.Pedidos.filter(p => sentidoPedido(p) === 'Recebido' && ['Pendente', 'Atendido parcialmente', ''].includes(p.status || '')).length;
+    const rep = sugestoesReposicao().length;
+    corpo = `<div class="tabs" style="margin-top:-6px"><button class="${rec ? 'on' : ''}" onclick="S.filtro.pedSent='rec';render()">Recebidos dos Pel / Seç${pend ? ` <span class="tag warn">${pend}</span>` : ''}</button><button class="${rec ? '' : 'on'}" onclick="S.filtro.pedSent='env';render()">Enviados ao Fisc Adm / S4</button></div>
+    <p class="muted" style="margin-top:0">${rec ? 'Pedidos que os pelotões e seções fazem para a Cia. <b>Atender</b> dá baixa no estoque; o que faltar entra no pedido de reposição.' : 'Pedidos da Cia ao Fisc Adm / S4 para repor o estoque. <b>Dar entrada</b> soma no inventário o que chegou.'}</p>
+    <div class="bar">${busca('ped', 'Buscar pedido…')}<span class="grow"></span>${pode() ? `<button class="btn" onclick="S.filtro.impMat='pedido';S.impPdf=null;S.sub.material='imp';render()">Importar PDF de pedido</button>${rec ? '<button class="btn pri" onclick="editarPedido(null,\'Recebido\')">+ Pedido recebido</button>' : `<button class="btn" onclick="editarPedido(null,'Enviado')">+ Pedido em branco</button><button class="btn pri" onclick="pedidoReposicao()">+ Pedido de reposição${rep ? ` (${rep})` : ''}</button>`}` : ''}</div>
     ${tabela(lista, [
       { l: 'Nº', v: p => `<b>${esc(p.numero)}</b>` }, { l: 'Data', v: p => fmt(p.data) }, { l: 'Do / ao', v: p => `${esc(p.de)}<div class="muted">ao ${esc(p.para)}</div>` },
       { l: 'Itens', v: p => { const it = itensPedido(p); return `${it.length} item(ns)<div class="muted">${esc(it.slice(0, 3).map(i => i.esp).join(', '))}${it.length > 3 ? '…' : ''}</div>`; } },
-      { l: 'Situação', v: p => `<span class="tag ${p.status === 'Recebido' ? 'ok' : p.status === 'Negado' ? 'dng' : p.status === 'Autorizado' ? 'info' : 'warn'}">${esc(p.status || 'Rascunho')}</span>` }
-    ], p => `${pode() ? `<button class="btn sm" onclick="editarPedido('${p.id}')">Abrir</button> ` : ''}${botoesDoc('pedido', p.id)}`)}`;
+      { l: 'Situação', v: p => `<span class="tag ${/^(Recebido|Atendido)$/.test(p.status) ? 'ok' : p.status === 'Negado' ? 'dng' : /Autorizado|parcial/.test(p.status) ? 'info' : 'warn'}">${esc(p.status || (rec ? 'Pendente' : 'Rascunho'))}</span>` }
+    ], p => `${pode() && rec && !/^(Atendido|Negado)$/.test(p.status) ? `<button class="btn sm pri" onclick="atenderPedido('${p.id}')">Atender</button> ` : ''}${pode() && !rec && !/^(Recebido|Negado)$/.test(p.status) ? `<button class="btn sm pri" onclick="entradaPedido('${p.id}')">Dar entrada</button> ` : ''}${pode() ? `<button class="btn sm" onclick="editarPedido('${p.id}')">Abrir</button> ` : ''}${botoesDoc('pedido', p.id)}`)}`;
   } else {
     const modo = S.filtro.impMat || 'planilha';
     corpo = `<div class="tabs" style="margin-top:-6px">${[['planilha', 'Planilha (Excel, CSV ou Google)'], ['siscofis', 'Relação do SISCOFIS (PDF)'], ['pedido', 'Pedido de material (PDF)']]
@@ -2019,7 +2025,6 @@ DOCS.cautela = numero => {
   while (itens.length < 6) itens.push([pad(itens.length + 1), '', '', '', '']);
   const prev = g.previsaoDevolucao ? fmt(g.previsaoDevolucao) : '____ / ____ / ______';
   return { tipo: 'Cautelas', ref: g.numero, titulo: `Cautela ${g.numero.replace('/', '-')} - ${mil.nomeGuerra || ''} - ${g.dataSaida}`, blocos: [
-    { t: [['_______________________________', '_______________________________'], [cfg('cautelaAss1'), cfg('cautelaAss2')]], sem: 1, sz: 9.5 }, { esp: 1 },
     ...blocosCabecalho(), { esp: 1 },
     { p: `CAUTELA DE MATERIAL Nº ${g.numero}`, c: 1, b: 1, sz: 13 }, { esp: 1 },
     { p: '1. ' + TEXTO_CAUTELA }, { esp: 1 },
@@ -2030,7 +2035,9 @@ DOCS.cautela = numero => {
       [`POSTO/GRAD: ${mil.postoGrad || ''}`, `DATA DO REC.: ${g.aberta ? '____/____/______' : fmt(g.dataDevolucao)}`],
       [`NOME: ${mil.nomeCompleto || mil.nomeGuerra || ''}`, 'RECEBIDO POR:'],
       [`OM: ${cfg('siglaOM')} – ${cfg('sigla')}`, ''], [`CONTATO: ${mil.telefone || ''}`, ''], ['ASSINATURA:', '']], esq: 1, w: [50, 50], sz: 9.5 },
-    ...(g.obs ? [{ esp: 1 }, { p: 'Obs: ' + g.obs }] : [])] };
+    ...(g.obs ? [{ esp: 1 }, { p: 'Obs: ' + g.obs }] : []),
+    { esp: 1 }, { esp: 1 }, { esp: 1 },
+    { t: [['_______________________________', '_______________________________'], [cfg('cautelaAss1'), cfg('cautelaAss2')]], sem: 1, sz: 9.5 }] };
 };
 
 // ---------- relação de material carga (formato SISCOFIS)
@@ -2074,8 +2081,20 @@ LISTAS.relacao = dep => ({
 
 // ---------- pedido de material
 const itensPedido = p => { try { return JSON.parse(p.itens || '[]'); } catch (e) { return []; } };
-function editarPedido(id) {
-  const p = id ? { ...S.db.Pedidos.find(x => x.id === id) } : { numero: proximoNumero(S.db.Pedidos.map(x => x.numero), hoje().slice(0, 4)), data: hoje(), de: cfg('pedidoDe'), para: cfg('pedidoPara'), status: 'Rascunho', itens: '[]' };
+const sentidoPedido = p => p.sentido === 'Recebido' ? 'Recebido' : 'Enviado';
+const STATUS_PED = { Recebido: ['Pendente', 'Atendido parcialmente', 'Atendido', 'Negado'], Enviado: ['Rascunho', 'Enviado', 'Autorizado', 'Recebido parcialmente', 'Recebido', 'Negado'] };
+/** Material do inventário com o mesmo nome do item do pedido. */
+const materialDoItem = it => S.db.Material.find(m => norm(m.descricao) === norm(it.esp));
+function novoPedido(sentido, extra = {}) {
+  const daSentido = S.db.Pedidos.filter(x => sentidoPedido(x) === sentido).map(x => x.numero);
+  return sentido === 'Recebido'
+    ? { sentido, numero: proximoNumero(daSentido, hoje().slice(0, 4)), data: hoje(), de: '', para: cfg('pedidoRecebidoPara'), status: 'Pendente', itens: '[]', ...extra }
+    : { sentido, numero: proximoNumero(daSentido, hoje().slice(0, 4)), data: hoje(), de: cfg('pedidoDe'), para: cfg('pedidoPara'), status: 'Rascunho', itens: '[]', ...extra };
+}
+function editarPedido(id, sentido = 'Enviado', base) {
+  const p = id ? { ...S.db.Pedidos.find(x => x.id === id) } : base || novoPedido(sentido);
+  sentido = sentidoPedido(p);
+  const fracoes = [...new Set(S.db.Pedidos.filter(x => sentidoPedido(x) === 'Recebido').map(x => x.de).concat(S.db.Militares.map(m => m.pelotao)).filter(Boolean))].sort();
   const itens = itensPedido(p); if (!itens.length) itens.push({ esp: '', qtd: '', un: 'Unidades', obs: '' });
   const linha = (it, i) => `<tr data-i="${i}"><td><input type="text" id="pi_esp_${i}" value="${esc(it.esp)}" list="lista_mat" aria-label="Especificação"></td>
     <td style="width:11%"><input type="number" id="pi_qtd_${i}" value="${esc(it.qtd)}" min="0" step="any" aria-label="Quantidade"></td>
@@ -2084,10 +2103,11 @@ function editarPedido(id) {
     <td><button type="button" class="btn sm dng" onclick="this.closest('tr').remove()" aria-label="Remover item">×</button></td></tr>`;
   let n = itens.length;
   $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:860px">
-    <h3>${id ? 'Pedido de material nº ' + esc(p.numero) : 'Novo pedido de material'}</h3>
+    <h3>${id ? 'Pedido de material nº ' + esc(p.numero) : sentido === 'Recebido' ? 'Pedido recebido de Pel / Seç' : 'Pedido ao Fisc Adm / S4'}</h3>
     <div class="form">${campoHTML({ k: 'numero', l: 'Nº do pedido', req: true }, p.numero)}${campoHTML({ k: 'data', l: 'Data', t: 'date', req: true }, p.data)}
-      ${campoHTML({ k: 'de', l: 'Do (quem pede)', req: true }, p.de)}${campoHTML({ k: 'para', l: 'Ao (quem autoriza)', req: true }, p.para)}
-      ${campoHTML({ k: 'status', l: 'Situação', t: 'select', o: ['Rascunho', 'Enviado', 'Autorizado', 'Negado', 'Recebido'], vazio: false }, p.status)}</div>
+      ${campoHTML({ k: 'de', l: sentido === 'Recebido' ? 'Do (pelotão / seção que pede)' : 'Do (quem pede)', req: true }, p.de).replace('id="f_de"', 'id="f_de" list="lista_fracoes"')}${campoHTML({ k: 'para', l: 'Ao (quem autoriza)', req: true }, p.para)}
+      ${campoHTML({ k: 'status', l: 'Situação', t: 'select', o: STATUS_PED[sentido], vazio: false }, p.status || STATUS_PED[sentido][0])}</div>
+    <datalist id="lista_fracoes">${(sentido === 'Recebido' ? fracoes : []).map(f => `<option value="${esc(f)}">`).join('')}</datalist>
     <datalist id="lista_mat">${[...new Set(S.db.Material.map(m => m.descricao))].map(d => `<option value="${esc(d)}">`).join('')}</datalist>
     <h3 style="font-size:15px">Itens</h3>
     <div class="tw"><table><thead><tr><th>Especificação</th><th>Quantidade</th><th>Unidade</th><th>Obs</th><th></th></tr></thead><tbody id="itens">${itens.map(linha).join('')}</tbody></table></div>
@@ -2099,15 +2119,94 @@ function editarPedido(id) {
     ev.preventDefault();
     const btn = $('#frm .btn.pri'); btn.disabled = true;
     try {
-      const it = $$('#itens tr').map(tr => { const i = tr.dataset.i; return { esp: $('#pi_esp_' + i).value.trim(), qtd: $('#pi_qtd_' + i).value, un: $('#pi_un_' + i).value.trim(), obs: $('#pi_obs_' + i).value.trim() }; }).filter(x => x.esp);
+      const it = $$('#itens tr').map(tr => { const i = tr.dataset.i; return { ...(itens[i] || {}), esp: $('#pi_esp_' + i).value.trim(), qtd: $('#pi_qtd_' + i).value, un: $('#pi_un_' + i).value.trim(), obs: $('#pi_obs_' + i).value.trim() }; }).filter(x => x.esp);
       if (!it.length) throw new Error('Inclua pelo menos um item.');
       const arquivo = await enviarArquivo($('#f_arquivoUrl').files[0]);
-      const o = { ...p, numero: $('#f_numero').value.trim(), data: $('#f_data').value, de: $('#f_de').value.trim(), para: $('#f_para').value.trim(), status: $('#f_status').value, obs: $('#f_obs').value.trim(), itens: JSON.stringify(it), autor: p.autor || S.user.email };
+      const o = { ...p, sentido, numero: $('#f_numero').value.trim(), data: $('#f_data').value, de: $('#f_de').value.trim(), para: $('#f_para').value.trim(), status: $('#f_status').value, obs: $('#f_obs').value.trim(), itens: JSON.stringify(it), autor: p.autor || S.user.email };
       if (arquivo) o.arquivoUrl = arquivo;
       await salvar('Pedidos', [o]);
       fecharModal(); toast('Pedido salvo.'); render();
     } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
   };
+}
+/** Atender pedido de Pel/Seç: entrega o que tem no estoque (baixa no inventário) e registra o que faltou. */
+function atenderPedido(id) {
+  const p = S.db.Pedidos.find(x => x.id === id), itens = itensPedido(p);
+  const linhas = itens.map((it, i) => {
+    const m = materialDoItem(it), falta = Math.max(0, num(it.qtd) - num(it.ent)), tem = m ? Math.max(0, m.tipoMaterial === 'Consumo' ? num(m.quantidade) : disponivel(m)) : 0;
+    return `<tr><td>${esc(it.esp)}${it.obs ? `<div class="muted">${esc(it.obs)}</div>` : ''}</td><td class="num">${esc(it.qtd)} ${esc(it.un || '')}${num(it.ent) ? `<div class="muted">já entregue ${esc(it.ent)}</div>` : ''}</td>
+      <td class="num">${m ? tem : '<span class="muted" title="Não está no inventário">—</span>'}</td>
+      <td><input type="number" id="at_${i}" value="${Math.min(falta, m ? tem : falta)}" min="0" max="${falta}" step="any" style="width:90px" aria-label="Entregar"></td></tr>`;
+  }).join('');
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:760px">
+    <h3>Atender pedido nº ${esc(p.numero)} – ${esc(p.de)}</h3>
+    <p class="muted" style="margin-top:0">Ponha quanto vai entregar de cada item. O que está no inventário tem baixa no estoque; o que ficar faltando aparece no <b>pedido de reposição</b> ao Fisc Adm / S4.</p>
+    <div class="tw"><table><thead><tr><th>Item</th><th>Pedido</th><th>Em estoque</th><th>Entregar</th></tr></thead><tbody>${linhas}</tbody></table></div>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="at_baixa" checked> Dar baixa no estoque do que for entregue</label>
+    <div class="acts"><button type="button" class="btn dng" onclick="negarPedido('${id}')">Negar pedido</button><span class="grow"></span><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Registrar entrega</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const novos = itens.map((it, i) => ({ ...it, ent: String(Math.min(num(it.qtd), num(it.ent) + Math.max(0, num($('#at_' + i).value)))) }));
+    const baixa = {};
+    if ($('#at_baixa').checked) itens.forEach((it, i) => { const m = materialDoItem(it), q = num(novos[i].ent) - num(it.ent); if (m && q > 0) baixa[m.id] = (baixa[m.id] || 0) + q; });
+    for (const [mid, q] of Object.entries(baixa)) if (q > num(MAT[mid].quantidade)) return toast(`Só há ${MAT[mid].quantidade} de ${MAT[mid].descricao} no estoque.`, true);
+    const completo = novos.every(it => num(it.ent) >= num(it.qtd)), algum = novos.some(it => num(it.ent) > 0);
+    await salvar('Pedidos', [{ ...p, itens: JSON.stringify(novos), status: completo ? 'Atendido' : algum ? 'Atendido parcialmente' : 'Pendente' }]);
+    const mats = Object.entries(baixa).map(([mid, q]) => ({ ...MAT[mid], quantidade: String(num(MAT[mid].quantidade) - q) }));
+    if (mats.length) await salvar('Material', mats);
+    fecharModal();
+    toast(completo ? 'Pedido atendido.' : `Entrega registrada. O que faltou entra no pedido de reposição.`); render();
+  };
+}
+async function negarPedido(id) {
+  const p = S.db.Pedidos.find(x => x.id === id);
+  if (!await confirmar(`Negar o pedido nº ${p.numero} de ${p.de}?`)) return;
+  await salvar('Pedidos', [{ ...p, status: 'Negado' }]); fecharModal(); toast('Pedido negado.'); render();
+}
+/** Dar entrada do que chegou do Fisc Adm / S4: soma no inventário (ou cria o item de consumo). */
+function entradaPedido(id) {
+  const p = S.db.Pedidos.find(x => x.id === id), itens = itensPedido(p);
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:760px">
+    <h3>Dar entrada – pedido nº ${esc(p.numero)} ao ${esc(p.para)}</h3>
+    <p class="muted" style="margin-top:0">Ponha quanto chegou de cada item. Itens que já estão no inventário têm a quantidade somada; os outros entram como material de consumo.</p>
+    <div class="tw"><table><thead><tr><th>Item</th><th>Pedido</th><th>No inventário</th><th>Chegou</th></tr></thead><tbody>${itens.map((it, i) => { const m = materialDoItem(it), falta = Math.max(0, num(it.qtd) - num(it.rec));
+      return `<tr><td>${esc(it.esp)}</td><td class="num">${esc(it.qtd)} ${esc(it.un || '')}${num(it.rec) ? `<div class="muted">já chegou ${esc(it.rec)}</div>` : ''}</td><td>${m ? `${esc(m.quantidade)} ${esc(m.unidade || '')}` : '<span class="tag ok">novo</span>'}</td>
+      <td><input type="number" id="en_${i}" value="${falta}" min="0" step="any" style="width:90px" aria-label="Chegou"></td></tr>`; }).join('')}</tbody></table></div>
+    <div class="form">${campoHTML({ k: 'en_dep', l: 'Dependência dos itens novos' }, cfg('dependencia'))}</div>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Dar entrada no estoque</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const novos = itens.map((it, i) => ({ ...it, rec: String(num(it.rec) + Math.max(0, num($('#en_' + i).value))) }));
+    const soma = {}, criar = [];
+    itens.forEach((it, i) => { const q = num(novos[i].rec) - num(it.rec); if (q <= 0) return; const m = materialDoItem(it);
+      if (m) soma[m.id] = (soma[m.id] || 0) + q;
+      else criar.push({ descricao: it.esp, tipoMaterial: 'Consumo', quantidade: String(q), unidade: it.un || 'un', localizacao: $('#f_en_dep').value.trim(), estado: 'Bom', obs: 'pedido ' + p.numero, ultimaConferencia: hoje() }); });
+    const mats = [...Object.entries(soma).map(([mid, q]) => ({ ...MAT[mid], quantidade: String(num(MAT[mid].quantidade) + q) })), ...criar];
+    if (!mats.length) return toast('Nada para dar entrada.', true);
+    const completo = novos.every(it => num(it.rec) >= num(it.qtd));
+    await salvar('Material', mats);
+    await salvar('Pedidos', [{ ...p, itens: JSON.stringify(novos), status: completo ? 'Recebido' : 'Recebido parcialmente' }]);
+    fecharModal(); toast(`Entrada registrada: ${mats.length} item(ns) no inventário.`); render();
+  };
+}
+/**
+ * O que repor: (1) o que faltou entregar nos pedidos dos Pel/Seç e (2) material de consumo abaixo do estoque mínimo.
+ * Desconta o que já está pedido ao Fisc Adm/S4 e ainda não chegou.
+ */
+function sugestoesReposicao() {
+  const mapa = {}, add = (esp, un, q, motivo) => { const k = norm(esp); if (!k || q <= 0) return; (mapa[k] ||= { esp, un, qtd: 0, motivos: [] }); mapa[k].qtd += q; mapa[k].motivos.push(motivo); };
+  S.db.Pedidos.filter(p => sentidoPedido(p) === 'Recebido' && ['Pendente', 'Atendido parcialmente', ''].includes(p.status || '')).forEach(p =>
+    itensPedido(p).forEach(it => { const m = materialDoItem(it), falta = num(it.qtd) - num(it.ent) - (m && m.tipoMaterial === 'Consumo' ? num(m.quantidade) : 0); add(it.esp, it.un, falta, `${p.de} (ped ${p.numero})`); }));
+  S.db.Material.filter(m => num(m.estoqueMinimo) > 0 && num(m.quantidade) < num(m.estoqueMinimo)).forEach(m => {
+    add(m.descricao, m.unidade, num(m.estoqueMinimo) - num(m.quantidade), `estoque mín. ${m.estoqueMinimo}, há ${m.quantidade}`); });
+  S.db.Pedidos.filter(p => sentidoPedido(p) === 'Enviado' && !/^(Recebido|Negado)$/.test(p.status)).forEach(p =>
+    itensPedido(p).forEach(it => { const k = norm(it.esp); if (mapa[k]) mapa[k].qtd -= num(it.qtd) - num(it.rec); }));
+  return Object.values(mapa).filter(x => x.qtd > 0);
+}
+function pedidoReposicao() {
+  const sug = sugestoesReposicao();
+  if (!sug.length) toast('Nada a repor agora: nenhum pedido dos Pel/Seç com falta e nenhum material abaixo do estoque mínimo. O pedido abre em branco.');
+  editarPedido(null, 'Enviado', novoPedido('Enviado', { obs: sug.length ? 'Reposição de estoque' : '', itens: JSON.stringify(sug.map(x => ({ esp: x.esp, qtd: String(x.qtd), un: x.un || 'Unidades', obs: x.motivos.join('; ').slice(0, 120) }))) }));
 }
 DOCS.pedido = id => {
   const p = S.db.Pedidos.find(x => x.id === id), it = itensPedido(p);
@@ -2430,14 +2529,15 @@ function vImportarPdf(tipo) {
   } else {
     html += `<h3>${esc(st.arquivo)} — ${st.itens.length} item(ns) encontrados</h3>
     <div class="card"><div class="form">
-      <label>O que fazer com os itens marcados<select id="imp_destino" onchange="S.impPdf.destino=this.value;render()">
-        <option value="pedido" ${st.destino !== 'inventario' ? 'selected' : ''}>Registrar como pedido de material no sistema</option>
+      <label>O que fazer com os itens marcados<select id="imp_destino" onchange="S.impPdf.destino=this.value;S.impPdf.status=this.value==='recebido'?'Pendente':'Enviado';render()">
+        <option value="pedido" ${st.destino === 'pedido' ? 'selected' : ''}>Registrar como pedido enviado ao Fisc Adm / S4</option>
+        <option value="recebido" ${st.destino === 'recebido' ? 'selected' : ''}>Registrar como pedido recebido de Pel / Seç</option>
         <option value="inventario" ${st.destino === 'inventario' ? 'selected' : ''}>Lançar no inventário (material de consumo)</option></select></label>
       ${st.destino === 'inventario'
         ? `<label>Dependência / local<input type="text" value="${esc(st.dep)}" onchange="S.impPdf.dep=this.value"></label>`
         : `<label>Nº do pedido<input type="text" value="${esc(st.numero)}" onchange="S.impPdf.numero=this.value"></label>
            <label>Do<input type="text" value="${esc(st.de)}" onchange="S.impPdf.de=this.value"></label><label>Ao<input type="text" value="${esc(st.para)}" onchange="S.impPdf.para=this.value"></label>
-           <label>Situação<select onchange="S.impPdf.status=this.value">${['Rascunho', 'Enviado', 'Autorizado', 'Recebido'].map(x => `<option ${x === (st.status || 'Enviado') ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`}
+           <label>Situação<select onchange="S.impPdf.status=this.value">${STATUS_PED[st.destino === 'recebido' ? 'Recebido' : 'Enviado'].map(x => `<option ${x === st.status ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`}
     </div>
     <div class="bar" style="margin-top:12px">${marcar}<button class="btn sm" onclick="S.impPdf.itens.push({esp:'',qtd:'1',un:'Unidades',obs:'',sel:true});render()">+ Linha</button><span class="grow"></span>
       <button class="btn pri" id="btnImpPdf" onclick="confirmarImpPedido()">Incluir ${sel} item(ns)</button></div></div>
@@ -2506,8 +2606,8 @@ async function confirmarImpPedido() {
     S.impPdf = null; S.sub.material = 'inv'; toast(`${lista.length} item(ns) lançado(s) no inventário.`); return render();
   }
   if (S.db.Pedidos.some(p => p.numero === st.numero) && !await confirmar(`Já existe um pedido nº ${st.numero}. Registrar outro com o mesmo número?`)) return;
-  await salvar('Pedidos', [{ numero: st.numero, data: hoje(), de: st.de, para: st.para, status: st.status || 'Enviado', itens: JSON.stringify(escolhidos.map(({ esp, qtd, un, obs }) => ({ esp: esp.trim(), qtd, un, obs }))), obs: 'importado de ' + st.arquivo, autor: S.user.email }]);
-  S.impPdf = null; S.sub.material = 'ped'; toast(`Pedido nº ${st.numero} registrado com ${escolhidos.length} item(ns).`); render();
+  await salvar('Pedidos', [{ sentido: st.destino === 'recebido' ? 'Recebido' : 'Enviado', numero: st.numero, data: hoje(), de: st.de, para: st.para, status: st.status || 'Enviado', itens: JSON.stringify(escolhidos.map(({ esp, qtd, un, obs }) => ({ esp: esp.trim(), qtd, un, obs }))), obs: 'importado de ' + st.arquivo, autor: S.user.email }]);
+  S.impPdf = null; S.sub.material = 'ped'; S.filtro.pedSent = st.destino === 'recebido' ? 'rec' : 'env'; toast(`Pedido nº ${st.numero} registrado com ${escolhidos.length} item(ns).`); render();
 }
 
 // ============================================================ configurações
@@ -2530,6 +2630,7 @@ const CAMPOS_CFG = [
   { k: 'detentorFuncao', l: 'Função do detentor' },
   { k: 'pedidoDe', l: 'Pedido de material: "Do"' },
   { k: 'pedidoPara', l: 'Pedido de material: "Ao"' },
+  { k: 'pedidoRecebidoPara', l: 'Pedidos dos Pel / Seç: "Ao" (a quem eles pedem)' },
   { k: 'pedidoVisto', l: 'Pedido de material: quem dá o visto' },
   { k: 'pedidoAutorizo', l: 'Pedido de material: quem autoriza' }
 ];
@@ -2539,7 +2640,7 @@ const PADRAO_CFG = {
   cmtNome: 'NOME DO COMANDANTE – Cap', cmtFuncao: 'Cmt Cia',
   cautelaSetor: 'Depósito da 1ª Cia', cautelaAss1: 'Cmt Pel', cautelaAss2: 'Chefe do Depósito', dependencia: '1ª Cia',
   detentorNome: '', detentorFuncao: 'Detentor direto do material carga',
-  pedidoDe: 'Cmt Pel Sup da 1ª Cia', pedidoPara: 'Fiscal Administrativo', pedidoVisto: 'Cmt Pel Sup', pedidoAutorizo: 'Fiscal Adm'
+  pedidoDe: 'Cmt Pel Sup da 1ª Cia', pedidoPara: 'Fiscal Administrativo', pedidoRecebidoPara: 'Cmt 1ª Cia', pedidoVisto: 'Cmt Pel Sup', pedidoAutorizo: 'Fiscal Adm'
 };
 function vConfig() {
   const t = aba('config', 'tipos');
@@ -2776,7 +2877,9 @@ function semente() {
     mat('Barraca de campanha 2 praças', 'Uso duradouro', 'Intendência', 40, '14B0002', '0012301122', '123119910', 389.9, 'Depósito da 1ª Cia'),
     mat('Colete refletivo', 'Uso duradouro', 'Intendência', 25, '27C0005', '0012304477', '123119910', 32.4, 'Depósito da 1ª Cia'),
     mat('Lanterna de cabeça', 'Uso duradouro', 'Intendência', 15, '28L0003', '0012305510', '123119910', 74.9, 'Depósito da 1ª Cia'),
-    mat('Pallet plástico', 'Uso duradouro', 'Intendência', 11, '19P0000', '00123014123', '123119910', 109.99, 'Pel Sup')
+    mat('Pallet plástico', 'Uso duradouro', 'Intendência', 11, '19P0000', '00123014123', '123119910', 109.99, 'Pel Sup'),
+    { ...mat('Resma de papel A4', 'Consumo', 'Intendência', 3, '', '', '', 28.5, 'Depósito da 1ª Cia'), unidade: 'resmas', estoqueMinimo: '10' },
+    { ...mat('Pilha AA', 'Consumo', 'Intendência', 40, '', '', '', 2.2, 'Depósito da 1ª Cia'), unidade: 'unidades', estoqueMinimo: '24' }
   ].map((m, i) => ({ id: 'mt' + (i + 1), ...m, estado: i === 3 ? 'Em manutenção' : 'Bom' }));
   const db = {
     Militares: mil,
@@ -2792,7 +2895,9 @@ function semente() {
       { id: 'c1', numero: `001/${ano}`, materialId: 'mt2', militarId: 'm6', quantidade: '2', numeracao: 'FIC0002001, FIC0002002', destino: 'Exercício', dataSaida: addDias(d, -12), previsaoDevolucao: addDias(d, -2), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' },
       { id: 'c2', numero: `001/${ano}`, materialId: 'mt7', militarId: 'm6', quantidade: '4', numeracao: '', destino: 'Exercício', dataSaida: addDias(d, -12), previsaoDevolucao: addDias(d, -2), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' },
       { id: 'c3', numero: `002/${ano}`, materialId: 'mt3', militarId: 'm2', quantidade: '1', numeracao: 'FIC0003002', destino: 'Sala do S1', dataSaida: addDias(d, -5), previsaoDevolucao: addDias(d, 25), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' }],
-    Pedidos: [{ id: 'p1', numero: `001/${ano}`, data: addDias(d, -2), de: 'Cmt Pel Sup da 1ª Cia', para: 'Fiscal Administrativo', status: 'Enviado', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
+    Pedidos: [{ id: 'p2', sentido: 'Recebido', numero: `001/${ano}`, data: addDias(d, -1), de: 'Cmt 1º Pel', para: 'Cmt 1ª Cia', status: 'Pendente', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
+      itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 5, un: 'resmas', obs: '' }, { esp: 'Pilha AA', qtd: 12, un: 'unidades', obs: 'rádios' }, { esp: 'Lanterna de cabeça', qtd: 2, un: 'un', obs: '' }]) },
+      { id: 'p1', sentido: 'Enviado', numero: `001/${ano}`, data: addDias(d, -2), de: 'Cmt Pel Sup da 1ª Cia', para: 'Fiscal Administrativo', status: 'Enviado', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
       itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 6, un: 'com 500 unidades cada', obs: '' }, { esp: 'Toner de tinta preta para impressora', qtd: 2, un: 'Unidades', obs: '' }, { esp: 'Caneta esferográfica', qtd: 30, un: 'Unidades', obs: 'azul e preta' }, { esp: 'Desinfetante', qtd: 3, un: 'Litros', obs: '' }]) }],
     Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, { email: 'sgte.exemplo@exemplo.com', nome: '1º Sgt Nunes', perfil: 'editor' }],
     Acessos: [{ email: 'sd.gama.exemplo@exemplo.com', nome: 'Sd EP Gama', data: `${d} 07:42`, status: 'Pendente' }],
