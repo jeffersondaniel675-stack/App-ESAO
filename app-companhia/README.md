@@ -94,6 +94,15 @@ Se a pessoa ainda não tem acesso nem à planilha, o botão "Pedir acesso" não 
 
 > Quem já tinha instalado antes desta versão: depois de colar o código novo, rode `setup` mais uma vez no editor para criar a aba `Acessos` e proteger as abas.
 
+## Se aparecer "e-mail não identificado"
+
+A implantação está como **Executar como: Eu**. Nesse modo o Google não informa ao sistema quem está acessando, e ninguém além do administrador consegue entrar. Corrija em **Implantar → Gerenciar implantações → ✏️ editar**:
+- *Executar como:* **Usuário que acessa o app da Web**;
+- *Quem pode acessar:* **Qualquer pessoa com Conta do Google**;
+- **Versão: Nova versão** → **Implantar**. O link `/exec` continua o mesmo.
+
+No primeiro acesso, cada pessoa autoriza o sistema uma vez. Aparece "O Google não verificou este app": toque em **Avançado → Acessar Sistema da Companhia (não seguro) → Permitir**.
+
 ## Se a página ficar parada em "Carregando…"
 
 O sistema mostra na tela o que aconteceu:
@@ -172,7 +181,9 @@ Abra o `Index.html` direto no navegador: ele entra em **modo demonstração**, c
 
 ## Limites a conhecer
 
-- Feito para o tamanho de uma subunidade (centenas de militares e alguns milhares de lançamentos). Cada abertura carrega todos os dados de uma vez.
+- Feito para o tamanho de uma subunidade (centenas de militares e alguns milhares de lançamentos). Cada abertura carrega todos os dados de uma vez, então **a planilha não pode crescer sem fim**.
+- **Arquivo anual:** uma vez por ano (ex.: em janeiro), em **Configurações → Geral → Arquivo anual**, arquive o que terminou antes de uma data (sugestão: 1º de janeiro do ano anterior). Saem da planilha principal os serviços antigos da escala (fica o último de cada militar, para a folga não mudar), aditamentos publicados, afastamentos encerrados, missões concluídas, cautelas devolvidas, pedidos encerrados, registros de documentos e o log. Tudo vai para outra planilha na pasta do sistema (*Arquivo de dados*) e continua consultável lá. Assim o sistema abre com a mesma velocidade em todos os anos.
+- Cotas do Google Apps Script (conta Gmail comum): cada ação pode durar até 6 minutos e há limite de uso por dia, folgado para uma Cia. Como o sistema roda como **Usuário que acessa o app da Web**, a cota é contada por pessoa, não só na conta do administrador.
 - Arquivos anexados: até 25 MB cada.
 - Não guarde no sistema informação classificada (sigilosa): a planilha fica em conta Google comum.
 - **Dados pessoais (LGPD):** o tripão tem CPF, endereço e telefones. Só `admin` e `editor` veem a aba Tripão no sistema. Ainda assim, quem tem acesso à planilha (inclusive o leitor, como Leitor) consegue abrir as abas direto no Google Sheets, então cadastre só quem precisa. O perfil `leitor` vê o plano de chamada, que é para acionamento.

@@ -449,6 +449,7 @@ const Demo = {
   async importarDePlanilha() { throw new Error('A importação direto do Google Drive só funciona com o sistema publicado no Google. Use um arquivo .xlsx ou .csv.'); },
   async salvarPdf(tipo, titulo, html, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'PDF' }], []))[0]; },
   async criarDoc(tipo, titulo, blocos, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'Google Doc' }], []))[0]; },
+  async arquivarAntigos() { throw new Error('O arquivo anual funciona só na versão instalada no Google.'); },
   resetar() { localStorage.removeItem(this.KEY); this.mem = null; }
 };
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
@@ -2842,6 +2843,31 @@ const PADRAO_CFG = {
   detentorNome: '', detentorFuncao: 'Detentor direto do material carga',
   pedidoDe: 'Cmt Pel Sup da 1ª Cia', pedidoPara: 'Fiscal Administrativo', pedidoRecebidoPara: 'Cmt 1ª Cia', pedidoVisto: 'Cmt Pel Sup', pedidoAutorizo: 'Fiscal Adm'
 };
+/** Arquivo anual: tira da planilha principal o que já acabou, para o sistema continuar rápido com os anos. */
+const NOMES_TAB = { Escala: 'serviços da escala', Aditamentos: 'aditamentos publicados', Documentos: 'registros de documentos', Impedimentos: 'afastamentos encerrados', Missoes: 'missões concluídas/canceladas', Cautelas: 'itens de cautelas devolvidas', Pedidos: 'pedidos encerrados', Log: 'linhas do registro de alterações' };
+function cardArquivo() {
+  let lista = []; try { lista = JSON.parse(cfg('arquivosDados') || '[]'); } catch (e) { }
+  const sugestao = `${Number(hoje().slice(0, 4)) - 1}-01-01`;
+  return `<div class="card" style="margin-top:16px"><h3 style="margin-top:0">Arquivo anual (manter o sistema rápido)</h3>
+    <p class="muted" style="margin-top:0">O sistema lê a planilha inteira ao abrir. Com os anos ela cresce e fica mais lenta. Uma vez por ano (ex.: em janeiro), arquive o que já acabou antes de uma data: vai para outra planilha, na pasta do sistema no Drive (<i>Arquivo de dados</i>), e continua consultável lá. Escala: o último serviço de cada militar fica, para a folga não mudar. Nada que esteja em aberto (cautela, pedido, missão) sai.</p>
+    <div class="bar"><label>Arquivar o que terminou antes de <input type="date" id="arq_ate" value="${sugestao}"></label><button class="btn" onclick="arquivar(true)">Ver o que sai</button><button class="btn pri" onclick="arquivar(false)">Arquivar</button></div>
+    <div id="arq_res"></div>
+    ${lista.length ? `<h4 style="margin:12px 0 4px">Arquivos já feitos</h4><ul>${lista.map(a => `<li><a href="${esc(a.url)}" target="_blank">Arquivo até ${fmt(a.ate)}</a> <span class="muted">(${esc(a.quando)}: ${Object.entries(a.contagem || {}).map(([t, n]) => n + ' ' + (NOMES_TAB[t] || t)).join(', ')})</span></li>`).join('')}</ul>` : ''}</div>`;
+}
+async function arquivar(simular) {
+  const ate = $('#arq_ate').value;
+  if (!ate) return toast('Escolha a data.', true);
+  if (ate > hoje()) return toast('Escolha uma data no passado.', true);
+  if (!simular && !await confirmar(`Arquivar tudo o que terminou antes de ${fmt(ate)}? Os registros saem da planilha principal e vão para uma planilha de arquivo no Drive.`)) return;
+  try {
+    toast(simular ? 'Contando…' : 'Arquivando… pode levar alguns segundos.');
+    const r = await api('arquivarAntigos', ate, simular);
+    const itens = Object.entries(r.contagem || {});
+    const texto = itens.length ? itens.map(([t, n]) => `<li><b>${n}</b> ${NOMES_TAB[t] || t}</li>`).join('') : '<li>Nada para arquivar antes dessa data.</li>';
+    $('#arq_res').innerHTML = `<div class="aviso-leitor" style="margin-top:10px">${simular ? 'Sairiam da planilha principal:' : 'Arquivado:'}<ul style="margin:6px 0">${texto}</ul>${r.url ? `<a href="${esc(r.url)}" target="_blank">Abrir a planilha de arquivo</a>` : ''}</div>`;
+    if (!simular && itens.length) { toast('Arquivo feito. Recarregando…'); setTimeout(() => location.reload(), 1500); }
+  } catch (e) { toast(e.message, true); }
+}
 function vConfig() {
   const t = aba('config', 'tipos');
   let corpo = '';
@@ -2853,7 +2879,8 @@ function vConfig() {
       <div class="full"><h3 style="margin:8px 0">Brasão dos documentos</h3><div class="bar"><img src="${brasao()}" alt="Brasão atual" style="height:72px;background:#fff;padding:4px;border-radius:4px">
         ${admin() ? `<label class="btn">Trocar imagem<input type="file" accept=".png,.jpg,.jpeg,.gif,.webp" onchange="trocarImagem('brasao',this.files[0])" hidden></label>${cfg('brasao') ? '<button class="btn" onclick="trocarImagem(\'brasao\',null)">Usar o Brasão da República</button>' : ''}` : ''}
         <span class="muted">Aparece no alto de todos os documentos.</span></div></div></div>
-      <div class="bar" style="margin-top:12px"><span class="grow"></span>${admin() ? '<button class="btn pri" onclick="salvarConfig()">Salvar</button>' : '<span class="muted">Somente o administrador altera.</span>'}</div></div>`;
+      <div class="bar" style="margin-top:12px"><span class="grow"></span>${admin() ? '<button class="btn pri" onclick="salvarConfig()">Salvar</button>' : '<span class="muted">Somente o administrador altera.</span>'}</div></div>
+      ${admin() ? cardArquivo() : ''}`;
   } else if (t === 'tipos') {
     corpo = `<p class="muted">Cada tipo de serviço é uma coluna na escala e uma linha na 1ª parte do aditamento (em "Serviços externos" ou "Serviços internos"). Ao cadastrar ou editar um serviço, marque os postos e graduações que concorrem a ele.</p>
       <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn" onclick="restaurarServicosPadrao()">Restaurar serviços padrão</button><button class="btn pri" onclick="editarTipo()">+ Tipo de serviço</button>' : ''}</div>

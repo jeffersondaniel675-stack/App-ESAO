@@ -517,6 +517,86 @@ function subpasta_(nomes) {
   }, pasta_());
 }
 
+// ---------------------------------------------------------------- arquivo anual (mantém a planilha leve)
+
+/**
+ * O que sai da planilha principal ao arquivar, por tabela: só o que já acabou e é anterior à data de corte.
+ * A escala guarda o último serviço de cada militar em cada serviço e cor, para a folga continuar certa.
+ */
+const ARQUIVAR_ = {
+  Escala: function (o, ate) { return o.data < ate; },
+  Aditamentos: function (o, ate) { return o.data < ate && o.status === 'Publicado'; },
+  Documentos: function (o, ate) { return String(o.data).slice(0, 10) < ate; },
+  Impedimentos: function (o, ate) { return (o.fim || o.inicio) < ate; },
+  Missoes: function (o, ate) { return (o.fim || o.inicio) < ate && (o.status === 'Concluída' || o.status === 'Cancelada'); },
+  Cautelas: function (o, ate) { return o.status === 'Devolvida' && o.dataDevolucao && o.dataDevolucao < ate; },
+  Pedidos: function (o, ate) { return o.data < ate && ['Atendido', 'Negado', 'Recebido'].indexOf(o.status) >= 0; },
+  Log: function (o, ate) { return String(o.quando).slice(0, 10) < ate; }
+};
+
+/**
+ * Move para uma planilha de arquivo (na pasta do sistema, "Arquivo de dados") os registros encerrados antes de `ate`.
+ * Com simular = true só conta. Só o administrador.
+ */
+function arquivarAntigos(ate, simular) {
+  exigirAdmin_();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ate))) throw new Error('Data de corte inválida.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const ss = planilha_(), plano = {};
+    Object.keys(ARQUIVAR_).forEach(function (t) {
+      const sh = ss.getSheetByName(t);
+      if (!sh || sh.getLastRow() < 2) return;
+      const valores = sh.getDataRange().getValues(), cab = valores.shift();
+      const objs = valores.map(function (l) { const o = {}; cab.forEach(function (h, i) { if (h) o[h] = texto_(l[i]); }); return o; });
+      const sai = objs.map(function (o) { return o[cab[0]] !== '' && ARQUIVAR_[t](o, ate); });
+      if (t === 'Escala') {
+        // último serviço de cada militar/serviço/cor fica na planilha
+        const ultimo = {};
+        objs.forEach(function (o, i) { const k = o.militarId + '|' + o.tipoId + '|' + o.cor; if (o.militarId && (!ultimo[k] || objs[ultimo[k]].data < o.data)) ultimo[k] = i; });
+        Object.keys(ultimo).forEach(function (k) { sai[ultimo[k]] = false; });
+      }
+      if (t === 'Cautelas') {
+        // só cautela inteira (todos os itens devolvidos antes da data)
+        const aberta = {};
+        objs.forEach(function (o, i) { if (!sai[i]) aberta[o.numero || o.id] = true; });
+        objs.forEach(function (o, i) { if (aberta[o.numero || o.id]) sai[i] = false; });
+      }
+      const n = sai.filter(Boolean).length;
+      if (n) plano[t] = { sh: sh, cab: cab, valores: valores, sai: sai, n: n };
+    });
+    var contagem = {};
+    Object.keys(plano).forEach(function (t) { contagem[t] = plano[t].n; });
+    if (simular || !Object.keys(plano).length) return { contagem: contagem };
+
+    const nome = 'Arquivo ' + (configMap_().sigla || 'Cia') + ' - até ' + ate;
+    const arq = SpreadsheetApp.create(nome);
+    DriveApp.getFileById(arq.getId()).moveTo(subpasta_(['Arquivo de dados']));
+    Object.keys(plano).forEach(function (t) {
+      const p = plano[t], fora = p.valores.filter(function (l, i) { return p.sai[i]; }), fica = p.valores.filter(function (l, i) { return !p.sai[i]; });
+      const dest = arq.insertSheet(t);
+      dest.getRange(1, 1, 1, p.cab.length).setValues([p.cab]).setFontWeight('bold');
+      dest.getRange(1, 1, fora.length + 1, p.cab.length).setNumberFormat('@');
+      dest.getRange(2, 1, fora.length, p.cab.length).setValues(fora);
+      dest.setFrozenRows(1);
+      p.sh.getRange(2, 1, p.valores.length, p.cab.length).clearContent();
+      if (fica.length) p.sh.getRange(2, 1, fica.length, p.cab.length).setValues(fica);
+    });
+    const vazia = arq.getSheetByName('Sheet1') || arq.getSheetByName('Página1') || arq.getSheetByName('Planilha1');
+    if (vazia) arq.deleteSheet(vazia);
+    var url = arq.getUrl();
+  } finally {
+    lock.releaseLock();
+  }
+  // fora do bloqueio: gravar_ pega o mesmo bloqueio
+  const lista = JSON.parse(configMap_().arquivosDados || '[]');
+  lista.push({ ate: ate, url: url, quando: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'), contagem: contagem });
+  gravar_('Config', [{ chave: 'arquivosDados', valor: JSON.stringify(lista) }], []);
+  registrarLog_('arquivar', 'Planilha', ate + ' ' + JSON.stringify(contagem));
+  return { contagem: contagem, url: url };
+}
+
 function registrarLog_(acao, tabela, registro) {
   try {
     const sh = planilha_().getSheetByName('Log');
