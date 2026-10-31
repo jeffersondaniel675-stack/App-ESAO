@@ -18,8 +18,8 @@
       var fim = /end of input|Unexpected end|missing \}|unterminated/i.test(window.__erros.join(' '));
       app.innerHTML = '<div style="max-width:680px;margin:24px auto;padding:16px 20px;border:2px solid #e52207;border-radius:8px;background:#fff;color:#333;font:15px/1.5 sans-serif">'
         + '<b style="color:#e52207">O sistema encontrou um erro ao carregar.</b>'
-        + '<pre style="white-space:pre-wrap;background:#f3f3f3;padding:8px;border-radius:4px">' + window.__erros.join('\n').replace(/</g, '&lt;') + '</pre>'
-        + (fim ? '<p><b>O arquivo Index foi colado incompleto no Apps Script.</b> Abra o arquivo Index no editor, apague tudo, cole de novo o Index.html inteiro (a última linha tem que ser &lt;/html&gt;), salve e publique uma nova versão.</p>'
+        + '<pre style="white-space:pre-wrap;background:#f3f3f3;padding:8px;border-radius:4px">' + window.__erros.join('\n').replace(/</g, '&' + 'lt;') + '</pre>'
+        + (fim ? '<p><b>O arquivo Index foi colado incompleto no Apps Script.</b> Abra o arquivo Index no editor, apague tudo, cole de novo o Index.html inteiro (a última linha tem que ser ' + '&' + 'lt;/html&' + 'gt;' + '), salve e publique uma nova versão.</p>'
                : '<p>Mande um print desta mensagem para quem instalou o sistema.</p>') + '</div>';
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mostrar); else mostrar();
@@ -30,13 +30,13 @@
     var app = document.getElementById('app');
     if (app) app.innerHTML = '<div style="max-width:680px;margin:24px auto;padding:16px 20px;border:2px solid #e52207;border-radius:8px;background:#fff;color:#333;font:15px/1.5 sans-serif">'
       + '<b style="color:#e52207">O arquivo Index está incompleto no Apps Script.</b>'
-      + '<p>A colagem parou no meio do arquivo. No editor do Apps Script, abra o arquivo <b>Index</b>, apague tudo (Ctrl+A, Delete), cole de novo o <b>Index.html</b> inteiro e confira que a <b>última linha é &lt;/html&gt;</b>. Salve (Ctrl+S) e publique uma nova versão (Implantar → Gerenciar implantações → editar → Nova versão).</p></div>';
+      + '<p>A colagem parou no meio do arquivo. No editor do Apps Script, abra o arquivo <b>Index</b>, apague tudo (Ctrl+A, Delete), cole de novo o <b>Index.html</b> inteiro e confira que a <b>última linha é ' + '&' + 'lt;/html&' + 'gt;' + '</b>. Salve (Ctrl+S) e publique uma nova versão (Implantar → Gerenciar implantações → editar → Nova versão).</p></div>';
   });
   // Aviso se o carregamento demorar demais (sem erro aparente).
   setTimeout(function () {
     var app = document.getElementById('app');
     if (app && /Carregando dados da planilha/.test(app.textContent) && !window.__erros.length) app.insertAdjacentHTML('beforeend',
-      '<p style="max-width:640px;margin:16px auto;color:#636363;font:14px sans-serif;text-align:center">Está demorando mais que o normal. Confira se o arquivo <b>Index</b> foi colado inteiro no Apps Script (a última linha é &lt;/html&gt;) e se a função <b>setup</b> foi executada. No computador, aperte F12 → aba Console e mande um print das mensagens em vermelho.</p>');
+      '<p style="max-width:640px;margin:16px auto;color:#636363;font:14px sans-serif;text-align:center">Está demorando mais que o normal. Confira se o arquivo <b>Index</b> foi colado inteiro no Apps Script (a última linha é ' + '&' + 'lt;/html&' + 'gt;' + ') e se a função <b>setup</b> foi executada. No computador, aperte F12 → aba Console e mande um print das mensagens em vermelho.</p>');
   }, 20000);
   // Tema escolhido neste aparelho: claro (padrão) ou preto.
   try { document.documentElement.dataset.theme = localStorage.getItem('cia-tema') === 'dark' ? 'dark' : 'light'; } catch (e) { document.documentElement.dataset.theme = 'light'; }
@@ -296,7 +296,10 @@ window.__scriptOk = true;
 // ============================================================ utilidades
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// As entidades são montadas em partes ('&' + 'amp;') de propósito: escritas inteiras, o Apps Script pode convertê-las de volta
+// em aspas dentro do <script> e quebrar o código ("Invalid or unexpected token").
+const ENTIDADES = { '&': '&' + 'amp;', '<': '&' + 'lt;', '>': '&' + 'gt;', '"': '&' + 'quot;', "'": '&' + '#39;' };
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ENTIDADES[c]);
 const pad = n => String(n).padStart(2, '0');
 const isoDe = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const dataDe = iso => new Date(iso + 'T12:00:00');
@@ -309,7 +312,7 @@ const SEM_CURTA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
 const fmtMil = iso => { if (!iso) return ''; const d = dataDe(iso); return `${pad(d.getDate())} ${MESES[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`; };
 const fmtExt = iso => { const d = dataDe(iso); return `${d.getDate()} de ${MESES_EXT[d.getMonth()]} de ${d.getFullYear()}`; };
-const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isNaN(n) ? 0 : n; };
 const sim = v => !/^(n|nao|não|false|0|inativo)$/i.test(String(v ?? 'Sim').trim());
 const ids = v => String(v ?? '').split(',').map(s => s.trim()).filter(Boolean);
@@ -633,11 +636,11 @@ function htmlDoc(blocos) {
       return `<table class="${b.sem ? 'sem' : ''} ${b.esq ? 'esq' : ''}" style="font-size:${b.sz || 9}pt">${cols}${b.t.map((linha, r) => `<tr>${linha.map(c => {
         const o = c && typeof c === 'object' ? c : { v: c };
         const cls = [(o.b || r < (b.h || 0)) ? 'b' : '', o.i ? 'i' : '', o.l ? 'l' : o.c ? 'c' : ''].join(' ').trim();
-        return `<td${o.span > 1 ? ` colspan="${o.span}"` : ''}${cls ? ` class="${cls}"` : ''}>${esc(o.v ?? '') || '&nbsp;'}</td>`;
+        return `<td${o.span > 1 ? ` colspan="${o.span}"` : ''}${cls ? ` class="${cls}"` : ''}>${esc(o.v ?? '') || '\u00a0'}</td>`;
       }).join('')}</tr>`).join('')}</table>`;
     }
     const cls = [b.c ? 'c' : b.r ? 'r' : b.l ? 'l' : 'j', b.b ? 'b' : '', b.i ? 'i' : ''].join(' ');
-    return `<p class="${cls}" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}">${esc(b.p) || '&nbsp;'}</p>`;
+    return `<p class="${cls}" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}">${esc(b.p) || '\u00a0'}</p>`;
   }).join('') + '</div>';
 }
 const paginaCss = d => d.blocos.some(b => b.paisagem) ? '@page { size: A4 landscape; margin: 12mm; }' : '@page { size: A4; margin: 15mm 15mm 15mm 22mm; }';
