@@ -8,6 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap">
+<script>
+  // Tema escolhido neste aparelho: claro (padrão) ou preto.
+  try { document.documentElement.dataset.theme = localStorage.getItem('cia-tema') === 'dark' ? 'dark' : 'light'; } catch (e) { document.documentElement.dataset.theme = 'light'; }
+</script>
 <style>
 :root {
   /* Padrão Digital de Governo (gov.br DS): azul institucional, cinzas neutros, faixa amarela; tipografia Raleway (base da Rawline). */
@@ -20,23 +24,25 @@
   --shadow: 0 1px 6px rgba(51, 51, 51, .16);
   --fonte: "Raleway", "Rawline", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+/* Tema claro (branco) é o padrão. O tema preto vale quando o usuário escolhe (data-theme="dark")
+   ou, no modo "seguir o aparelho" (sem data-theme), quando o aparelho está escuro. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --azul: #5992ed; --azul-escuro: #81aef0; --marinho: #c5d4eb; --azul-claro: #1b3566; --ouro: #ffcd07; --foco: #ffcd07;
-    --bg: #0b1730; --surface: #10203f; --surface-2: #142749; --cinza-5: #1a3058; --border: #2c4373; --campo: #6f84ad;
-    --text: #e6ecf7; --muted: #a8b5ce; --on-azul: #071d41;
-    --menu-1: #13254a; --menu-2: #182d58; --menu-fundo: rgba(7, 18, 40, .9); --menu-on: #dbe8fb; --menu-on-fg: #071d41; --menu-hover: #5992ed;
-    --danger: #ff7a66; --warn: #ffcd07; --ok: #4dc966; --info: #81aef0;
-    --preta: #e6ecf7; --vermelha: #ff7a66; --shadow: none; color-scheme: dark;
+      --azul: #6ea8fe; --azul-escuro: #9ec5fe; --marinho: #f2f2f2; --azul-claro: #16233a; --ouro: #ffcd07; --foco: #ffcd07;
+      --bg: #000000; --surface: #0d0d0d; --surface-2: #161616; --cinza-5: #1f1f1f; --border: #2f2f2f; --campo: #5c5c5c;
+      --text: #ededed; --muted: #a6a6a6; --on-azul: #000000;
+      --menu-1: #111111; --menu-2: #181818; --menu-fundo: rgba(0, 0, 0, .86); --menu-on: #f2f2f2; --menu-on-fg: #000000; --menu-hover: #2f6fd6;
+      --danger: #ff7a66; --warn: #ffcd07; --ok: #4dc966; --info: #9ec5fe;
+      --preta: #ededed; --vermelha: #ff7a66; --shadow: none; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --azul: #5992ed; --azul-escuro: #81aef0; --marinho: #c5d4eb; --azul-claro: #1b3566; --ouro: #ffcd07; --foco: #ffcd07;
-  --bg: #0b1730; --surface: #10203f; --surface-2: #142749; --cinza-5: #1a3058; --border: #2c4373; --campo: #6f84ad;
-  --text: #e6ecf7; --muted: #a8b5ce; --on-azul: #071d41;
-  --menu-1: #13254a; --menu-2: #182d58; --menu-fundo: rgba(7, 18, 40, .9); --menu-on: #dbe8fb; --menu-on-fg: #071d41; --menu-hover: #5992ed;
-  --danger: #ff7a66; --warn: #ffcd07; --ok: #4dc966; --info: #81aef0;
-  --preta: #e6ecf7; --vermelha: #ff7a66; --shadow: none; color-scheme: dark;
+  --azul: #6ea8fe; --azul-escuro: #9ec5fe; --marinho: #f2f2f2; --azul-claro: #16233a; --ouro: #ffcd07; --foco: #ffcd07;
+  --bg: #000000; --surface: #0d0d0d; --surface-2: #161616; --cinza-5: #1f1f1f; --border: #2f2f2f; --campo: #5c5c5c;
+  --text: #ededed; --muted: #a6a6a6; --on-azul: #000000;
+  --menu-1: #111111; --menu-2: #181818; --menu-fundo: rgba(0, 0, 0, .86); --menu-on: #f2f2f2; --menu-on-fg: #000000; --menu-hover: #2f6fd6;
+  --danger: #ff7a66; --warn: #ffcd07; --ok: #4dc966; --info: #9ec5fe;
+  --preta: #ededed; --vermelha: #ff7a66; --shadow: none; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
@@ -63,6 +69,9 @@ header.hdr { position: sticky; top: 0; z-index: 30; background: var(--surface); 
 .pill { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 16px; border-radius: 100em; border: 1px solid var(--azul); background: var(--azul); color: var(--on-azul); font-weight: 600; font-size: 15px; cursor: pointer; white-space: nowrap; }
 .pill.out { background: var(--surface); color: var(--azul); }
 .pill:hover { filter: brightness(1.1); } .pill.out:hover { background: var(--azul-claro); filter: none; }
+.pill.ico { width: 32px; padding: 0; justify-content: center; }
+/* Tela cheia: o conteúdo usa a largura toda (bom para a escala e o quadro de folgas). */
+body.cheia .wrap { max-width: none; }
 .pop-wrap { position: relative; }
 .pop { position: absolute; right: 0; top: calc(100% + 8px); background: var(--surface); border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.2); padding: 8px 0; min-width: 240px; z-index: 40; border: 1px solid var(--border); }
 .pop button, .pop a { display: block; width: 100%; text-align: left; padding: 9px 16px; background: none; border: 0; cursor: pointer; color: var(--azul); font-weight: 500; text-decoration: none; }
@@ -226,6 +235,8 @@ td.acts { white-space: nowrap; text-align: right; }
       <span class="grow"></span>
       <nav class="links" aria-label="Acesso rápido"><a onclick="irPara('painel')">Painel</a><a onclick="irPara('escala')">Escala</a><a onclick="irPara('arquivo')">Arquivo</a></nav>
       <span class="vsep"></span>
+      <button class="pill out ico" id="btnTema" onclick="alternarTema()" title="Tema preto" aria-label="Tema preto"><i data-ico="lua"></i></button>
+      <button class="pill out ico" id="btnCheia" onclick="alternarTelaCheia()" title="Tela cheia" aria-label="Tela cheia"><i data-ico="cheia"></i></button>
       <div class="pop-wrap"><button class="pill out" id="btnAtalhos" onclick="abrirPop('atalhos', event)" aria-haspopup="true"><i data-ico="grade"></i><span class="lbl">Atalhos</span></button><div class="pop" id="pop-atalhos" hidden></div></div>
       <div class="pop-wrap"><button class="pill" id="btnUser" onclick="abrirPop('user', event)" aria-haspopup="true"><i data-ico="user"></i><span class="lbl" id="user">Entrando…</span></button><div class="pop" id="pop-user" hidden></div></div>
     </div>
@@ -281,6 +292,10 @@ const ICO = {
   lupa: svg('<circle cx="10.5" cy="10.5" r="6.5" stroke-width="2.6"/><path d="m15.5 15.5 5 5" stroke-width="2.8"/>'),
   menu: svg('<path d="M3 6h18M3 12h18M3 18h18" stroke-width="2.6"/>'),
   fechar: svg('<path d="M5 5l14 14M19 5 5 19" stroke-width="3"/>'),
+  lua: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
+  sol: svg('<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  cheia: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  sair: svg('<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'),
   casa: `<svg class="i" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 11.5h3V21h5.5v-6h3v6H19v-9.5h3z"/></svg>`,
   escudo: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z" opacity=".25"/><path d="m12 6.5 1.6 3.3 3.6.5-2.6 2.5.6 3.6L12 14.7l-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"/></svg>`
 };
@@ -717,6 +732,32 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { fecharMenu
 window.addEventListener('resize', () => document.documentElement.style.setProperty('--hdr-h', $('#hdr').offsetHeight + 'px'));
 
 // ---------- atalhos e usuário (pop-ups do cabeçalho)
+// ---------- tema e tela cheia (preferência guardada só neste aparelho)
+const temaPreto = () => document.documentElement.dataset.theme === 'dark';
+function alternarTema() {
+  const preto = !temaPreto();
+  document.documentElement.dataset.theme = preto ? 'dark' : 'light';
+  try { localStorage.setItem('cia-tema', preto ? 'dark' : 'light'); } catch (e) { /* sem armazenamento: vale até recarregar */ }
+  atualizarBotoesTopo();
+}
+async function alternarTelaCheia() {
+  const ligada = document.fullscreenElement || document.body.classList.contains('cheia');
+  try {
+    if (ligada) { if (document.fullscreenElement) await document.exitFullscreen(); document.body.classList.remove('cheia'); }
+    else {
+      document.body.classList.add('cheia');
+      if (document.fullscreenEnabled) await document.documentElement.requestFullscreen();
+      else toast('Este navegador não deixa a página ocupar a tela toda; o conteúdo passou a usar a largura inteira. No computador, F11 também deixa em tela cheia.');
+    }
+  } catch (e) { toast('O navegador não liberou a tela cheia; o conteúdo passou a usar a largura inteira. No computador, tente F11.'); }
+  atualizarBotoesTopo();
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) document.body.classList.remove('cheia'); atualizarBotoesTopo(); });
+function atualizarBotoesTopo() {
+  const t = $('#btnTema'), c = $('#btnCheia'), cheia = !!document.fullscreenElement || document.body.classList.contains('cheia');
+  if (t) { t.innerHTML = temaPreto() ? ICO.sol : ICO.lua; t.title = temaPreto() ? 'Tema claro' : 'Tema preto'; t.setAttribute('aria-label', t.title); }
+  if (c) { c.innerHTML = cheia ? ICO.sair : ICO.cheia; c.title = cheia ? 'Sair da tela cheia' : 'Tela cheia'; c.setAttribute('aria-label', c.title); }
+}
 function abrirPop(qual, ev) {
   ev.stopPropagation();
   const el = $('#pop-' + qual), estava = !el.hidden;
@@ -731,6 +772,8 @@ function abrirPop(qual, ev) {
     el.innerHTML = `<div class="info"><b>${esc(S.user?.nome || '')}</b>${esc(S.user?.email || '')}<br>Perfil: ${esc(S.user?.perfil || '')}</div>
       ${admin() ? `<button onclick="fecharPops();S.sub.config='usuarios';irPara('config')">Gerenciar usuários</button>` : ''}
       <button onclick="fecharPops();S.sub.config='geral';irPara('config')">Configurações</button>
+      <button onclick="fecharPops();alternarTema()">${temaPreto() ? 'Usar tema claro' : 'Usar tema preto'}</button>
+      <button onclick="fecharPops();alternarTelaCheia()">${document.fullscreenElement || document.body.classList.contains('cheia') ? 'Sair da tela cheia' : 'Tela cheia'}</button>
       ${!NO_GOOGLE ? `<button onclick="fecharPops();confirmar('Apagar os dados de demonstração?').then(s=>{if(s){Demo.resetar();iniciar()}})">Recomeçar demonstração</button>` : ''}`;
   }
   el.hidden = false;
@@ -2076,6 +2119,7 @@ function semente() {
 async function iniciar() {
   if (!$('#css-doc')) document.head.insertAdjacentHTML('beforeend', `<style id="css-doc">${CSS_DOC}</style>`);
   $$('[data-ico]').forEach(el => { el.outerHTML = ICO[el.dataset.ico]; });
+  atualizarBotoesTopo();
   renderMenu();
   $('#demo-bar').hidden = !!NO_GOOGLE;
   try { S.view = localStorage.getItem('cia-view') || 'painel'; } catch (e) { }

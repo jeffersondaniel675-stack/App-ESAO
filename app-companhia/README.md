@@ -120,7 +120,7 @@ A interface segue o **Padrão Digital de Governo (gov.br Design System)**:
 - busca geral ("O que você procura?") em militares, material, missões, aditamentos e PDFs;
 - botões arredondados e paleta azul institucional.
 
-O botão **Atalhos** reúne as ações mais usadas (nova missão, novo aditamento, nova cautela, lançar afastamento, gerar e salvar a escala do mês). O sistema acompanha o tema claro ou escuro do aparelho.
+O botão **Atalhos** reúne as ações mais usadas (nova missão, novo aditamento, nova cautela, lançar afastamento, gerar e salvar a escala do mês). O tema é **claro (branco)** por padrão. O botão 🌙 no topo liga o **tema preto**, e cada aparelho lembra a escolha. O botão ⛶ deixa em **tela cheia** e faz o conteúdo usar a largura toda, bom para a escala e o quadro de folgas. As duas opções também estão no menu do usuário. Impressões e PDFs saem sempre em preto no branco.
 
 ## Como os dados ficam na planilha
 
