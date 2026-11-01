@@ -1,0 +1,24 @@
+ATALHO DO SISTEMA DA CIA (WINDOWS)
+==================================
+
+1. Deixe os dois arquivos na mesma pasta:
+   - criar-atalho.bat
+   - sistema-1cia.ico
+
+2. De dois cliques em criar-atalho.bat.
+   Se o Windows mostrar "O Windows protegeu o computador",
+   clique em "Mais informacoes" e depois em "Executar assim mesmo".
+
+3. Cole o link do sistema (o que termina em /exec) e tecle Enter.
+
+Pronto: aparece o atalho "Sistema da 1a Cia" com o distintivo do
+11o D Sup na area de trabalho e no menu Iniciar. Ele abre o sistema
+numa janela propria do Chrome (ou do Edge, se nao houver Chrome).
+
+Para usar em varios computadores sem colar o link toda vez: abra o
+criar-atalho.bat no Bloco de Notas, troque COLE_AQUI_O_LINK_EXEC pelo
+link do sistema e salve.
+
+O atalho usa a conta Google que estiver logada no Chrome/Edge. Se o
+computador tiver mais de uma conta, entre com a conta cadastrada no
+sistema.
