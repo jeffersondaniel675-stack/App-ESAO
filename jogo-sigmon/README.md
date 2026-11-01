@@ -1,10 +1,10 @@
 # SIGMON
 
-Jogo original de capturar monstrinhos, em pixel art, num único arquivo (`index.html`).
+Jogo original de capturar criaturas, em pixel art. O jogo é o `index.html`; a arte das criaturas e da tela inicial fica em `sprites.js` (imagens embutidas).
 Funciona no navegador do PC e do celular (controles na tela). O progresso é salvo no próprio navegador.
 
 ## Como jogar
-- Abra `index.html` no navegador (ou publique a pasta no GitHub Pages / itch.io).
+- Abra `index.html` no navegador (mantenha o `sprites.js` na mesma pasta) (ou publique a pasta no GitHub Pages / itch.io).
 - PC: setas/WASD andam · Z/Espaço confirma · X/Esc volta · Enter/M abre o menu.
 - Celular: direcional, botões A/B e MENU na tela.
 
@@ -23,5 +23,5 @@ Todo monstrinho nasce com uma raridade sorteada, que aumenta os status e dificul
 As regiões mais distantes aumentam a chance de raridade alta (a Mata Sombria tem 1,8x).
 
 ## Conteúdo
-18 espécies, 7 tipos com vantagens e fraquezas, evolução, níveis, 4 regiões, Centro com cura e loja,
+42 criaturas (incluindo 4 lendárias raríssimas na Mata Sombria), 9 tipos com vantagens e fraquezas, evolução, níveis, 4 regiões, Centro com cura e loja,
 3 tipos de cápsula, poções, time de 6, caixa e coleção.
