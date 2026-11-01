@@ -1890,7 +1890,7 @@ function vDisciplina() {
     const mid = S.filtro.jdMil && MIL[S.filtro.jdMil] ? S.filtro.jdMil : '';
     corpo = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.jdMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label><span class="grow"></span>${mid ? botoesDoc('fichaDisc', mid, 'Imprimir ficha') : ''}</div>` + (mid ? fichaDisciplinar(mid) : '<div class="card muted">Escolha o militar para ver a ficha disciplinar: comportamento, punições, elogios e anotações.</div>');
   }
-  return `<div class="aviso-leitor" style="background:var(--azul-claro);border-color:var(--azul)">Versão de demonstração da Justiça e Disciplina: teste à vontade e diga o que ajustar antes de ir para o sistema da Cia.</div>${abasJd}${corpo}`;
+  return abasJd + corpo;
 }
 
 /** Linha do tempo disciplinar de um militar. */
