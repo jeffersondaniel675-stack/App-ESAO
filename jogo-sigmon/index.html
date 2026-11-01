@@ -186,42 +186,121 @@ const nm=c=>SP[c.sp].n;
 function healAll(){for(const c of team)c.hp=st(c).hp}
 
 // ================= SPRITES =================
-const sprCache={};
-function genSprite(sd,z,pal){
- const r=mulberry(sd*7919+13),hw=Math.ceil(z/2);
- const g=[],acc=[];
- for(let y=0;y<z;y++){g.push([]);acc.push([]);for(let x=0;x<hw;x++){
-  const dx=(hw-1-x)/hw,dy=Math.abs(y-(z-1)/2)/(z/2);
-  g[y][x]=r()<.92-(dx*dx+dy*dy)*.95?1:0; acc[y][x]=r()<.14}}
- const full=[];for(let y=0;y<z;y++){full.push([]);for(let x=0;x<z;x++){const lx=x<hw?x:z-1-x;full[y][x]=g[y][lx]?(acc[y][lx]?2:1):0}}
- const cx=hw-1,cy=Math.floor(z/2);full[cy][cx]=full[cy][cx]||1;full[cy][z-1-cx]=full[cy][z-1-cx]||1;
- const seen=full.map(r=>r.map(()=>false)),st=[[cx,cy]];seen[cy][cx]=true;
- while(st.length){const[x,y]=st.pop();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<z&&ny<z&&!seen[ny][nx]&&full[ny][nx]){seen[ny][nx]=true;st.push([nx,ny])}}}
- for(let y=0;y<z;y++)for(let x=0;x<z;x++)if(!seen[y][x])full[y][x]=0;
- const N=z+2,c=document.createElement('canvas');c.width=N;c.height=N;const g2=c.getContext('2d');
- const at=(x,y)=>x>=0&&y>=0&&x<z&&y<z?full[y][x]:0;
- for(let y=-1;y<=z;y++)for(let x=-1;x<=z;x++){
-  const v=at(x,y);let col=null;
-  if(v){col=v===2?pal.a:!at(x,y-1)?pal.h:y>z*.62?pal.s:pal.c}
-  else if(at(x+1,y)||at(x-1,y)||at(x,y+1)||at(x,y-1))col=pal.o;
-  if(col){g2.fillStyle=col;g2.fillRect(x+1,y+1,1,1)}
+// Sprites desenhados à mão. Letras = cores da paleta da espécie; o contorno e o sombreado são automáticos.
+// w=branco e=pupila m=boca o=contorno interno
+const ART={
+0:{p:{b:'#f07a3a',c:'#ffe0a8',a:'#ff9f9f',y:'#ffd23f',r:'#e8402a'},g:[
+".......rr.......","......ryyr......",".....ryyyyr.....","....brryyrrb....","...bbbbrrbbbb...","..bbbbbbbbbbbb..",
+".bbbbbbbbbbbbbb.",".bbbwebbbbwebbb.","bbbbeebbbbeebbbb","bbbbeebbbbeebbbb","bbbabbbmmbbbabbb","bbbbbbbbbbbbbbbb",
+".bbbbccccccbbbb.",".bbbccccccccbbb.","..bbccccccccbb..","...bbbbbbbbbb...","...bbb....bbb..."]},
+1:{p:{b:'#e8602a',c:'#ffe0a8',y:'#ffd23f',r:'#e02a1a',w:'#ffffff'},g:[
+"..r..............r..",".ryr............ryr.",".ryyr..........ryyr.","..ryyr........ryyr..","...rbbbbbbbbbbbbr...",
+"..bbbbbbbbbbbbbbbb..",".bbbboobbbbbboobbbb.",".bbbbbwebbbbwebbbbb.",".bbbbbeebbbbeebbbbb.",".bbbbbbbbbbbbbbbbbb.",
+"..bbbbbmwwwwmbbbbb..","..bbbbbbmmmmbbbbbb..",".bbbbbccccccccbbbbb.","bbb.bccccccccccb.bbb","bb..bccccccccccb..bb",
+"....bbccccccccbb....","....bbbbbbbbbbbb....","...bbbb......bbbb..."]},
+2:{p:{b:'#4a9af0',c:'#bfe4ff',a:'#ff9fbf'},g:[
+".......bb.......","......bbbb......",".....bbbbbb.....","....bwbbbbbb....","...bbbbbbbbbb...","..bbbbbbbbbbbb..",
+".bbbbbbbbbbbbbb.",".bbbwebbbbwebbb.","bbbbeebbbbeebbbb","bbbbeebbbbeebbbb","bbbabbbmmbbbabbb","bbbbbbbbbbbbbbbb",
+".bbbbccccccbbbb.","..bbccccccccbb..","...bbbbbbbbbb...","....bbb..bbb...."]},
+3:{p:{b:'#3a7fe0',c:'#d8f0ff',a:'#2ad0c8',k:'#ff9fbf'},g:[
+".........aa.........","........aaaa........",".......aabbaa.......",".....bbbbbbbbbb.....","...bbbbbbbbbbbbbb...",
+"..bbbbbbbbbbbbbbbb..","..bbbbbbbbbbbbbbbb..",".bbbbbwebbbbwebbbbb.",".bbbbbeebbbbeebbbbb.",".bbbbbeebbbbeebbbbb.",
+".bbbbkbbbmmbbbkbbbb.","aabbbbbbbbbbbbbbbbaa","aaabbbccccccccbbbaaa",".aabbccccccccccbbaa.","...bbccccccccccbb...",
+"....bbccccccccbb....",".....bbbbbbbbbb.....","....bbbb....bbbb...."]},
+4:{p:{b:'#8ad05a',y:'#3a9a3a',r:'#2a7a2a',a:'#ff9fbf'},g:[
+"..yy........yy..",".yyyy......yyyy.",".yyyyy....yyyyy.","..yyyyy..yyyyy..","....yyyrryyy....",".....bbrrbb.....",
+"...bbbbbbbbbb...","..bbbbbbbbbbbb..",".bbbwebbbbwebbb.",".bbbeebbbbeebbb.","bbbbeebbbbeebbbb","bbbabbbmmbbbabbb",
+"bbbbbbbbbbbbbbbb",".bbbbbbbbbbbbbb.","..bbbbbbbbbbbb..","...bbb....bbb..."]},
+5:{p:{b:'#5cb84a',c:'#d8f0b0',g:'#2f8a2f',p:'#ff7aa8',y:'#ffd23f',a:'#ff9fbf'},g:[
+"........pppp........","......pppppppp......",".....pppyyyyppp.....",".....pppyyyyppp.....","......pppppppp......",
+"....gg..pppp..gg....","...ggggbbbbbbgggg...","..ggbbbbbbbbbbbbgg..","..bbbbbbbbbbbbbbbb..",".bbbbbwebbbbwebbbbb.",
+".bbbbbeebbbbeebbbbb.",".bbbbbeebbbbeebbbbb.",".bbbbabbbmmbbbabbbb.","gbbbbbbbbbbbbbbbbbbg","ggbbbbccccccccbbbbgg",
+"gg.bbbccccccccbbb.gg","...bbbbccccccbbbb...","....bbbbbbbbbbbb....","....bbbb....bbbb...."]},
+6:{p:{b:'#f8d030',a:'#ff5050',o:'#2a2a2a'},g:[
+"..oo........oo..","..bbb......bbb..","...bbb....bbb...","...bbbbbbbbbb...","..bbbbbbbbbbbb..",".bbbbbbbbbbbbbb.",
+".bbbwebbbbwebbb.","bbbbeebbbbeebbbb","bbaabbbmmbbbaabb","bbbbbbbbbbbbbbbb",".bbbbbbbbbbbbbb.","..bbbbbbbbbbbb..","...bb......bb..."]},
+7:{p:{b:'#f5c518',c:'#fff3a0',k:'#3a3550',a:'#ff4040'},g:[
+"..kk............kk..","..kbb..........bbk..","...bbb........bbb...","...bbbbbbbbbbbbbb...","..bbbbbbbkkbbbbbbb..",
+"..bbbbbbbbkkbbbbbb..",".bbbbbbbbkkbbbbbbbb.",".bbbboobbbbbboobbbb.",".bbbbbwebbbbwebbbbb.",".bbbbbeebbbbeebbbbb.",
+".bbaabbbbbbbbbbaabb.","..bbbbbbmwwmbbbbbb..","..bbbbbbbmmbbbbbbb..",".kbbbbccccccccbbbbk.","kkbbbccccccccccbbbkk",
+"....bbccccccccbb....","....bbbbbbbbbbbb....","...bbbb......bbbb..."]},
+8:{p:{b:'#a8a090',k:'#6a6258',g:'#5aa840'},g:[
+"......gggg......","....bbbggbbb....","...bbbbbbbbbb...","..bbbbbbbbkbbb..",".bbbbbbbbkbbbbb.",".bbbwebbbbwebbb.",
+"bbbbeebbbbeebbbb","bbbbbbbbbbbbbbbb","bbbbbbmmmmbbbbbb","bkbbbbbbbbbbbbbb",".bbbbbbbbbbkbbb.","..bbbbbbbbbbbb..",
+"...bbbbbbbbbb...","..bbb......bbb.."]},
+9:{p:{b:'#9a8c78',k:'#5a5044',a:'#5fd0e8'},g:[
+"......a......a......",".....aa..bb..aa.....",".....abbbbbbbba.....","...bbbbbbbbbbbbbb...","..bbbbkbbbbbbbbbbb..",
+"..bbbbbkbbbbbbbbbb..",".bbbboobbbbbboobbbb.",".bbbbbwebbbbwebbbbb.",".bbbbbeebbbbeebbbbb.","bbbbbbbbbbbbbbbbbbbb",
+"bbbbbbbmmmmmmbbbbbbb","bbbbbbbbbbbbbbkbbbbb",".bb.bbbbbbbbbbbb.bb.","bbb.bbbbbkbbbbbb.bbb","bbb.bbbbbbbbbbbb.bbb",
+"bb...bbbbbbbbbb...bb",".....bbbb..bbbb.....","....bbbbb..bbbbb...."]},
+10:{p:{b:'#7a4fc0',y:'#ffe14a',e:'#1a0a2a',m:'#2a0a3a'},g:[
+"..b..bbbbbb..b..","..bbbbbbbbbbbb..",".bbbbbbbbbbbbbb.",".bbbbbbbbbbbbbb.",".bbyybbbbbbyybb.","bbbyebbbbbbeybbb",
+"bbbbbbbbbbbbbbbb","bbbbbbmwwmbbbbbb","bbbbbbbmmbbbbbbb","bbbbbbbbbbbbbbbb","bbbbbbbbbbbbbbbb","bbbb.bbbbbb.bbbb",
+".bb...bbbb...bb."]},
+11:{p:{b:'#5a3a9a',k:'#2a1a4a',y:'#ff3a5a',m:'#1a0a2a'},g:[
+"..k..............k..","..kk............kk..","...kk..bbbbbb..kk...","....kbbbbbbbbbbk....","...bbbbbbbbbbbbbb...",
+"..bbbbbbbbbbbbbbbb..","..bbbbbbbbbbbbbbbb..",".bbbbyybbbbbbyybbbb.",".bbbbbyebbbbeybbbbb.",".bbbbbbbbbbbbbbbbbb.",
+".bbbbbbmwmmwmbbbbbb.","kbbbbbbbmmmmbbbbbbbk","kkbbbbbbbbbbbbbbbbkk","kkkbbbbbbbbbbbbbbkkk","kkk.bbbbbbbbbbbb.kkk",
+"kk..bbbbbbbbbbbb..kk","k...bbb.bbbb.bbb...k","....bb...bb...bb...."]},
+12:{p:{b:'#c89a6a',c:'#f5e6c8',k:'#8a5a3a',y:'#ff9a2a'},g:[
+"......kk......",".....kk.......","....bbbbbb....","..bbbbbbbbbb..",".bbbbbbbbbbbb.",".bbwebbbbwebb.",
+"bbbeebbbbeebbb","bbbbbbyybbbbbb","kbbbbccccbbbbk","kkbbccccccbbkk",".kbbccccccbbk.","..bbbbbbbbbb..","....yy..yy...."]},
+13:{p:{b:'#b88050',c:'#f8ead0',k:'#5a7ab0',r:'#e84040',y:'#ffaa30'},g:[
+".........rr.........","........rrr.........",".......bbrbb........","......bbbbbbbb......",".....bbbbbbbbbb.....",
+"....bbwebbbbwebb....","k...bbeebbbbeebb...k","kk..bbbbbyybbbbb..kk","kkk.bbbbbyybbbbb.kkk","kkkkbbbccccccbbbkkkk",
+".kkkkbbccccccbbkkkk.","..kkkbbccccccbbkkk..","...kkbbbccccbbbkk...","....k.bbbbbbbb.k....",".......yy..yy......."]},
+14:{p:{b:'#f5e6c8',r:'#e04040',a:'#ff9fbf'},g:[
+"....rrrrrr....","..rrrwwrrrrr..",".rrrrwwrrwwrr.","rrwwrrrrrwwrrr","rrwwrrrrrrrrrr","rrrrrrrrrrrrrr",
+".rrrrrrrrrrrr.","...bbbbbbbb...","..bbwebbwebb..","..bbeebbeebb..","..babbmmbbab..","..bbbbbbbbbb..",
+"...bbbbbbbb...","...bb....bb..."]},
+15:{p:{b:'#a8a0b8',a:'#ff9ab0',p:'#ff7a9a',c:'#e8e4f0',k:'#55505f',t:'#ff9ab0'},g:[
+".bbb......bbb.","bbabb....bbabb","bbabbbbbbbbabb",".bbbbbbbbbbbb.",".bbbbbbbbbbbb.",".bbwebbbbwebb.",
+".bbeebbbbeebb.","kbbbbbppbbbbbk",".kbbbbmmbbbbk.","..bbbccccbbb..","..bbccccccbb..","...bbbbbbbb.tt","...bb....bb.t."]},
+16:{p:{b:'#5ab8c8',c:'#d0f4f0',a:'#ff7aa0'},g:[
+".a............a.","aa..bbbbbbbb..aa",".aabbbbbbbbbbaa.","aabbbbbbbbbbbbaa",".abbbbbbbbbbbba.","..bbwebbbbwebb..",
+"..bbeebbbbeebb..","..bbbbbbbbbbbb..","..bbbmmmmmmbbb..","...bbbbbbbbbb...","..bbbccccccbbb..",".bbbccccccccbbb.",
+".bb.bbbbbbbb.bb.","....bb....bb...."]},
+17:{p:{b:'#e8582a',c:'#fff0d8',k:'#3a1a1a',y:'#ffd23f',r:'#ff7a2a'},g:[
+".bb............bb.",".bkb..........bkb.",".bkbb........bbkb.","..bbbbbbbbbbbbbb..","..bbbbbbbbbbbbbb..",
+".bbbbwebbbbwebbbb.",".bbbbeebbbbeebbbb.",".ccbbbbbkkbbbbbcc.","ccccbbbbmmbbbbcccc",".cccbbbbbbbbbbccc.",
+"...bbbccccccbbb...","...bbccccccccbb.yy","...bbbbbbbbbbbbyry","...bbb.bbbb.bbbry.","...bb...bb...bb.r."]}
+};
+const NOSHADE='weom';
+function hex2rgb(h){h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.substr(i,2),16))}
+function rgb2hex(r){return'#'+r.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('')}
+const mix=(a,b,t)=>{const x=hex2rgb(a),y=hex2rgb(b);return rgb2hex(x.map((v,i)=>v+(y[i]-v)*t))};
+const lum=h=>{const[r,g,b]=hex2rgb(h);return(.3*r+.59*g+.11*b)/255};
+function buildSprite(art,variant){
+ const rows=art.g,Wd=Math.max(...rows.map(r=>r.length)),Hd=rows.length;
+ const grid=rows.map(r=>r.padEnd(Wd,'.'));
+ const pal=Object.assign({w:'#ffffff',e:'#1a1a2e',m:'#7a1f2b',o:'#1a1a1a'},art.p);
+ let outline='#1a1a1a';
+ const col=k=>{let c=pal[k];if(!c)return null;
+  if(variant==='l'){if(k==='w')return'#fffbe0';if('ayrp'.includes(k))return mix(c,'#ffd23f',.6)}
+  if(variant==='s'){if(k==='w')return'#ffffff';if(k==='e'||k==='y'&&art.p.e)return'#ff1744';if(k==='m')return'#0a0a14';
+   if('ayrp'.includes(k))return mix('#b88a00','#ffe066',lum(c));
+   return mix('#14142a','#5a5e85',lum(c))}
+  return c};
+ if(variant==='l')outline='#7a4a00';if(variant==='s')outline='#ffd700';
+ const cv=document.createElement('canvas');cv.width=Wd+2;cv.height=Hd+2;const g=cv.getContext('2d');
+ const at=(x,y)=>x>=0&&y>=0&&x<Wd&&y<Hd&&grid[y][x]!=='.';
+ for(let y=-1;y<=Hd;y++)for(let x=-1;x<=Wd;x++){
+  let c=null;
+  if(at(x,y)){const k=grid[y][x];c=k==='o'?outline:col(k);
+   if(c&&!NOSHADE.includes(k)){
+    const below=!at(x,y+1)||grid[y+1][x]==='o',above=!at(x,y-1),right=!at(x+1,y);
+    if(below||(right&&y>Hd*.45))c=mix(c,'#000000',.28);
+    else if(above||!at(x-1,y))c=mix(c,'#ffffff',.3);
+   }}
+  else if(at(x+1,y)||at(x-1,y)||at(x,y+1)||at(x,y-1))c=outline;
+  if(c){g.fillStyle=c;g.fillRect(x+1,y+1,1,1)}
  }
- // olhos
- for(const ey of[Math.floor(z*.38),Math.floor(z*.38)-1,Math.floor(z*.38)+1]){
-  let ex=-1;for(let x=hw-2;x>=0;x--)if(at(x,ey)&&at(x,ey+1)){ex=x;break}
-  if(ex<0)continue;
-  for(const xx of[ex,z-1-ex]){g2.fillStyle='#fff';g2.fillRect(xx+1,ey+1,1,1);g2.fillStyle=pal.e;g2.fillRect(xx+1,ey+2,1,1)}
-  break;
- }
- return c;
+ return cv;
 }
+const sprCache={};
 function sprite(sp,rar){
  const v=rar===5?'s':rar===4?'l':'n',k=sp+v;
- if(sprCache[k])return sprCache[k];
- const t=TYPES[SP[sp].t];let pal={...t,o:'#1a1a1a',e:'#111'};
- if(v==='l')pal={...t,a:'#ffd700',h:'#fff3b0',o:'#6b4500',e:'#111'};
- if(v==='s')pal={c:'#2b2d42',s:'#14142a',h:'#55597a',a:'#ffd700',o:'#ffd700',e:'#ff1744'};
- return sprCache[k]=genSprite(SP[sp].sd,SP[sp].z,pal);
+ return sprCache[k]||(sprCache[k]=buildSprite(ART[sp],v));
 }
 function drawMon(c,cx,by,scale,flip,oy=0){
  const spr=sprite(c.sp,c.rar),w=spr.width*scale,h=spr.height*scale,x=Math.round(cx-w/2),y=Math.round(by-h+oy);
@@ -663,14 +742,14 @@ function renderBattle(){
  const sky=g==='Mata Sombria'?['#5a4a7a','#3d5a3a']:g==='Lagoa'?['#bfe3ff','#8ac0e8']:['#d8f0ff','#b8e08a'];
  ctx.fillStyle=sky[0];fr(0,0,240,70);ctx.fillStyle=sky[1];fr(0,70,240,42);
  ctx.fillStyle='rgba(0,0,0,.12)';
- ctx.beginPath();ctx.ellipse(180,60,38,8,0,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.ellipse(180,68,38,8,0,0,Math.PI*2);ctx.fill();
  ctx.beginPath();ctx.ellipse(62,110,44,9,0,0,Math.PI*2);ctx.fill();
  if(B.intro>0){B.intro--;const k=50-B.intro;ctx.fillStyle='#111';for(let i=0;i<10;i++)fr(0,i*16,Math.min(240,k*10)*(i%2?1:-1)+(i%2?0:240),16);return}
  const e=B.e;
  if(B.eShow){const sx=B.eShake?((B.eShake>>1)%2?3:-3):0;if(B.eShake)B.eShake--;
-  if(!(B.eShake&&(B.eShake>>2)%2)){ctx.save();if(B.eSink){B.eSink++;ctx.beginPath();ctx.rect(0,0,240,61);ctx.clip()}drawMon(e,180+sx,60,3,false,B.eSink*2);ctx.restore()}}
+  if(!(B.eShake&&(B.eShake>>2)%2)){ctx.save();if(B.eSink){B.eSink++;ctx.beginPath();ctx.rect(0,0,240,69);ctx.clip()}drawMon(e,180+sx,68,3,false,B.eSink*2);ctx.restore()}}
  if(B.ball){const b=B.ball;let bx,by;
-  if(b.phase==='throw'){b.t++;const p=b.t/30;bx=60+(180-60)*p;by=95+(40-95)*p-Math.sin(p*Math.PI)*40}else{bx=180;by=54}
+  if(b.phase==='throw'){b.t++;const p=b.t/30;bx=60+(180-60)*p;by=95+(48-95)*p-Math.sin(p*Math.PI)*40}else{bx=180;by=62}
   const sh=b.shake?((frame>>2)%2?-2:2):0;drawBall(Math.round(bx+sh),Math.round(by),b.k,b.phase==='caught')}
  if(B.mShow&&me()){const m=me(),sx=B.mShake?((B.mShake>>1)%2?3:-3):0;if(B.mShake)B.mShake--;if(!(B.mShake&&(B.mShake>>2)%2))drawMon(m,62+sx,110,3,true)}
  // HP animado
@@ -691,7 +770,7 @@ function drawBall(x,y,k,done){const top=ITEMS[k].col;ctx.fillStyle='#111';fr(x-3
  ctx.fillStyle='#fff';fr(x-1,y-1,3,2);if(done&&(frame>>3)%2){ctx.fillStyle='#ffd23f';fr(x-7,y-6,1,1);fr(x+7,y-5,1,1);fr(x,y-8,1,1)}}
 function renderDetail(c){
  panel(4,4,232,152);const s=st(c),sp=SP[c.sp];
- ctx.fillStyle='#eef2f8';fr(8,8,76,76);drawMon(c,46,80,3.5,false);
+ ctx.fillStyle='#eef2f8';fr(8,8,76,76);drawMon(c,46,80,3,false);
  txt(sp.n,90,10,'#222',10);txt(RAR[c.rar].n,90,23,rarColor(c.rar),8);
  txt(`Nv ${c.lvl}`,90,34,'#444');txt(sp.t,150,34,TYPES[sp.t].s);
  const rows=[['HP',`${c.hp}/${s.hp}`],['ATAQUE',s.atk],['DEFESA',s.def],['VELOC.',s.spd]];
