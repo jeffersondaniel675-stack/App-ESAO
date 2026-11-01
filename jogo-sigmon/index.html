@@ -117,7 +117,9 @@ const SPEC=[
  ['Puppeteria','Puppeteria','Sombra',2],['Stardrifter','Stardrifter','Água',2],['Tempestrel','Tempestrel','Elétrico',2],
  ['Boneclaw','Boneclaw','Sombra',2],['Seasonalstags','Seasonalstags','Planta',2],
  ['Aquasurge','Aquasurge','Água',3],['Multivulp','Multivulp','Fogo',3],['Chimeraera','Chimeraera','Sombra',3],['Geomagma','Geomagma','Fogo',3],
- ['Solaris','Solaris','Fogo','L'],['Nebuladrift','Nebuladrift','Cósmico','L'],['Chronowing','Chronowing','Metal','L'],['Astralith','Astralith','Cósmico','L']
+ ['Solaris','Solaris','Fogo','L'],['Nebuladrift','Nebuladrift','Cósmico','L'],['Chronowing','Chronowing','Metal','L'],['Astralith','Astralith','Cósmico','L'],
+ ['Tatubroto','Tatubroto','Planta',1,'Antacervo',20],['Antacervo','Antacervo','Planta',3],
+ ['Azulino','Azulino','Normal',1],['Lontrina','Lontrina','Água',1],['Javaspina','Javaspina','Pedra',2],['Lobolua','Lobolua','Sombra',2]
 ];
 const SPI={};SPEC.forEach((e,i)=>SPI[e[0]]=i);
 const SP=SPEC.map(([img,n,t,tier,evo,lv])=>({img,n,t,b:TIER[tier].b,x:TIER[tier].x,c:TIER[tier].c,L:learnset(t),leg:tier==='L',evo:evo?[SPI[evo],lv]:null}));
@@ -163,10 +165,10 @@ rect(BX,BY,BX+2,BY+2,'B');map[BY+2][BX+1]='D';
  }}
 const R_=list=>list.map(([n,w])=>[SPI[n],w]);
 const REG=[
- {n:'Campina',r:[4,4,14,10],lv:[2,5],rb:1,sp:R_([['Nimbuspuff',18],['Mycesprite',18],['Florapetal',16],['Teaswirl',12],['Blockon',12],['Rolladillo',12],['Terrabadge',12],['Bibliosprite',8],['Lumina',3]])},
- {n:'Bosque',r:[4,19,15,26],lv:[5,10],rb:1.2,sp:R_([['Windupsol',12],['Toolboxter',10],['Cogworkowl',8],['Cameralid',10],['Seasonalstags',8],['Lanternis',12],['Vitreon',12],['Inkling',10],['Cosmocat',8],['Puppeteria',6],['Lepusleaf',3],['Volcasaur',3]])},
- {n:'Lagoa',r:[22,17,37,27],lv:[7,12],rb:1.3,sp:R_([['Stardrifter',20],['Coralith',6],['Tempestrel',14],['Teaswirl',14],['Aquasurge',4],['Vitreon',12],['Nimbuspuff',12],['Cumulon',6]])},
- {n:'Mata Sombria',r:[24,3,36,11],lv:[11,18],rb:1.8,sp:R_([['Inkling',15],['Ghosteddy',10],['Puppeteria',10],['Boneclaw',12],['Chimeraera',6],['Multivulp',6],['Geomagma',7],['Rockhorn',6],['Bibliosprite2',6],['Cosmocat',8],['Lumina',6],['Mycelian',4],['Solaris',1],['Nebuladrift',1],['Chronowing',1],['Astralith',1]])}
+ {n:'Campina',r:[4,4,14,10],lv:[2,5],rb:1,sp:R_([['Nimbuspuff',18],['Mycesprite',18],['Florapetal',16],['Teaswirl',12],['Blockon',12],['Rolladillo',12],['Terrabadge',12],['Bibliosprite',8],['Lumina',3],['Azulino',16],['Tatubroto',10]])},
+ {n:'Bosque',r:[4,19,15,26],lv:[5,10],rb:1.2,sp:R_([['Windupsol',12],['Toolboxter',10],['Cogworkowl',8],['Cameralid',10],['Seasonalstags',8],['Lanternis',12],['Vitreon',12],['Inkling',10],['Cosmocat',8],['Puppeteria',6],['Lepusleaf',3],['Volcasaur',3],['Javaspina',10],['Azulino',6],['Lobolua',3]])},
+ {n:'Lagoa',r:[22,17,37,27],lv:[7,12],rb:1.3,sp:R_([['Stardrifter',20],['Coralith',6],['Tempestrel',14],['Teaswirl',14],['Aquasurge',4],['Vitreon',12],['Nimbuspuff',12],['Cumulon',6],['Lontrina',18]])},
+ {n:'Mata Sombria',r:[24,3,36,11],lv:[11,18],rb:1.8,sp:R_([['Inkling',15],['Ghosteddy',10],['Puppeteria',10],['Boneclaw',12],['Chimeraera',6],['Multivulp',6],['Geomagma',7],['Rockhorn',6],['Bibliosprite2',6],['Cosmocat',8],['Lumina',6],['Mycelian',4],['Solaris',1],['Nebuladrift',1],['Chronowing',1],['Astralith',1],['Lobolua',10],['Antacervo',3]])}
 ];
 function regionAt(x,y){return REG.find(g=>x>=g.r[0]&&x<=g.r[2]&&y>=g.r[1]&&y<=g.r[3])}
 const walk=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&'.gdPD'.includes(map[y][x]);

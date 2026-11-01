@@ -23,5 +23,5 @@ Todo monstrinho nasce com uma raridade sorteada, que aumenta os status e dificul
 As regiões mais distantes aumentam a chance de raridade alta (a Mata Sombria tem 1,8x).
 
 ## Conteúdo
-42 criaturas (incluindo 4 lendárias raríssimas na Mata Sombria), 9 tipos com vantagens e fraquezas, evolução, níveis, 4 regiões, Centro com cura e loja,
+48 criaturas (incluindo 4 lendárias raríssimas na Mata Sombria), 9 tipos com vantagens e fraquezas, evolução, níveis, 4 regiões, Centro com cura e loja,
 3 tipos de cápsula, poções, time de 6, caixa e coleção.
