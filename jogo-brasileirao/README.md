@@ -31,6 +31,10 @@ Os números simulados ficam perto da realidade do Brasileirão: cerca de 2,4 gol
 - **Súmula** de cada jogo: gols com minuto (pênalti/contra), cartões, substituições, lesões,
   escalações, árbitro, público pagante e renda.
 - **Artilharia**, **Fair Play** (amarelo = 1, vermelho = 3), pendurados e suspensos.
+- **Escudos:** em Banco de dados, envie a imagem do escudo de cada clube (arquivo ou link).
+  Ficam salvos no navegador para todas as carreiras e podem ser exportados/importados como
+  pacote `.json`. Os escudos não vêm no repositório porque são marcas registradas dos clubes;
+  sem escudo, o jogo desenha um com as cores e a sigla.
 - **Banco de dados:** edite nome, sigla, cidade, estádio, capacidade e cores de qualquer clube,
   e nome, número, posição e idade de qualquer jogador.
 

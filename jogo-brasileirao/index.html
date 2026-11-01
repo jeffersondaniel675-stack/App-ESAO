@@ -45,6 +45,10 @@ tr.click:hover td{background:rgba(255,255,255,.04)}
 .z{display:inline-block;width:4px;height:16px;border-radius:2px;vertical-align:middle;margin-right:4px}
 .bdg{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font:800 8px/1 system-ui;border:2px solid;flex:none;vertical-align:middle;letter-spacing:-.02em}
 .bdg.l{width:46px;height:46px;font-size:12px}
+img.bdg{border:none;border-radius:0;object-fit:contain;background:none}
+.logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.logos>div{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px}
+.logos small{display:block;color:var(--mut);font-size:11px}
 .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:9px;background:var(--bg2);border:1px solid var(--line)}
 .tag.r{background:#5a1d1d;border-color:#8a2d2d}.tag.y{background:#5a4a10;border-color:#8a7420}.tag.g{background:#174a2a;border-color:#2a7a45}
 .bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;width:60px;display:inline-block;vertical-align:middle}
@@ -630,14 +634,26 @@ function takeJob(id){
 let saveWarned=false;
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(G))}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>alert('O navegador bloqueou o salvamento automático. Use "Exportar save" no menu Banco de dados para guardar seu progresso.'),50)}}}
 function load(){try{const s=localStorage.getItem(SAVE);if(!s)return false;const g=JSON.parse(s);if(!g||g.v!==1)return false;G=g;return true}catch(e){return false}}
-function exportSave(){const b=new Blob([JSON.stringify(G)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`prancheta-fc-${G.season}-r${G.round}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
-function importSave(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const g=JSON.parse(rd.result);if(!g||g.v!==1||!g.clubs)throw 0;G=g;save();UI.view='painel';render();alert('Save carregado!')}catch(e){alert('Arquivo inválido.')}};rd.readAsText(f)}
+function exportSave(){const b=new Blob([JSON.stringify(Object.assign({},G,{escudos:LOGOS}))],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`prancheta-fc-${G.season}-r${G.round}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function importSave(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const g=JSON.parse(rd.result);if(!g||g.v!==1||!g.clubs)throw 0;if(g.escudos){for(const [k,v] of Object.entries(g.escudos))if(okLogo(v))LOGOS[k]=v;saveLogos();delete g.escudos}G=g;save();UI.view='painel';render();alert('Save carregado!')}catch(e){alert('Arquivo inválido.')}};rd.readAsText(f)}
 
 // ================= INTERFACE =================
 function lum(h){const m=/^#?([0-9a-f]{6})$/i.exec(h||'');if(!m)return 0;const n=parseInt(m[1],16);const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(n>>16)+.7152*f(n>>8&255)+.0722*f(n&255)}
 function txtOn(bg,want){const cr=(a,b)=>(Math.max(a,b)+.05)/(Math.min(a,b)+.05);const lb=lum(bg);if(cr(lb,lum(want))>=3)return want;return lb>.4?'#111111':'#ffffff'}
-function badgeHTML(c1,c2,sig,l){return `<span class="bdg${l?' l':''}" style="background:${esc(c1)};color:${esc(txtOn(c1,c2))};border-color:${esc(c2)}">${esc(sig)}</span>`}
-function badge(id,l){const c=C(id);return badgeHTML(c.c1,c.c2,c.sig,l)}
+// Escudos: guardados à parte do save, valem para todas as carreiras neste navegador
+const LOGO_KEY='prancheta_fc_escudos';let LOGOS={};
+try{LOGOS=JSON.parse(localStorage.getItem(LOGO_KEY)||'{}')||{}}catch(e){LOGOS={}}
+const okLogo=u=>typeof u==='string'&&/^(https?:\/\/|data:image\/)/i.test(u);
+function saveLogos(){try{localStorage.setItem(LOGO_KEY,JSON.stringify(LOGOS));return true}catch(e){alert('O navegador não deixou salvar o escudo (espaço cheio ou bloqueado).');return false}}
+function logoImg(id,l,fb){const u=LOGOS[id];return okLogo(u)?`<img class="bdg${l?' l':''}" src="${esc(u)}" alt="" data-fb="${esc(fb||'')}" onerror="this.outerHTML=this.dataset.fb">`:''}
+function setLogoFile(id,inp){const f=inp.files[0];if(!f)return;if(!/^image\//.test(f.type)){alert('Escolha um arquivo de imagem (PNG, JPG, SVG, WEBP).');return}
+ const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const S=96,k=Math.min(S/im.width,S/im.height,1)||1;const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.width*k));cv.height=Math.max(1,Math.round(im.height*k));cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);LOGOS[id]=cv.toDataURL('image/png');if(saveLogos())render()};im.onerror=()=>alert('Não consegui ler essa imagem.');im.src=rd.result};rd.readAsDataURL(f)}
+function setLogoUrl(id){const u=prompt('Cole o endereço (URL) da imagem do escudo de '+(C(id)||{name:id}).name+':',LOGOS[id]&&!LOGOS[id].startsWith('data:')?LOGOS[id]:'');if(u==null)return;const v=u.trim();if(!v){delete LOGOS[id]}else if(!okLogo(v)){alert('Use um endereço começando com http:// ou https://');return}else LOGOS[id]=v;if(saveLogos())render()}
+function delLogo(id){delete LOGOS[id];saveLogos();render()}
+function exportLogos(){const b=new Blob([JSON.stringify({escudos:LOGOS})],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='prancheta-fc-escudos.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function importLogos(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);const src=o.escudos||o;let n=0;for(const [k,v] of Object.entries(src))if(okLogo(v)){LOGOS[k]=v;n++}if(saveLogos()){render();alert(n+' escudo(s) importado(s).')}}catch(e){alert('Arquivo inválido.')}};rd.readAsText(f)}
+function badgeHTML(c1,c2,sig,l,id){const fb=`<span class="bdg${l?' l':''}" style="background:${esc(c1)};color:${esc(txtOn(c1,c2))};border-color:${esc(c2)}">${esc(sig)}</span>`;if(id&&LOGOS[id]){const im=logoImg(id,l,fb);if(im)return im}return fb}
+function badge(id,l){const c=C(id);return badgeHTML(c.c1,c.c2,c.sig,l,id)}
 function posTag(p){return `<span class="pos p${p}">${p}</span>`}
 function ebar(e){const col=e>75?'var(--ac)':e>55?'var(--ac2)':'var(--bad)';return `<span class="bar"><i style="width:${e}%;background:${col}"></i></span>`}
 function status(p){const t=[];if(p.inj)t.push(`<span class="tag r">Lesão ${p.inj}r</span>`);if(p.susp)t.push(`<span class="tag r">Suspenso</span>`);if(!p.susp&&p.yac===2)t.push(`<span class="tag y">Pendurado</span>`);return t.join(' ')}
@@ -675,7 +691,7 @@ function titleScreen(){
  <h3 style="margin:16px 0 0">Série B 2026</h3><div class="clubs">${SERIE_B.map(clubBtn).join('')}</div>
  <p class="mut" style="max-width:640px;font-size:12px;margin-top:20px">Clubes, cidades, estádios e regras são reais. Os elencos são gerados (nomes fictícios) — você pode renomear jogadores no Banco de dados para montar os elencos reais.</p></div>`;
 }
-function clubBtn(d){return `<button onclick="startWith('${d[0]}')">${badgeHTML(d[8],d[9],d[0])}<span><b>${d[1]}</b><small>${d[2]}-${d[3]}</small></span></button>`}
+function clubBtn(d){return `<button onclick="startWith('${d[0]}')">${badgeHTML(d[8],d[9],d[0],0,d[0])}<span><b>${d[1]}</b><small>${d[2]}-${d[3]}</small></span></button>`}
 function startWith(id){
  let has=false;try{has=!!localStorage.getItem(SAVE)}catch(e){}
  if(has&&!confirm('Começar uma nova carreira apaga o save atual deste navegador. Continuar?'))return;
@@ -910,6 +926,9 @@ function vDados(){
  <div class="card"><h3>Save</h3><p class="mut">O jogo salva sozinho neste navegador a cada rodada. Exporte para guardar ou levar para outro aparelho.</p>
  <div class="row"><button onclick="exportSave()">Exportar save</button><label><button onclick="this.nextElementSibling.click()">Importar save</button><input type="file" accept=".json" style="display:none" onchange="importSave(this)"></label>
  <button class="warn" onclick="if(confirm('Sair para a tela inicial? O progresso salvo continua disponível.')){G=null;render()}">Tela inicial</button></div></div>
+ <div class="card" style="grid-column:1/-1"><h3>Escudos</h3><p class="mut" style="font-size:12px">Envie a imagem do escudo de cada clube (PNG com fundo transparente fica melhor) ou cole um link. Os escudos ficam salvos neste navegador e valem para todas as carreiras. Sem escudo, o jogo usa as cores e a sigla.</p>
+ <div class="row" style="margin-bottom:8px"><button onclick="exportLogos()">Exportar escudos</button><label><button onclick="this.nextElementSibling.click()">Importar escudos</button><input type="file" accept=".json" style="display:none" onchange="importLogos(this)"></label></div>
+ <div class="logos">${ids.map(x=>`<div>${badge(x,1)}<span class="sp"><b>${esc(C(x).name)}</b><small><a href="#" onclick="this.parentNode.parentNode.querySelector('input').click();return false">arquivo</a> · <a href="#" onclick="setLogoUrl('${x}');return false">link</a>${LOGOS[x]?` · <a href="#" onclick="delLogo('${x}');return false">remover</a>`:''}</small><input type="file" accept="image/*" style="display:none" onchange="setLogoFile('${x}',this)"></span></div>`).join('')}</div></div>
  <div class="card" style="grid-column:1/-1"><h3>Jogadores do ${esc(c.name)}</h3><p class="mut" style="font-size:12px">Edite nomes, números, posições e idades — por exemplo, para montar o elenco real do seu time.</p>
  <div class="tw"><table><tr><th>Nº</th><th>Nome</th><th>Pos</th><th>Idade</th><th class="n">OVR</th></tr>${sq.map(p=>`<tr><td><input type="number" min="1" max="99" value="${p.num}" style="width:60px" onchange="editP('${p.id}','num',clamp(+this.value||1,1,99))"></td>
  <td><input value="${esc(p.name)}" maxlength="30" onchange="editP('${p.id}','name',this.value)"></td>
