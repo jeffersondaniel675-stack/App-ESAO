@@ -150,6 +150,8 @@ body.cheia .wrap { max-width: none; }
 .menu .c2 .it.on { color: var(--text); font-weight: 700; }
 .menu .c2 .tit { font-weight: 700; color: var(--text); padding: 0 12px 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; display: flex; align-items: center; gap: 6px; }
 .menu .chev { font-size: 18px; line-height: 1; opacity: .8; }
+.menu .area-tit { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); padding: 12px 12px 2px; border-top: 1px solid var(--border); margin-top: 6px; }
+.menu .area-tit:empty { padding: 0; }
 .menu .rodape { margin-top: auto; border-top: 1px solid var(--border); padding: 18px 12px 0; margin-right: 0; color: var(--muted); font-size: 13px; }
 .menu .rodape .sigla { color: var(--muted); font-size: 22px; }
 .menu .voltar { display: none; }
@@ -231,6 +233,10 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .pm-t input[type=number] { width: 64px; height: 32px; }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.mes-alt { padding: 8px 0; border-top: 1px solid var(--cinza-5); }
+.item-alt { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: start; padding: 6px 0 0 4px; }
+.item-alt.fora, .item-bi.fora { opacity: .45; }
+table.tempos td { padding: 4px 8px; border-bottom: 1px dotted var(--border); }
 .grid-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .grid-resumo h3 { margin: 0 0 8px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
 .lista-jd { margin: 0; padding-left: 18px; } .lista-jd li { margin-bottom: 8px; } .lista-jd a, .linha-tempo a { cursor: pointer; color: var(--azul); }
@@ -440,10 +446,10 @@ const Demo = {
   },
   async quemSou() { return { email: 'demo@exemplo.com' }; },
   async pedirAcesso() { return { situacao: 'registrado' }; },
-  async concederAcesso(email, nome, perfil) {
+  async concederAcesso(email, nome, perfil, areas = '', jd = '') {
     const db = this.db();
     if (perfil !== 'admin' && !(db.Usuarios || []).some(u => u.perfil === 'admin' && u.email !== email)) throw new Error('O sistema precisa de pelo menos um administrador. Cadastre outro admin antes.');
-    const [usuario] = await this.salvarLote('Usuarios', [{ email, nome, perfil }], []);
+    const [usuario] = await this.salvarLote('Usuarios', [{ email, nome, perfil, areas, jd }], []);
     const pedido = (db.Acessos || []).find(a => a.email === email); if (pedido) await this.salvarLote('Acessos', [{ ...pedido, status: 'Aprovado' }], []);
     return { usuario, aviso: '' };
   },
@@ -462,9 +468,9 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
-const pode = () => ['admin', 'editor'].includes(S.user?.perfil);
+const pode = () => podeEm(S.view);
 const admin = () => S.user?.perfil === 'admin';
 const cfg = k => ((S.db.Config || []).find(c => c.chave === k) || {}).valor || PADRAO_CFG[k] || '';
 
@@ -495,7 +501,7 @@ const TIPOS_PADRAO = [
   { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' },
   { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' }
 ];
-const TIPOS_IMPED = ['Férias', 'Dispensa médica', 'Dispensa', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
+const TIPOS_IMPED = ['Cumprindo punição', 'Férias', 'Dispensa médica', 'Dispensa', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
 const TIPOS_MISSAO = ['Operação', 'Apoio', 'Instrução', 'Representação', 'Transporte', 'Guarda/Segurança', 'Outra'];
 const STATUS_MISSAO = ['Planejada', 'Em andamento', 'Concluída', 'Cancelada'];
 const CATEGORIAS = ['Armamento', 'Munição', 'Comunicações', 'Viatura', 'Intendência', 'Saúde', 'Engenharia', 'Informática', 'Mobiliário', 'Outro'];
@@ -626,6 +632,9 @@ function campoHTML(c, v) {
   } else if (c.t === 'militares') {
     const sel = ids(val);
     input = `<div><input type="search" placeholder="Filtrar…" oninput="filtrarChecks(this)" style="margin-bottom:6px"><div class="checks" id="${id}">${militaresAtivos().map(m => `<label data-n="${esc(norm(nomeMil(m)))}"><input type="checkbox" value="${m.id}" ${sel.includes(m.id) ? 'checked' : ''}> ${esc(nomeMil(m))}</label>`).join('')}</div></div>`;
+  } else if (c.t === 'areas') {
+    const sel = ids(val);
+    input = `<div id="${id}" class="postos"><fieldset><legend>Marque as áreas</legend>${['sgte', 'mat', 'furriel'].map(a => `<label><input type="checkbox" value="${a}" ${sel.includes(a) ? 'checked' : ''}> ${esc(AREAS[a])}</label>`).join('')}</fieldset></div>`;
   } else if (c.t === 'local') {
     const l = nomesLocais(); if (val && !l.includes(val)) l.push(val);
     input = `<select id="${id}" ${req} onchange="if(this.value==='${NOVO_LOCAL}')novoLocal(this)"><option value=""></option>${l.map(x => `<option ${x === val ? 'selected' : ''}>${esc(x)}</option>`).join('')}${pode() ? `<option value="${NOVO_LOCAL}">+ Adicionar local…</option>` : ''}</select>`;
@@ -637,7 +646,7 @@ function campoHTML(c, v) {
     input = `<input type="${c.t || 'text'}" id="${id}" value="${esc(val)}" ${req} ${c.t === 'number' ? 'step="any"' : ''}${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}>`;
   }
   if (c.ajuda) input += `<small class="muted" style="font-weight:400">${esc(c.ajuda)}</small>`;
-  if (c.t === 'postos') return `<div class="full campo-postos"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</div>`;
+  if (c.t === 'postos' || c.t === 'areas') return `<div class="full campo-postos"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</div>`;
   return `<label class="${c.full || ['textarea', 'militares'].includes(c.t) ? 'full' : ''}"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</label>`;
 }
 function filtrarChecks(inp) { const q = norm(inp.value); $$('label', inp.nextElementSibling).forEach(l => l.style.display = l.dataset.n.includes(q) ? '' : 'none'); }
@@ -649,7 +658,9 @@ async function enviarArquivo(file) {
   if (!file) return null;
   if (file.size > 25 * 1024 * 1024) throw new Error('Arquivo maior que 25 MB.');
   toast('Enviando arquivo para o Drive…');
-  const r = await api('uploadArquivo', file.name, file.type, await lerArquivoBase64(file));
+  // anexos vão para Anexos/<tipo>/<ano>/<mês> no Drive, pelo assunto da tela
+  const tipo = { material: 'Material', efetivo: 'Militares', missoes: 'Missoes', aditamentos: 'Aditamentos', disciplina: 'Disciplina', alteracoes: 'Alteracoes' }[S.view] || 'Documentos';
+  const r = await api('uploadArquivo', file.name, file.type, await lerArquivoBase64(file), tipo);
   return r.url;
 }
 
@@ -665,7 +676,7 @@ function abrirForm({ titulo, campos, valores = {}, aoSalvar, extra = '' }) {
       const obj = { ...valores };
       for (const c of campos.filter(x => x.k)) {
         const el = $('#f_' + c.k);
-        if (c.t === 'militares' || c.t === 'postos') obj[c.k] = $$('input:checked', el).map(i => i.value).join(',');
+        if (c.t === 'militares' || c.t === 'postos' || c.t === 'areas') obj[c.k] = $$('input:checked', el).map(i => i.value).join(',');
         else if (c.t === 'file') { const url = await enviarArquivo(el.files[0]); if (url) obj[c.k] = url; }
         else obj[c.k] = el.value.trim();
         if (c.t === 'postos' && c.req && !obj[c.k]) throw new Error('Marque pelo menos um posto ou graduação.');
@@ -1067,13 +1078,28 @@ function docDeLista(l, tipo, titulo, extra = []) {
 }
 
 // ============================================================ navegação (menu em duas colunas, no padrão gov.br)
+// Telas agrupadas por área (função de quem trabalha nelas): o 3º item é a área.
 const VIEWS = [
-  ['painel', 'Painel'], ['efetivo', 'Efetivo'], ['escala', 'Escala de serviço'], ['missoes', 'Missões'],
-  ['aditamentos', 'Aditamentos'], ['material', 'Material'], ['arquivo', 'Arquivo'], ['config', 'Configurações']
+  ['painel', 'Painel', ''],
+  ['efetivo', 'Efetivo', 'sgte'], ['escala', 'Escala de serviço', 'sgte'], ['missoes', 'Missões', 'sgte'], ['aditamentos', 'Aditamentos', 'sgte'], ['alteracoes', 'Alterações', 'sgte'],
+  ['material', 'Material', 'mat'],
+  ['arranchamento', 'Arranchamento', 'furriel'],
+  ['disciplina', 'Justiça e disciplina', 'jd'],
+  ['arquivo', 'Arquivo', ''], ['config', 'Configurações', '']
 ];
+const AREAS = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
+const areaDe = v => (VIEWS.find(x => x[0] === v) || [])[2] || '';
+/** Áreas do usuário: vazio = todas (menos Justiça e Disciplina, que precisa de marcação própria). Admin tem todas. */
+const temArea = a => !a || admin() || (a === 'jd' ? S.user?.jd === 'Sim' : (!S.user?.areas || ids(S.user.areas).includes(a)));
+/** Pode ver a tela? Justiça e Disciplina só para quem tem a marcação. */
+const podeVer = v => areaDe(v) !== 'jd' || temArea('jd');
+/** Pode alterar dados na tela v: perfil admin/editor e, para editor, a área da tela. */
+const podeEm = v => ['admin', 'editor'].includes(S.user?.perfil) && temArea(areaDe(v));
 // Itens da 2ª coluna: `aba` liga a uma aba da tela, `filtro` a um filtro, `acao` roda depois de abrir a tela, `editor` = só para quem edita.
 const SUBMENU = {
-  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Justiça e disciplina', aba: 'jd', editor: true }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
+  disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -1082,7 +1108,7 @@ const SUBMENU = {
   config: [{ l: 'Tipos de serviço', aba: 'tipos' }, { l: 'Feriados', aba: 'feriados' }, { l: 'Documentos (cabeçalho e assinatura)', aba: 'geral' }, { l: 'Usuários', aba: 'usuarios', admin: true }, { l: 'Backup', aba: 'backup' }]
 };
 function TIPOS_DOC_MENU() { return [['Aditamentos', 'Aditamentos'], ['Escalas', 'Escalas'], ['Missoes', 'Ordens de missão'], ['Cautelas', 'Cautelas'], ['Material', 'Relações de material'], ['Pedidos', 'Pedidos de material'], ['Efetivo', 'Tripão, chamada e férias']].map(([v, l]) => ({ l, filtro: ['docTipo', v] })); }
-const subsDe = v => (SUBMENU[v] || []).filter(i => (!i.editor || pode()) && (!i.admin || admin()));
+const subsDe = v => (SUBMENU[v] || []).filter(i => (!i.editor || podeEm(v)) && (!i.admin || admin()));
 function subAtivo(v, i) {
   const lista = subsDe(v);
   if (i.ativo) return !!i.ativo();
@@ -1091,7 +1117,7 @@ function subAtivo(v, i) {
   if (i.filtro) { const [f, val] = i.filtro; const pad0 = lista.find(x => x.filtro && x.filtro[0] === f).filtro[1]; return (S.filtro[f] ?? pad0) === val; }
   return false;
 }
-function irPara(v) { S.view = v; if (v !== 'aditamentos') S.adEdit = null; try { localStorage.setItem('cia-view', v); } catch (e) { } fecharMenu(); render(); window.scrollTo(0, 0); }
+function irPara(v) { if (!podeVer(v) || !VIEWS_FN[v]) v = 'painel'; S.view = v; if (v !== 'aditamentos') S.adEdit = null; try { localStorage.setItem('cia-view', v); } catch (e) { } fecharMenu(); render(); window.scrollTo(0, 0); }
 function irSub(v, idx) {
   const i = subsDe(v)[idx];
   if (i.aba) S.sub[v] = i.aba;
@@ -1120,7 +1146,7 @@ function renderMenu() {
   if (!S.menu) { $('#menu').innerHTML = ''; return; }
   const aberto = S.menuAberto, subs = subsDe(aberto), nome = (VIEWS.find(x => x[0] === aberto) || [])[1];
   $('#menu').innerHTML = `<nav class="menu ${S.menuNivel2 ? 'nivel2' : ''}" aria-label="Menu principal" onclick="if(event.target===this)fecharMenu()">
-    <div class="col c1">${VIEWS.map(([k, l]) => `<button class="it ${S.view === k ? 'on' : ''} ${aberto === k && S.view !== k ? 'aberto' : ''}" onmouseenter="hoverMenu('${k}')" onfocus="hoverMenu('${k}')" onclick="clicarMenu('${k}')">${esc(l)}${subsDe(k).length ? '<span class="chev">›</span>' : ''}</button>`).join('')}
+    <div class="col c1">${VIEWS.filter(([k]) => podeVer(k)).map(([k, l, a], i, arr) => `${a && (i === 0 || arr[i - 1][2] !== a) ? `<div class="area-tit">${esc(AREAS[a])}</div>` : !a && i && arr[i - 1][2] ? '<div class="area-tit"></div>' : ''}<button class="it ${S.view === k ? 'on' : ''} ${aberto === k && S.view !== k ? 'aberto' : ''}" onmouseenter="hoverMenu('${k}')" onfocus="hoverMenu('${k}')" onclick="clicarMenu('${k}')">${esc(l)}${subsDe(k).length ? '<span class="chev">›</span>' : ''}</button>`).join('')}
       <div class="rodape"><div class="sigla">${marcaHTML()}</div><div>${esc(S.user?.email || '')}</div></div></div>
     ${subs.length ? `<div class="col c2"><button class="it voltar" onclick="S.menuNivel2=false;renderMenu()">‹ Voltar</button>
       <button class="it ${S.view === aberto ? 'on' : ''}" onclick="irPara('${aberto}')" style="font-weight:700;color:var(--text)">${esc(nome)}</button>
@@ -1199,6 +1225,7 @@ function vBusca() {
 // ---------- montagem da página
 const sigla = () => cfg('sigla') || cfg('nomeCia') || 'Cia';
 function render() {
+  if (!podeVer(S.view) || !VIEWS_FN[S.view]) S.view = 'painel';
   $('#sigla').innerHTML = marcaHTML();
   const linhas = cabecalhoDoc().filter(l => !/minist[eé]rio/i.test(l));
   $('#org').innerHTML = linhas.slice(0, 3).map(esc).join('<br>');
@@ -1260,6 +1287,7 @@ const CAMPOS_MIL = [
   { k: 'pelotao', l: 'Pelotão/Seção' },
   { k: 'funcao', l: 'Função' },
   { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], padrao: 'Sim', vazio: false },
+  { k: 'arma', l: 'Arma / quadro / serviço (ex.: Intendência)' },
   { k: 'dataPraca', l: 'Data de praça', t: 'date' },
   { k: 'comportamento', l: 'Comportamento (cabos e soldados)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
   { secao: 'Tripão' },
@@ -1370,13 +1398,13 @@ function vEfetivo() {
       { l: 'Obs', v: i => esc(i.obs) }
     ], pode() ? i => `<button class="btn sm" onclick="editarImp('${i.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('Impedimentos','${i.id}')">Excluir</button>` : null)}`;
   } else if (t === 'jd') {
-    corpo = vDisciplina();
+    corpo = '<div class="card">A Justiça e Disciplina agora tem lugar próprio no menu.</div>';
   } else {
     const alvo = S.filtro.impAlvo || 'Militares';
     corpo = `<div class="bar"><label class="muted">O que importar <select onchange="S.filtro.impAlvo=this.value;S.imp=null;render()">
       ${[['Militares', 'Militares, tripão ou plano de chamada'], ['Ferias', 'Plano de férias']].map(([v, l]) => `<option value="${v}" ${v === alvo ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>` + vImportar(alvo);
   }
-  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], ...(pode() ? [['jd', 'Justiça e disciplina']] : []), ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
+  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], , ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
   return `<h2>Efetivo</h2><p class="sub">Militares da subunidade, tripão, plano de chamada, plano de férias e demais afastamentos.</p>${abas('efetivo', abasEf)}${corpo}`;
 }
 async function novaRefFerias() {
@@ -1770,6 +1798,245 @@ DOCS.missao = id => {
     { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] };
 };
 
+// ============================================================ alterações (folha de alterações semestral, por militar)
+// Lançamentos na aba Alteracoes (importados do BI do SISBOL ou à mão); a 2ª parte (tempos) de cada folha fica em FolhasAlt.
+const MESES_MAI = MESES_EXT.map(m => m.toUpperCase());
+const semestreDe = iso => `${iso.slice(0, 4)}-${Number(iso.slice(5, 7)) <= 6 ? 1 : 2}`;
+const periodoSem = sem => { const [a, s] = sem.split('-'); return s === '1' ? { ini: `${a}-01-01`, fim: `${a}-06-30` } : { ini: `${a}-07-01`, fim: `${a}-12-31` }; };
+const nomeSem = sem => `${sem.slice(5)}º SEMESTRE DE ${sem.slice(0, 4)}`;
+const semAnterior = sem => { const [a, s] = sem.split('-'); return s === '2' ? `${a}-1` : `${Number(a) - 1}-2`; };
+/** Dias corridos (contando o primeiro e o último) convertidos em anos de 12 meses e meses de 30 dias, como nas folhas. */
+const diasCorridos = (ini, fim) => ini && fim && fim >= ini ? Math.round((dataDe(fim) - dataDe(ini)) / 86400000) + 1 : 0;
+const amd = dias => { dias = Math.max(0, Math.round(dias)); return { a: Math.floor(dias / 360), m: Math.floor((dias % 360) / 30), d: dias % 30 }; };
+const amdTxt = o => `${String(o.a).padStart(2, '0')}a ${String(o.m).padStart(2, '0')}m ${String(o.d).padStart(2, '0')}d`;
+const amdDias = t => { const m = String(t || '').match(/(\d+)\s*a\D+(\d+)\s*m\D+(\d+)\s*d/i); return m ? Number(m[1]) * 360 + Number(m[2]) * 30 + Number(m[3]) : 0; };
+const refBi = r => r ? `, ${r}` : '';
+
+/** Tudo o que entra na folha do militar no semestre: lançamentos + o que o sistema já sabe (afastamentos, disciplina, missões). */
+function itensFolha(mid, sem, op = {}) {
+  const { ini, fim } = periodoSem(sem), dentro = d => d && d >= ini && d <= fim, it = [];
+  (S.db.Alteracoes || []).filter(a => a.militarId === mid && dentro(a.data)).forEach(a => it.push({ k: 'alt-' + a.id, data: a.data, titulo: a.titulo, texto: a.texto, ref: a.ref, origem: a.origem || 'lançamento', id: a.id }));
+  if (op.afast !== false) S.db.Impedimentos.filter(i => i.militarId === mid && i.tipo !== 'Cumprindo punição' && (dentro(i.inicio) || dentro(i.fim))).forEach(i => it.push({ k: 'imp-' + i.id, data: dentro(i.inicio) ? i.inicio : ini, titulo: i.tipo.toUpperCase(),
+    texto: `${i.tipo === 'Férias' ? `Entrou em gozo de férias${i.referencia ? ` referentes ao ano de ${i.referencia}` : ''}` : i.tipo}, no período de ${fmtMil(i.inicio)} a ${fmtMil(i.fim || i.inicio)}${i.obs ? ` (${i.obs})` : ''}.`, ref: '', origem: 'afastamento' }));
+  if (op.disc !== false && S.db.Disciplina) S.db.Disciplina.forEach(x => {
+    if (x.tipo === 'FATD' && x.militarId === mid && x.decisao === 'Punido' && dentro(x.dataDecisao)) it.push({ k: 'jd-' + x.id, data: x.dataDecisao, titulo: 'PUNIÇÃO DISCIPLINAR', ref: x.bi,
+      texto: `${x.punicao}${num(x.dias) ? ` de ${x.dias} (${x.dias}) dia(s)` : ''}, por transgressão ${String(x.classificacao || '').toLowerCase()}${x.enquadramento ? ` (nº ${x.enquadramento} do Anexo I do RDE)` : ''}: ${x.relato || ''}`.trim(), origem: 'disciplina' });
+    if (x.tipo === 'Elogio' && ids(x.militaresIds).includes(mid) && dentro(x.data)) it.push({ k: 'jd-' + x.id, data: x.data, titulo: x.subtipo.toUpperCase(), ref: x.bi, texto: x.relato || '', origem: 'disciplina' });
+  });
+  if (op.missoes) S.db.Missoes.filter(m => m.status !== 'Cancelada' && ids(m.militaresIds).concat(m.responsavelId || []).includes(mid) && dentro(m.inicio)).forEach(m => it.push({ k: 'mis-' + m.id, data: m.inicio, titulo: 'MISSÃO', ref: '',
+    texto: `Participou da missão "${m.titulo}"${m.local ? `, em ${m.local}` : ''}, no período de ${fmtMil(m.inicio)} a ${fmtMil(m.fim || m.inicio)}.`, origem: 'missão' }));
+  return it.sort((a, b) => a.data.localeCompare(b.data));
+}
+/** 2ª parte: o que foi gravado ou o cálculo do sistema (TC = período − TNC; TSCMM e TTES = semestre anterior + TC). */
+function temposFolha(mid, sem) {
+  const g = (S.db.FolhasAlt || []).find(f => f.id === mid + '|' + sem) || {}, m = MIL[mid], { ini, fim } = periodoSem(sem);
+  const desde = m.dataPraca && m.dataPraca > ini ? m.dataPraca : ini;
+  const arregDias = m.dataPraca && m.dataPraca > fim ? 0 : diasCorridos(desde, fim);
+  const tnc = amdDias(g.tnc), naoArreg = amdDias(g.naoArreg);
+  const tcDias = Math.max(0, arregDias - tnc);
+  const ant = (S.db.FolhasAlt || []).find(f => f.id === mid + '|' + semAnterior(sem));
+  const acumulado = ant && ant.ttes ? amdDias(ant.ttes) + tcDias : m.dataPraca ? Math.max(0, diasCorridos(m.dataPraca, fim) - tnc) : tcDias;
+  return {
+    folhaNr: g.folhaNr || '01', arreg: g.arreg || amdTxt(amd(tcDias - naoArreg)), arregPeriodo: g.arregPeriodo || `De ${Number(desde.slice(8))} ${MESES[Number(desde.slice(5, 7)) - 1]} a ${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]}`,
+    arregObs: g.arregObs || 'pronto na OM', naoArreg: g.naoArreg || '00a 00m 00d', tc: g.tc || amdTxt(amd(tcDias)), tnc: g.tnc || '00a 00m 00d',
+    tscmm: g.tscmm || amdTxt(amd(acumulado)), tsnr: g.tsnr || '00a 00m 00d', ttes: g.ttes || amdTxt(amd(acumulado)), gravado: !!g.id, anterior: !!(ant && ant.ttes)
+  };
+}
+
+function vAlteracoes() {
+  const abasAlt = abas('alteracoes', [['folha', 'Folha de alterações'], ['lanc', 'Lançamentos'], ...(pode() ? [['bi', 'Importar BI (SISBOL)']] : [])]);
+  S.sub.alteracoes = S.sub.alteracoes || 'folha';
+  const ta = S.sub.alteracoes;
+  const titulo = `<h2>Alterações</h2><p class="sub">Folhas de alterações por semestre, no modelo da Cia. O que sai no BI entra pela importação do PDF do SISBOL; afastamentos, punições e elogios já lançados no sistema entram sozinhos.</p>`;
+  if (ta === 'bi') return titulo + abasAlt + vImportarBi();
+  const sem = S.filtro.altSem || semestreDe(hoje());
+  const sems = [...new Set([semestreDe(hoje()), semAnterior(semestreDe(hoje())), ...(S.db.Alteracoes || []).map(a => semestreDe(a.data))])].sort().reverse();
+  const selSem = `<select onchange="S.filtro.altSem=this.value;render()" aria-label="Semestre">${sems.map(s => `<option value="${s}" ${s === sem ? 'selected' : ''}>${nomeSem(s).toLowerCase()}</option>`).join('')}</select>`;
+  if (ta === 'lanc') {
+    const { ini, fim } = periodoSem(sem);
+    const lista = (S.db.Alteracoes || []).filter(a => a.data >= ini && a.data <= fim && casa('alt', nomeMil(a.militarId), a.titulo, a.texto, a.ref)).sort((a, b) => a.data.localeCompare(b.data));
+    return titulo + abasAlt + `<div class="bar">${busca('alt', 'Buscar militar, assunto ou BI…')}${selSem}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarAlteracao()">+ Lançamento</button>' : ''}</div>
+      ${tabela(lista, [{ l: 'Data', v: a => fmt(a.data) }, { l: 'Militar', v: a => `<b>${esc(nomeMil(a.militarId))}</b>` }, { l: 'Assunto', v: a => `${esc(a.titulo)}<div class="muted">${esc(String(a.texto).slice(0, 110))}${String(a.texto).length > 110 ? '…' : ''}</div>` },
+        { l: 'BI', v: a => esc(a.ref || '') }, { l: 'Origem', v: a => `<span class="muted">${esc(a.origem || 'manual')}</span>` }], pode() ? a => `<button class="btn sm" onclick="editarAlteracao('${a.id}')">Editar</button>` : null)}`;
+  }
+  // folha de um militar
+  const mid = S.filtro.altMil && MIL[S.filtro.altMil] ? S.filtro.altMil : '';
+  const op = S.filtro.altOp || { afast: true, disc: true, missoes: false };
+  const barra = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.altMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label>${selSem}<span class="grow"></span>
+    ${mid ? botoesDocGrandes('folhaAlt', mid + '|' + sem) : ''}</div>`;
+  if (!mid) return titulo + abasAlt + barra + `<div class="card muted">Escolha o militar e o semestre. ${(S.db.Alteracoes || []).length ? '' : 'Comece importando um BI do SISBOL na aba ao lado.'}</div>`;
+  const it = itensFolha(mid, sem, op), fora = S.filtro.altFora || {}, tp = temposFolha(mid, sem), m = MIL[mid];
+  const meses = []; for (let k = 0; k < 6; k++) meses.push((sem.endsWith('1') ? 0 : 6) + k);
+  const chk = (k, l) => `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" ${op[k] ? 'checked' : ''} onchange="S.filtro.altOp={...(S.filtro.altOp||{afast:true,disc:true,missoes:false}),${k}:this.checked};render()"> ${l}</label>`;
+  return titulo + abasAlt + barra + `<div class="bar">${chk('afast', 'Afastamentos')}${chk('disc', 'Punições e elogios')}${chk('missoes', 'Missões')}<span class="muted">entram sozinhos · desmarque um item para tirá-lo da folha</span></div>
+    ${!m.arma || !m.idt ? `<div class="aviso-leitor">Complete no cadastro do militar: ${[!m.idt && 'identidade', !m.arma && 'arma/serviço'].filter(Boolean).join(' e ')}. <a onclick="editarMil('${mid}')" style="cursor:pointer;color:var(--azul)">Abrir cadastro</a></div>` : ''}
+    <div class="card"><h3 style="margin-top:0">1ª parte</h3>${meses.map(mm => {
+      const doMes = it.filter(x => Number(x.data.slice(5, 7)) - 1 === mm);
+      return `<div class="mes-alt"><b>${MESES_MAI[mm]}</b>${doMes.length ? doMes.map(x => `<div class="item-alt ${fora[x.k] ? 'fora' : ''}"><label><input type="checkbox" ${fora[x.k] ? '' : 'checked'} onchange="S.filtro.altFora={...(S.filtro.altFora||{}),'${x.k}':!this.checked};render()"></label>
+        <div><b>${esc(x.titulo)}</b> <span class="tag">${esc(x.origem)}</span><div>- a ${Number(x.data.slice(8))}${esc(refBi(x.ref))} - ${esc(x.texto)}</div></div>${x.id && pode() ? `<button class="btn sm" onclick="editarAlteracao('${x.id}')">Editar</button>` : ''}</div>`).join('') : ' <span class="muted">Sem Alteração</span>'}</div>`; }).join('')}
+      ${pode() ? `<div class="bar" style="margin-top:8px"><button class="btn sm" onclick="editarAlteracao(null,'${mid}')">+ Lançamento para ${esc(nomeMil(m))}</button></div>` : ''}</div>
+    <div class="card" style="margin-top:14px"><div class="bar"><h3 style="margin:0" class="grow">2ª parte – tempos de serviço</h3>${pode() ? `<button class="btn sm" onclick="editarTempos('${mid}','${sem}')">Conferir / corrigir</button>` : ''}</div>
+      <table class="mini tempos">${[['1. Tempo computado de efetivo serviço (TC)', tp.tc], ['a. Arregimentado', tp.arreg], [`&nbsp;&nbsp;- ${esc(tp.arregPeriodo)}`, esc(tp.arregObs)], ['b. Não arregimentado', tp.naoArreg], ['2. Tempo de serviço não computável (TNC)', tp.tnc],
+        [`3. Tempo computável para a medalha militar até ${fmtMil(periodoSem(sem).fim)} (TSCMM)`, tp.tscmm], ['4. Tempo de serviço nacional relevante (TSNR)', tp.tsnr], [`5. Tempo total de efetivo serviço até ${fmtMil(periodoSem(sem).fim)} (TTES)`, tp.ttes]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v}</b></td></tr>`).join('')}</table>
+      <p class="muted" style="font-size:12.5px">${tp.gravado ? 'Tempos conferidos e gravados.' : `Calculado pelo sistema (dias corridos em meses de 30 dias)${tp.anterior ? ', somando a folha do semestre anterior' : m.dataPraca ? ', desde a data de praça' : '. Sem data de praça nem folha anterior: confira o TSCMM e o TTES'}. Clique em "Conferir / corrigir" para gravar.`}</p></div>`;
+}
+function editarAlteracao(id, mid) {
+  const a = id ? (S.db.Alteracoes || []).find(x => x.id === id) : { data: hoje(), militarId: mid || S.filtro.altMil || '', origem: 'manual' };
+  abrirForm({ titulo: id ? 'Alteração' : 'Novo lançamento de alteração', valores: a, campos: [
+    { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'data', l: 'Data (dia do BI)', t: 'date', req: true },
+    { k: 'ref', l: 'Publicação (ex.: Adt Nr 178 ao BI Nr 231)' }, { k: 'titulo', l: 'Assunto (sai em maiúsculas)', req: true },
+    { k: 'texto', l: 'Texto da alteração', t: 'textarea', req: true }],
+    aoSalvar: o => salvar('Alteracoes', [{ ...o, titulo: o.titulo.toUpperCase() }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Alteracoes','${id}',true)">Excluir</button></div>` : '' });
+}
+function editarTempos(mid, sem) {
+  const tp = temposFolha(mid, sem);
+  abrirForm({ titulo: `2ª parte – ${nomeMil(mid)} – ${nomeSem(sem).toLowerCase()}`, valores: tp, campos: [
+    { k: 'folhaNr', l: 'Folha Nr' }, { k: 'tc', l: '1. TC (ex.: 00a 06m 04d)' }, { k: 'arreg', l: 'a. Arregimentado' }, { k: 'arregPeriodo', l: 'Período arregimentado' }, { k: 'arregObs', l: 'Situação no período' },
+    { k: 'naoArreg', l: 'b. Não arregimentado' }, { k: 'tnc', l: '2. TNC' }, { k: 'tscmm', l: '3. TSCMM' }, { k: 'tsnr', l: '4. TSNR' }, { k: 'ttes', l: '5. TTES' }],
+    aoSalvar: o => { const bad = ['tc', 'arreg', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'].find(k => !/^\d+a \d{2}m \d{2}d$/.test(o[k])); if (bad) throw new Error('Use o formato 00a 00m 00d.');
+      return salvar('FolhasAlt', [{ id: mid + '|' + sem, militarId: mid, semestre: sem, ...Object.fromEntries(['folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'].map(k => [k, o[k]])) }]); } });
+}
+DOCS.folhaAlt = chave => {
+  let [mid, sem] = chave.split('|'); if (!/^\d{4}-[12]$/.test(sem || '')) sem = semestreDe(hoje());
+  const m = MIL[mid], { ini, fim } = periodoSem(sem), tp = temposFolha(mid, sem), fora = S.filtro.altFora || {};
+  const it = itensFolha(mid, sem, S.filtro.altOp || { afast: true, disc: true, missoes: false }).filter(x => !fora[x.k]);
+  const B = [];
+  const esq = cabecalhoDoc().map(l => ({ v: l.toUpperCase(), b: 1, l: 1 }));
+  const dir = [{ v: 'FOLHA DE ALTERAÇÕES', b: 1, l: 1 }, { v: `GUARNIÇÃO DE ${String(cfg('guarnicao') || cfg('cidade').replace(/^Quartel em\s*/i, '').split(/[-,]/)[0]).toUpperCase()}`, b: 1, l: 1 }, { v: `FOLHA Nr ${tp.folhaNr}`, b: 1, l: 1 }];
+  const n = Math.max(esq.length, dir.length);
+  B.push({ t: Array.from({ length: n }, (_, i) => [esq[i] || '', dir[i] || '']), sem: 1, w: [55, 45], sz: 10 });
+  B.push({ t: [[{ v: `NOME: ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`, b: 1, l: 1 }, ''], [{ v: `POSTO: ${(m.postoGrad || '').toUpperCase()}`, b: 1, l: 1 }, ''],
+    [{ v: `ARMA (SERVIÇO): ${(m.arma || '').toUpperCase()}`, b: 1, l: 1 }, { v: nomeSem(sem), b: 1, l: 1 }], [{ v: `IDENTIDADE: ${m.idt || ''}`, b: 1, l: 1 }, { v: `PERÍODO DE ${Number(ini.slice(8))} ${MESES[Number(ini.slice(5, 7)) - 1]} A ${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]}`, b: 1, l: 1 }]], sem: 1, w: [55, 45], sz: 10 });
+  B.push({ p: '1ª PARTE', b: 1, l: 1, mt: 10 });
+  for (let k = 0; k < 6; k++) {
+    const mm = (sem.endsWith('1') ? 0 : 6) + k, doMes = it.filter(x => Number(x.data.slice(5, 7)) - 1 === mm);
+    if (!doMes.length) { B.push({ p: `${MESES_MAI[mm]}: Sem Alteração`, l: 1, mt: 6 }); continue; }
+    B.push({ p: MESES_MAI[mm], l: 1, mt: 6 });
+    doMes.forEach(x => B.push({ p: x.titulo, b: 1, l: 1, mt: 4 }, { p: `- a ${Number(x.data.slice(8))}${refBi(x.ref)} - ${x.texto}`, mt: 2 }));
+  }
+  B.push({ p: '2ª PARTE', b: 1, l: 1, mt: 12 });
+  const ate = `${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]} ${fim.slice(0, 4)}`;
+  B.push({ t: [['1. TEMPO COMPUTADO DE EFETIVO SERVIÇO (TC)', tp.tc], ['a. Arregimentado', tp.arreg], [`    - ${tp.arregPeriodo}`, tp.arregObs], ['b. Não Arregimentado', tp.naoArreg], ['2. TEMPO SV NÃO COMPUTÁVEL (TNC)', tp.tnc],
+    [`3. TEMPO DE SERVIÇO COMPUTÁVEL PARA A MEDALHA MILITAR até ${ate} (TSCMM)`, tp.tscmm], ['4. TEMPO DE SERVIÇO NACIONAL RELEVANTE (TSNR)', tp.tsnr], [`5. TEMPO TOTAL DE EFETIVO SERVIÇO até ${ate} (TTES)`, tp.ttes]]
+    .map(([l, v]) => [{ v: l, l: 1 }, { v, r: 1 }]), sem: 1, w: [80, 20], sz: 10 });
+  B.push({ esp: 1 }, { p: localData(hoje()), c: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao')));
+  return { tipo: 'Alteracoes', ref: chave, titulo: `Alteracoes ${sem.replace('-', ' ')} semestre - ${m.postoGrad} ${m.nomeGuerra}`, blocos: B };
+};
+
+// ---------- importação do BI do SISBOL (PDF com texto): acha os militares da Cia e sugere a transcrição
+const normNome = s => soAscii(s).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+const POSTO_BI = { 'Gen': 'GEN', 'Cel': 'CEL', 'TC': 'TC|TEN CEL', 'Maj': 'MAJ', 'Cap': 'CAP', '1º Ten': 'TEN|1 TEN', '2º Ten': 'TEN|2 TEN', 'Asp': 'ASP', 'ST': 'ST|SUBTEN', '1º Sgt': 'SGT|1 SGT', '2º Sgt': 'SGT|2 SGT', '3º Sgt': 'SGT|3 SGT', 'Cb': 'CB', 'Sd EP': 'SD', 'Sd EV': 'SD', 'Sd': 'SD' };
+/** Linhas do BI com a posição do primeiro pedaço (para saber onde começa cada parágrafo). */
+function linhasBi(paginas) {
+  const out = [];
+  paginas.forEach(itens => {
+    const grupos = [];
+    itens.forEach(it => { let g = grupos.find(x => Math.abs(x.y - it.y) < 2.5); if (!g) grupos.push(g = { y: it.y, itens: [] }); g.itens.push(it); });
+    grupos.sort((a, b) => b.y - a.y).forEach(g => {
+      g.itens.sort((a, b) => a.x - b.x);
+      let t = '', fim = null; g.itens.forEach(i => { if (fim !== null && i.x - fim > 1) t += ' '; t += i.s; fim = i.fim; });
+      t = t.replace(/\s+/g, ' ').trim();
+      if (!t || /Continua[çc][ãa]o do (Bol|Boletim)/i.test(t) || /^\d{1,4}$/.test(t)) return;
+      out.push({ x: g.itens[0].x, t });
+    });
+  });
+  return out;
+}
+const ehTitulo = t => { const m = t.match(/^(\d+(?:\.\d+)*)\.?\s+(.+)$/); if (!m) return null; const sem = m[2].split(/\s[–-]\s/)[0]; return /[A-ZÀ-Ü]{3}/.test(sem) && !/[a-zà-ü]{2}/.test(sem) ? m : null; };
+const limparTitulo = t => { const p = t.split(/\s[–-]\s/); while (p.length > 1 && /[a-zà-ü]{2}/.test(p[p.length - 1])) p.pop(); return p.join(' – ').replace(/[–-]\s*$/, '').trim(); };
+/** Lê o BI: número, data, se é aditamento, e os assuntos (título + parágrafos) da 2ª à 4ª parte. */
+function lerBi(paginas) {
+  const linhas = linhasBi(paginas), tudo = linhas.map(l => l.t).join('\n');
+  const bi = (tudo.match(/BOLETIM INTERNO\s*N[º°o.]*\s*(\d+)/i) || [])[1] || '';
+  const adt = tudo.match(/ADITAMENTO\s*N[º°o.]*\s*([\w./-]+)\s+AO\s+(?:BOLETIM INTERNO|BI|BOL INT)\s*N[º°o.]*\s*(\d+)/i);
+  const dm = tudo.match(/\bEm\s+(\d{1,2})º?\s+de\s+([a-zç]+)\s+de\s+(\d{4})/i);
+  const mes = dm ? MESES_EXT.findIndex(x => norm(x) === norm(dm[2])) : -1;
+  const data = dm && mes >= 0 ? `${dm[3]}-${pad(mes + 1)}-${pad(dm[1])}` : '';
+  const ref = adt ? `Adt Nr ${adt[1]} ao BI Nr ${adt[2]}` : bi ? `BI Nr ${bi}` : '';
+  const margem = Math.min(...linhas.map(l => l.x));
+  const assuntos = []; let parte = 0, atual = null;
+  for (let i = 0; i < linhas.length; i++) {
+    const { x, t } = linhas[i];
+    const p = t.match(/^([1-4])ª PARTE/); if (p) { parte = Number(p[1]); atual = null; continue; }
+    if (parte < 2) continue;
+    const tit = ehTitulo(t);
+    if (tit) {
+      let titulo = tit[2];
+      if (/[–-]\s*$/.test(titulo) && linhas[i + 1] && !ehTitulo(linhas[i + 1].t)) { titulo += ' ' + linhas[i + 1].t; i++; }
+      atual = { num: tit[1], titulo: limparTitulo(titulo), parte, pars: [] }; assuntos.push(atual); continue;
+    }
+    if (!atual) continue;
+    const novo = x > margem + 15 || /^[-•]\s|^[a-z]\)\s|^[a-z]\.\s/.test(t) || !atual.pars.length;
+    if (novo) atual.pars.push(t); else atual.pars[atual.pars.length - 1] += ' ' + t;
+  }
+  assuntos.forEach(a => {
+    a.pars = a.pars.map(s => s.replace(/\s+/g, ' ').trim()).filter(s => !/^Em conseq[üu][êe]ncia/i.test(s) && !/^-?\s*Sem altera[çc][ãa]o\.?$/i.test(s));
+    // assinatura do comandante no fim do boletim
+    while (a.pars.length && /^[A-ZÀ-Ü ]+ [–-] \S+$|^Comandante\b/.test(a.pars[a.pars.length - 1])) a.pars.pop();
+  });
+  return { bi, ref, data, assuntos: assuntos.filter(a => a.pars.length) };
+}
+/** Para cada militar ativo, os assuntos do BI em que aparece (nome completo = certo; posto + nome de guerra = conferir). */
+function sugestoesBi(lido) {
+  const sug = [];
+  militaresAtivos().forEach(m => {
+    const completo = m.nomeCompleto && normNome(m.nomeCompleto).split(' ').length >= 2 ? normNome(m.nomeCompleto) : '';
+    const guerra = normNome(m.nomeGuerra), postos = (POSTO_BI[m.postoGrad] || '').split('|').filter(Boolean);
+    const reGuerra = guerra && postos.length ? new RegExp(`\\b(?:${postos.join('|')})\\b(?: [A-Z]{2,4})? ${guerra}\\b`) : null;
+    lido.assuntos.forEach(a => {
+      const achou = p => { const n = ' ' + normNome(p) + ' '; return completo && n.includes(' ' + completo + ' ') ? 'nome completo' : reGuerra && reGuerra.test(n) ? 'posto e nome de guerra' : ''; };
+      const comNome = a.pars.map((p, i) => ({ p, i, c: achou(p) })).filter(x => x.c);
+      if (!comNome.length) return;
+      const certo = comNome.some(x => x.c === 'nome completo');
+      // nome numa lista ("FULANO – 3º SGT" seguido de "- natureza…"): leva junto as linhas de detalhe logo abaixo
+      const blocos = comNome.map(x => { const l = [x.p]; for (let j = x.i + 1; j < a.pars.length && /^-\s/.test(a.pars[j]) && x.p.length < 140; j++) l.push(a.pars[j]); return l.join(' '); });
+      let pars = blocos.filter(p => !/^[A-ZÀ-Ü\s–-]{6,}$/.test(p));
+      // punição: fica o parágrafo da punição, sem o resumo do procedimento (solução da FATD)
+      if (pars.length > 1 && pars.some(p => !/^O presente procedimento/i.test(p))) pars = pars.filter(p => !/^O presente procedimento/i.test(p));
+      if (!pars.length) pars = blocos;
+      // nome solto numa lista: começa com o parágrafo que explica o assunto
+      if (comNome.every(x => x.p.length < 140) && a.pars[0] && !pars.some(p => p.startsWith(a.pars[0]))) pars.unshift(a.pars[0]);
+      sug.push({ militarId: m.id, titulo: a.titulo, texto: pars.join(' '), data: lido.data, ref: lido.ref, conf: certo ? 'nome completo' : 'posto e nome de guerra', sel: certo, assunto: `${a.num}. ${a.titulo}` });
+    });
+  });
+  return sug;
+}
+function vImportarBi() {
+  const st = S.impBi;
+  if (!st) return `<div class="card"><p style="margin-top:0">Escolha o PDF do boletim (BI ou aditamento) gerado pelo <b>SISBOL</b>. O sistema procura os militares da Cia pelo <b>nome completo</b> (ou posto + nome de guerra) e sugere a alteração de cada um, para você conferir e marcar o que entra.</p>
+    <label class="btn pri">Escolher PDF do BI<input type="file" accept=".pdf,application/pdf" hidden onchange="lerArquivoBi(this.files[0])"></label>
+    <p class="muted" style="font-size:12.5px">Precisa ser o PDF original do SISBOL (com texto). BI escaneado não tem texto para ler. A 1ª parte (serviços diários) é ignorada.</p></div>`;
+  const sel = st.itens.filter(i => i.sel).length;
+  return `<div class="card"><div class="bar"><div class="grow"><b>${esc(st.arquivo)}</b><div class="muted">${esc(st.ref || 'nº do BI não encontrado')} · ${st.data ? fmt(st.data) : 'data não encontrada'} · ${st.assuntos} assunto(s) lidos · ${st.itens.length} alteração(ões) de militares da Cia</div></div>
+      <button class="btn" onclick="S.impBi=null;render()">Outro PDF</button><button class="btn pri" onclick="gravarImpBi()" ${sel ? '' : 'disabled'}>Lançar ${sel} alteração(ões)</button></div>
+    <div class="form" style="margin-top:6px"><label>Publicação (sai na folha)<input type="text" value="${esc(st.ref)}" onchange="S.impBi.ref=this.value;S.impBi.itens.forEach(i=>i.ref=this.value)"></label><label>Data do BI<input type="date" value="${esc(st.data)}" onchange="S.impBi.data=this.value;S.impBi.itens.forEach(i=>i.data=this.value)"></label></div></div>
+    ${st.itens.length ? st.itens.map((it, i) => `<div class="card item-bi ${it.sel ? '' : 'fora'}" style="margin-top:10px"><div class="bar"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${it.sel ? 'checked' : ''} onchange="S.impBi.itens[${i}].sel=this.checked;render()"> <b>${esc(nomeMil(it.militarId))}</b></label>
+      <span class="tag ${it.conf === 'nome completo' ? 'ok' : 'warn'}">${it.conf === 'nome completo' ? 'achado pelo nome completo' : 'achado por posto e nome de guerra: conferir'}</span><span class="muted grow" style="text-align:right">${esc(it.assunto)}</span></div>
+      <div class="form"><label class="full">Assunto<input type="text" value="${esc(it.titulo)}" onchange="S.impBi.itens[${i}].titulo=this.value"></label>
+      <label class="full">Texto da alteração<textarea rows="4" style="font-family:inherit" onchange="S.impBi.itens[${i}].texto=this.value">${esc(it.texto)}</textarea></label></div></div>`).join('')
+      : '<div class="card muted" style="margin-top:10px">Nenhum militar da Cia encontrado neste boletim. Confira se o nome completo de cada militar está certo no cadastro do efetivo.</div>'}`;
+}
+async function lerArquivoBi(file) {
+  if (!file) return;
+  try {
+    toast('Lendo o BI…');
+    const paginas = await itensDoPdf(file), lido = lerBi(paginas);
+    if (!lido.assuntos.length) throw new Error('Não encontrei assuntos neste PDF. Confira se é um BI do SISBOL com texto.');
+    const ja = new Set((S.db.Alteracoes || []).map(a => a.militarId + '|' + a.ref + '|' + a.titulo));
+    const itens = sugestoesBi(lido).map(s => ({ ...s, sel: s.sel && !ja.has(s.militarId + '|' + s.ref + '|' + s.titulo) }));
+    S.impBi = { arquivo: file.name, ref: lido.ref, data: lido.data, assuntos: lido.assuntos.length, itens };
+    render();
+  } catch (e) { toast(e.message, true); }
+}
+async function gravarImpBi() {
+  const st = S.impBi, l = st.itens.filter(i => i.sel);
+  if (!st.data) return toast('Informe a data do BI.', true);
+  await salvar('Alteracoes', l.map(i => ({ militarId: i.militarId, data: i.data || st.data, ref: i.ref, titulo: String(i.titulo).toUpperCase(), texto: i.texto, origem: 'importado ' + (st.ref || st.arquivo) })));
+  toast(`${l.length} alteração(ões) lançada(s).`);
+  S.impBi = null; S.sub.alteracoes = 'lanc'; S.filtro.altSem = semestreDe(st.data); render();
+}
+
 // ============================================================ justiça e disciplina (FATD, punições, elogios, Boca Podre)
 // Tudo numa aba "Disciplina", separado pelo campo tipo: FATD (com a decisão e a punição), Elogio e Anotacao (Boca Podre).
 const PUNICOES = ['Advertência', 'Impedimento disciplinar', 'Repreensão', 'Detenção disciplinar', 'Prisão disciplinar'];
@@ -1969,10 +2236,21 @@ function editarFatd(id, base = {}) {
       if (o.decisao === 'Justificada' && !o.dataDecisao) o.dataDecisao = hoje();
       if (!id && disc('FATD').some(x => x.numero === o.numero && !hist)) throw new Error(`Já existe a FATD nº ${o.numero}.`);
       if ($('#f_arquivoUrl')) { const url = await enviarArquivo($('#f_arquivoUrl').files[0]); if (url) o.arquivoUrl = url; }
-      await salvar('Disciplina', [o]);
+      const [salva] = await salvar('Disciplina', [o]);
+      await sincronizarCumprimento(salva || o);
       fecharModal(); toast(o.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(o.punicao) && o.inicio ? 'Salvo. O militar fica fora da escala durante o cumprimento.' : 'FATD salva.'); render();
     } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
   };
+}
+/**
+ * Detenção e prisão em cumprimento viram um afastamento "Cumprindo punição" na planilha principal (sem o motivo),
+ * para a escala funcionar também para quem não vê a Justiça e Disciplina.
+ */
+async function sincronizarCumprimento(f) {
+  const id = 'pun-' + f.id, existe = S.db.Impedimentos.find(i => i.id === id);
+  const cumpre = f.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(f.punicao) && f.inicio && num(f.dias) > 0;
+  if (cumpre) await salvar('Impedimentos', [{ id, militarId: f.militarId, tipo: 'Cumprindo punição', inicio: f.inicio, fim: fimPunicao(f), obs: '', referencia: '' }]);
+  else if (existe) await salvar('Impedimentos', [], [id]);
 }
 function fatdDaAnotacao(id) {
   const a = disc('Anotacao').find(x => x.id === id);
@@ -2009,6 +2287,7 @@ function textoParte4() {
 }
 /** Ao publicar o aditamento, marca as punições e elogios que entraram na 4ª parte. */
 async function marcarPublicados(a) {
+  if (!temArea('jd')) return;
   if (!(S.db.Disciplina || []).length || !a.parte4 || norm(a.parte4) === norm(SEM_ALT)) return;
   const ref = `ADT nº ${a.numero}${a.biNumero ? ' / BI nº ' + a.biNumero : ''}`;
   const lista = (S.db.Disciplina || []).filter(x => !x.bi && ((x.tipo === 'FATD' && x.decisao === 'Punido' && a.parte4.includes(nomeMil(x.militarId))) || (x.tipo === 'Elogio' && ids(x.militaresIds).some(m => a.parte4.includes(nomeMil(m))))));
@@ -2106,14 +2385,14 @@ function mudarDataAditamento(v) {
 
 function textoParte3(de, ate) {
   const blocos = [];
-  const imps = S.db.Impedimentos.filter(i => i.inicio >= de && i.inicio <= ate).sort((a, b) => a.tipo.localeCompare(b.tipo));
+  const imps = S.db.Impedimentos.filter(i => i.tipo !== 'Cumprindo punição' && i.inicio >= de && i.inicio <= ate).sort((a, b) => a.tipo.localeCompare(b.tipo));
   if (imps.length) {
     const porTipo = {};
     imps.forEach(i => (porTipo[i.tipo] ||= []).push(i));
     blocos.push('1. AFASTAMENTOS\n' + Object.entries(porTipo).map(([tipo, l], k) =>
       `${'abcdefghij'[k]}. ${tipo}\n` + l.map(i => `- ${nomeMil(i.militarId)}: de ${fmtMil(i.inicio)} a ${fmtMil(i.fim)}${i.obs ? ' (' + i.obs + ')' : ''}.`).join('\n')).join('\n'));
   }
-  const retornos = S.db.Impedimentos.filter(i => i.fim && addDias(i.fim, 1) >= de && addDias(i.fim, 1) <= ate);
+  const retornos = S.db.Impedimentos.filter(i => i.tipo !== 'Cumprindo punição' && i.fim && addDias(i.fim, 1) >= de && addDias(i.fim, 1) <= ate);
   if (retornos.length) blocos.push(`${blocos.length + 1}. APRESENTAÇÃO / RETORNO\n` + retornos.map(i => `- ${nomeMil(i.militarId)}, por término de ${i.tipo.toLowerCase()}, em ${fmtMil(addDias(i.fim, 1))}.`).join('\n'));
   const mis = S.db.Missoes.filter(m => m.status !== 'Cancelada' && m.inicio >= de && m.inicio <= ate);
   if (mis.length) blocos.push(`${blocos.length + 1}. MISSÕES\n` + mis.map((m, k) => {
@@ -2129,7 +2408,7 @@ function vEditorAditamento() {
   const a = S.adEdit, ro = !pode();
   const campo = (k, l, t = 'text', on = `S.adEdit.${k}=this.value;render()`) => `<label class="muted"><b>${l}</b><input type="${t}" value="${esc(a[k])}" ${ro ? 'readonly' : ''} onchange="${on}"></label>`;
   const area = (k, i, dica) => `<div class="parte"><div class="bar"><b class="grow">${PARTES[i].join(' – ')}</b>
-    ${!ro && k === 'parte3' ? '<button class="btn sm" onclick="preencherParte3()">Preencher (afastamentos, missões, cautelas)</button>' : ''}${!ro && k === 'parte4' && pode() ? '<button class="btn sm" onclick="preencherParte4()">Preencher (punições e elogios a publicar)</button>' : ''}</div>
+    ${!ro && k === 'parte3' ? '<button class="btn sm" onclick="preencherParte3()">Preencher (afastamentos, missões, cautelas)</button>' : ''}${!ro && k === 'parte4' && pode() && temArea('jd') ? '<button class="btn sm" onclick="preencherParte4()">Preencher (punições e elogios a publicar)</button>' : ''}</div>
     ${dica ? `<p class="muted" style="margin:0 0 6px">${dica}</p>` : ''}<textarea id="ad_${k}" rows="${k === 'parte3' ? 10 : k === 'parte1' ? 3 : 4}" ${ro ? 'readonly' : ''} oninput="S.adEdit.${k}=this.value">${esc(a[k])}</textarea></div>`;
   const servicos = servicosDoAditamento(a);
   const previa = htmlDoc(servicos.flatMap(blocosDia));
@@ -3104,6 +3383,7 @@ const CAMPOS_CFG = [
   { k: 'siglaOM', l: 'Sigla da OM (ex.: 11º D Sup)' },
   { k: 'nomeCia', l: 'Nome do sistema (ao lado do menu)' },
   { k: 'cidade', l: 'Local (ex.: Quartel em Brasília-DF)' },
+  { k: 'guarnicao', l: 'Guarnição (folha de alterações, ex.: Brasília)' },
   { k: 'cabecalho', l: 'Cabeçalho dos documentos, uma linha por linha (sai em maiúsculas, abaixo do brasão)', t: 'textarea' },
   { secao: 'Assinatura dos documentos' },
   { k: 'cmtNome', l: 'Nome do comandante (ex.: FULANO DE TAL – Cap)' },
@@ -3127,7 +3407,7 @@ const PADRAO_CFG = {
   cmtNome: 'NOME DO COMANDANTE – Cap', cmtFuncao: 'Cmt Cia',
   cautelaSetor: 'Depósito da 1ª Cia', cautelaAss1: 'Cmt Pel', cautelaAss2: 'Chefe do Depósito', dependencia: '1ª Cia',
   detentorNome: '', detentorFuncao: 'Detentor direto do material carga',
-  pedidoDe: 'Cmt Pel Sup da 1ª Cia', pedidoPara: 'Fiscal Administrativo', pedidoRecebidoPara: 'Cmt 1ª Cia', pedidoVisto: 'Cmt Pel Sup', pedidoAutorizo: 'Fiscal Adm'
+  pedidoDe: 'Cmt Pel Sup da 1ª Cia', pedidoPara: 'Fiscal Administrativo', pedidoRecebidoPara: 'Cmt 1ª Cia', guarnicao: 'Brasília', pedidoVisto: 'Cmt Pel Sup', pedidoAutorizo: 'Fiscal Adm'
 };
 /** Arquivo anual: tira da planilha principal o que já acabou, para o sistema continuar rápido com os anos. */
 const NOMES_TAB = { Escala: 'serviços da escala', Aditamentos: 'aditamentos publicados', Documentos: 'registros de documentos', Impedimentos: 'afastamentos encerrados', Missoes: 'missões concluídas/canceladas', Cautelas: 'itens de cautelas devolvidas', Pedidos: 'pedidos encerrados', Log: 'linhas do registro de alterações' };
@@ -3187,7 +3467,8 @@ function vConfig() {
         a => `<button class="btn sm pri" onclick="aprovarAcesso('${esc(a.email)}')">Aprovar…</button> <button class="btn sm dng" onclick="recusarAcesso('${esc(a.email)}')">Recusar</button>`)}<h3>Usuários cadastrados</h3>` : ''}
       <p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta (não vê o tripão). Ao salvar, o sistema já compartilha a planilha e a pasta do Drive com a pessoa (editor/admin como Editor, leitor como Leitor), e ao excluir, tira o compartilhamento.</p>
       <div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarUsuario()">+ Usuário</button></div>
-      ${tabela((S.db.Usuarios || []).slice().sort((a, b) => PERFIS.indexOf(a.perfil) - PERFIS.indexOf(b.perfil) || String(a.nome).localeCompare(b.nome)), [{ l: 'Nome', v: u => `<b>${esc(u.nome)}</b>${u.email === S.user.email ? ' <span class="tag info">você</span>' : ''}` }, { l: 'E-mail', v: u => esc(u.email) }, { l: 'Perfil', v: u => `<span class="tag ${u.perfil === 'admin' ? 'info' : u.perfil === 'editor' ? 'ok' : ''}">${esc(u.perfil)}</span>` }],
+      ${tabela((S.db.Usuarios || []).slice().sort((a, b) => PERFIS.indexOf(a.perfil) - PERFIS.indexOf(b.perfil) || String(a.nome).localeCompare(b.nome)), [{ l: 'Nome', v: u => `<b>${esc(u.nome)}</b>${u.email === S.user.email ? ' <span class="tag info">você</span>' : ''}` }, { l: 'E-mail', v: u => esc(u.email) }, { l: 'Perfil', v: u => `<span class="tag ${u.perfil === 'admin' ? 'info' : u.perfil === 'editor' ? 'ok' : ''}">${esc(u.perfil)}</span>` },
+        { l: 'Áreas', v: u => u.perfil === 'admin' ? '<span class="muted">todas</span>' : `${u.areas ? ids(u.areas).map(a => esc(AREAS[a] || a)).join(', ') : '<span class="muted">todas</span>'}${u.jd === 'Sim' ? ' <span class="tag info">Justiça e Disciplina</span>' : ''}` }],
         u => `<button class="btn sm" onclick="editarUsuario('${esc(u.email)}')">Editar</button>${u.email !== S.user.email ? ` <button class="btn sm dng" onclick="removerUsuario('${esc(u.email)}')">Excluir</button>` : ''}`)}`;
   } else {
     corpo = `<div class="card"><p>Baixe uma cópia de todos os dados em JSON (além do histórico de versões que o próprio Google Sheets guarda).</p>
@@ -3268,13 +3549,15 @@ const OPCOES_PERFIL = [['editor', 'editor – lança e altera dados'], ['leitor'
 function editarUsuario(email, padrao = {}) {
   const atual = email ? S.db.Usuarios.find(u => u.email === email) : null;
   abrirForm({ titulo: atual ? 'Editar usuário' : (padrao.email ? 'Aprovar pedido de acesso' : 'Novo usuário'), valores: atual || { perfil: 'editor', ...padrao },
-    campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome (posto/grad e nome de guerra)', req: true }, { k: 'perfil', l: 'Perfil', t: 'select', o: OPCOES_PERFIL, vazio: false }],
+    campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome (posto/grad e nome de guerra)', req: true }, { k: 'perfil', l: 'Perfil', t: 'select', o: OPCOES_PERFIL, vazio: false },
+      { k: 'areas', l: 'Áreas em que pode lançar e alterar (nenhuma marcada = todas)', t: 'areas', full: true },
+      { k: 'jd', l: 'Justiça e Disciplina (oficiais e Sgte): vê FATD, punições, elogios e Boca Podre', t: 'select', o: [['Não', 'Não'], ['Sim', 'Sim']], vazio: false, full: true }],
     extra: '<p class="muted" style="margin:12px 0 0">Ao salvar, a planilha e a pasta do sistema no Drive são compartilhadas com este e-mail. O Google avisa a pessoa por e-mail.</p>',
     aoSalvar: async o => {
       const mail = o.email.trim().toLowerCase();
       if (atual && mail !== atual.email) throw new Error('Para trocar o e-mail, exclua o usuário e cadastre de novo.');
       toast('Salvando e compartilhando…');
-      const r = await api('concederAcesso', mail, o.nome, o.perfil);
+      const r = await api('concederAcesso', mail, o.nome, o.perfil, o.areas || '', o.jd === 'Sim' ? 'Sim' : '');
       S.db.Usuarios = S.db.Usuarios.filter(u => u.email !== mail).concat(r.usuario);
       const ped = (S.db.Acessos || []).find(a => a.email === mail); if (ped) ped.status = 'Aprovado';
       toast(r.aviso ? 'Usuário salvo, mas ' + r.aviso + '. Compartilhe manualmente.' : `${o.nome || mail} cadastrado como ${o.perfil}.`, !!r.aviso);
@@ -3360,7 +3643,12 @@ function vArquivo() {
   <p class="muted">Todo documento tem os botões Imprimir, PDF (arquivado aqui) e Editável (Google Doc; no Docs, Arquivo → Fazer download → Word ou PDF). Listas também saem em Excel.</p>`;
 }
 
-const VIEWS_FN = { painel: vPainel, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, material: vMaterial, arquivo: vArquivo, config: vConfig, busca: vBusca };
+const VIEWS_FN = { painel: vPainel, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, alteracoes: vAlteracoes, material: vMaterial, arranchamento: vArranchamento,
+  disciplina: () => `<h2>Justiça e disciplina</h2><p class="sub">FATD, punições, elogios, Boca Podre e ficha disciplinar. Só os oficiais e o Sgte (marcação "Justiça e Disciplina" no cadastro do usuário).</p>${vDisciplina()}`, arquivo: vArquivo, config: vConfig, busca: vBusca };
+function vArranchamento() {
+  return `<h2>Arranchamento</h2><p class="sub">Área do Furriel.</p><div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
+    <p class="muted" style="margin-top:0">Esta parte ainda vai ser feita. Mande os modelos usados pelo Furriel (mapa de arranchamento, relação de arranchados, faltas ao rancho, saque de etapa) para montarmos.</p></div>`;
+}
 
 // ============================================================ dados de demonstração (fictícios)
 function semente() {
@@ -3376,7 +3664,7 @@ function semente() {
     ['Sd EV', '', 'Nogueira', 'Breno Nogueira Cruz'], ['Sd EV', '', 'Pinheiro', 'Kauã Pinheiro Dias'], ['Sd EV', '', 'Coelho', 'Levi Coelho Brandão'], ['Sd EV', '', 'Dantas', 'Murilo Dantas Reis'],
     ['2º Ten', '', 'Lacerda', 'Vinícius Lacerda Rocha'], ['2º Ten', '', 'Barreto', 'Caio Barreto Lins'], ['3º Sgt', '', 'Moraes', 'Elias Moraes Sá'], ['3º Sgt', '', 'Pacheco', 'Ítalo Pacheco Reis'], ['3º Sgt', '', 'Teles', 'Rômulo Teles Alves']
   ].map(([postoGrad, numero, nomeGuerra, nomeCompleto], i) => ({
-    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, dataPraca: `${Number(ano) - (i < 3 ? 15 : i < 11 ? 9 : i < 17 ? 4 : 1)}-03-01`, antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
+    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, dataPraca: `${Number(ano) - (i < 3 ? 15 : i < 11 ? 9 : i < 17 ? 4 : 1)}-03-01`, arma: i < 3 ? 'Intendência' : i < 11 ? 'QMS Intendência' : '', antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
     dataNascimento: `${1975 + (i * 7) % 30}-${pad(1 + i % 12)}-${pad(1 + (i * 5) % 28)}`, cpf: '', precCp: '', tipoSanguineo: TIPOS_SANGUE[i % 8], peso: String(62 + (i * 3) % 30),
     telefone: `(61) 9${String(81000000 + i * 271357).slice(0, 4)}-${String(1000 + i * 37).slice(-4)}`, email: `${norm(nomeGuerra)}@exemplo.com`, endereco: `Quadra ${10 + i}, Conjunto ${'ABCDE'[i % 5]}, Casa ${i + 2} – Brasília-DF (fictício)`,
     cttEmergencia: `(61) 9${String(92000000 + i * 15731).slice(0, 4)}-${String(2000 + i * 53).slice(-4)}`, nomeCtt: ['Ana', 'Maria', 'José', 'Paula', 'Luís'][i % 5], parentesco: PARENTES[i % 5],
@@ -3398,7 +3686,7 @@ function semente() {
   ].map((m, i) => ({ id: 'mt' + (i + 1), ...m, estado: i === 3 ? 'Em manutenção' : 'Bom' }));
   const db = {
     Militares: mil,
-    Impedimentos: [{ id: 'i1', militarId: 'm8', tipo: 'Férias', inicio: addDias(d, -3), fim: addDias(d, 26), obs: '', referencia: ano }, { id: 'i2', militarId: 'm19', tipo: 'Dispensa médica', inicio: d, fim: addDias(d, 2), obs: '', referencia: '' },
+    Impedimentos: [{ id: 'i1', militarId: 'm8', tipo: 'Férias', inicio: addDias(d, -3), fim: addDias(d, 26), obs: '', referencia: ano }, { id: 'i2', militarId: 'm19', tipo: 'Dispensa médica', inicio: d, fim: addDias(d, 2), obs: '', referencia: '' }, { id: 'pun-jd4', militarId: 'm21', tipo: 'Cumprindo punição', inicio: addDias(d, -1), fim: addDias(d, 2), obs: '', referencia: '' },
       { id: 'i3', militarId: 'm5', tipo: 'Férias', inicio: `${ano}-12-07`, fim: `${ano}-12-21`, obs: '', referencia: ano }, { id: 'i4', militarId: 'm5', tipo: 'Férias', inicio: `${+ano + 1}-01-12`, fim: `${+ano + 1}-01-26`, obs: '', referencia: ano }],
     TiposServico: tipos,
     Escala: [],
@@ -3414,10 +3702,15 @@ function semente() {
       itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 5, un: 'resmas', obs: '' }, { esp: 'Pilha AA', qtd: 12, un: 'unidades', obs: 'rádios' }, { esp: 'Lanterna de cabeça', qtd: 2, un: 'un', obs: '' }]) },
       { id: 'p1', sentido: 'Enviado', numero: `001/${ano}`, data: addDias(d, -2), de: 'Cmt Pel Sup da 1ª Cia', para: 'Fiscal Administrativo', status: 'Enviado', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
       itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 6, un: 'com 500 unidades cada', obs: '' }, { esp: 'Toner de tinta preta para impressora', qtd: 2, un: 'Unidades', obs: '' }, { esp: 'Caneta esferográfica', qtd: 30, un: 'Unidades', obs: 'azul e preta' }, { esp: 'Desinfetante', qtd: 3, un: 'Litros', obs: '' }]) }],
-    Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, { email: 'sgte.exemplo@exemplo.com', nome: '1º Sgt Nunes', perfil: 'editor' }],
+    Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, { email: 'sgte.exemplo@exemplo.com', nome: '1º Sgt Nunes (Sgte)', perfil: 'editor', areas: 'sgte', jd: 'Sim' }, { email: 'encmat.exemplo@exemplo.com', nome: 'Cb Lopes (Enc Mat)', perfil: 'editor', areas: 'mat', jd: '' }],
     Acessos: [{ email: 'sd.gama.exemplo@exemplo.com', nome: 'Sd EP Gama', data: `${d} 07:42`, status: 'Pendente' }],
     Documentos: [],
     Locais: [],
+    Alteracoes: [
+      { id: 'al1', militarId: 'm20', data: `${ano}-${pad(Math.max(1, Number(d.slice(5, 7)) - 1))}-10`, ref: 'Adt Nr 015 ao BI Nr 028', titulo: 'APRESENTAÇÃO DE PRAÇA', texto: 'Apresentou-se pronto para o serviço, por término de dispensa médica.', origem: 'manual' },
+      { id: 'al2', militarId: 'm20', data: `${ano}-${d.slice(5, 7)}-05`, ref: 'BI Nr 042', titulo: 'CURSO DE CABO – MATRÍCULA', texto: 'Matriculado no Curso de Formação de Cabos, a contar desta data, devendo apresentar-se à seção de instrução.', origem: 'importado BI Nr 042' }
+    ],
+    FolhasAlt: [],
     Disciplina: [
       { id: 'jd1', tipo: 'FATD', numero: `001/${ano}`, dataFato: addDias(d, -12), militarId: 'm20', participante: '3º Sgt Rocha', relato: 'o militar deixou de comparecer à formatura matinal sem motivo justificado.', ciencia: addDias(d, -11), defesaData: addDias(d, -9), defesa: 'Alegou problema com o transporte, sem comprovação.', decisao: 'Punido', dataDecisao: addDias(d, -6), classificacao: 'Leve', enquadramento: '15', punicao: 'Repreensão', dias: '', inicio: '', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
       { id: 'jd2', tipo: 'FATD', numero: `002/${ano}`, dataFato: addDias(d, -2), militarId: 'm22', participante: '1º Sgt Nunes', relato: 'o militar apresentou-se para o serviço com o uniforme em desalinho e sem a cobertura.', ciencia: addDias(d, -1), origemId: 'jd8' },

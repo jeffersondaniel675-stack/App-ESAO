@@ -10,7 +10,7 @@
 
 const TABELAS = {
   Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs',
-    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento'],
+    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma'],
   Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
   TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico', 'qtd', 'folga', 'contagem'],
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs', 'troca', 'trocaMotivo'],
@@ -20,11 +20,13 @@ const TABELAS = {
   Material: ['id', 'patrimonio', 'descricao', 'categoria', 'quantidade', 'unidade', 'localizacao', 'estado', 'valor', 'ultimaConferencia', 'obs', 'arquivoUrl', 'tipoMaterial', 'nrFicha', 'codMat', 'contaContabil', 'acervo', 'estoqueMinimo'],
   Cautelas: ['id', 'materialId', 'militarId', 'quantidade', 'dataSaida', 'previsaoDevolucao', 'dataDevolucao', 'status', 'obs', 'arquivoUrl', 'numero', 'numeracao', 'destino', 'especificacao'],
   Pedidos: ['id', 'numero', 'data', 'de', 'para', 'itens', 'status', 'obs', 'arquivoUrl', 'autor', 'sentido'],
-  Usuarios: ['email', 'nome', 'perfil'],
+  Usuarios: ['email', 'nome', 'perfil', 'areas', 'jd'],
   Config: ['chave', 'valor'],
   Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
   Acessos: ['email', 'nome', 'data', 'status'],
   Locais: ['id', 'nome', 'ordem'],
+  Alteracoes: ['id', 'militarId', 'data', 'ref', 'titulo', 'texto', 'origem'],
+  FolhasAlt: ['id', 'militarId', 'semestre', 'folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'],
   Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
@@ -33,6 +35,12 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 // Usuarios e Acessos só mudam pelas funções de acesso abaixo, que também compartilham a planilha e a pasta.
 const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos'];
 const PERFIS = ['admin', 'editor', 'leitor'];
+// Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
+const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte',
+  Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
+const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
+// Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).
+const RESERVADAS = ['Disciplina'];
 
 const CONFIG_PADRAO = {
   cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n11º DEPÓSITO DE SUPRIMENTO\n1ª COMPANHIA',
@@ -81,6 +89,7 @@ function setup() {
   PropertiesService.getScriptProperties().setProperty('PLANILHA_ID', ss.getId());
 
   Object.keys(TABELAS).forEach(function (nome) {
+    if (RESERVADAS.indexOf(nome) >= 0) return;
     let sh = ss.getSheetByName(nome);
     if (!sh) sh = ss.insertSheet(nome);
     const esperado = TABELAS[nome];
@@ -130,8 +139,8 @@ function bootstrap() {
   Object.keys(TABELAS).forEach(function (t) {
     if (t === 'Log') return;
     if ((t === 'Usuarios' || t === 'Acessos') && u.perfil !== 'admin') return;
-    if (t === 'Disciplina' && u.perfil === 'leitor') return;
-    dados[t] = lerTabela_(t);
+    if (RESERVADAS.indexOf(t) >= 0 && !temJd_(u)) return;
+    try { dados[t] = lerTabela_(t); } catch (e) { if (RESERVADAS.indexOf(t) < 0) throw e; dados[t] = []; }
   });
   return { usuario: u, dados: dados };
 }
@@ -149,10 +158,11 @@ function salvarLote(tabela, lista, excluir) {
 }
 
 /** Recebe um arquivo em base64, salva na pasta do sistema no Drive e devolve o link. */
-function uploadArquivo(nome, mime, base64) {
-  exigirEscrita_('Material');
+function uploadArquivo(nome, mime, base64, tipo) {
+  tipo = String(tipo || 'Outros').replace(/[\\/:*?"<>|]/g, '-');
+  exigirEscrita_(TABELAS[tipo] ? tipo : 'Documentos');
   const blob = Utilities.newBlob(Utilities.base64Decode(base64), mime || 'application/octet-stream', nome);
-  const arquivo = pasta_().createFile(blob);
+  const arquivo = pastaAnoMes_('Anexos', tipo).createFile(blob);
   registrarLog_('upload', 'Drive', nome);
   return { url: arquivo.getUrl(), id: arquivo.getId(), nome: nome };
 }
@@ -171,18 +181,19 @@ function importarDePlanilha(url, nomeAba) {
  * "Arquivos - …/PDFs/<tipo>/<ano>/" no Drive, registrando na aba Documentos.
  */
 function salvarPdf(tipo, titulo, html, referencia) {
-  exigirEscrita_('Documentos');
+  exigirEscrita_(RESERVADAS.indexOf(tipo) >= 0 ? tipo : 'Documentos');
   const agora = new Date();
   const tz = Session.getScriptTimeZone();
   const ano = Utilities.formatDate(agora, tz, 'yyyy');
   const nome = String(titulo).replace(/[\\/:*?"<>|]/g, '-') + '.pdf';
   const pdf = HtmlService.createHtmlOutput(html).getBlob().getAs(MimeType.PDF).setName(nome);
-  const arquivo = subpasta_(['PDFs', tipo, ano]).createFile(pdf);
+  const arquivo = pastaAnoMes_('PDFs', tipo).createFile(pdf);
   const registro = {
     data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo,
     referencia: referencia || '', url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail(), formato: 'PDF'
   };
-  const salvo = gravar_('Documentos', [registro], [])[0];
+  // Justiça e Disciplina não entra na lista geral de documentos (o título traz o nome do militar)
+  const salvo = RESERVADAS.indexOf(tipo) >= 0 ? registro : gravar_('Documentos', [registro], [])[0];
   if (tipo === 'Aditamentos' && referencia) {
     const ad = lerTabela_('Aditamentos').filter(function (a) { return a.id === referencia; })[0];
     if (ad) { ad.pdfUrl = salvo.url; gravar_('Aditamentos', [ad], []); }
@@ -199,7 +210,7 @@ function salvarPdf(tipo, titulo, html, referencia) {
  * { esp: n } linhas em branco · { paisagem: true } página deitada.
  */
 function criarDoc(tipo, titulo, blocos, referencia) {
-  exigirEscrita_('Documentos');
+  exigirEscrita_(RESERVADAS.indexOf(tipo) >= 0 ? tipo : 'Documentos');
   const doc = DocumentApp.create(String(titulo).replace(/[\\/:*?"<>|]/g, '-'));
   const body = doc.getBody();
   if (blocos.some(function (b) { return b.paisagem; })) body.setPageWidth(842).setPageHeight(595);
@@ -262,11 +273,12 @@ function criarDoc(tipo, titulo, blocos, referencia) {
   doc.saveAndClose();
   const agora = new Date(), tz = Session.getScriptTimeZone();
   const arquivo = DriveApp.getFileById(doc.getId());
-  arquivo.moveTo(subpasta_(['Google Docs', tipo, Utilities.formatDate(agora, tz, 'yyyy')]));
-  const registro = gravar_('Documentos', [{
+  arquivo.moveTo(pastaAnoMes_('Google Docs', tipo));
+  const dadosDoc = {
     data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo, referencia: referencia || '',
     url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail(), formato: 'Google Doc'
-  }], [])[0];
+  };
+  const registro = RESERVADAS.indexOf(tipo) >= 0 ? dadosDoc : gravar_('Documentos', [dadosDoc], [])[0];
   if (tipo === 'Aditamentos' && referencia) {
     const ad = lerTabela_('Aditamentos').filter(function (a) { return a.id === referencia; })[0];
     if (ad) { ad.docUrl = registro.url; gravar_('Aditamentos', [ad], []); }
@@ -283,7 +295,7 @@ function usuario_() {
   if (!usuarios.length) return { email: email, nome: email, perfil: 'admin' };
   const u = usuarios.filter(function (x) { return String(x.email).toLowerCase() === email; })[0];
   if (!u) return { email: email, nome: email, perfil: 'bloqueado' };
-  return { email: email, nome: u.nome || email, perfil: u.perfil || 'leitor' };
+  return { email: email, nome: u.nome || email, perfil: u.perfil || 'leitor', areas: u.areas || '', jd: u.jd || '' };
 }
 
 // ---------------------------------------------------------------- acesso de usuários
@@ -310,19 +322,20 @@ function pedirAcesso(nome) {
  * Cadastra ou altera um usuário e ajusta o compartilhamento da planilha e da pasta do sistema:
  * admin e editor como Editor, leitor como Leitor. Admins também podem editar as abas protegidas.
  */
-function concederAcesso(email, nome, perfil) {
+function concederAcesso(email, nome, perfil, areas, jd) {
   exigirAdmin_();
   email = String(email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('E-mail inválido: ' + email);
   if (PERFIS.indexOf(perfil) < 0) throw new Error('Perfil inválido: ' + perfil);
   const anterior = lerTabela_('Usuarios').filter(function (x) { return x.email === email; })[0];
   if (anterior && anterior.perfil === 'admin' && perfil !== 'admin') garantirOutroAdmin_(email);
-  const registro = { email: email, nome: String(nome || '').trim(), perfil: perfil };
+  areas = String(areas || '').split(',').map(function (a) { return a.trim(); }).filter(function (a) { return NOME_AREA_[a] && a !== 'jd'; }).join(',');
+  const registro = { email: email, nome: String(nome || '').trim(), perfil: perfil, areas: areas, jd: jd === 'Sim' ? 'Sim' : '' };
   gravar_('Usuarios', [registro], []);
   const pedido = lerTabela_('Acessos').filter(function (a) { return a.email === email; })[0];
   if (pedido) gravar_('Acessos', [Object.assign({}, pedido, { status: 'Aprovado' })], []);
-  const aviso = compartilhar_(email, perfil);
-  registrarLog_('conceder acesso', 'Usuarios', email + ' ' + perfil);
+  const aviso = [compartilhar_(email, perfil), compartilharReservada_()].filter(String).join('; ');
+  registrarLog_('conceder acesso', 'Usuarios', email + ' ' + perfil + (registro.jd ? ' +JD' : ''));
   return { usuario: registro, aviso: aviso };
 }
 
@@ -335,7 +348,7 @@ function removerAcesso(email) {
   if (!atual) return { aviso: '' };
   if (atual.perfil === 'admin') garantirOutroAdmin_(email);
   gravar_('Usuarios', [], [email]);
-  const aviso = compartilhar_(email, null);
+  const aviso = [compartilhar_(email, null), compartilharReservada_()].filter(String).join('; ');
   registrarLog_('remover acesso', 'Usuarios', email);
   return { aviso: aviso };
 }
@@ -405,10 +418,15 @@ function protegerAbas_() {
 function exigirEscrita_(tabela) {
   if (!TABELAS[tabela] && tabela !== 'Drive') throw new Error('Tabela desconhecida: ' + tabela);
   if (SOMENTE_LEITURA.indexOf(tabela) >= 0) throw new Error('A tabela ' + tabela + ' é somente leitura.');
-  const perfil = usuario_().perfil;
+  const u = usuario_(), perfil = u.perfil, area = AREA_TAB_[tabela];
   if (perfil === 'admin') return;
-  if (perfil === 'editor' && SOMENTE_ADMIN.indexOf(tabela) < 0) return;
-  throw new Error('Seu perfil (' + perfil + ') não permite alterar ' + tabela + '.');
+  if (perfil !== 'editor' || SOMENTE_ADMIN.indexOf(tabela) >= 0) throw new Error('Seu perfil (' + perfil + ') não permite alterar ' + tabela + '.');
+  if (area === 'jd') { if (temJd_(u)) return; throw new Error('Só quem tem acesso à Justiça e Disciplina altera esses registros.'); }
+  // quem tem Justiça e Disciplina grava o comportamento no militar e o afastamento de quem cumpre punição
+  if ((tabela === 'Militares' || tabela === 'Impedimentos') && temJd_(u)) return;
+  const minhas = String(u.areas || '').split(',').map(function (a) { return a.trim(); }).filter(String);
+  if (!area || !minhas.length || minhas.indexOf(area) >= 0) return;
+  throw new Error('Seu usuário não tem a área ' + NOME_AREA_[area] + ' para alterar ' + tabela + '.');
 }
 
 // ---------------------------------------------------------------- acesso à planilha
@@ -419,8 +437,65 @@ function planilha_() {
 }
 
 /** Devolve a aba da tabela, criando-a ou acrescentando colunas novas quando o sistema for atualizado. */
+const temJd_ = function (u) { return u.perfil === 'admin' || u.jd === 'Sim'; };
+function planilhaPara_(tabela) { return RESERVADAS.indexOf(tabela) >= 0 ? reservada_() : planilha_(); }
+
+/** Grava uma chave em Config direto na aba (sem o bloqueio de gravar_, para usar dentro de outra gravação). */
+function configDireto_(chave, valor) {
+  const sh = planilha_().getSheetByName('Config'), v = sh.getDataRange().getValues();
+  for (var i = 1; i < v.length; i++) if (v[i][0] === chave) { sh.getRange(i + 1, 2).setValue(valor); return; }
+  sh.appendRow([chave, valor]);
+}
+/**
+ * Planilha reservada da Justiça e Disciplina: fica no Drive do administrador, FORA da pasta do sistema (que é compartilhada
+ * com todos), e é compartilhada só com os admins e quem tem a marcação. Na criação, traz a aba antiga da planilha principal.
+ */
+function reservada_() {
+  const id = configMap_().planilhaReservadaId;
+  if (id) return SpreadsheetApp.openById(id);
+  if (usuario_().perfil !== 'admin') throw new Error('A Justiça e Disciplina ainda não foi preparada: o administrador precisa abrir essa parte uma vez.');
+  const nova = SpreadsheetApp.create('Reservado - Justiça e Disciplina - ' + (configMap_().sigla || 'Cia'));
+  const sh = nova.getSheets()[0];
+  sh.setName('Disciplina');
+  const velha = planilha_().getSheetByName('Disciplina');
+  const v = velha && velha.getLastRow() >= 1 ? velha.getDataRange().getValues() : [TABELAS.Disciplina];
+  sh.getRange(1, 1, v.length, v[0].length).setNumberFormat('@').setValues(v);
+  sh.getRange(1, 1, 1, v[0].length).setFontWeight('bold');
+  sh.setFrozenRows(1);
+  configDireto_('planilhaReservadaId', nova.getId());
+  if (velha) planilha_().deleteSheet(velha);
+  compartilharReservada_();
+  return nova;
+}
+/** Pasta reservada (PDFs, Docs e anexos da Justiça e Disciplina), também fora da pasta compartilhada. */
+function pastaReservada_() {
+  const id = configMap_().pastaReservadaId;
+  if (id) return DriveApp.getFolderById(id);
+  const p = DriveApp.createFolder('Reservado - Justiça e Disciplina - ' + (configMap_().sigla || 'Cia'));
+  configDireto_('pastaReservadaId', p.getId());
+  compartilharReservada_();
+  return p;
+}
+/** Deixa a planilha e a pasta reservadas compartilhadas exatamente com os admins e quem tem Justiça e Disciplina. */
+function compartilharReservada_() {
+  const cfg = configMap_(), avisos = [];
+  const quero = lerTabela_('Usuarios').filter(temJd_).map(function (u) { return String(u.email).toLowerCase(); });
+  [['a planilha reservada', cfg.planilhaReservadaId, SpreadsheetApp], ['a pasta reservada', cfg.pastaReservadaId, DriveApp]].forEach(function (x) {
+    if (!x[1]) return;
+    try {
+      const alvo = x[2] === SpreadsheetApp ? SpreadsheetApp.openById(x[1]) : DriveApp.getFolderById(x[1]);
+      let dono = ''; try { dono = alvo.getOwner().getEmail().toLowerCase(); } catch (e) { /* sem dono pessoal */ }
+      const atuais = alvo.getEditors().map(function (e) { return e.getEmail().toLowerCase(); });
+      quero.filter(function (e) { return e !== dono && atuais.indexOf(e) < 0; }).forEach(function (e) { alvo.addEditor(e); });
+      atuais.filter(function (e) { return e !== dono && quero.indexOf(e) < 0; }).forEach(function (e) { alvo.removeEditor(e); });
+      alvo.getViewers().forEach(function (e) { const m = e.getEmail().toLowerCase(); if (m !== dono && quero.indexOf(m) < 0) alvo.removeViewer(m); });
+    } catch (e) { avisos.push('não foi possível ajustar ' + x[0] + ' (' + e.message + ')'); }
+  });
+  return avisos.join('; ');
+}
+
 function aba_(tabela) {
-  const ss = planilha_();
+  const ss = planilhaPara_(tabela);
   let sh = ss.getSheetByName(tabela);
   if (!sh) {
     if (!TABELAS[tabela]) throw new Error('Aba "' + tabela + '" não existe.');
@@ -443,7 +518,7 @@ function texto_(v) {
 }
 
 function lerTabela_(tabela) {
-  const sh = planilha_().getSheetByName(tabela);
+  const sh = planilhaPara_(tabela).getSheetByName(tabela);
   if (!sh || sh.getLastRow() < 1) return [];
   const valores = sh.getDataRange().getValues();
   const cab = valores.shift();
@@ -511,6 +586,14 @@ function pasta_() {
   return DriveApp.getFolderById(id);
 }
 
+const MESES_PASTA_ = ['01 - Janeiro', '02 - Fevereiro', '03 - Março', '04 - Abril', '05 - Maio', '06 - Junho', '07 - Julho', '08 - Agosto', '09 - Setembro', '10 - Outubro', '11 - Novembro', '12 - Dezembro'];
+/** Pasta <raiz>/<tipo>/<ano>/<mês> (ex.: PDFs/Cautelas/2026/11 - Novembro), criando o que faltar. */
+function pastaAnoMes_(raiz, tipo) {
+  const agora = new Date(), tz = Session.getScriptTimeZone();
+  const caminho = [raiz, tipo || 'Outros', Utilities.formatDate(agora, tz, 'yyyy'), MESES_PASTA_[Number(Utilities.formatDate(agora, tz, 'M')) - 1]];
+  if (RESERVADAS.indexOf(tipo) >= 0) return caminho.filter(function (n, i) { return i !== 1; }).reduce(function (pai, nome) { const it = pai.getFoldersByName(nome); return it.hasNext() ? it.next() : pai.createFolder(nome); }, pastaReservada_());
+  return subpasta_(caminho);
+}
 /** Pasta dentro da pasta do sistema, criando o caminho que faltar. */
 function subpasta_(nomes) {
   return nomes.reduce(function (pai, nome) {
