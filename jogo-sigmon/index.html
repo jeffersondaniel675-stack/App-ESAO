@@ -755,7 +755,7 @@ function loop(){update();render();requestAnimationFrame(loop)}
 // ================= INÍCIO =================
 async function main(){
  state='title';
- const has=!!localStorage.getItem(SAVE_KEY);
+ let has=false;try{has=!!localStorage.getItem(SAVE_KEY)}catch(e){}
  const opts=has?['CONTINUAR','NOVO JOGO']:['NOVO JOGO'];
  const i=await choose(opts,{x:78,y:128,w:84,cancel:false});
  if(has&&i===0&&load()){state='world';lastReg=(regionAt(P.x,P.y)||{}).n||null;toast('Bem-vindo de volta!');return}
