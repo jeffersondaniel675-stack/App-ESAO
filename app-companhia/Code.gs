@@ -25,6 +25,9 @@ const TABELAS = {
   Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
   Acessos: ['email', 'nome', 'data', 'status'],
   Locais: ['id', 'nome', 'ordem'],
+  Saude: ['id', 'tipo', 'militarId', 'data', 'motivo', 'local', 'resultado', 'dias', 'inicio', 'validade', 'documento', 'numeroDoc', 'emServico', 'sindicancia', 'bi', 'situacao', 'proximo', 'obs', 'arquivoUrl'],
+  SAT: ['id', 'militarId', 'inicio', 'fim', 'valor', 'ref', 'situacao', 'obs'],
+  Pernoite: ['id', 'extras', 'obs'],
   Alteracoes: ['id', 'militarId', 'data', 'ref', 'titulo', 'texto', 'origem'],
   Controles: ['id', 'responsavelId', 'prazo', 'situacao', 'obs', 'atualizado'],
   QCP: ['id', 'funcao', 'postoPrevisto', 'fracao', 'ocupanteId', 'ordem'],
@@ -39,11 +42,12 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
-const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte',
+const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte',
   Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
 const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
 // Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).
-const RESERVADAS = ['Disciplina'];
+const RESERVADAS_ = { Disciplina: 'jd', Saude: 'sau' };
+const RESERVADAS = Object.keys(RESERVADAS_);
 
 const CONFIG_PADRAO = {
   cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n11º DEPÓSITO DE SUPRIMENTO\n1ª COMPANHIA',
@@ -142,7 +146,7 @@ function bootstrap() {
   Object.keys(TABELAS).forEach(function (t) {
     if (t === 'Log') return;
     if ((t === 'Usuarios' || t === 'Acessos') && u.perfil !== 'admin') return;
-    if (RESERVADAS.indexOf(t) >= 0 && !temJd_(u)) return;
+    if (RESERVADAS_[t] && !membro_(u, RESERVADAS_[t])) return;
     if (t === 'Fotos') return; // fotos vêm uma a uma (lerFoto), para não pesar a abertura
     try { dados[t] = lerTabela_(t); } catch (e) { if (RESERVADAS.indexOf(t) < 0) throw e; dados[t] = []; }
   });
@@ -455,6 +459,7 @@ function exigirEscrita_(tabela) {
   if (perfil === 'admin') return;
   if (perfil !== 'editor' || SOMENTE_ADMIN.indexOf(tabela) >= 0) throw new Error('Seu perfil (' + perfil + ') não permite alterar ' + tabela + '.');
   if (area === 'jd') { if (temJd_(u)) return; throw new Error('Só quem tem acesso à Justiça e Disciplina altera esses registros.'); }
+  if (RESERVADAS_[tabela] === 'sau') { if (membro_(u, 'sau')) return; throw new Error('Só a Sargenteação altera os registros de saúde.'); }
   // quem tem Justiça e Disciplina grava o comportamento no militar e o afastamento de quem cumpre punição
   if ((tabela === 'Militares' || tabela === 'Impedimentos') && temJd_(u)) return;
   const minhas = String(u.areas || '').split(',').map(function (a) { return a.trim(); }).filter(String);
@@ -471,7 +476,7 @@ function planilha_() {
 
 /** Devolve a aba da tabela, criando-a ou acrescentando colunas novas quando o sistema for atualizado. */
 const temJd_ = function (u) { return u.perfil === 'admin' || u.jd === 'Sim'; };
-function planilhaPara_(tabela) { return RESERVADAS.indexOf(tabela) >= 0 ? reservada_() : planilha_(); }
+function planilhaPara_(tabela) { return RESERVADAS_[tabela] ? reservada_(RESERVADAS_[tabela]) : planilha_(); }
 
 /** Grava uma chave em Config direto na aba (sem o bloqueio de gravar_, para usar dentro de outra gravação). */
 function configDireto_(chave, valor) {
@@ -483,46 +488,69 @@ function configDireto_(chave, valor) {
  * Planilha reservada da Justiça e Disciplina: fica no Drive do administrador, FORA da pasta do sistema (que é compartilhada
  * com todos), e é compartilhada só com os admins e quem tem a marcação. Na criação, traz a aba antiga da planilha principal.
  */
-function reservada_() {
-  const id = configMap_().planilhaReservadaId;
+// Grupos reservados: cada um com sua planilha e pasta, fora da pasta compartilhada do sistema.
+const GRUPOS_ = {
+  jd: { nome: 'Justiça e Disciplina', planilha: 'planilhaReservadaId', pasta: 'pastaReservadaId' },
+  sau: { nome: 'Saúde', planilha: 'planilhaSaudeId', pasta: 'pastaSaudeId' }
+};
+/** Quem é do grupo: JD = admins e quem tem a marcação; Saúde = esses e os editores da área Sargenteante. */
+function membro_(u, g) {
+  if (temJd_(u)) return true;
+  if (g !== 'sau' || u.perfil !== 'editor') return false;
+  const areas = String(u.areas || '').split(',').map(function (a) { return a.trim(); }).filter(String);
+  return !areas.length || areas.indexOf('sgte') >= 0;
+}
+const tabelasDo_ = function (g) { return Object.keys(RESERVADAS_).filter(function (t) { return RESERVADAS_[t] === g; }); };
+/** Planilha reservada do grupo. Na criação (só o admin), traz as abas antigas da planilha principal. */
+function reservada_(g) {
+  g = g || 'jd';
+  const G = GRUPOS_[g], id = configMap_()[G.planilha];
   if (id) return SpreadsheetApp.openById(id);
-  if (usuario_().perfil !== 'admin') throw new Error('A Justiça e Disciplina ainda não foi preparada: o administrador precisa abrir essa parte uma vez.');
-  const nova = SpreadsheetApp.create('Reservado - Justiça e Disciplina - ' + (configMap_().sigla || 'Cia'));
-  const sh = nova.getSheets()[0];
-  sh.setName('Disciplina');
-  const velha = planilha_().getSheetByName('Disciplina');
-  const v = velha && velha.getLastRow() >= 1 ? velha.getDataRange().getValues() : [TABELAS.Disciplina];
-  sh.getRange(1, 1, v.length, v[0].length).setNumberFormat('@').setValues(v);
-  sh.getRange(1, 1, 1, v[0].length).setFontWeight('bold');
-  sh.setFrozenRows(1);
-  configDireto_('planilhaReservadaId', nova.getId());
-  if (velha) planilha_().deleteSheet(velha);
+  if (usuario_().perfil !== 'admin') throw new Error('A parte de ' + G.nome + ' ainda não foi preparada: o administrador precisa abrir essa parte uma vez.');
+  const nova = SpreadsheetApp.create('Reservado - ' + G.nome + ' - ' + (configMap_().sigla || 'Cia'));
+  const velhas = [];
+  tabelasDo_(g).forEach(function (t, i) {
+    let sh;
+    if (i === 0) { sh = nova.getSheets()[0]; sh.setName(t); } else sh = nova.insertSheet(t);
+    const velha = planilha_().getSheetByName(t);
+    const v = velha && velha.getLastRow() >= 1 ? velha.getDataRange().getValues() : [TABELAS[t]];
+    sh.getRange(1, 1, v.length, v[0].length).setNumberFormat('@').setValues(v);
+    sh.getRange(1, 1, 1, v[0].length).setFontWeight('bold');
+    sh.setFrozenRows(1);
+    if (velha) velhas.push(velha);
+  });
+  configDireto_(G.planilha, nova.getId());
+  velhas.forEach(function (v) { planilha_().deleteSheet(v); });
   compartilharReservada_();
   return nova;
 }
-/** Pasta reservada (PDFs, Docs e anexos da Justiça e Disciplina), também fora da pasta compartilhada. */
-function pastaReservada_() {
-  const id = configMap_().pastaReservadaId;
+/** Pasta reservada do grupo (PDFs, Docs e anexos), também fora da pasta compartilhada. */
+function pastaReservada_(g) {
+  g = g || 'jd';
+  const G = GRUPOS_[g], id = configMap_()[G.pasta];
   if (id) return DriveApp.getFolderById(id);
-  const p = DriveApp.createFolder('Reservado - Justiça e Disciplina - ' + (configMap_().sigla || 'Cia'));
-  configDireto_('pastaReservadaId', p.getId());
+  const p = DriveApp.createFolder('Reservado - ' + G.nome + ' - ' + (configMap_().sigla || 'Cia'));
+  configDireto_(G.pasta, p.getId());
   compartilharReservada_();
   return p;
 }
-/** Deixa a planilha e a pasta reservadas compartilhadas exatamente com os admins e quem tem Justiça e Disciplina. */
+/** Deixa as planilhas e pastas reservadas compartilhadas exatamente com os membros de cada grupo. */
 function compartilharReservada_() {
-  const cfg = configMap_(), avisos = [];
-  const quero = lerTabela_('Usuarios').filter(temJd_).map(function (u) { return String(u.email).toLowerCase(); });
-  [['a planilha reservada', cfg.planilhaReservadaId, SpreadsheetApp], ['a pasta reservada', cfg.pastaReservadaId, DriveApp]].forEach(function (x) {
-    if (!x[1]) return;
-    try {
-      const alvo = x[2] === SpreadsheetApp ? SpreadsheetApp.openById(x[1]) : DriveApp.getFolderById(x[1]);
-      let dono = ''; try { dono = alvo.getOwner().getEmail().toLowerCase(); } catch (e) { /* sem dono pessoal */ }
-      const atuais = alvo.getEditors().map(function (e) { return e.getEmail().toLowerCase(); });
-      quero.filter(function (e) { return e !== dono && atuais.indexOf(e) < 0; }).forEach(function (e) { alvo.addEditor(e); });
-      atuais.filter(function (e) { return e !== dono && quero.indexOf(e) < 0; }).forEach(function (e) { alvo.removeEditor(e); });
-      alvo.getViewers().forEach(function (e) { const m = e.getEmail().toLowerCase(); if (m !== dono && quero.indexOf(m) < 0) alvo.removeViewer(m); });
-    } catch (e) { avisos.push('não foi possível ajustar ' + x[0] + ' (' + e.message + ')'); }
+  const cfg = configMap_(), avisos = [], usuarios = lerTabela_('Usuarios');
+  Object.keys(GRUPOS_).forEach(function (g) {
+    const G = GRUPOS_[g];
+    const quero = usuarios.filter(function (u) { return membro_(u, g); }).map(function (u) { return String(u.email).toLowerCase(); });
+    [['a planilha de ' + G.nome, cfg[G.planilha], SpreadsheetApp], ['a pasta de ' + G.nome, cfg[G.pasta], DriveApp]].forEach(function (x) {
+      if (!x[1]) return;
+      try {
+        const alvo = x[2] === SpreadsheetApp ? SpreadsheetApp.openById(x[1]) : DriveApp.getFolderById(x[1]);
+        let dono = ''; try { dono = alvo.getOwner().getEmail().toLowerCase(); } catch (e) { /* sem dono pessoal */ }
+        const atuais = alvo.getEditors().map(function (e) { return e.getEmail().toLowerCase(); });
+        quero.filter(function (e) { return e !== dono && atuais.indexOf(e) < 0; }).forEach(function (e) { alvo.addEditor(e); });
+        atuais.filter(function (e) { return e !== dono && quero.indexOf(e) < 0; }).forEach(function (e) { alvo.removeEditor(e); });
+        alvo.getViewers().forEach(function (e) { const m = e.getEmail().toLowerCase(); if (m !== dono && quero.indexOf(m) < 0) alvo.removeViewer(m); });
+      } catch (e) { avisos.push('não foi possível ajustar ' + x[0] + ' (' + e.message + ')'); }
+    });
   });
   return avisos.join('; ');
 }
@@ -624,7 +652,7 @@ const MESES_PASTA_ = ['01 - Janeiro', '02 - Fevereiro', '03 - Março', '04 - Abr
 function pastaAnoMes_(raiz, tipo) {
   const agora = new Date(), tz = Session.getScriptTimeZone();
   const caminho = [raiz, tipo || 'Outros', Utilities.formatDate(agora, tz, 'yyyy'), MESES_PASTA_[Number(Utilities.formatDate(agora, tz, 'M')) - 1]];
-  if (RESERVADAS.indexOf(tipo) >= 0) return caminho.filter(function (n, i) { return i !== 1; }).reduce(function (pai, nome) { const it = pai.getFoldersByName(nome); return it.hasNext() ? it.next() : pai.createFolder(nome); }, pastaReservada_());
+  if (RESERVADAS_[tipo]) return caminho.filter(function (n, i) { return i !== 1; }).reduce(function (pai, nome) { const it = pai.getFoldersByName(nome); return it.hasNext() ? it.next() : pai.createFolder(nome); }, pastaReservada_(RESERVADAS_[tipo]));
   return subpasta_(caminho);
 }
 /** Pasta dentro da pasta do sistema, criando o caminho que faltar. */
