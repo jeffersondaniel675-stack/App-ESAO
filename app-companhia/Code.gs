@@ -10,7 +10,7 @@
 
 const TABELAS = {
   Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs',
-    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma', 'servicoAnterior'],
+    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma', 'servicoAnterior', 'vinculo', 'termino'],
   Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
   TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico', 'qtd', 'folga', 'contagem'],
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs', 'troca', 'trocaMotivo'],
@@ -28,12 +28,13 @@ const TABELAS = {
   Saude: ['id', 'tipo', 'militarId', 'data', 'motivo', 'local', 'resultado', 'dias', 'inicio', 'validade', 'documento', 'numeroDoc', 'emServico', 'sindicancia', 'bi', 'situacao', 'proximo', 'obs', 'arquivoUrl'],
   SAT: ['id', 'militarId', 'inicio', 'fim', 'valor', 'ref', 'situacao', 'obs'],
   Pernoite: ['id', 'extras', 'obs'],
+  TempoServico: ['id', 'militarId', 'tipo', 'requerimento', 'is', 'inicio', 'fim', 'situacao', 'bi', 'obs', 'arquivoUrl'],
   Alteracoes: ['id', 'militarId', 'data', 'ref', 'titulo', 'texto', 'origem'],
   Controles: ['id', 'responsavelId', 'prazo', 'situacao', 'obs', 'atualizado'],
   QCP: ['id', 'funcao', 'postoPrevisto', 'fracao', 'ocupanteId', 'ordem'],
   Fotos: ['id', 'dado'],
   FolhasAlt: ['id', 'militarId', 'semestre', 'folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'],
-  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl'],
+  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl', 'prazo'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
@@ -42,7 +43,7 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
-const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte',
+const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte', TempoServico: 'sgte',
   Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
 const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
 // Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).

@@ -472,7 +472,7 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'TempoServico'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => podeEm(S.view);
 const admin = () => S.user?.perfil === 'admin';
@@ -1129,10 +1129,10 @@ const podeEm = v => ['admin', 'editor'].includes(S.user?.perfil) && temArea(area
 // Itens da 2ª coluna: `aba` liga a uma aba da tela, `filtro` a um filtro, `acao` roda depois de abrir a tela, `editor` = só para quem edita.
 const SUBMENU = {
   efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
-  sargenteacao: [{ l: 'Controles da Sargenteação', aba: 'controles' }, { l: 'Mapa da Força', aba: 'mapa' }, { l: 'QCP', aba: 'qcp' }, { l: 'Férias, recompensa e instalação', aba: 'ferias' }, { l: 'SAT (auxílio-transporte)', aba: 'sat' }],
+  sargenteacao: [{ l: 'Controles da Sargenteação', aba: 'controles' }, { l: 'Mapa da Força', aba: 'mapa' }, { l: 'QCP', aba: 'qcp' }, { l: 'Férias, recompensa e instalação', aba: 'ferias' }, { l: 'SAT (auxílio-transporte)', aba: 'sat' }, { l: 'Tempo de serviço (engajamento)', aba: 'tempo' }],
   saude: [{ l: 'Resumo e prazos', aba: 'resumo' }, { l: 'Livro de visita médica', aba: 'visitas' }, { l: 'Inspeções de saúde', aba: 'is' }, { l: 'Acidentes (AO / ISO)', aba: 'acidentes' }, { l: 'Adidos (LTSP)', aba: 'ltsp' }],
   alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
-  disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }],
+  disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Sindicâncias', filtro: ['jd', 'sind'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Folha de pernoite', aba: 'pernoite' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -1295,7 +1295,8 @@ function vPainel() {
   return `${pedidosAcesso ? `<div class="card" style="border-left:4px solid var(--ouro);margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><b class="grow">${pedidosAcesso} pedido(s) de acesso aguardando aprovação.</b><button class="btn sm pri" onclick="S.sub.config='usuarios';irPara('config')">Ver pedidos</button></div>` : ''}<h2>Painel</h2><p class="sub">${esc(SEMANA[dataDe(d).getDay()])}, ${fmtExt(d)} · escala <span class="tag ${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}">${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}</span>${FERIADO[d] ? ' · ' + esc(FERIADO[d]) : ''}</p>
   <div class="cards">
     ${temArea('sgte') ? (() => { const c = controles(), atr = c.filter(atrasado).length, fz = c.filter(x => x.situacao !== 'Em dia').length;
-      return `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
+      const ts = linhasTs().filter(r => r.resta !== null && r.resta <= avisoTs()).length;
+      return `${ts ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='tempo';S.filtro.tsVer='aviso';irPara('sargenteacao')"><h4>Tempo de serviço</h4><div class="big">${ts}</div><div class="tag warn">vence(m) em até ${avisoTs()} dias</div></div>` : ''}<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
     <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
     <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
     <div class="card"><h4>Cautelas abertas</h4><div class="big">${abertas.length}</div><div class="${vencidas.length ? 'tag dng' : 'muted'}">${vencidas.length} vencida(s)</div></div>
@@ -1325,6 +1326,8 @@ const CAMPOS_MIL = [
   { k: 'arma', l: 'Arma / quadro / serviço (ex.: Intendência)' },
   { k: 'servicoAnterior', l: 'Serviço público/privado anterior à incorporação (órgão e tempo)', full: true },
   { k: 'dataPraca', l: 'Data de praça', t: 'date' },
+  { k: 'vinculo', l: 'Vínculo', t: 'select', o: [['', '(pelo posto: Cb e Sd = temporário)'], ['Carreira', 'Carreira'], ['Temporário', 'Temporário']], vazio: false },
+  { k: 'termino', l: 'Término do tempo de serviço atual (se já souber)', t: 'date' },
   { k: 'comportamento', l: 'Comportamento (cabos e soldados)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
   { secao: 'Tripão' },
   { k: 'dataNascimento', l: 'Data de nascimento', t: 'date' },
@@ -2011,6 +2014,97 @@ DOCS.pernoite = d => { const l = linhasPernoite(d);
 /** Quem tira o serviço (ex.: Sargento de Dia) no dia, para o campo de assinatura. */
 const nomeServico = (d, re) => { const t = tiposAtivos().find(x => re.test(x.nome)); const e = t && lancamentos(d, t.id).find(x => !emBranco(x)); return e ? nomeMil(quemTira(e)) : ''; };
 
+// ============================================================ tempo de serviço: engajamento, reengajamento e prorrogação
+const TIPOS_TS = ['Engajamento', 'Reengajamento', 'Prorrogação de tempo de serviço', 'Licenciamento'];
+const SIT_TS = ['Em andamento', 'Deferido', 'Indeferido'];
+/** Temporário: marcado no cadastro, ou cabo/soldado sem vínculo informado. */
+const temporario = m => m.vinculo ? m.vinculo === 'Temporário' : postoIdx(m.postoGrad) >= POSTOS.indexOf('Cb');
+const processosTs = mid => (S.db.TempoServico || []).filter(x => x.militarId === mid).sort((a, b) => String(b.inicio || b.requerimento).localeCompare(a.inicio || a.requerimento));
+/** Até quando o militar tem tempo: o fim do último engajamento/prorrogação deferido; sem isso, Sd EV = 12 meses da praça. */
+function terminoTs(m) {
+  const def = processosTs(m.id).filter(x => x.situacao === 'Deferido' && x.fim && x.tipo !== 'Licenciamento').map(x => x.fim).sort().pop();
+  if (def) return def;
+  if (m.postoGrad === 'Sd EV' && m.dataPraca) { const d = dataDe(m.dataPraca); d.setFullYear(d.getFullYear() + 1); return addDias(isoDe(d), -1); }
+  return m.termino || '';
+}
+const avisoTs = () => num(cfg('avisoEngaj')) || 90;
+function linhasTs() {
+  return militaresAtivos().filter(temporario).map(m => {
+    const fim = terminoTs(m), resta = fim ? diasEntre(hoje(), fim) - 1 : null, andamento = processosTs(m.id).find(x => x.situacao === 'Em andamento');
+    return { m, fim, resta, andamento, tempo: m.dataPraca ? amdTxt(amd(diasCorridos(m.dataPraca, hoje()))) : '' };
+  }).sort((a, b) => (a.resta ?? 99999) - (b.resta ?? 99999));
+}
+const tagResta = r => r.resta === null ? '<span class="muted">sem término</span>' : `<span class="tag ${r.resta < 0 ? 'dng' : r.resta <= 30 ? 'dng' : r.resta <= avisoTs() ? 'warn' : 'ok'}">${r.resta < 0 ? `vencido há ${-r.resta} dia(s)` : `${r.resta} dia(s)`}</span>`;
+function vTempoServico() {
+  const ver = S.filtro.tsVer || 'todos';
+  let l = linhasTs();
+  if (ver === 'aviso') l = l.filter(r => r.resta !== null && r.resta <= avisoTs());
+  return `<div class="bar"><select onchange="S.filtro.tsVer=this.value;render()" aria-label="Quais"><option value="todos">Todos os temporários</option><option value="aviso" ${ver === 'aviso' ? 'selected' : ''}>Só quem vence em até ${avisoTs()} dias</option></select>
+      <span class="grow"></span>${botoesDocGrandes('tempoServico', '', 'tempoServico')}</div>
+    ${tabela(l, [{ l: 'Militar', v: r => `<b>${esc(nomeMil(r.m))}</b>` }, { l: 'Praça', v: r => fmt(r.m.dataPraca) || '<span class="muted">—</span>', s: r => r.m.dataPraca || '' },
+      { l: 'Tempo de serviço', v: r => r.tempo || '<span class="muted">sem data de praça</span>' }, { l: 'Término do tempo atual', v: r => fmt(r.fim) || '<span class="muted">—</span>', s: r => r.fim || '9' },
+      { l: 'Falta', v: tagResta, s: r => r.resta ?? 99999 },
+      { l: 'Processo', v: r => r.andamento ? `${esc(r.andamento.tipo)}<div class="muted">${[r.andamento.requerimento && 'req. ' + fmt(r.andamento.requerimento), r.andamento.is && 'IS ' + r.andamento.is, r.andamento.bi].filter(Boolean).map(esc).join(' · ') || 'iniciado'}</div>` : r.resta !== null && r.resta <= avisoTs() ? '<span class="tag warn">iniciar</span>' : '' }],
+      pode() ? r => `<button class="btn sm" onclick="editarTs(null,'${r.m.id}')">+ Processo</button> <button class="btn sm" onclick="historicoTs('${r.m.id}')">Histórico</button>` : null)}
+    <p class="muted">Temporários: quem está marcado assim no cadastro (ou cabo e soldado sem vínculo informado). O término vem do último engajamento ou prorrogação <b>deferido</b>; sem ele, o Sd EV conta 12 meses da praça. O aviso começa ${avisoTs()} dias antes (muda em Configurações). Guarde na pasta os requerimentos, a IS e a cópia do BI.</p>`;
+}
+function editarTs(id, mid) {
+  const x = id ? S.db.TempoServico.find(y => y.id === id) : { militarId: mid, tipo: 'Prorrogação de tempo de serviço', situacao: 'Em andamento', requerimento: hoje(), inicio: mid && terminoTs(MIL[mid]) ? addDias(terminoTs(MIL[mid]), 1) : '' };
+  abrirForm({ titulo: id ? 'Processo de tempo de serviço' : 'Novo processo de tempo de serviço', valores: x, campos: [
+    { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_TS, vazio: false },
+    { k: 'requerimento', l: 'Requerimento entregue em', t: 'date' }, { k: 'is', l: 'Inspeção de saúde (data / parecer)' },
+    { k: 'inicio', l: 'Novo período: de', t: 'date' }, { k: 'fim', l: 'até', t: 'date' },
+    { k: 'situacao', l: 'Situação', t: 'select', o: SIT_TS, vazio: false }, { k: 'bi', l: 'Publicação (BI do deferimento / licenciamento)' }, { k: 'obs', l: 'Observações', full: true },
+    { k: 'arquivoUrl', l: 'Requerimento / BI digitalizado', t: 'file', full: true }],
+    aoSalvar: o => { if (o.situacao === 'Deferido' && o.tipo !== 'Licenciamento' && !o.fim) throw new Error('Informe até quando vai o novo período.'); return salvar('TempoServico', [o]); },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('TempoServico','${id}',true)">Excluir</button></div>` : '' });
+}
+function historicoTs(mid) {
+  const l = processosTs(mid);
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><div class="modal" style="max-width:760px"><h3>Tempo de serviço – ${esc(nomeMil(mid))}</h3>
+    <p class="muted" style="margin-top:0">Praça em ${fmt(MIL[mid].dataPraca) || '—'} · término atual ${fmt(terminoTs(MIL[mid])) || '—'}</p>
+    ${tabela(l, [{ l: 'Tipo', v: x => esc(x.tipo) }, { l: 'Período', v: x => x.inicio ? `${fmt(x.inicio)} a ${fmt(x.fim)}` : '' }, { l: 'Requerimento', v: x => fmt(x.requerimento) }, { l: 'IS', v: x => esc(x.is || '') },
+      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Deferido' ? 'ok' : x.situacao === 'Indeferido' ? 'dng' : 'warn'}">${esc(x.situacao)}</span>` }, { l: 'BI', v: x => esc(x.bi || '') }],
+      pode() ? x => `<button class="btn sm" onclick="editarTs('${x.id}')">Abrir</button>` : null)}
+    <div class="acts"><button class="btn" onclick="fecharModal()">Fechar</button>${pode() ? `<button class="btn pri" onclick="editarTs(null,'${mid}')">+ Processo</button>` : ''}</div></div></div>`;
+}
+LISTAS.tempoServico = () => ({ nome: `Tempo de servico ${hoje()}`, cab: ['P/G', 'Nome', 'Praça', 'Tempo de serviço', 'Término atual', 'Dias restantes', 'Processo em andamento'],
+  linhas: linhasTs().map(r => [r.m.postoGrad, r.m.nomeGuerra, fmt(r.m.dataPraca), r.tempo, fmt(r.fim), r.resta ?? '', r.andamento ? `${r.andamento.tipo}${r.andamento.requerimento ? ' (req. ' + fmt(r.andamento.requerimento) + ')' : ''}` : '']) });
+DOCS.tempoServico = () => { const l = LISTAS.tempoServico();
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `CONTROLE DE TEMPO DE SERVIÇO (ENGAJAMENTO E PRORROGAÇÃO) – ${fmtMil(hoje())}`, paisagem: true, cab: ['Nº', ...l.cab],
+    linhas: l.linhas.map((r, i) => [pad(i + 1), r[0], { v: r[1], l: 1 }, r[2], r[3], r[4], String(r[5]), { v: r[6], l: 1 }]), w: [4, 8, 18, 10, 12, 11, 9, 28], sz: 8.5,
+    assin: [[cfg('sgteNome'), 'Sargenteante'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
+};
+
+// ---------- sindicâncias (na Justiça e Disciplina): portaria, encarregado, prazo e solução publicada
+const SIT_SIND = ['Em andamento', 'Prorrogada', 'Concluída', 'Solução publicada'];
+const prazoSind = x => x.prazo || (x.data ? addDias(x.data, 30) : '');
+function vSindicancias() {
+  const l = disc('Sindicancia').sort((a, b) => String(b.data).localeCompare(a.data));
+  return `<div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarSindicancia()">+ Sindicância</button>${botoesDocGrandes('sindicancias', '', 'sindicancias')}</div>
+    ${tabela(l, [{ l: 'Nº', v: x => `<b>${esc(x.numero || '')}</b>` }, { l: 'Portaria', v: x => fmt(x.data) }, { l: 'Objeto', v: x => esc(String(x.relato || '').slice(0, 110)) },
+      { l: 'Encarregado', v: x => esc(x.participante || '') }, { l: 'Envolvido', v: x => x.militarId ? esc(nomeMil(x.militarId)) : '' },
+      { l: 'Prazo', v: x => /Concluída|publicada/.test(x.decisao) ? '' : `<span class="tag ${prazoSind(x) < hoje() ? 'dng' : prazoSind(x) <= addDias(hoje(), 7) ? 'warn' : ''}">${fmt(prazoSind(x))}</span>`, s: x => prazoSind(x) },
+      { l: 'Situação', v: x => `<span class="tag ${x.decisao === 'Solução publicada' ? 'ok' : x.decisao === 'Concluída' ? 'info' : 'warn'}">${esc(x.decisao || 'Em andamento')}</span>${x.bi ? `<div class="muted">${esc(x.bi)}</div>` : ''}` }],
+      x => `<button class="btn sm" onclick="editarSindicancia('${x.id}')">Abrir</button>`)}
+    <p class="muted">Prazo sugerido: 30 dias da portaria (pode ser prorrogado). Quando a solução sair, lance o BI: o controle "BI solução de sindicância" fica em dia.</p>`;
+}
+function editarSindicancia(id) {
+  const x = id ? disc('Sindicancia').find(y => y.id === id) : { tipo: 'Sindicancia', data: hoje(), decisao: 'Em andamento', numero: proximoNumero(disc('Sindicancia').map(y => y.numero), hoje().slice(0, 4)) };
+  abrirForm({ titulo: id ? 'Sindicância nº ' + x.numero : 'Nova sindicância', valores: { ...x, prazo: prazoSind(x) }, campos: [
+    { k: 'numero', l: 'Nº', req: true }, { k: 'data', l: 'Data da portaria', t: 'date', req: true }, { k: 'relato', l: 'Objeto (o que se apura)', t: 'textarea', req: true },
+    { k: 'participante', l: 'Encarregado (P/G e nome)' }, { k: 'militarId', l: 'Militar envolvido (se houver)', t: 'militar' }, { k: 'prazo', l: 'Prazo', t: 'date' },
+    { k: 'decisao', l: 'Situação', t: 'select', o: SIT_SIND, vazio: false }, { k: 'obs', l: 'Solução (resumo)', t: 'textarea' }, { k: 'bi', l: 'Solução publicada em (BI)' }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Sindicancia' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+LISTAS.sindicancias = () => ({ nome: `Sindicancias ${hoje()}`, cab: ['Nº', 'Portaria', 'Objeto', 'Encarregado', 'Envolvido', 'Prazo', 'Situação', 'Solução (BI)'],
+  linhas: disc('Sindicancia').sort((a, b) => String(a.data).localeCompare(b.data)).map(x => [x.numero, fmt(x.data), x.relato || '', x.participante || '', x.militarId ? nomeMil(x.militarId) : '', fmt(prazoSind(x)), x.decisao || '', x.bi || '']) });
+DOCS.sindicancias = () => { const l = LISTAS.sindicancias();
+  return docPadrao({ tipo: 'Disciplina', nome: l.nome, titulo: `CONTROLE DE SINDICÂNCIAS – ${fmtMil(hoje())}`, paisagem: true, cab: l.cab,
+    linhas: l.linhas.map(r => r.map((v, i) => i === 2 ? { v, l: 1 } : v)), w: [7, 9, 30, 14, 12, 9, 9, 10], sz: 8.5 });
+};
+
 // ============================================================ sargenteação: controles, mapa da força, QCP, férias e dispensas
 // Os 23 controles cobrados na orientação técnica da Sargenteação. `ir` = tela do sistema que resolve o controle (vazio = feito fora, por enquanto).
 const CONTROLES_PADRAO = [
@@ -2019,11 +2113,11 @@ const CONTROLES_PADRAO = [
   ['visita', 'Livro de visita médica', ['saude', 'visitas']], ['sat', 'SAT (auxílio-transporte)', ['sargenteacao', 'sat']], ['alteracoes', 'Alterações', ['alteracoes', 'folha']],
   ['fichas', 'Fichas disciplinares', ['disciplina', 'ficha']], ['aditamentos', 'Aditamentos', ['aditamentos']], ['pernoite', 'Folha de pernoite', ['escala', 'pernoite']],
   ['qcp', 'QCP atualizado', ['sargenteacao', 'qcp']], ['servpub', 'Cabos com serviço público/privado anterior à incorporação', ['efetivo', 'mil']],
-  ['adidos', 'Pasta dos militares adidos (LTSP)', ['saude', 'ltsp']], ['acidente', 'Registro de acidente', ['saude', 'acidentes']], ['sindicancia', 'BI solução de sindicância', null],
+  ['adidos', 'Pasta dos militares adidos (LTSP)', ['saude', 'ltsp']], ['acidente', 'Registro de acidente', ['saude', 'acidentes']], ['sindicancia', 'BI solução de sindicância', ['disciplina', 'sind']],
   ['dso', 'Documentos sanitários de origem (AO e ISO)', ['saude', 'acidentes']], ['incapazes', 'Tratamento médico dos incapazes e inspeções de saúde', ['saude', 'is']],
   ['ferias', 'Controle de férias', ['sargenteacao', 'ferias']], ['recompensa', 'Controle de dispensas como recompensa', ['sargenteacao', 'ferias']],
   ['instalacao', 'Controle de instalação', ['sargenteacao', 'ferias']], ['escala', 'Escrituração da escala de serviço', ['escala', 'mes']],
-  ['engaj', 'Engajamento e reengajamento (prorrogação de tempo de serviço)', null], ['feriasotemp', 'Férias dos oficiais temporários / reengajamento', ['sargenteacao', 'ferias']]
+  ['engaj', 'Engajamento e reengajamento (prorrogação de tempo de serviço)', ['sargenteacao', 'tempo']], ['feriasotemp', 'Férias dos oficiais temporários / reengajamento', ['sargenteacao', 'ferias']]
 ].map(([id, item, ir], i) => ({ id, ordem: i + 1, item, ir }));
 const SIT_CONTROLE = ['Em dia', 'Melhorar', 'Fazer'];
 /** Controles com o que foi gravado (responsável, prazo, situação) por cima da lista padrão. */
@@ -2033,8 +2127,9 @@ const atrasado = c => c.situacao !== 'Em dia' && c.prazo && c.prazo < hoje();
 function vSargenteacao() {
   const t = S.sub.sargenteacao || 'controles';
   const cab = `<h2>Sargenteação</h2><p class="sub">Controles da Sargenteação no modelo da orientação técnica, mapa da força, QCP e controle de férias, recompensas e instalação.</p>
-    ${abas('sargenteacao', [['controles', 'Controles'], ['mapa', 'Mapa da Força'], ['qcp', 'QCP'], ['ferias', 'Férias e dispensas'], ['sat', 'SAT']])}`;
+    ${abas('sargenteacao', [['controles', 'Controles'], ['mapa', 'Mapa da Força'], ['qcp', 'QCP'], ['ferias', 'Férias e dispensas'], ['sat', 'SAT'], ['tempo', 'Tempo de serviço']])}`;
   if (t === 'sat') return cab + vSat();
+  if (t === 'tempo') return cab + vTempoServico();
   if (t === 'mapa') return cab + vMapaForca();
   if (t === 'qcp') return cab + vQcp();
   if (t === 'ferias') return cab + vFeriasCtrl();
@@ -2052,7 +2147,7 @@ function vSargenteacao() {
       { l: 'Situação', v: c => `<span class="tag ${c.situacao === 'Em dia' ? 'ok' : c.situacao === 'Melhorar' ? 'warn' : 'dng'}">${esc(c.situacao)}</span>` },
       { l: 'No sistema', v: c => c.ir ? `<a style="cursor:pointer" onclick="abrirControle('${c.id}')">abrir →</a>` : '<span class="muted">em breve</span>' }
     ], pode() ? c => `<button class="btn sm" onclick="editarControle('${c.id}')">Editar</button>` : null)}
-    <p class="muted">"No sistema" leva à tela que resolve o controle. Os marcados "em breve" (engajamento e sindicância) vêm na próxima fase; até lá, registre a situação aqui.</p>`;
+    <p class="muted">"No sistema" leva à tela que resolve o controle. Registre aqui a situação de cada controle e a orientação recebida.</p>`;
 }
 function abrirControle(id) {
   const c = CONTROLES_PADRAO.find(x => x.id === id), [v, aba] = c.ir;
@@ -2510,7 +2605,7 @@ const tagComp = c => `<span class="tag ${c === 'Excepcional' || c === 'Ótimo' ?
 function vDisciplina() {
   if (!pode()) return '<div class="card">Justiça e disciplina: só administradores e editores têm acesso.</div>';
   const t = S.filtro.jd || 'resumo';
-  const abasJd = `<div class="tabs" style="margin-top:-6px">${[['resumo', 'Resumo'], ['fatd', 'FATD'], ['pun', 'Punições'], ['elo', 'Elogios'], ['boca', 'Boca Podre'], ['ficha', 'Ficha do militar']]
+  const abasJd = `<div class="tabs" style="margin-top:-6px">${[['resumo', 'Resumo'], ['fatd', 'FATD'], ['pun', 'Punições'], ['elo', 'Elogios'], ['boca', 'Boca Podre'], ['sind', 'Sindicâncias'], ['ficha', 'Ficha do militar']]
     .map(([k, l]) => `<button class="${t === k ? 'on' : ''}" onclick="S.filtro.jd='${k}';render()">${l}</button>`).join('')}</div>`;
   let corpo = '';
   if (t === 'resumo') {
@@ -2566,6 +2661,8 @@ function vDisciplina() {
       { l: 'Anotação', v: a => esc(a.relato) }, { l: 'Quem anotou', v: a => `<span class="muted">${esc(a.participante || '')}</span>` },
       { l: 'FATD', v: a => { const f = disc('FATD').find(x => x.origemId === a.id); return f ? `<a onclick="editarFatd('${f.id}')">nº ${esc(f.numero)}</a>` : ''; } }
     ], a => `${disc('FATD').some(x => x.origemId === a.id) ? '' : `<button class="btn sm" onclick="fatdDaAnotacao('${a.id}')">Abrir FATD</button> `}<button class="btn sm" onclick="editarAnotacao('${a.id}')">Editar</button>`)}`;
+  } else if (t === 'sind') {
+    corpo = vSindicancias();
   } else {
     const mid = S.filtro.jdMil && MIL[S.filtro.jdMil] ? S.filtro.jdMil : '';
     corpo = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.jdMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label><span class="grow"></span>${mid ? botoesDoc('fichaDisc', mid, 'Imprimir ficha') : ''}</div>` + (mid ? fichaDisciplinar(mid) : '<div class="card muted">Escolha o militar para ver a ficha disciplinar: comportamento, punições, elogios e anotações.</div>');
@@ -2582,12 +2679,13 @@ function eventosDisc(mid) {
     if (f.decisao === 'Justificada') ev.push({ d: f.dataDecisao || f.dataFato, t: 'FATD justificada (arquivada)', x: '', c: 'ok', id: f.id, k: 'fatd' });
   });
   disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).forEach(e => ev.push({ d: e.data, t: e.subtipo, x: [e.relato, e.bi].filter(Boolean).join(' · '), c: 'ok', id: e.id, k: 'elo' }));
+  disc('Sindicancia').filter(x => x.militarId === mid).forEach(x => ev.push({ d: x.data, t: `Sindicância nº ${x.numero}`, x: [x.relato, x.decisao, x.bi].filter(Boolean).join(' · '), c: 'info', id: x.id, k: 'sind' }));
   disc('Anotacao').filter(a => a.militarId === mid).forEach(a => ev.push({ d: a.data, t: 'Boca Podre: ' + a.subtipo, x: a.relato, c: '', id: a.id, k: 'boca' }));
   return ev.sort((a, b) => b.d.localeCompare(a.d));
 }
 function fichaDisciplinar(mid) {
   const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid);
-  const abrir = e => e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
+  const abrir = e => e.k === 'sind' ? `editarSindicancia('${e.id}')` : e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
   return `<div class="card"><div class="bar" style="align-items:flex-start">${fotoHTML(mid, pode())}<div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
     ${temComportamento(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Sem classificação de comportamento (só cabos e soldados).</span>'}</div>
     ${sug ? `<p class="muted" style="font-size:12.5px">${esc(sug.motivo)} Conferir sempre com o RDE.</p>` : ''}
@@ -3802,6 +3900,7 @@ const CAMPOS_CFG = [
   { k: 'cmtNome', l: 'Nome do comandante (ex.: FULANO DE TAL – Cap)' },
   { k: 'cmtFuncao', l: 'Função (ex.: Cmt Cia)' },
   { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
+  { k: 'avisoEngaj', l: 'Avisar o fim do tempo de serviço com quantos dias de antecedência', t: 'number' },
   { secao: 'Material' },
   { k: 'cautelaSetor', l: 'Setor que entrega o material na cautela (ex.: Depósito da 1ª Cia)' },
   { k: 'cautelaAss1', l: 'Assinatura no alto da cautela, à esquerda' },
@@ -4078,7 +4177,7 @@ function semente() {
     ['Sd EV', '', 'Nogueira', 'Breno Nogueira Cruz'], ['Sd EV', '', 'Pinheiro', 'Kauã Pinheiro Dias'], ['Sd EV', '', 'Coelho', 'Levi Coelho Brandão'], ['Sd EV', '', 'Dantas', 'Murilo Dantas Reis'],
     ['2º Ten', '', 'Lacerda', 'Vinícius Lacerda Rocha'], ['2º Ten', '', 'Barreto', 'Caio Barreto Lins'], ['3º Sgt', '', 'Moraes', 'Elias Moraes Sá'], ['3º Sgt', '', 'Pacheco', 'Ítalo Pacheco Reis'], ['3º Sgt', '', 'Teles', 'Rômulo Teles Alves']
   ].map(([postoGrad, numero, nomeGuerra, nomeCompleto], i) => ({
-    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, dataPraca: `${Number(ano) - (i < 3 ? 15 : i < 11 ? 9 : i < 17 ? 4 : 1)}-03-01`, arma: i < 3 ? 'Intendência' : i < 11 ? 'QMS Intendência' : '', antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
+    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, dataPraca: `${Number(ano) - (i < 3 ? 15 : i < 11 ? 9 : i < 17 ? 4 : postoGrad === 'Sd EV' ? 0 : 1)}-03-01`, arma: i < 3 ? 'Intendência' : i < 11 ? 'QMS Intendência' : '', antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
     dataNascimento: `${1975 + (i * 7) % 30}-${pad(1 + i % 12)}-${pad(1 + (i * 5) % 28)}`, cpf: '', precCp: '', tipoSanguineo: TIPOS_SANGUE[i % 8], peso: String(62 + (i * 3) % 30),
     telefone: `(61) 9${String(81000000 + i * 271357).slice(0, 4)}-${String(1000 + i * 37).slice(-4)}`, email: `${norm(nomeGuerra)}@exemplo.com`, endereco: `Quadra ${10 + i}, Conjunto ${'ABCDE'[i % 5]}, Casa ${i + 2} – Brasília-DF (fictício)`,
     cttEmergencia: `(61) 9${String(92000000 + i * 15731).slice(0, 4)}-${String(2000 + i * 53).slice(-4)}`, nomeCtt: ['Ana', 'Maria', 'José', 'Paula', 'Luís'][i % 5], parentesco: PARENTES[i % 5],
@@ -4133,6 +4232,10 @@ function semente() {
       { id: 's5', tipo: 'Adido (LTSP)', militarId: 'm28', data: addDias(d, -60), motivo: 'Tratamento ortopédico', proximo: addDias(d, -1), obs: '1ª prorrogação: 30 dias (BI nº 40)', bi: 'BI nº 22', situacao: 'Em tratamento' }],
     SAT: [{ id: 't1', militarId: 'm19', inicio: `${ano}-01-01`, valor: '180', ref: 'DIEx nº 15 – BI nº 8', situacao: 'Ativo' }, { id: 't2', militarId: 'm8', inicio: `${ano}-02-01`, valor: '220', ref: 'DIEx nº 22', situacao: 'Ativo' }, { id: 't3', militarId: 'm24', inicio: `${ano}-03-01`, valor: '150', ref: 'DIEx nº 31', situacao: 'Ativo' }],
     Pernoite: [],
+    TempoServico: [{ id: 'ts1', militarId: 'm12', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -300), is: 'Apto A', inicio: addDias(d, -280), fim: addDias(d, 60), situacao: 'Deferido', bi: 'BI nº 30' },
+      { id: 'ts2', militarId: 'm13', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -5), is: '', inicio: addDias(d, 40), fim: '', situacao: 'Em andamento', bi: '' },
+      { id: 'ts0', militarId: 'm13', tipo: 'Engajamento', requerimento: addDias(d, -400), is: 'Apto A', inicio: addDias(d, -365), fim: addDias(d, 39), situacao: 'Deferido', bi: 'BI nº 70' },
+      { id: 'ts3', militarId: 'm18', tipo: 'Engajamento', requerimento: addDias(d, -380), is: 'Apto A', inicio: addDias(d, -360), fim: addDias(d, 200), situacao: 'Deferido', bi: 'BI nº 61' }],
     Controles: [{ id: 'fatd', responsavelId: 'm23', prazo: addDias(d, 10), situacao: 'Em dia', obs: '' }, { id: 'ferias', responsavelId: 'm16', prazo: addDias(d, -2), situacao: 'Melhorar', obs: 'Montar planilha: quem já tirou e quem mudou o período.' },
       { id: 'mapa', responsavelId: 'm4', prazo: addDias(d, 5), situacao: 'Melhorar', obs: 'Atualizar o SUCEMNet diariamente.' }, { id: 'chamada', responsavelId: 'm24', prazo: '', situacao: 'Em dia', obs: '' }],
     QCP: [['Cmdo', 'Comandante da Cia', 'Cap', 'm1'], ['Cmdo', 'Subtenente', 'ST', 'm3'], ['Cmdo', 'Sargenteante', '1º Sgt', 'm4'], ['Pel Sup', 'Cmt Pel Sup', '1º Ten', 'm2'], ['Pel Sup', 'Adjunto do Pel', '2º Sgt', 'm5'],
@@ -4148,6 +4251,7 @@ function semente() {
       { id: 'jd7', tipo: 'Elogio', data: addDias(d, -40), subtipo: 'Elogio individual', militaresIds: 'm4', relato: 'Pelo zelo e organização na conferência anual do material carga.', autoridade: 'RICARDO MOURA LIMA – Cap', bi: 'BI nº 180' },
       { id: 'jd8', tipo: 'Anotacao', data: addDias(d, -2), militarId: 'm22', subtipo: 'Apresentação pessoal', relato: 'Uniforme em desalinho e sem cobertura na troca da guarda.', participante: '1º Sgt Nunes' },
       { id: 'jd9', tipo: 'Anotacao', data: addDias(d, -3), militarId: 'm25', subtipo: 'Atraso', relato: 'Chegou 10 min atrasado para o expediente. Orientado.', participante: '3º Sgt Vieira' },
+      { id: 'jd11', tipo: 'Sindicancia', numero: `001/${ano}`, data: addDias(d, -20), relato: 'Apurar as circunstâncias do acidente com o Sd EV Farias na faxina do depósito.', participante: '1º Ten Santana', militarId: 'm26', prazo: addDias(d, 10), decisao: 'Em andamento', bi: '' },
       { id: 'jd10', tipo: 'Anotacao', data: addDias(d, -5), militarId: 'm16', subtipo: 'Orientação', relato: 'Orientado sobre o preenchimento do livro de partes do Cb Gda.', participante: 'ST Arruda' }
     ],
     Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', sgteNome: 'CARLOS NUNES PRADO – 1º Sgt', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
