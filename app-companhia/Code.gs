@@ -226,8 +226,26 @@ function criarDoc(tipo, titulo, blocos, referencia) {
     par.setAlignment(o.c ? AL.CENTER : o.r ? AL.RIGHT : o.l ? AL.LEFT : AL.JUSTIFY);
     if (par.getText()) par.editAsText().setBold(!!o.b).setItalic(!!o.i);
   };
+  // **negrito** e __sublinhado__ dentro do texto: tira as marcas e aplica nos trechos
+  const rico = function (par, txt) {
+    let pos = 0, neg = false, sub = false; const trechos = [];
+    String(txt || '').split(/(\*\*|__)/).forEach(function (x) { if (x === '**') neg = !neg; else if (x === '__') sub = !sub; else if (x) { trechos.push([pos, pos + x.length - 1, neg, sub]); pos += x.length; } });
+    par.setText(trechos.length ? String(txt).replace(/\*\*|__/g, '') : '');
+    if (!pos) return;
+    const t = par.editAsText();
+    trechos.forEach(function (r) { if (r[2]) t.setBold(r[0], r[1], true); if (r[3]) t.setUnderline(r[0], r[1], true); });
+  };
   blocos.forEach(function (b) {
-    if (b.paisagem) return;
+    if (b.paisagem || b.cont || b.moldura) return;
+    if (b.hr) { body.appendHorizontalRule(); return; }
+    if (b.pont) {
+      // linha pontilhada até o valor (ex.: "1. TEMPO COMPUTADO … 00a 06m 04d")
+      const lab = String(b.pont[0]).replace(/\*\*|__/g, ''), val = String(b.pont[1]).replace(/\*\*|__/g, '');
+      const par = body.appendParagraph(lab + ' ' + new Array(Math.max(4, 100 - lab.length - val.length)).join('.') + ' ' + val);
+      estilo(par, { l: 1, sz: b.sz, mt: b.mt });
+      if (b.ind) par.setIndentStart(b.ind).setIndentFirstLine(b.ind);
+      return;
+    }
     if (b.esp) { for (let k = 0; k < b.esp; k++) estilo(body.appendParagraph(''), {}); return; }
     if (b.img) {
       const m = String(b.img).match(/^data:(.+?);base64,(.*)$/);
@@ -256,6 +274,7 @@ function criarDoc(tipo, titulo, blocos, referencia) {
           for (let k = 0; k < cel.getNumChildren(); k++) {
             const par = cel.getChild(k).asParagraph();
             estilo(par, { b: o.b || r < (b.h || 0), i: o.i, c: o.l ? false : (o.c !== undefined ? o.c : !b.esq), l: o.l || b.esq, sz: b.sz || 9 });
+            if (o.m) rico(par, o.v);
           }
           col += o.span || 1;
         });
@@ -270,7 +289,10 @@ function criarDoc(tipo, titulo, blocos, referencia) {
       });
       return;
     }
-    estilo(body.appendParagraph(b.p || ''), b);
+    const par = body.appendParagraph(b.p || '');
+    estilo(par, b);
+    if (b.m) rico(par, b.p);
+    if (b.ind) par.setIndentStart(b.ind).setIndentFirstLine(b.ind);
   });
   const primeiro = body.getChild(0);
   if (body.getNumChildren() > 1 && primeiro.getType() === DocumentApp.ElementType.PARAGRAPH && primeiro.asParagraph().getText() === '' && !primeiro.asParagraph().getNumChildren()) body.removeChild(primeiro);

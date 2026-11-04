@@ -980,26 +980,53 @@ const CSS_DOC = `.doc { font: 10pt/1.25 Arial, "Liberation Sans", Helvetica, san
   .doc tr:last-child td { border-bottom: 1px solid #000; } .doc tr:hover td { background: none; }
   .doc table.sem td, .doc table.sem tr:last-child td { border: 0; }
   .doc p.b { page-break-after: avoid; }
-  .doc img { display: inline-block; height: auto; }`;
+  .doc img { display: inline-block; height: auto; }
+  .doc hr { border: 0; border-top: 1px solid #000; margin: 4pt 0; }
+  .doc .moldura { border: 1px solid #000; padding: 8pt 10pt; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .doc p.pont { display: flex; align-items: baseline; gap: 2pt; }
+  .doc p.pont .pt { flex: 1; border-bottom: 1.5px dotted #000; transform: translateY(-3pt); min-width: 12pt; }
+  .doc table.centro { width: auto; margin: 4pt auto; } .doc table.centro td { padding: 1pt 10pt; }`;
 
 function htmlDoc(blocos) {
-  return '<div class="doc">' + blocos.map(b => {
-    if (b.paisagem) return '';
+  const corpo = blocos.map(b => {
+    if (b.paisagem || b.cont || b.moldura) return '';
+    if (b.hr) return '<hr>';
+    if (b.pont) return `<p class="pont" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}"><span>${htmlRico(b.pont[0])}</span><span class="pt"></span><span>${htmlRico(b.pont[1])}</span></p>`;
     if (b.esp) return `<div style="height:${b.esp * 1.25}em"></div>`;
     if (b.img) return `<p class="c"><img src="${b.img}" alt="" style="width:${b.w || 56}pt"></p>`;
     if (b.t) {
       const cols = b.w ? `<colgroup>${b.w.map(x => `<col style="width:${x}%">`).join('')}</colgroup>` : '';
-      return `<table class="${b.sem ? 'sem' : ''} ${b.esq ? 'esq' : ''}" style="font-size:${b.sz || 9}pt">${cols}${b.t.map((linha, r) => `<tr>${linha.map(c => {
+      return `<table class="${b.sem ? 'sem' : ''} ${b.esq ? 'esq' : ''} ${b.centro ? 'centro' : ''}" style="font-size:${b.sz || 9}pt">${cols}${b.t.map((linha, r) => `<tr>${linha.map(c => {
         const o = c && typeof c === 'object' ? c : { v: c };
         const cls = [(o.b || r < (b.h || 0)) ? 'b' : '', o.i ? 'i' : '', o.l ? 'l' : o.c ? 'c' : ''].join(' ').trim();
-        return `<td${o.span > 1 ? ` colspan="${o.span}"` : ''}${cls ? ` class="${cls}"` : ''}>${esc(o.v ?? '') || '\u00a0'}</td>`;
+        return `<td${o.span > 1 ? ` colspan="${o.span}"` : ''}${cls ? ` class="${cls}"` : ''}>${(o.m ? htmlRico(o.v) : esc(o.v ?? '')) || '\u00a0'}</td>`;
       }).join('')}</tr>`).join('')}</table>`;
     }
     const cls = [b.c ? 'c' : b.r ? 'r' : b.l ? 'l' : 'j', b.b ? 'b' : '', b.i ? 'i' : ''].join(' ');
-    return `<p class="${cls}" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}">${esc(b.p) || '\u00a0'}</p>`;
-  }).join('') + '</div>';
+    return `<p class="${cls}" style="${b.junto ? 'break-after:avoid;page-break-after:avoid;' : ''}${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}">${(b.m ? htmlRico(b.p) : esc(b.p)) || '\u00a0'}</p>`;
+  }).join('');
+  return '<div class="doc">' + (blocos.some(b => b.moldura) ? `<div class="moldura">${corpo}</div>` : corpo) + '</div>';
 }
-const paginaCss = d => d.blocos.some(b => b.paisagem) ? '@page { size: A4 landscape; margin: 12mm; }' : '@page { size: A4; margin: 15mm 15mm 15mm 22mm; }';
+/**
+ * Página do documento. Com o bloco { cont: { esq: [linhas], dir: [linhas] } }, da 2ª página em diante sai um cabeçalho de
+ * continuação no alto (ex.: "Continuação das Folhas de Alterações"), com "Folha Nr 02, 03…" pela numeração da página.
+ */
+const paginaCss = d => {
+  const base = d.blocos.some(b => b.paisagem) ? '@page { size: A4 landscape; margin: 12mm; }' : '@page { size: A4; margin: 15mm 15mm 15mm 22mm; }';
+  const c = (d.blocos.find(b => b.cont) || {}).cont;
+  if (!c) return base;
+  const q = l => '"' + l.map(x => String(x).replace(/["\\]/g, '')).join('\\A ') + '"';
+  return base + ` @page { margin-top: 30mm; @top-left { content: ${q(c.esq)}; white-space: pre; font: 9.5pt Arial, sans-serif; vertical-align: bottom; padding-bottom: 3mm; border-bottom: 1px solid #000; }
+    @top-right { content: "Folha Nr " counter(page, decimal-leading-zero) "\\A ${(c.dir || []).map(x => String(x).replace(/["\\]/g, '')).join('\\A ')}"; white-space: pre; text-align: right; font: 9.5pt Arial, sans-serif; vertical-align: bottom; padding-bottom: 3mm; border-bottom: 1px solid #000; } }
+    @page :first { margin-top: 15mm; @top-left { content: none; border: 0; } @top-right { content: none; border: 0; } }`;
+};
+/** Texto com marcação simples: **negrito** e __sublinhado__ (pode combinar). */
+function trechosRicos(t) {
+  const out = []; let b = false, u = false;
+  String(t ?? '').split(/(\*\*|__)/).forEach(x => { if (x === '**') b = !b; else if (x === '__') u = !u; else if (x) out.push({ t: x, b, u }); });
+  return out;
+}
+const htmlRico = t => trechosRicos(t).map(x => { let h = esc(x.t); if (x.u) h = `<u>${h}</u>`; if (x.b) h = `<b>${h}</b>`; return h; }).join('');
 
 /** Documentos do sistema: cada função recebe um argumento e devolve { tipo, titulo, ref, blocos }. */
 const DOCS = {};
@@ -1033,7 +1060,7 @@ async function arquivarPdf(d) {
     toast('Gerando PDF e arquivando no Drive…');
     const reg = await api('salvarPdf', d.tipo, titulo, completo, d.ref || '');
     registrarDocumento(reg, d);
-    const onde = `PDFs / ${d.tipo} / ${new Date().getFullYear()}`;
+    const onde = `PDFs / ${d.tipo} / ${new Date().getFullYear()} / ${pad(new Date().getMonth() + 1)} - ${MESES_EXT[new Date().getMonth()].replace(/^./, c => c.toUpperCase())}`;
     if (!NO_GOOGLE) return toast('Demonstração: na versão instalada o PDF é salvo no Drive em ' + onde + '.');
     avisoArquivo(reg, onde, 'PDF arquivado', 'Abrir PDF para imprimir');
     return reg;
@@ -1159,7 +1186,7 @@ function renderMenu() {
     <div class="grow" onclick="fecharMenu()"></div></nav>`;
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { fecharMenu(); fecharPops(); } });
-window.addEventListener('resize', () => document.documentElement.style.setProperty('--hdr-h', $('#hdr').offsetHeight + 'px'));
+window.addEventListener('resize', () => { const h = $('#hdr'); if (h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px'); });
 
 // ---------- atalhos e usuário (pop-ups do cabeçalho)
 // ---------- tema e tela cheia (preferência guardada só neste aparelho)
@@ -2056,7 +2083,7 @@ function vAlteracoes() {
     <div class="card"><h3 style="margin-top:0">1ª parte</h3>${meses.map(mm => {
       const doMes = it.filter(x => Number(x.data.slice(5, 7)) - 1 === mm);
       return `<div class="mes-alt"><b>${MESES_MAI[mm]}</b>${doMes.length ? doMes.map(x => `<div class="item-alt ${fora[x.k] ? 'fora' : ''}"><label><input type="checkbox" ${fora[x.k] ? '' : 'checked'} onchange="S.filtro.altFora={...(S.filtro.altFora||{}),'${x.k}':!this.checked};render()"></label>
-        <div><b>${esc(x.titulo)}</b> <span class="tag">${esc(x.origem)}</span><div>- a ${Number(x.data.slice(8))}${esc(refBi(x.ref))} - ${esc(x.texto)}</div></div>${x.id && pode() ? `<button class="btn sm" onclick="editarAlteracao('${x.id}')">Editar</button>` : ''}</div>`).join('') : ' <span class="muted">Sem Alteração</span>'}</div>`; }).join('')}
+        <div><b>${esc(x.titulo)}</b> <span class="tag">${esc(x.origem)}</span>${htmlDoc(blocosTextoAlt(`- a ${pad(Number(x.data.slice(8)))}${refBi(x.ref)} - `, x.texto)).replace('class="doc"', 'class="doc" style="font-size:13px"')}</div>${x.id && pode() ? `<button class="btn sm" onclick="editarAlteracao('${x.id}')">Editar</button>` : ''}</div>`).join('') : ' <span class="muted">Sem Alteração</span>'}</div>`; }).join('')}
       ${pode() ? `<div class="bar" style="margin-top:8px"><button class="btn sm" onclick="editarAlteracao(null,'${mid}')">+ Lançamento para ${esc(nomeMil(m))}</button></div>` : ''}</div>
     <div class="card" style="margin-top:14px"><div class="bar"><h3 style="margin:0" class="grow">2ª parte – tempos de serviço</h3>${pode() ? `<button class="btn sm" onclick="editarTempos('${mid}','${sem}')">Conferir / corrigir</button>` : ''}</div>
       <table class="mini tempos">${[['1. Tempo computado de efetivo serviço (TC)', tp.tc], ['a. Arregimentado', tp.arreg], [`&nbsp;&nbsp;- ${esc(tp.arregPeriodo)}`, esc(tp.arregObs)], ['b. Não arregimentado', tp.naoArreg], ['2. Tempo de serviço não computável (TNC)', tp.tnc],
@@ -2068,7 +2095,7 @@ function editarAlteracao(id, mid) {
   abrirForm({ titulo: id ? 'Alteração' : 'Novo lançamento de alteração', valores: a, campos: [
     { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'data', l: 'Data (dia do BI)', t: 'date', req: true },
     { k: 'ref', l: 'Publicação (ex.: Adt Nr 178 ao BI Nr 231)' }, { k: 'titulo', l: 'Assunto (sai em maiúsculas)', req: true },
-    { k: 'texto', l: 'Texto da alteração', t: 'textarea', req: true }],
+    { k: 'texto', l: 'Texto da alteração', t: 'textarea', req: true, ajuda: 'Negrito: **assim**. Tabela pequena (ex.: Turma e Menção): uma linha por linha, com | entre as colunas: Turma | Menção  e na linha de baixo  S-1 | R' }],
     aoSalvar: o => salvar('Alteracoes', [{ ...o, titulo: o.titulo.toUpperCase() }]),
     extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Alteracoes','${id}',true)">Excluir</button></div>` : '' });
 }
@@ -2080,30 +2107,51 @@ function editarTempos(mid, sem) {
     aoSalvar: o => { const bad = ['tc', 'arreg', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'].find(k => !/^\d+a \d{2}m \d{2}d$/.test(o[k])); if (bad) throw new Error('Use o formato 00a 00m 00d.');
       return salvar('FolhasAlt', [{ id: mid + '|' + sem, militarId: mid, semestre: sem, ...Object.fromEntries(['folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'].map(k => [k, o[k]])) }]); } });
 }
+/** Texto da alteração em blocos: linhas com " | " viram uma tabelinha centralizada (1ª linha = títulos); **negrito** é aceito. */
+function blocosTextoAlt(prefixo, texto) {
+  const B = [], linhas = String(texto || '').split('\n'); let par = [], tab = [];
+  const fechaPar = () => { if (par.length) { B.push({ p: (B.length ? '' : prefixo) + par.join(' '), m: 1, mt: 3 }); par = []; } };
+  const fechaTab = () => { if (tab.length) { B.push({ t: tab.map(l => l.split('|').map(c => ({ v: c.trim(), m: 1 }))), h: 1, centro: 1, sz: 10 }); tab = []; } };
+  linhas.forEach(l => { if (/\s\|\s|^\s*\|/.test(l)) { fechaPar(); tab.push(l.replace(/^\s*\||\|\s*$/g, '')); } else if (l.trim()) { fechaTab(); par.push(l.trim()); } });
+  fechaPar(); fechaTab();
+  if (!B.length || B[0].t) B.unshift({ p: prefixo, m: 1, mt: 3 });
+  return B;
+}
+/** Nome completo com o nome de guerra sublinhado, como na folha. */
+function nomeSublinhado(m) {
+  const nome = (m.nomeCompleto || m.nomeGuerra || '').toUpperCase(), g = normNome(m.nomeGuerra);
+  if (!g) return nome;
+  const pal = nome.split(' '), gp = g.split(' ');
+  for (let i = 0; i + gp.length <= pal.length; i++) if (gp.every((x, k) => normNome(pal[i + k]) === x)) { pal[i] = '__' + pal[i]; pal[i + gp.length - 1] += '__'; break; }
+  return pal.join(' ');
+}
 DOCS.folhaAlt = chave => {
   let [mid, sem] = chave.split('|'); if (!/^\d{4}-[12]$/.test(sem || '')) sem = semestreDe(hoje());
   const m = MIL[mid], { ini, fim } = periodoSem(sem), tp = temposFolha(mid, sem), fora = S.filtro.altFora || {};
   const it = itensFolha(mid, sem, S.filtro.altOp || { afast: true, disc: true, missoes: false }).filter(x => !fora[x.k]);
-  const B = [];
-  const esq = cabecalhoDoc().map(l => ({ v: l.toUpperCase(), b: 1, l: 1 }));
-  const dir = [{ v: 'FOLHA DE ALTERAÇÕES', b: 1, l: 1 }, { v: `GUARNIÇÃO DE ${String(cfg('guarnicao') || cfg('cidade').replace(/^Quartel em\s*/i, '').split(/[-,]/)[0]).toUpperCase()}`, b: 1, l: 1 }, { v: `FOLHA Nr ${tp.folhaNr}`, b: 1, l: 1 }];
+  const periodo = `PERÍODO DE ${pad(Number(ini.slice(8)))} ${MESES[Number(ini.slice(5, 7)) - 1]} A ${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]}`;
+  const guarnicao = String(cfg('guarnicao') || cfg('cidade').replace(/^Quartel em\s*/i, '').split(/[-,]/)[0]).toUpperCase();
+  const esq = cabecalhoDoc().map(l => l.toUpperCase()), dir = ['FOLHA DE ALTERAÇÕES', `GUARNIÇÃO ${/^(D[AEO]|EM)\s/.test(guarnicao) ? '' : 'DE '}${guarnicao}`, `FOLHA Nr ${tp.folhaNr}`];
   const n = Math.max(esq.length, dir.length);
-  B.push({ t: Array.from({ length: n }, (_, i) => [esq[i] || '', dir[i] || '']), sem: 1, w: [55, 45], sz: 10 });
-  B.push({ t: [[{ v: `NOME: ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`, b: 1, l: 1 }, ''], [{ v: `POSTO: ${(m.postoGrad || '').toUpperCase()}`, b: 1, l: 1 }, ''],
-    [{ v: `ARMA (SERVIÇO): ${(m.arma || '').toUpperCase()}`, b: 1, l: 1 }, { v: nomeSem(sem), b: 1, l: 1 }], [{ v: `IDENTIDADE: ${m.idt || ''}`, b: 1, l: 1 }, { v: `PERÍODO DE ${Number(ini.slice(8))} ${MESES[Number(ini.slice(5, 7)) - 1]} A ${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]}`, b: 1, l: 1 }]], sem: 1, w: [55, 45], sz: 10 });
-  B.push({ p: '1ª PARTE', b: 1, l: 1, mt: 10 });
+  const B = [{ moldura: true }, { cont: { esq: [cfg('siglaOM') || '', 'Continuação das Folhas de Alterações', `Do ${m.postoGrad || ''} ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`], dir: [nomeSem(sem), periodo] } },
+    { t: Array.from({ length: n }, (_, i) => [{ v: esq[i] || '', b: 1, l: 1 }, { v: dir[i] || '', b: 1, l: 1 }]), sem: 1, w: [55, 45], sz: 10.5 }, { esp: 1 },
+    { t: [[{ v: `**NOME: ${nomeSublinhado(m)}**`, l: 1, m: 1 }, ''], [{ v: `POSTO: ${(m.postoGrad || '').toUpperCase()}`, b: 1, l: 1 }, ''],
+      [{ v: `ARMA (SERVIÇO): ${(m.arma || '').toUpperCase()}`, b: 1, l: 1 }, { v: nomeSem(sem), b: 1, l: 1 }], [{ v: `IDENTIDADE: ${m.idt || ''}`, b: 1, l: 1 }, { v: periodo, b: 1, l: 1 }]], sem: 1, w: [55, 45], sz: 10.5 },
+    { hr: 1 }, { p: '**__1ª PARTE__**', m: 1, l: 1, mt: 8 }];
   for (let k = 0; k < 6; k++) {
     const mm = (sem.endsWith('1') ? 0 : 6) + k, doMes = it.filter(x => Number(x.data.slice(5, 7)) - 1 === mm);
-    if (!doMes.length) { B.push({ p: `${MESES_MAI[mm]}: Sem Alteração`, l: 1, mt: 6 }); continue; }
-    B.push({ p: MESES_MAI[mm], l: 1, mt: 6 });
-    doMes.forEach(x => B.push({ p: x.titulo, b: 1, l: 1, mt: 4 }, { p: `- a ${Number(x.data.slice(8))}${refBi(x.ref)} - ${x.texto}`, mt: 2 }));
+    if (!doMes.length) { B.push({ p: `__${MESES_MAI[mm]}__: Sem Alteração`, m: 1, l: 1, mt: 10 }); continue; }
+    B.push({ p: `__${MESES_MAI[mm]}__`, m: 1, l: 1, mt: 10, junto: 1 });
+    doMes.forEach(x => B.push({ p: `**${x.titulo}**`, m: 1, l: 1, mt: 8, sz: 10.5, junto: 1 }, ...blocosTextoAlt(`- a ${pad(Number(x.data.slice(8)))}${refBi(x.ref)} - `, x.texto)));
   }
-  B.push({ p: '2ª PARTE', b: 1, l: 1, mt: 12 });
   const ate = `${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]} ${fim.slice(0, 4)}`;
-  B.push({ t: [['1. TEMPO COMPUTADO DE EFETIVO SERVIÇO (TC)', tp.tc], ['a. Arregimentado', tp.arreg], [`    - ${tp.arregPeriodo}`, tp.arregObs], ['b. Não Arregimentado', tp.naoArreg], ['2. TEMPO SV NÃO COMPUTÁVEL (TNC)', tp.tnc],
-    [`3. TEMPO DE SERVIÇO COMPUTÁVEL PARA A MEDALHA MILITAR até ${ate} (TSCMM)`, tp.tscmm], ['4. TEMPO DE SERVIÇO NACIONAL RELEVANTE (TSNR)', tp.tsnr], [`5. TEMPO TOTAL DE EFETIVO SERVIÇO até ${ate} (TTES)`, tp.ttes]]
-    .map(([l, v]) => [{ v: l, l: 1 }, { v, r: 1 }]), sem: 1, w: [80, 20], sz: 10 });
-  B.push({ esp: 1 }, { p: localData(hoje()), c: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao')));
+  B.push({ p: '**__2ª PARTE__**', m: 1, l: 1, mt: 12, junto: 1 },
+    { pont: ['1. TEMPO COMPUTADO DE EFETIVO SERVIÇO (TC)', tp.tc], mt: 6 }, { pont: ['a. Arregimentado', tp.arreg] }, { pont: [`- ${tp.arregPeriodo}`, tp.arregObs], ind: 28 }, { pont: ['b. Não Arregimentado', tp.naoArreg] },
+    { pont: ['2. TEMPO SV NÃO COMPUTÁVEL (TNC)', tp.tnc], mt: 8 },
+    { p: '3. TEMPO DE SERVIÇO COMPUTÁVEL PARA A MEDALHA MILITAR', l: 1, mt: 8, junto: 1 }, { pont: [`até ${ate} (TSCMM)`, tp.tscmm], ind: 150 },
+    { pont: ['4. TEMPO DE SERVIÇO NACIONAL RELEVANTE (TSNR)', tp.tsnr], mt: 8 },
+    { p: '5. TEMPO TOTAL DE EFETIVO SERVIÇO', l: 1, mt: 8, junto: 1 }, { pont: [`até ${ate} (TTES)`, tp.ttes], ind: 150 },
+    { esp: 1 }, { p: localData(hoje()), c: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao')));
   return { tipo: 'Alteracoes', ref: chave, titulo: `Alteracoes ${sem.replace('-', ' ')} semestre - ${m.postoGrad} ${m.nomeGuerra}`, blocos: B };
 };
 
