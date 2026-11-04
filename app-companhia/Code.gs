@@ -10,7 +10,7 @@
 
 const TABELAS = {
   Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs',
-    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma'],
+    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma', 'servicoAnterior'],
   Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
   TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico', 'qtd', 'folga', 'contagem'],
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs', 'troca', 'trocaMotivo'],
@@ -26,6 +26,9 @@ const TABELAS = {
   Acessos: ['email', 'nome', 'data', 'status'],
   Locais: ['id', 'nome', 'ordem'],
   Alteracoes: ['id', 'militarId', 'data', 'ref', 'titulo', 'texto', 'origem'],
+  Controles: ['id', 'responsavelId', 'prazo', 'situacao', 'obs', 'atualizado'],
+  QCP: ['id', 'funcao', 'postoPrevisto', 'fracao', 'ocupanteId', 'ordem'],
+  Fotos: ['id', 'dado'],
   FolhasAlt: ['id', 'militarId', 'semestre', 'folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'],
   Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
@@ -36,7 +39,7 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
-const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte',
+const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte',
   Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
 const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
 // Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).
@@ -140,6 +143,7 @@ function bootstrap() {
     if (t === 'Log') return;
     if ((t === 'Usuarios' || t === 'Acessos') && u.perfil !== 'admin') return;
     if (RESERVADAS.indexOf(t) >= 0 && !temJd_(u)) return;
+    if (t === 'Fotos') return; // fotos vêm uma a uma (lerFoto), para não pesar a abertura
     try { dados[t] = lerTabela_(t); } catch (e) { if (RESERVADAS.indexOf(t) < 0) throw e; dados[t] = []; }
   });
   return { usuario: u, dados: dados };
@@ -299,6 +303,13 @@ function usuario_() {
 }
 
 // ---------------------------------------------------------------- acesso de usuários
+
+/** Foto do militar (data URL reduzida), lida só quando a tela precisa. */
+function lerFoto(id) {
+  if (usuario_().perfil === 'bloqueado') throw new Error('Sem acesso.');
+  const f = lerTabela_('Fotos').filter(function (x) { return x.id === id; })[0];
+  return f ? f.dado : '';
+}
 
 /** E-mail de quem está acessando. Funciona mesmo sem acesso à planilha (tela "sem acesso"). */
 function quemSou() {

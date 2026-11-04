@@ -237,6 +237,9 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .item-alt { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: start; padding: 6px 0 0 4px; }
 .item-alt.fora, .item-bi.fora { opacity: .45; }
 table.tempos td { padding: 4px 8px; border-bottom: 1px dotted var(--border); }
+.foto-mil { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-right: 12px; min-width: 96px; }
+.foto-mil img { width: 96px; height: 120px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+.foto-mil > span { width: 96px; height: 120px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border); border-radius: 6px; font-size: 12px; }
 .grid-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .grid-resumo h3 { margin: 0 0 8px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
 .lista-jd { margin: 0; padding-left: 18px; } .lista-jd li { margin-bottom: 8px; } .lista-jd a, .linha-tempo a { cursor: pointer; color: var(--azul); }
@@ -462,13 +465,14 @@ const Demo = {
   async importarDePlanilha() { throw new Error('A importação direto do Google Drive só funciona com o sistema publicado no Google. Use um arquivo .xlsx ou .csv.'); },
   async salvarPdf(tipo, titulo, html, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'PDF' }], []))[0]; },
   async criarDoc(tipo, titulo, blocos, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'Google Doc' }], []))[0]; },
+  async lerFoto(id) { return ((this.db().Fotos || []).find(f => f.id === id) || {}).dado || ''; },
   async arquivarAntigos() { throw new Error('O arquivo anual funciona só na versão instalada no Google.'); },
   resetar() { localStorage.removeItem(this.KEY); this.mem = null; }
 };
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => podeEm(S.view);
 const admin = () => S.user?.perfil === 'admin';
@@ -501,7 +505,7 @@ const TIPOS_PADRAO = [
   { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' },
   { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' }
 ];
-const TIPOS_IMPED = ['Cumprindo punição', 'Férias', 'Dispensa médica', 'Dispensa', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
+const TIPOS_IMPED = ['Cumprindo punição', 'Férias', 'Dispensa médica', 'Dispensa', 'Dispensa como recompensa', 'Dispensa para instalação', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
 const TIPOS_MISSAO = ['Operação', 'Apoio', 'Instrução', 'Representação', 'Transporte', 'Guarda/Segurança', 'Outra'];
 const STATUS_MISSAO = ['Planejada', 'Em andamento', 'Concluída', 'Cancelada'];
 const CATEGORIAS = ['Armamento', 'Munição', 'Comunicações', 'Viatura', 'Intendência', 'Saúde', 'Engenharia', 'Informática', 'Mobiliário', 'Outro'];
@@ -1081,7 +1085,7 @@ function docDeLista(l, tipo, titulo, extra = []) {
 // Telas agrupadas por área (função de quem trabalha nelas): o 3º item é a área.
 const VIEWS = [
   ['painel', 'Painel', ''],
-  ['efetivo', 'Efetivo', 'sgte'], ['escala', 'Escala de serviço', 'sgte'], ['missoes', 'Missões', 'sgte'], ['aditamentos', 'Aditamentos', 'sgte'], ['alteracoes', 'Alterações', 'sgte'],
+  ['sargenteacao', 'Sargenteação', 'sgte'], ['efetivo', 'Efetivo', 'sgte'], ['escala', 'Escala de serviço', 'sgte'], ['missoes', 'Missões', 'sgte'], ['aditamentos', 'Aditamentos', 'sgte'], ['alteracoes', 'Alterações', 'sgte'],
   ['material', 'Material', 'mat'],
   ['arranchamento', 'Arranchamento', 'furriel'],
   ['disciplina', 'Justiça e disciplina', 'jd'],
@@ -1098,6 +1102,7 @@ const podeEm = v => ['admin', 'editor'].includes(S.user?.perfil) && temArea(area
 // Itens da 2ª coluna: `aba` liga a uma aba da tela, `filtro` a um filtro, `acao` roda depois de abrir a tela, `editor` = só para quem edita.
 const SUBMENU = {
   efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  sargenteacao: [{ l: 'Controles da Sargenteação', aba: 'controles' }, { l: 'Mapa da Força', aba: 'mapa' }, { l: 'QCP', aba: 'qcp' }, { l: 'Férias, recompensa e instalação', aba: 'ferias' }],
   alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
   disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
@@ -1261,6 +1266,8 @@ function vPainel() {
   const pedidosAcesso = admin() ? (S.db.Acessos || []).filter(x => x.status === 'Pendente').length : 0;
   return `${pedidosAcesso ? `<div class="card" style="border-left:4px solid var(--ouro);margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><b class="grow">${pedidosAcesso} pedido(s) de acesso aguardando aprovação.</b><button class="btn sm pri" onclick="S.sub.config='usuarios';irPara('config')">Ver pedidos</button></div>` : ''}<h2>Painel</h2><p class="sub">${esc(SEMANA[dataDe(d).getDay()])}, ${fmtExt(d)} · escala <span class="tag ${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}">${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}</span>${FERIADO[d] ? ' · ' + esc(FERIADO[d]) : ''}</p>
   <div class="cards">
+    ${temArea('sgte') ? (() => { const c = controles(), atr = c.filter(atrasado).length, fz = c.filter(x => x.situacao !== 'Em dia').length;
+      return `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
     <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
     <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
     <div class="card"><h4>Cautelas abertas</h4><div class="big">${abertas.length}</div><div class="${vencidas.length ? 'tag dng' : 'muted'}">${vencidas.length} vencida(s)</div></div>
@@ -1288,6 +1295,7 @@ const CAMPOS_MIL = [
   { k: 'funcao', l: 'Função' },
   { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], padrao: 'Sim', vazio: false },
   { k: 'arma', l: 'Arma / quadro / serviço (ex.: Intendência)' },
+  { k: 'servicoAnterior', l: 'Serviço público/privado anterior à incorporação (órgão e tempo)', full: true },
   { k: 'dataPraca', l: 'Data de praça', t: 'date' },
   { k: 'comportamento', l: 'Comportamento (cabos e soldados)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
   { secao: 'Tripão' },
@@ -1798,6 +1806,181 @@ DOCS.missao = id => {
     { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] };
 };
 
+// ============================================================ sargenteação: controles, mapa da força, QCP, férias e dispensas
+// Os 23 controles cobrados na orientação técnica da Sargenteação. `ir` = tela do sistema que resolve o controle (vazio = feito fora, por enquanto).
+const CONTROLES_PADRAO = [
+  ['mapa', 'Mapa da Força (SUCEMNet / mapa físico)', ['sargenteacao', 'mapa']], ['chamada', 'Plano de chamada', ['efetivo', 'chamada']],
+  ['fatd', 'Controle de FATD', ['disciplina', 'fatd']], ['banco', 'Banco de dados dos militares', ['efetivo', 'tripao']],
+  ['visita', 'Livro de visita médica', null], ['sat', 'SAT (auxílio-transporte)', null], ['alteracoes', 'Alterações', ['alteracoes', 'folha']],
+  ['fichas', 'Fichas disciplinares', ['disciplina', 'ficha']], ['aditamentos', 'Aditamentos', ['aditamentos']], ['pernoite', 'Folha de pernoite', null],
+  ['qcp', 'QCP atualizado', ['sargenteacao', 'qcp']], ['servpub', 'Cabos com serviço público/privado anterior à incorporação', ['efetivo', 'mil']],
+  ['adidos', 'Pasta dos militares adidos (LTSP)', null], ['acidente', 'Registro de acidente', null], ['sindicancia', 'BI solução de sindicância', null],
+  ['dso', 'Documentos sanitários de origem (AO e ISO)', null], ['incapazes', 'Tratamento médico dos incapazes e inspeções de saúde', null],
+  ['ferias', 'Controle de férias', ['sargenteacao', 'ferias']], ['recompensa', 'Controle de dispensas como recompensa', ['sargenteacao', 'ferias']],
+  ['instalacao', 'Controle de instalação', ['sargenteacao', 'ferias']], ['escala', 'Escrituração da escala de serviço', ['escala', 'mes']],
+  ['engaj', 'Engajamento e reengajamento (prorrogação de tempo de serviço)', null], ['feriasotemp', 'Férias dos oficiais temporários / reengajamento', ['sargenteacao', 'ferias']]
+].map(([id, item, ir], i) => ({ id, ordem: i + 1, item, ir }));
+const SIT_CONTROLE = ['Em dia', 'Melhorar', 'Fazer'];
+/** Controles com o que foi gravado (responsável, prazo, situação) por cima da lista padrão. */
+const controles = () => CONTROLES_PADRAO.map(c => ({ ...c, situacao: 'Fazer', ...((S.db.Controles || []).find(x => x.id === c.id) || {}) }));
+const atrasado = c => c.situacao !== 'Em dia' && c.prazo && c.prazo < hoje();
+
+function vSargenteacao() {
+  const t = S.sub.sargenteacao || 'controles';
+  const cab = `<h2>Sargenteação</h2><p class="sub">Controles da Sargenteação no modelo da orientação técnica, mapa da força, QCP e controle de férias, recompensas e instalação.</p>
+    ${abas('sargenteacao', [['controles', 'Controles'], ['mapa', 'Mapa da Força'], ['qcp', 'QCP'], ['ferias', 'Férias e dispensas']])}`;
+  if (t === 'mapa') return cab + vMapaForca();
+  if (t === 'qcp') return cab + vQcp();
+  if (t === 'ferias') return cab + vFeriasCtrl();
+  const resp = S.filtro.ctrlResp || '';
+  const lista = controles().filter(c => !resp || c.responsavelId === resp);
+  const n = s => controles().filter(c => c.situacao === s).length, atr = controles().filter(atrasado).length;
+  const quem = [...new Set(controles().map(c => c.responsavelId).filter(Boolean))];
+  return cab + `<div class="cards">${[['Em dia', 'ok'], ['Melhorar', 'warn'], ['Fazer', 'dng']].map(([s, c]) => `<div class="card"><h4>${s}</h4><div class="big"><span class="tag ${c}" style="font-size:28px;padding:2px 14px">${n(s)}</span></div></div>`).join('')}
+      <div class="card"><h4>Prazo vencido</h4><div class="big">${atr}</div><div class="muted">de ${controles().length} controles</div></div></div>
+    <div class="bar"><label class="muted">Responsável <select onchange="S.filtro.ctrlResp=this.value;render()"><option value="">Todos</option>${quem.map(id => `<option value="${id}" ${id === resp ? 'selected' : ''}>${esc(nomeMil(id))}</option>`).join('')}</select></label><span class="grow"></span>${botoesDocGrandes('controles', '', 'controles')}</div>
+    ${tabela(lista, [
+      { l: 'Nº', v: c => c.ordem, c: 'num', s: c => c.ordem }, { l: 'Controle', v: c => `<b>${esc(c.item)}</b>${c.obs ? `<div class="muted">${esc(c.obs)}</div>` : ''}` },
+      { l: 'Responsável', v: c => c.responsavelId ? esc(nomeMil(c.responsavelId)) : '<span class="muted">—</span>' },
+      { l: 'Prazo', v: c => c.prazo ? `<span class="${atrasado(c) ? 'tag dng' : ''}">${fmt(c.prazo)}</span>` : '' },
+      { l: 'Situação', v: c => `<span class="tag ${c.situacao === 'Em dia' ? 'ok' : c.situacao === 'Melhorar' ? 'warn' : 'dng'}">${esc(c.situacao)}</span>` },
+      { l: 'No sistema', v: c => c.ir ? `<a style="cursor:pointer" onclick="abrirControle('${c.id}')">abrir →</a>` : '<span class="muted">em breve</span>' }
+    ], pode() ? c => `<button class="btn sm" onclick="editarControle('${c.id}')">Editar</button>` : null)}
+    <p class="muted">"No sistema" leva à tela que resolve o controle. Os marcados "em breve" (saúde, SAT, pernoite, engajamento, sindicância) vêm nas próximas fases; até lá, registre a situação aqui.</p>`;
+}
+function abrirControle(id) {
+  const c = CONTROLES_PADRAO.find(x => x.id === id), [v, aba] = c.ir;
+  if (aba) { if (v === 'disciplina') S.filtro.jd = aba; else S.sub[v] = aba; }
+  irPara(v);
+}
+function editarControle(id) {
+  const c = controles().find(x => x.id === id);
+  abrirForm({ titulo: `${c.ordem}. ${c.item}`, valores: c, campos: [
+    { k: 'responsavelId', l: 'Responsável', t: 'militar' }, { k: 'prazo', l: 'Prazo', t: 'date' },
+    { k: 'situacao', l: 'Situação', t: 'select', o: SIT_CONTROLE, vazio: false }, { k: 'obs', l: 'Orientação / observação', t: 'textarea' }],
+    aoSalvar: o => salvar('Controles', [{ id, responsavelId: o.responsavelId, prazo: o.prazo, situacao: o.situacao, obs: o.obs, atualizado: hoje() }]) });
+}
+LISTAS.controles = () => ({ nome: `Controles da Sargenteacao ${hoje()}`, cab: ['Nº', 'Controle', 'Responsável', 'Prazo', 'Situação', 'Observação'],
+  linhas: controles().map(c => [c.ordem, c.item, c.responsavelId ? nomeMil(c.responsavelId) : '', fmt(c.prazo), c.situacao, c.obs || '']) });
+DOCS.controles = () => { const l = LISTAS.controles(); return { tipo: 'Efetivo', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
+  { p: 'CONTROLES DA SARGENTEAÇÃO', c: 1, b: 1 }, { esp: 1 }, { t: [l.cab, ...l.linhas.map(r => r.map((v, i) => i === 1 || i === 5 ? { v: String(v), l: 1 } : String(v)))], h: 1, w: [5, 38, 18, 10, 9, 20], sz: 9 },
+  { esp: 1 }, { p: localData(hoje()), r: 1 }] }; };
+
+// ---------- Mapa da Força: previsto (QCP) x existente, e a situação de cada um na data
+const COLS_MAPA = [['pronto', 'Pronto'], ['ferias', 'Férias'], ['dispensa', 'Dispensa'], ['missao', 'Missão'], ['curso', 'Curso / estágio'], ['punicao', 'Cumprindo punição'], ['outro', 'Outros']];
+const colunaMapa = s => s.tipo === 'pronto' ? 'pronto' : s.tipo === 'missao' ? 'missao' : s.texto === 'Férias' ? 'ferias' : /^Dispensa/.test(s.texto) ? 'dispensa' : /^Curso/.test(s.texto) ? 'curso' : s.texto === 'Cumprindo punição' ? 'punicao' : 'outro';
+function dadosMapa(iso) {
+  const ativos = militaresAtivos(), qcp = S.db.QCP || [];
+  const postos = POSTOS.filter(p => ativos.some(m => m.postoGrad === p) || qcp.some(q => q.postoPrevisto === p));
+  const linhas = postos.map(p => {
+    const l = { p, previsto: qcp.filter(q => q.postoPrevisto === p).length, existente: 0, ...Object.fromEntries(COLS_MAPA.map(([k]) => [k, 0])), quem: {} };
+    ativos.filter(m => m.postoGrad === p).forEach(m => { l.existente++; const k = colunaMapa(situacao(m.id, iso)); l[k]++; if (k !== 'pronto') (l.quem[k] ||= []).push(m); });
+    return l;
+  });
+  const tot = { p: 'TOTAL', previsto: 0, existente: 0, ...Object.fromEntries(COLS_MAPA.map(([k]) => [k, 0])) };
+  linhas.forEach(l => ['previsto', 'existente', ...COLS_MAPA.map(c => c[0])].forEach(k => { tot[k] += l[k]; }));
+  return { linhas, tot };
+}
+function vMapaForca() {
+  const iso = S.filtro.mapaData || hoje(), { linhas, tot } = dadosMapa(iso);
+  // claro/excesso só onde há previsto no QCP (no total, soma só esses postos)
+  const dif = l => l === tot ? (linhas.some(x => x.previsto) ? linhas.filter(x => x.previsto).reduce((s, x) => s + x.existente - x.previsto, 0) : '') : l.previsto ? l.existente - l.previsto : '';
+  const cel = (l, k) => l[k] ? (l.quem && l.quem[k] ? `<span title="${esc(l.quem[k].map(nomeMil).join(', '))}">${l[k]}</span>` : l[k]) : '<span class="muted">0</span>';
+  return `<div class="bar"><label class="muted">Situação em <input type="date" value="${iso}" onchange="S.filtro.mapaData=this.value;render()"></label><span class="grow"></span>${botoesDocGrandes('mapaForca', iso, 'mapaForca')}</div>
+    <div class="tw"><table><thead><tr><th>P/G</th><th class="num">Previsto (QCP)</th><th class="num">Existente</th><th class="num">Claro (−) / excesso (+)</th>${COLS_MAPA.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead>
+    <tbody>${[...linhas, tot].map((l, i) => `<tr ${i === linhas.length ? 'style="font-weight:700;background:var(--surface-2)"' : ''}><td>${esc(l.p)}</td><td class="num">${l.previsto || (i === linhas.length ? 0 : '<span class="muted">—</span>')}</td><td class="num">${l.existente}</td>
+      <td class="num">${dif(l) === '' ? '' : `<span class="tag ${dif(l) < 0 ? 'dng' : dif(l) > 0 ? 'info' : 'ok'}">${dif(l) > 0 ? '+' : ''}${dif(l)}</span>`}</td>${COLS_MAPA.map(([k]) => `<td class="num">${cel(l, k)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="muted">Sai do efetivo, dos afastamentos e das missões lançados no sistema; passe o mouse no número para ver os nomes. O previsto vem do QCP (aba ao lado). Confira e lance no SUCEMNet.</p>`;
+}
+LISTAS.mapaForca = () => { const iso = S.filtro.mapaData || hoje(), { linhas, tot } = dadosMapa(iso);
+  return { nome: `Mapa da Forca ${iso}`, cab: ['P/G', 'Previsto', 'Existente', 'Claro/excesso', ...COLS_MAPA.map(c => c[1])], linhas: [...linhas, tot].map(l => [l.p, l.previsto, l.existente, l === tot ? linhas.filter(x => x.previsto).reduce((s, x) => s + x.existente - x.previsto, 0) : l.previsto ? l.existente - l.previsto : '', ...COLS_MAPA.map(([k]) => l[k])]) }; };
+DOCS.mapaForca = iso => { S.filtro.mapaData = iso; const l = LISTAS.mapaForca(), { linhas } = dadosMapa(iso);
+  const fora = linhas.flatMap(x => COLS_MAPA.filter(([k]) => k !== 'pronto' && x.quem[k]).flatMap(([k, n]) => x.quem[k].map(m => [nomeMil(m), n, (situacao(m.id, iso).ate ? 'até ' + fmt(situacao(m.id, iso).ate) : '')])));
+  return { tipo: 'Efetivo', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 }, { p: `MAPA DA FORÇA – SITUAÇÃO EM ${fmtMil(iso)}`, c: 1, b: 1 }, { esp: 1 },
+    { t: [l.cab, ...l.linhas.map(r => r.map(String))], h: 1, sz: 9 },
+    ...(fora.length ? [{ p: 'MILITARES FORA DE PRONTO', b: 1, l: 1, mt: 10 }, { t: [['Militar', 'Situação', 'Até'], ...fora], h: 1, w: [40, 35, 25], sz: 9 }] : []),
+    { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] }; };
+
+// ---------- QCP: cargos previstos e quem ocupa
+function vQcp() {
+  const qcp = (S.db.QCP || []).slice().sort((a, b) => String(a.fracao).localeCompare(b.fracao) || postoIdx(a.postoPrevisto) - postoIdx(b.postoPrevisto) || num(a.ordem) - num(b.ordem));
+  const ocupados = new Set(qcp.map(q => q.ocupanteId).filter(Boolean));
+  const semCargo = militaresAtivos().filter(m => !ocupados.has(m.id));
+  return `<div class="bar"><span class="muted">${qcp.length} cargo(s) · <b>${qcp.filter(q => !q.ocupanteId).length}</b> vago(s) · ${semCargo.length} militar(es) sem cargo no QCP</span><span class="grow"></span>
+      ${pode() ? '<button class="btn pri" onclick="editarQcp()">+ Cargo</button>' : ''}${botoesDocGrandes('qcp', '', 'qcp')}</div>
+    ${tabela(qcp, [{ l: 'Fração', v: q => esc(q.fracao || '') }, { l: 'Cargo / função', v: q => `<b>${esc(q.funcao)}</b>` }, { l: 'P/G previsto', v: q => esc(q.postoPrevisto) },
+      { l: 'Ocupante', v: q => q.ocupanteId ? `${esc(nomeMil(q.ocupanteId))}${MIL[q.ocupanteId] && MIL[q.ocupanteId].postoGrad !== q.postoPrevisto ? ' <span class="tag warn" title="P/G diferente do previsto">P/G ≠</span>' : ''}` : '<span class="tag dng">vago</span>' }],
+      pode() ? q => `<button class="btn sm" onclick="editarQcp('${q.id}')">Editar</button>` : null)}
+    ${semCargo.length ? `<p class="muted">Sem cargo no QCP: ${semCargo.map(m => esc(nomeMil(m))).join(', ')}.</p>` : ''}`;
+}
+function editarQcp(id) {
+  const q = id ? S.db.QCP.find(x => x.id === id) : { fracao: '', ordem: String((S.db.QCP || []).length + 1) };
+  abrirForm({ titulo: id ? 'Cargo do QCP' : 'Novo cargo no QCP', valores: q, campos: [
+    { k: 'funcao', l: 'Cargo / função (ex.: Sargenteante)', req: true }, { k: 'postoPrevisto', l: 'P/G previsto', t: 'select', o: POSTOS, req: true },
+    { k: 'fracao', l: 'Fração (Cmdo, 1º Pel, Pel Sup…)' }, { k: 'ocupanteId', l: 'Ocupante', t: 'militar' }, { k: 'ordem', l: 'Ordem', t: 'number' }],
+    aoSalvar: o => salvar('QCP', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('QCP','${id}',true)">Excluir</button></div>` : '' });
+}
+LISTAS.qcp = () => ({ nome: `QCP ${hoje()}`, cab: ['Fração', 'Cargo / função', 'P/G previsto', 'Ocupante'],
+  linhas: (S.db.QCP || []).slice().sort((a, b) => String(a.fracao).localeCompare(b.fracao) || postoIdx(a.postoPrevisto) - postoIdx(b.postoPrevisto)).map(q => [q.fracao || '', q.funcao, q.postoPrevisto, q.ocupanteId ? nomeMil(q.ocupanteId) : 'VAGO']) });
+DOCS.qcp = () => { const l = LISTAS.qcp(); return { tipo: 'Efetivo', titulo: l.nome, blocos: [...blocosCabecalho(), { esp: 1 }, { p: 'QUADRO DE CARGOS PREVISTOS (QCP)', c: 1, b: 1 }, { esp: 1 },
+  { t: [l.cab, ...l.linhas.map(r => [r[0], { v: r[1], l: 1 }, r[2], { v: r[3], l: 1 }])], h: 1, w: [18, 40, 14, 28], sz: 9.5 }, { esp: 1 }, { p: localData(hoje()), r: 1 }] }; };
+
+// ---------- Férias, dispensas como recompensa e instalação: quem já tirou, quanto e quando
+const diasAfast = i => i.inicio ? diasEntre(i.inicio, i.fim || i.inicio) : 0;
+function linhasFerias(ano) {
+  const doAno = (m, tipo, porRef) => S.db.Impedimentos.filter(i => i.militarId === m.id && i.tipo === tipo && (porRef && i.referencia ? String(i.referencia) === ano : String(i.inicio).startsWith(ano)));
+  return militaresAtivos().map(m => {
+    const f = doAno(m, 'Férias', true), r = doAno(m, 'Dispensa como recompensa'), ins = doAno(m, 'Dispensa para instalação');
+    const fd = f.reduce((s, i) => s + diasAfast(i), 0);
+    return { m, f, fd, gozadas: f.filter(i => (i.fim || i.inicio) < hoje()).reduce((s, i) => s + diasAfast(i), 0), r, rd: r.reduce((s, i) => s + diasAfast(i), 0), ins, id: ins.reduce((s, i) => s + diasAfast(i), 0) };
+  });
+}
+function vFeriasCtrl() {
+  const ano = S.filtro.ferAno || hoje().slice(0, 4), ver = S.filtro.ferVer || 'todos';
+  let l = linhasFerias(ano);
+  if (ver === 'falta') l = l.filter(x => x.fd < 30);
+  const per = list => list.map(i => `${fmt(i.inicio)}${i.fim && i.fim !== i.inicio ? ' a ' + fmt(i.fim) : ''}`).join('; ');
+  return `<div class="bar"><label class="muted">Ano <input type="number" value="${ano}" style="width:90px" onchange="S.filtro.ferAno=this.value;render()"></label>
+      <select onchange="S.filtro.ferVer=this.value;render()" aria-label="Quem"><option value="todos">Todos</option><option value="falta" ${ver === 'falta' ? 'selected' : ''}>Só quem ainda não tirou os 30 dias</option></select>
+      <span class="grow"></span>${pode() ? `<button class="btn" onclick="S.sub.efetivo='imp';irPara('efetivo');editarImp()">+ Lançar afastamento</button>` : ''}<button class="btn" onclick="exportarExcel('feriasCtrl')">Excel</button></div>
+    ${tabela(l, [{ l: 'Militar', v: x => `<b>${esc(nomeMil(x.m))}</b>` },
+      { l: `Férias ${ano}`, v: x => `<span class="tag ${x.fd >= 30 ? 'ok' : x.fd ? 'warn' : 'dng'}">${x.fd}/30 dias</span>${x.f.length ? `<div class="muted">${esc(per(x.f))}</div>` : ''}`, s: x => x.fd },
+      { l: 'Já gozadas', v: x => `${x.gozadas} dia(s)`, s: x => x.gozadas },
+      { l: 'Dispensa como recompensa', v: x => x.rd ? `${x.rd} dia(s)<div class="muted">${esc(per(x.r))}</div>` : '<span class="muted">—</span>', s: x => x.rd },
+      { l: 'Instalação', v: x => x.id ? `${x.id} dia(s)<div class="muted">${esc(per(x.ins))}</div>` : '<span class="muted">—</span>', s: x => x.id }])}
+    <p class="muted">Férias contam pelo ano de referência lançado no afastamento (ou pelo ano de início). Recompensa e instalação são lançadas em Efetivo → Afastamentos, com o tipo "Dispensa como recompensa" ou "Dispensa para instalação" e o BI na referência.</p>`;
+}
+LISTAS.feriasCtrl = () => { const ano = S.filtro.ferAno || hoje().slice(0, 4);
+  return { nome: `Ferias e dispensas ${ano}`, cab: ['P/G', 'Nome', `Férias ${ano} (dias)`, 'Períodos de férias', 'Recompensa (dias)', 'Instalação (dias)'],
+    linhas: linhasFerias(ano).map(x => [x.m.postoGrad, x.m.nomeGuerra, x.fd, x.f.map(i => `${fmt(i.inicio)} a ${fmt(i.fim)}`).join('; '), x.rd, x.id]) }; };
+
+// ---------- foto do militar (aba Fotos, carregada só quando precisa, para não pesar a abertura do sistema)
+const FOTOS = {};
+async function fotoDe(mid) {
+  if (FOTOS[mid] !== undefined) return FOTOS[mid];
+  try { FOTOS[mid] = (await api('lerFoto', mid)) || ''; } catch (e) { FOTOS[mid] = ''; }
+  return FOTOS[mid];
+}
+/** Reduz a foto para 240 px (JPEG) e grava. */
+async function trocarFoto(mid, file) {
+  if (!file) return;
+  try {
+    const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
+    const k = Math.min(1, 240 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+    cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    const dado = cv.toDataURL('image/jpeg', 0.82);
+    await api('salvarLote', 'Fotos', [{ id: mid, dado }], []);
+    FOTOS[mid] = dado; toast('Foto atualizada.'); render();
+  } catch (e) { toast('Não foi possível usar esta imagem: ' + e.message, true); }
+}
+function fotoHTML(mid, editar) {
+  const f = FOTOS[mid];
+  if (f === undefined) { fotoDe(mid).then(() => { const el = document.getElementById('foto-' + mid); if (el) el.outerHTML = fotoHTML(mid, editar); }); }
+  return `<div class="foto-mil" id="foto-${mid}">${f ? `<img src="${f}" alt="Foto de ${esc(nomeMil(mid))}">` : `<span class="muted">${f === undefined ? '…' : 'sem foto'}</span>`}
+    ${editar ? `<label class="btn sm">${f ? 'Trocar' : 'Pôr foto'}<input type="file" accept=".jpg,.jpeg,.png,.webp" hidden onchange="trocarFoto('${mid}',this.files[0])"></label>` : ''}</div>`;
+}
+
 // ============================================================ alterações (folha de alterações semestral, por militar)
 // Lançamentos na aba Alteracoes (importados do BI do SISBOL ou à mão); a 2ª parte (tempos) de cada folha fica em FolhasAlt.
 const MESES_MAI = MESES_EXT.map(m => m.toUpperCase());
@@ -2175,7 +2358,7 @@ function eventosDisc(mid) {
 function fichaDisciplinar(mid) {
   const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid);
   const abrir = e => e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
-  return `<div class="card"><div class="bar" style="align-items:flex-start"><div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
+  return `<div class="card"><div class="bar" style="align-items:flex-start">${fotoHTML(mid, pode())}<div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
     ${temComportamento(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Sem classificação de comportamento (só cabos e soldados).</span>'}</div>
     ${sug ? `<p class="muted" style="font-size:12.5px">${esc(sug.motivo)} Conferir sempre com o RDE.</p>` : ''}
     <div class="bar"><span class="tag dng">${disc('FATD').filter(f => f.militarId === mid && f.decisao === 'Punido').length} punição(ões)</span><span class="tag ok">${disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).length} elogio(s)</span><span class="tag">${disc('Anotacao').filter(a => a.militarId === mid).length} anotação(ões)</span><span class="grow"></span>
@@ -2317,7 +2500,7 @@ DOCS.fatd = id => {
 DOCS.fichaDisc = mid => {
   const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid).slice().reverse();
   return { tipo: 'Disciplina', ref: mid, titulo: `Ficha disciplinar - ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 },
-    { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, { esp: 1 },
+    { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, { esp: 1 }, ...(FOTOS[mid] ? [{ img: FOTOS[mid], w: 70 }] : []),
     { t: [[{ v: 'Militar', b: 1, l: 1 }, { v: `${nomeMil(m)}${m.nomeCompleto ? ' – ' + m.nomeCompleto : ''}`, l: 1 }], ...(sug ? [[{ v: 'Comportamento', b: 1, l: 1 }, { v: (m.comportamento || '—') + ` (sugerido pelo sistema: ${sug.c})`, l: 1 }]] : [])], w: [22, 78], sz: 9.5 },
     { esp: 1 },
     { t: [['Data', 'Registro', 'Detalhe'], ...(ev.length ? ev.map(e => [fmt(e.d), { v: e.t, l: 1 }, { v: e.x || '', l: 1 }]) : [['', 'Nada registrado', '']])], h: 1, w: [13, 30, 57], sz: 9 },
@@ -3643,7 +3826,7 @@ function vArquivo() {
   <p class="muted">Todo documento tem os botões Imprimir, PDF (arquivado aqui) e Editável (Google Doc; no Docs, Arquivo → Fazer download → Word ou PDF). Listas também saem em Excel.</p>`;
 }
 
-const VIEWS_FN = { painel: vPainel, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, alteracoes: vAlteracoes, material: vMaterial, arranchamento: vArranchamento,
+const VIEWS_FN = { painel: vPainel, sargenteacao: vSargenteacao, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, alteracoes: vAlteracoes, material: vMaterial, arranchamento: vArranchamento,
   disciplina: () => `<h2>Justiça e disciplina</h2><p class="sub">FATD, punições, elogios, Boca Podre e ficha disciplinar. Só os oficiais e o Sgte (marcação "Justiça e Disciplina" no cadastro do usuário).</p>${vDisciplina()}`, arquivo: vArquivo, config: vConfig, busca: vBusca };
 function vArranchamento() {
   return `<h2>Arranchamento</h2><p class="sub">Área do Furriel.</p><div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
@@ -3711,6 +3894,12 @@ function semente() {
       { id: 'al2', militarId: 'm20', data: `${ano}-${d.slice(5, 7)}-05`, ref: 'BI Nr 042', titulo: 'CURSO DE CABO – MATRÍCULA', texto: 'Matriculado no Curso de Formação de Cabos, a contar desta data, devendo apresentar-se à seção de instrução.', origem: 'importado BI Nr 042' }
     ],
     FolhasAlt: [],
+    Fotos: [],
+    Controles: [{ id: 'fatd', responsavelId: 'm23', prazo: addDias(d, 10), situacao: 'Em dia', obs: '' }, { id: 'ferias', responsavelId: 'm16', prazo: addDias(d, -2), situacao: 'Melhorar', obs: 'Montar planilha: quem já tirou e quem mudou o período.' },
+      { id: 'mapa', responsavelId: 'm4', prazo: addDias(d, 5), situacao: 'Melhorar', obs: 'Atualizar o SUCEMNet diariamente.' }, { id: 'chamada', responsavelId: 'm24', prazo: '', situacao: 'Em dia', obs: '' }],
+    QCP: [['Cmdo', 'Comandante da Cia', 'Cap', 'm1'], ['Cmdo', 'Subtenente', 'ST', 'm3'], ['Cmdo', 'Sargenteante', '1º Sgt', 'm4'], ['Pel Sup', 'Cmt Pel Sup', '1º Ten', 'm2'], ['Pel Sup', 'Adjunto do Pel', '2º Sgt', 'm5'],
+      ['1º Pel', 'Cmt 1º Pel', '2º Ten', 'm31'], ['1º Pel', 'Cmt GC', '3º Sgt', 'm8'], ['1º Pel', 'Cmt GC', '3º Sgt', 'm9'], ['1º Pel', 'Cmt GC', '3º Sgt', ''], ['Cmdo', 'Furriel', '3º Sgt', 'm10'], ['Cmdo', 'Enc Mat', 'Cb', 'm12']]
+      .map(([fracao, funcao, postoPrevisto, ocupanteId], i) => ({ id: 'q' + (i + 1), fracao, funcao, postoPrevisto, ocupanteId, ordem: String(i + 1) })),
     Disciplina: [
       { id: 'jd1', tipo: 'FATD', numero: `001/${ano}`, dataFato: addDias(d, -12), militarId: 'm20', participante: '3º Sgt Rocha', relato: 'o militar deixou de comparecer à formatura matinal sem motivo justificado.', ciencia: addDias(d, -11), defesaData: addDias(d, -9), defesa: 'Alegou problema com o transporte, sem comprovação.', decisao: 'Punido', dataDecisao: addDias(d, -6), classificacao: 'Leve', enquadramento: '15', punicao: 'Repreensão', dias: '', inicio: '', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
       { id: 'jd2', tipo: 'FATD', numero: `002/${ano}`, dataFato: addDias(d, -2), militarId: 'm22', participante: '1º Sgt Nunes', relato: 'o militar apresentou-se para o serviço com o uniforme em desalinho e sem a cobertura.', ciencia: addDias(d, -1), origemId: 'jd8' },
