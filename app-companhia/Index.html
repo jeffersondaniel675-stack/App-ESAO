@@ -1699,6 +1699,17 @@ LISTAS.escala = ym => {
   return { nome: `Escala de servico ${ym}`, cab: ['Dia', 'Cor', ...tipos.map(t => t.nome)],
     linhas: diasDoMes(ym).map(d => [`${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}`, corDoDia(d) === 'V' ? 'V' : 'P', ...tipos.map(t => { const l = lancamentos(d, t.id); return l.length ? l.filter(e => !emBranco(e)).map(e => nomeMil(quemTira(e))).join(' / ') || '—' : aplica(t, d) ? '' : '·'; })]) };
 };
+/**
+ * Documento no padrão da escala de serviço: cabeçalho com o brasão, título centralizado em negrito, uma tabela com a
+ * linha de títulos e a assinatura do Cmt (ou várias, lado a lado). `antes`/`depois` = blocos extras em volta da tabela.
+ */
+function docPadrao({ tipo, titulo, nome, cab, linhas, w, sz = 8, paisagem, antes = [], depois = [], assin }) {
+  const ass = assin || [[cfg('cmtNome'), cfg('cmtFuncao')]];
+  const assinaturas = ass.length === 1 ? blocosAssinatura(ass[0][0], ass[0][1]) : [{ esp: 3 },
+    { t: [ass.map(() => '______________________________'), ass.map(a => ({ v: a[0] || '', b: 1 })), ass.map(a => ({ v: a[1] || '', b: 1 }))], sem: 1, sz: 9.5 }];
+  return { tipo, titulo: nome, blocos: [...((paisagem ?? cab.length > 7) ? [{ paisagem: true }] : []), ...blocosCabecalho(), { esp: 1 }, { p: titulo, c: 1, b: 1 }, { esp: 1 },
+    ...antes, { t: [cab, ...(linhas.length ? linhas : [[{ v: 'Nada lançado.', span: cab.length }]])], h: 1, sz, ...(w ? { w } : {}) }, ...depois, ...assinaturas] };
+}
 DOCS.escala = ym => {
   const l = LISTAS.escala(ym), [y, m] = ym.split('-');
   return { tipo: 'Escalas', titulo: l.nome, blocos: [...(l.cab.length > 7 ? [{ paisagem: true }] : []), ...blocosCabecalho(), { esp: 1 },
@@ -1925,9 +1936,10 @@ async function excluirSaude(id) {
 }
 DOCS.livroVisita = mes => {
   const [a, m] = mes.split('-'), l = sau('visita').filter(x => String(x.data).startsWith(mes)).sort((x, y) => x.data.localeCompare(y.data));
-  return { tipo: 'Saude', titulo: `Livro de visita medica ${mes}`, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 }, { p: `LIVRO DE VISITA MÉDICA – ${MESES_EXT[m - 1].toUpperCase()} DE ${a}`, c: 1, b: 1 }, { esp: 1 },
-    { t: [['Data', 'P/G e nome', 'Motivo', 'Local', 'Resultado', 'Dispensa', 'BI', 'Visto'], ...(l.length ? l.map(x => [fmt(x.data), { v: nomeMil(x.militarId), l: 1 }, { v: x.motivo || '', l: 1 }, x.local || '', x.resultado || '', num(x.dias) ? `${x.dias} dia(s) até ${fmt(fimDispensa(x))}` : '', x.bi || '', '']) : [['', 'Nenhuma visita no mês', '', '', '', '', '', '']])], h: 1, w: [9, 18, 22, 11, 12, 13, 8, 7], sz: 9 },
-    { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('sgteNome') || '', 'Sargenteante')] };
+  return docPadrao({ tipo: 'Saude', nome: `Livro de visita medica ${mes}`, titulo: `LIVRO DE VISITA MÉDICA – ${MESES_EXT[m - 1].toUpperCase()} DE ${a}`, paisagem: true,
+    cab: ['Nº', 'Data', 'P/G e nome', 'Motivo', 'Local', 'Resultado', 'Dispensa', 'BI', 'Visto'],
+    linhas: l.map((x, i) => [pad(i + 1), fmt(x.data), { v: nomeMil(x.militarId), l: 1 }, { v: x.motivo || '', l: 1 }, x.local || '', x.resultado || '', num(x.dias) ? `${x.dias} dia(s) até ${fmt(fimDispensa(x))}` : '', x.bi || '', '']),
+    w: [5, 9, 17, 21, 11, 12, 12, 7, 6], assin: [[cfg('sgteNome'), 'Sargenteante'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
 };
 
 // ---------- SAT (auxílio-transporte): quem recebe e os dias a descontar no mês pelos afastamentos
@@ -1966,8 +1978,9 @@ LISTAS.sat = () => { const mes = S.filtro.satMes || hoje().slice(0, 7);
   return { nome: `Auxilio-transporte ${mes}`, cab: ['P/G', 'Nome', 'Situação', 'Dias úteis', 'Dias afastado', 'Motivos', 'Dias com direito', 'Valor no mês', 'Referência'],
     linhas: calcSat(mes, !!S.filtro.satMissao).map(r => [MIL[r.x.militarId]?.postoGrad || '', MIL[r.x.militarId]?.nomeGuerra || '', r.x.situacao, r.uteis, r.fora, Object.entries(r.motivos).map(([k, n]) => `${k}: ${n}`).join(', '), r.direito, r.valor ? Number(r.valor.toFixed(2)) : '', r.x.ref || '']) }; };
 DOCS.sat = mes => { S.filtro.satMes = mes; const l = LISTAS.sat(), [a, m] = mes.split('-');
-  return { tipo: 'Efetivo', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 }, { p: `RELAÇÃO DO AUXÍLIO-TRANSPORTE – ${MESES_EXT[m - 1].toUpperCase()} DE ${a}`, c: 1, b: 1 }, { esp: 1 },
-    { t: [l.cab, ...l.linhas.map(r => r.map((v, i) => i === 7 && v !== '' ? reais(v) : String(v)))], h: 1, w: [7, 14, 9, 8, 9, 22, 9, 10, 12], sz: 9 }, { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] }; };
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `AUXÍLIO-TRANSPORTE – ${MESES_EXT[m - 1].toUpperCase()} DE ${a}`, paisagem: true,
+    cab: ['Nº', ...l.cab], linhas: l.linhas.map((r, i) => [pad(i + 1), ...r.map((v, j) => j === 1 || j === 5 ? { v: String(v), l: 1 } : j === 7 && v !== '' ? reais(v) : String(v))]), w: [4, 6, 13, 8, 7, 8, 21, 8, 10, 15] });
+};
 
 // ---------- Folha de pernoite: quem dorme no quartel na noite do dia (escala + militares de outra SU)
 const extrasPernoite = d => { try { return JSON.parse(((S.db.Pernoite || []).find(x => x.id === d) || {}).extras || '[]'); } catch (e) { return []; } };
@@ -1991,10 +2004,12 @@ async function maisPernoite() {
 }
 async function tirarPernoite(i) { const d = S.filtro.pernoite || hoje(), ex = extrasPernoite(d); ex.splice(i, 1); await salvar('Pernoite', [{ id: d, extras: JSON.stringify(ex) }]); render(); }
 DOCS.pernoite = d => { const l = linhasPernoite(d);
-  return { tipo: 'Escalas', titulo: `Folha de pernoite ${d}`, blocos: [...blocosCabecalho(), { esp: 1 }, { p: `FOLHA DE PERNOITE – ${dataMai(d)}`, c: 1, b: 1 }, { esp: 1 },
-    { t: [['Nº', 'P/G e nome', 'Serviço / motivo', 'SU', 'Rubrica'], ...l.map((x, i) => [pad(i + 1), { v: x.nome, l: 1 }, { v: x.sv || '', l: 1 }, x.su || '', '']), ...Array.from({ length: Math.max(0, 4 - l.length) }, (_, i) => [pad(l.length + i + 1), '', '', '', ''])], h: 1, w: [6, 34, 30, 12, 18], sz: 10 },
-    { esp: 2 }, { t: [['_____________________________', '_____________________________'], ['Sargento de Dia', 'Oficial de Dia'], ['', ''], ['', ''], ['_____________________________', '_____________________________'], [`Sargenteante – ${cfg('sigla')}`, `Cmt ${cfg('sigla')}`]], sem: 1, sz: 9.5 }] };
+  return docPadrao({ tipo: 'Escalas', nome: `Folha de pernoite ${d}`, titulo: `FOLHA DE PERNOITE – ${dataMai(d)}`, paisagem: false,
+    cab: ['Nº', 'P/G e nome', 'Serviço / motivo', 'SU', 'Rubrica'], linhas: [...l.map((x, i) => [pad(i + 1), { v: x.nome, l: 1 }, { v: x.sv || '', l: 1 }, x.su || '', '']), ...Array.from({ length: Math.max(0, 4 - l.length) }, (_, i) => [pad(l.length + i + 1), '', '', '', ''])],
+    w: [6, 34, 30, 12, 18], sz: 9, assin: [[nomeServico(d, /sargento de dia/i), 'Sargento de Dia'], [nomeServico(d, /oficial de dia/i), 'Oficial de Dia'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
 };
+/** Quem tira o serviço (ex.: Sargento de Dia) no dia, para o campo de assinatura. */
+const nomeServico = (d, re) => { const t = tiposAtivos().find(x => re.test(x.nome)); const e = t && lancamentos(d, t.id).find(x => !emBranco(x)); return e ? nomeMil(quemTira(e)) : ''; };
 
 // ============================================================ sargenteação: controles, mapa da força, QCP, férias e dispensas
 // Os 23 controles cobrados na orientação técnica da Sargenteação. `ir` = tela do sistema que resolve o controle (vazio = feito fora, por enquanto).
@@ -2053,9 +2068,11 @@ function editarControle(id) {
 }
 LISTAS.controles = () => ({ nome: `Controles da Sargenteacao ${hoje()}`, cab: ['Nº', 'Controle', 'Responsável', 'Prazo', 'Situação', 'Observação'],
   linhas: controles().map(c => [c.ordem, c.item, c.responsavelId ? nomeMil(c.responsavelId) : '', fmt(c.prazo), c.situacao, c.obs || '']) });
-DOCS.controles = () => { const l = LISTAS.controles(); return { tipo: 'Efetivo', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
-  { p: 'CONTROLES DA SARGENTEAÇÃO', c: 1, b: 1 }, { esp: 1 }, { t: [l.cab, ...l.linhas.map(r => r.map((v, i) => i === 1 || i === 5 ? { v: String(v), l: 1 } : String(v)))], h: 1, w: [5, 38, 18, 10, 9, 20], sz: 9 },
-  { esp: 1 }, { p: localData(hoje()), r: 1 }] }; };
+DOCS.controles = () => { const l = LISTAS.controles();
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `CONTROLES DA SARGENTEAÇÃO – ${fmtMil(hoje())}`, paisagem: true, cab: l.cab,
+    linhas: l.linhas.map(r => r.map((v, i) => i === 1 || i === 5 ? { v: String(v), l: 1 } : String(v))), w: [5, 38, 18, 10, 9, 20], sz: 8.5,
+    assin: [[cfg('sgteNome'), 'Sargenteante'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
+};
 
 // ---------- Mapa da Força: previsto (QCP) x existente, e a situação de cada um na data
 const COLS_MAPA = [['pronto', 'Pronto'], ['ferias', 'Férias'], ['dispensa', 'Dispensa'], ['missao', 'Missão'], ['curso', 'Curso / estágio'], ['punicao', 'Cumprindo punição'], ['outro', 'Outros']];
@@ -2086,11 +2103,10 @@ function vMapaForca() {
 LISTAS.mapaForca = () => { const iso = S.filtro.mapaData || hoje(), { linhas, tot } = dadosMapa(iso);
   return { nome: `Mapa da Forca ${iso}`, cab: ['P/G', 'Previsto', 'Existente', 'Claro/excesso', ...COLS_MAPA.map(c => c[1])], linhas: [...linhas, tot].map(l => [l.p, l.previsto, l.existente, l === tot ? linhas.filter(x => x.previsto).reduce((s, x) => s + x.existente - x.previsto, 0) : l.previsto ? l.existente - l.previsto : '', ...COLS_MAPA.map(([k]) => l[k])]) }; };
 DOCS.mapaForca = iso => { S.filtro.mapaData = iso; const l = LISTAS.mapaForca(), { linhas } = dadosMapa(iso);
-  const fora = linhas.flatMap(x => COLS_MAPA.filter(([k]) => k !== 'pronto' && x.quem[k]).flatMap(([k, n]) => x.quem[k].map(m => [nomeMil(m), n, (situacao(m.id, iso).ate ? 'até ' + fmt(situacao(m.id, iso).ate) : '')])));
-  return { tipo: 'Efetivo', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 }, { p: `MAPA DA FORÇA – SITUAÇÃO EM ${fmtMil(iso)}`, c: 1, b: 1 }, { esp: 1 },
-    { t: [l.cab, ...l.linhas.map(r => r.map(String))], h: 1, sz: 9 },
-    ...(fora.length ? [{ p: 'MILITARES FORA DE PRONTO', b: 1, l: 1, mt: 10 }, { t: [['Militar', 'Situação', 'Até'], ...fora], h: 1, w: [40, 35, 25], sz: 9 }] : []),
-    { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] }; };
+  const fora = linhas.flatMap(x => COLS_MAPA.filter(([k]) => k !== 'pronto' && x.quem[k]).flatMap(([k, n]) => x.quem[k].map(m => [{ v: nomeMil(m), l: 1 }, n, situacao(m.id, iso).ate ? fmt(situacao(m.id, iso).ate) : ''])));
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `MAPA DA FORÇA – ${dataMai(iso)}`, paisagem: true, cab: l.cab, linhas: l.linhas.map((r, i) => r.map(v => i === l.linhas.length - 1 ? { v: String(v), b: 1 } : String(v))),
+    depois: fora.length ? [{ esp: 1 }, { p: 'MILITARES FORA DE PRONTO', c: 1, b: 1 }, { t: [['P/G e nome', 'Situação', 'Até'], ...fora], h: 1, w: [45, 35, 20], sz: 8 }] : [] });
+};
 
 // ---------- QCP: cargos previstos e quem ocupa
 function vQcp() {
@@ -2114,8 +2130,10 @@ function editarQcp(id) {
 }
 LISTAS.qcp = () => ({ nome: `QCP ${hoje()}`, cab: ['Fração', 'Cargo / função', 'P/G previsto', 'Ocupante'],
   linhas: (S.db.QCP || []).slice().sort((a, b) => String(a.fracao).localeCompare(b.fracao) || postoIdx(a.postoPrevisto) - postoIdx(b.postoPrevisto)).map(q => [q.fracao || '', q.funcao, q.postoPrevisto, q.ocupanteId ? nomeMil(q.ocupanteId) : 'VAGO']) });
-DOCS.qcp = () => { const l = LISTAS.qcp(); return { tipo: 'Efetivo', titulo: l.nome, blocos: [...blocosCabecalho(), { esp: 1 }, { p: 'QUADRO DE CARGOS PREVISTOS (QCP)', c: 1, b: 1 }, { esp: 1 },
-  { t: [l.cab, ...l.linhas.map(r => [r[0], { v: r[1], l: 1 }, r[2], { v: r[3], l: 1 }])], h: 1, w: [18, 40, 14, 28], sz: 9.5 }, { esp: 1 }, { p: localData(hoje()), r: 1 }] }; };
+DOCS.qcp = () => { const l = LISTAS.qcp();
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `QUADRO DE CARGOS PREVISTOS (QCP) – ${fmtMil(hoje())}`, paisagem: false, cab: ['Nº', ...l.cab],
+    linhas: l.linhas.map((r, i) => [pad(i + 1), r[0], { v: r[1], l: 1 }, r[2], { v: r[3], l: 1 }]), w: [6, 16, 38, 13, 27], sz: 9 });
+};
 
 // ---------- Férias, dispensas como recompensa e instalação: quem já tirou, quanto e quando
 const diasAfast = i => i.inicio ? diasEntre(i.inicio, i.fim || i.inicio) : 0;
@@ -3783,6 +3801,7 @@ const CAMPOS_CFG = [
   { secao: 'Assinatura dos documentos' },
   { k: 'cmtNome', l: 'Nome do comandante (ex.: FULANO DE TAL – Cap)' },
   { k: 'cmtFuncao', l: 'Função (ex.: Cmt Cia)' },
+  { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
   { secao: 'Material' },
   { k: 'cautelaSetor', l: 'Setor que entrega o material na cautela (ex.: Depósito da 1ª Cia)' },
   { k: 'cautelaAss1', l: 'Assinatura no alto da cautela, à esquerda' },
@@ -4131,7 +4150,7 @@ function semente() {
       { id: 'jd9', tipo: 'Anotacao', data: addDias(d, -3), militarId: 'm25', subtipo: 'Atraso', relato: 'Chegou 10 min atrasado para o expediente. Orientado.', participante: '3º Sgt Vieira' },
       { id: 'jd10', tipo: 'Anotacao', data: addDias(d, -5), militarId: 'm16', subtipo: 'Orientação', relato: 'Orientado sobre o preenchimento do livro de partes do Cb Gda.', participante: 'ST Arruda' }
     ],
-    Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
+    Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', sgteNome: 'CARLOS NUNES PRADO – 1º Sgt', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
   };
   // Gera um mês de escala para a demonstração já abrir com dados.
   S.db = db; indexar();
