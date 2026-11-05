@@ -57,24 +57,24 @@ O caminho inverso, de planilha para o sistema, aceita **.xlsx, .xls, .ods, .csv 
    - Salve (Ctrl+S).
 4. **Rode a configuração inicial.** No topo do editor escolha a função `setup` e clique em **Executar**. Autorize o acesso quando o Google pedir. Isso cria as abas, a pasta "Arquivos - …" no seu Drive e cadastra **você como administrador**.
 5. **Publique.** **Implantar → Nova implantação → tipo "App da Web"**:
-   - *Executar como:* **Usuário que acessa o app da Web**
-   - *Quem pode acessar:* **Qualquer pessoa com uma Conta do Google**
+   - *Executar como:* **Eu** (o seu e-mail)
+   - *Quem pode acessar:* **Qualquer pessoa**
    - Clique em **Implantar** e copie o link `https://script.google.com/macros/s/…/exec`. Esse é o endereço do sistema; salve nos favoritos ou na tela inicial do celular.
-6. **Dê acesso aos outros militares** (veja "Usuários e acesso" abaixo). Mande o link do sistema para a pessoa: ela abre, vê o próprio e-mail e toca em **Pedir acesso** ou manda o e-mail pelo WhatsApp. Você aprova em **Configurações → Usuários**.
+6. **Cadastre os militares** em **Configurações → Usuários** (veja "Usuários e acesso" abaixo). Cada um recebe um e-mail com o link e entra com o próprio e-mail e um **código** que chega na hora.
 
-> **Primeiro acesso de cada usuário:** o Google mostra "O Google não verificou este app" (porque o app é seu, não publicado na loja). Clique em **Avançado → Acessar (nome do projeto)** e autorize. Só acontece uma vez.
+> **Só você autoriza o Google, uma vez** (ao rodar `setup` e na primeira implantação): o sistema roda na sua conta. **Os outros não veem tela de permissão nenhuma** e não dão acesso à conta Google deles.
 
 > **Ao alterar o código depois**, use **Implantar → Gerenciar implantações → editar (lápis) → Versão: nova versão**, assim o link continua o mesmo.
 
 ## Justiça e Disciplina: planilha reservada
 
-FATD, punições, elogios e Boca Podre ficam numa **planilha separada** ("Reservado - Justiça e Disciplina"), no Drive do administrador e **fora da pasta do sistema**, compartilhada só com os admins e com quem tem a marcação **Justiça e Disciplina** no cadastro do usuário. Os PDFs e Docs dessa parte vão para a pasta reservada, também fora da pasta compartilhada. Assim, quem não tem a marcação não vê esses dados nem abrindo a planilha direto no Google Sheets.
+FATD, punições, elogios e Boca Podre ficam numa **planilha separada** ("Reservado - Justiça e Disciplina"), no Drive do administrador, e só aparecem no sistema para os admins e quem tem a marcação **Justiça e Disciplina** no cadastro do usuário. Os PDFs e Docs dessa parte vão para uma pasta reservada.
 
 Depois de instalar esta versão, **o administrador abre a Justiça e Disciplina uma vez**: o sistema cria a planilha reservada e leva para ela o que já estava lançado. Em seguida, marque "Justiça e Disciplina: Sim" no cadastro dos oficiais e do Sgte.
 
 Quem cumpre detenção ou prisão aparece para todos só como afastamento "Cumprindo punição" (sem o motivo), para a escala não escalar a pessoa.
 
-A **Saúde** segue a mesma regra, numa planilha reservada própria ("Reservado - Saúde"), compartilhada com os admins, os oficiais/Sgte e os editores da área Sargenteante. Abra a Saúde uma vez como admin depois de instalar.
+A **Saúde** segue a mesma regra, numa planilha reservada própria ("Reservado - Saúde"), visível no sistema para os admins, os oficiais/Sgte e os editores da área Sargenteante. Abra a Saúde uma vez como admin depois de instalar.
 
 ## Pastas no Drive
 
@@ -90,7 +90,7 @@ Tudo fica na pasta do sistema, separado por tipo, ano e mês: `PDFs/<tipo>/<ano>
 - **Ícone na tela inicial**, para abrir como um aplicativo:
   - **Android (Chrome):** abra o link, toque em ⋮ → **Adicionar à tela inicial**.
   - **iPhone/iPad (Safari):** abra o link, toque em **Compartilhar** → **Adicionar à Tela de Início**.
-- É preciso estar logado no Google com o e-mail cadastrado no sistema, como no computador.
+- Entra-se com o e-mail cadastrado e o código, como no computador; o aparelho fica lembrado por 30 dias.
 - Em celular sem internet o sistema não abre, porque os dados ficam na planilha do Google.
 
 ## Usuários e acesso
@@ -103,27 +103,25 @@ Só o **admin** cadastra pessoas e muda perfis. Pode haver mais de um admin, por
 | **editor** | Lança e altera escala, aditamentos, efetivo, tripão, férias, missões, material, cautelas e pedidos; gera PDF e documento editável. |
 | **leitor** | Só consulta. Não vê o tripão. |
 
-**Como a pessoa entra:**
-1. Ela abre o link do sistema com a conta Google dela. Se ainda não estiver cadastrada, vê **"Você ainda não tem acesso"**, com o e-mail dela, um botão **Pedir acesso** e outro para **Enviar pelo WhatsApp**.
-2. O pedido aparece para o admin no **Painel** ("pedido(s) de acesso aguardando") e em **Configurações → Usuários → Pedidos de acesso**.
-3. O admin clica em **Aprovar…**, escolhe o perfil e salva. Também dá para cadastrar direto em **+ Usuário**, só com o e-mail.
+**Como a pessoa entra (sem dar permissão nenhuma à conta Google dela):**
+1. O admin cadastra o e-mail em **Configurações → Usuários → + Usuário** (ou aprova um pedido). A pessoa recebe um e-mail com o link.
+2. Ela abre o link, digita o **e-mail cadastrado** e toca em **Receber código**. Chega um **código de 6 números** no e-mail (vale 10 minutos).
+3. Ela digita o código e entra. O aparelho fica lembrado por **30 dias**; o botão **Usuário → Sair deste aparelho** encerra.
+4. Quem ainda não tem acesso toca em **Ainda não tenho acesso**, informa nome e e-mail, e o admin recebe o pedido por e-mail e no **Painel**.
 
-**Ao salvar, o próprio sistema compartilha a planilha e a pasta "Arquivos - …" do Drive**: admin e editor como *Editor*, leitor como *Leitor*. O Google avisa a pessoa por e-mail. Ao mudar o perfil o compartilhamento é ajustado, e ao **Excluir** é retirado.
+**Nada é compartilhado:** o sistema roda só na conta do administrador. A planilha, a pasta do Drive e as planilhas reservadas (Justiça e Disciplina, Saúde) ficam só com você; as permissões (perfil, áreas, Justiça e Disciplina) valem dentro do sistema. Ao **Excluir** um usuário, ele sai de todos os aparelhos na hora.
 
-Se a pessoa ainda não tem acesso nem à planilha, o botão "Pedir acesso" não funciona, porque não há onde gravar o pedido. Nesse caso a tela mostra o e-mail para ela mandar pelo WhatsApp, e o admin cadastra em **+ Usuário**.
+**Quem usava a versão anterior** (planilha compartilhada): em **Configurações → Usuários**, toque em **Tirar compartilhamentos antigos da planilha e do Drive**, para que ninguém mais abra a planilha direto.
 
-**Proteção:** as abas `Usuarios`, `Acessos` e `Config` ficam protegidas na planilha, e só os admins editam. Assim ninguém muda o próprio perfil abrindo a planilha direto. O sistema não deixa ficar sem administrador e não deixa o admin excluir a si mesmo.
+**Limite do Gmail:** contas Gmail comuns mandam até 100 e-mails por dia; como cada aparelho fica lembrado 30 dias, isso sobra para uma Cia.
 
-> Quem já tinha instalado antes desta versão: depois de colar o código novo, rode `setup` mais uma vez no editor para criar a aba `Acessos` e proteger as abas.
+O sistema não deixa ficar sem administrador e não deixa o admin excluir a si mesmo.
 
-## Se aparecer "e-mail não identificado"
+## Se o código não chegar
 
-A implantação está como **Executar como: Eu**. Nesse modo o Google não informa ao sistema quem está acessando, e ninguém além do administrador consegue entrar. Corrija em **Implantar → Gerenciar implantações → ✏️ editar**:
-- *Executar como:* **Usuário que acessa o app da Web**;
-- *Quem pode acessar:* **Qualquer pessoa com Conta do Google**;
-- **Versão: Nova versão** → **Implantar**. O link `/exec` continua o mesmo.
-
-No primeiro acesso, cada pessoa autoriza o sistema uma vez. Aparece "O Google não verificou este app": toque em **Avançado → Acessar Sistema da Companhia (não seguro) → Permitir**.
+- Confira a pasta de **spam** e se o e-mail digitado é o mesmo cadastrado.
+- Espere 1 minuto e toque em **Mandar outro código**.
+- Se ninguém recebe, confira se a implantação está como **Executar como: Eu** e se você autorizou o envio de e-mails (rode `setup` de novo no editor e aceite as permissões).
 
 ## Se a página ficar parada em "Carregando…"
 

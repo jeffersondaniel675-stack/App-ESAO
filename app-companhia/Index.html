@@ -429,8 +429,20 @@ const ICO = {
 // No Google Apps Script usa google.script.run; fora dele, um modo demonstração em localStorage.
 const NO_GOOGLE = typeof google !== 'undefined' && google.script && google.script.run;
 
+// Entrada por e-mail e código: a sessão (token) fica guardada neste aparelho e vai em todas as chamadas.
+const SESSAO_KEY = 'cia-sessao';
+let TOKEN = (() => { try { return localStorage.getItem(SESSAO_KEY) || ''; } catch (e) { return ''; } })();
+function guardarSessao(t) { TOKEN = t || ''; try { if (t) localStorage.setItem(SESSAO_KEY, t); else localStorage.removeItem(SESSAO_KEY); } catch (e) { } }
+const ABERTAS = ['enviarCodigo', 'entrarComCodigo', 'pedirAcesso', 'sair'];
 function gas(fn, ...args) {
-  return new Promise((ok, falha) => google.script.run.withSuccessHandler(ok).withFailureHandler(e => falha(e && e.message ? e : new Error(String(e))))[fn](...args));
+  return new Promise((ok, falha) => {
+    const r = google.script.run.withSuccessHandler(ok).withFailureHandler(e => {
+      const err = e && e.message ? e : new Error(String(e));
+      if (/SESSAO_EXPIRADA/.test(err.message)) { guardarSessao(''); telaLogin('Sua entrada neste aparelho venceu. Entre de novo com o código.'); err.message = 'Entre de novo.'; }
+      falha(err);
+    });
+    if (ABERTAS.includes(fn)) r[fn](...args); else r.chamar(TOKEN, fn, args);
+  });
 }
 
 const CHAVE = { Usuarios: 'email', Config: 'chave', Feriados: 'data' };
@@ -466,6 +478,7 @@ const Demo = {
   async salvarPdf(tipo, titulo, html, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'PDF' }], []))[0]; },
   async criarDoc(tipo, titulo, blocos, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'Google Doc' }], []))[0]; },
   async lerFoto(id) { return ((this.db().Fotos || []).find(f => f.id === id) || {}).dado || ''; },
+  async retirarCompartilhamentos() { return { retirados: 0 }; },
   async arquivarAntigos() { throw new Error('O arquivo anual funciona só na versão instalada no Google.'); },
   resetar() { localStorage.removeItem(this.KEY); this.mem = null; }
 };
@@ -1232,6 +1245,7 @@ function abrirPop(qual, ev) {
       <button onclick="fecharPops();S.sub.config='geral';irPara('config')">Configurações</button>
       <button onclick="fecharPops();alternarTema()">${temaPreto() ? 'Usar tema claro' : 'Usar tema preto'}</button>
       <button onclick="fecharPops();alternarTelaCheia()">${document.fullscreenElement || document.body.classList.contains('cheia') ? 'Sair da tela cheia' : 'Tela cheia'}</button>
+      ${NO_GOOGLE ? '<button onclick="fecharPops();sairDoSistema()">Sair deste aparelho</button>' : ''}
       ${!NO_GOOGLE ? `<button onclick="fecharPops();confirmar('Apagar os dados de demonstração?').then(s=>{if(s){Demo.resetar();iniciar()}})">Recomeçar demonstração</button>` : ''}`;
   }
   el.hidden = false;
@@ -3978,7 +3992,8 @@ function vConfig() {
     corpo = `${pend.length ? `<h3 style="margin-top:0">Pedidos de acesso <span class="tag warn">${pend.length}</span></h3>
       ${tabela(pend, [{ l: 'Pedido em', v: a => `${fmt(a.data.slice(0, 10))} <span class="muted">${esc(a.data.slice(11))}</span>` }, { l: 'Nome informado', v: a => `<b>${esc(a.nome || '—')}</b>` }, { l: 'E-mail Google', v: a => esc(a.email) }],
         a => `<button class="btn sm pri" onclick="aprovarAcesso('${esc(a.email)}')">Aprovar…</button> <button class="btn sm dng" onclick="recusarAcesso('${esc(a.email)}')">Recusar</button>`)}<h3>Usuários cadastrados</h3>` : ''}
-      <p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta (não vê o tripão). Ao salvar, o sistema já compartilha a planilha e a pasta do Drive com a pessoa (editor/admin como Editor, leitor como Leitor), e ao excluir, tira o compartilhamento.</p>
+      <p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta (não vê o tripão). A pessoa entra pelo link do sistema com o <b>e-mail</b> e um <b>código</b> que chega na hora, sem dar permissão nenhuma à conta Google dela. A planilha e o Drive não são compartilhados com ninguém. Ao excluir, a pessoa sai de todos os aparelhos.</p>
+      <div class="bar"><button class="btn sm" onclick="retirarCompartilhamentos()" title="Para quem usou a versão antiga, em que a planilha era compartilhada">Tirar compartilhamentos antigos da planilha e do Drive</button></div>
       <div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarUsuario()">+ Usuário</button></div>
       ${tabela((S.db.Usuarios || []).slice().sort((a, b) => PERFIS.indexOf(a.perfil) - PERFIS.indexOf(b.perfil) || String(a.nome).localeCompare(b.nome)), [{ l: 'Nome', v: u => `<b>${esc(u.nome)}</b>${u.email === S.user.email ? ' <span class="tag info">você</span>' : ''}` }, { l: 'E-mail', v: u => esc(u.email) }, { l: 'Perfil', v: u => `<span class="tag ${u.perfil === 'admin' ? 'info' : u.perfil === 'editor' ? 'ok' : ''}">${esc(u.perfil)}</span>` },
         { l: 'Áreas', v: u => u.perfil === 'admin' ? '<span class="muted">todas</span>' : `${u.areas ? ids(u.areas).map(a => esc(AREAS[a] || a)).join(', ') : '<span class="muted">todas</span>'}${u.jd === 'Sim' ? ' <span class="tag info">Justiça e Disciplina</span>' : ''}` }],
@@ -4065,7 +4080,7 @@ function editarUsuario(email, padrao = {}) {
     campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome (posto/grad e nome de guerra)', req: true }, { k: 'perfil', l: 'Perfil', t: 'select', o: OPCOES_PERFIL, vazio: false },
       { k: 'areas', l: 'Áreas em que pode lançar e alterar (nenhuma marcada = todas)', t: 'areas', full: true },
       { k: 'jd', l: 'Justiça e Disciplina (oficiais e Sgte): vê FATD, punições, elogios e Boca Podre', t: 'select', o: [['Não', 'Não'], ['Sim', 'Sim']], vazio: false, full: true }],
-    extra: '<p class="muted" style="margin:12px 0 0">Ao salvar, a planilha e a pasta do sistema no Drive são compartilhadas com este e-mail. O Google avisa a pessoa por e-mail.</p>',
+    extra: '<p class="muted" style="margin:12px 0 0">Ao salvar um usuário novo, ele recebe um e-mail com o link do sistema. Ele entra com este e-mail e um código; não precisa dar nenhuma permissão à conta Google.',
     aoSalvar: async o => {
       const mail = o.email.trim().toLowerCase();
       if (atual && mail !== atual.email) throw new Error('Para trocar o e-mail, exclua o usuário e cadastre de novo.');
@@ -4075,6 +4090,10 @@ function editarUsuario(email, padrao = {}) {
       const ped = (S.db.Acessos || []).find(a => a.email === mail); if (ped) ped.status = 'Aprovado';
       toast(r.aviso ? 'Usuário salvo, mas ' + r.aviso + '. Compartilhe manualmente.' : `${o.nome || mail} cadastrado como ${o.perfil}.`, !!r.aviso);
     } });
+}
+async function retirarCompartilhamentos() {
+  if (!await confirmar('Tirar todos os compartilhamentos da planilha, da pasta do Drive e das planilhas reservadas? Só você continua com acesso direto; o pessoal continua entrando no sistema pelo link, com e-mail e código.')) return;
+  try { const r = await api('retirarCompartilhamentos'); toast(`${r.retirados} compartilhamento(s) retirado(s).`); } catch (e) { toast(e.message, true); }
 }
 function aprovarAcesso(email) { const a = S.db.Acessos.find(x => x.email === email); editarUsuario(null, { email, nome: a.nome, perfil: 'leitor' }); }
 async function recusarAcesso(email) {
@@ -4281,24 +4300,88 @@ async function iniciar() {
   renderMenu();
   $('#demo-bar').hidden = !!NO_GOOGLE;
   try { S.view = localStorage.getItem('cia-view') || 'painel'; } catch (e) { }
+  if (NO_GOOGLE && !TOKEN) return telaLogin();
   try {
     const r = await api('bootstrap');
     S.user = r.usuario;
     S.db = Object.fromEntries(TABS.map(t => [t, r.dados[t] || []]));
     indexar();
     $('#user').textContent = (S.user.nome || S.user.email || 'Usuário').split(' ')[0];
-    if (S.user.perfil === 'bloqueado') { $('#titulo').textContent = cfg('nomeCia'); return telaSemAcesso({ email: S.user.email, pendente: r.pendente, podePedir: true }); }
+    if (S.user.perfil === 'bloqueado') { guardarSessao(''); return telaLogin('Este e-mail não tem mais acesso. Peça ao administrador.'); }
     render();
     migrarFolgaSoldados();
   } catch (e) {
-    // Sem acesso nem à planilha (ainda não compartilhada): mostra o e-mail para o administrador cadastrar.
-    let email = '';
-    try { email = (await api('quemSou')).email; } catch (e2) { email = ''; }
-    S.user = { email, perfil: 'bloqueado' };
-    if (/permiss|permission|acesso|access|autoriz/i.test(e.message)) return telaSemAcesso({ email, podePedir: false, detalhe: e.message });
-    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>${email ? `<p class="muted">Seu e-mail Google: <b>${esc(email)}</b></p>` : ''}
-      <p class="muted">Se o navegador tem mais de uma conta Google aberta, abra o link numa <b>janela anônima</b> (Ctrl+Shift+N) e entre só com o e-mail cadastrado no sistema.</p></div>`;
+    if (!TOKEN && NO_GOOGLE) return;
+    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>
+      <div class="bar"><button class="btn pri" onclick="iniciar()">Tentar de novo</button><button class="btn" onclick="sairDoSistema()">Entrar com outro e-mail</button></div></div>`;
   }
+}
+// ---------- tela de entrada: e-mail cadastrado → código de 6 números no e-mail → entra (sem dar acesso à conta Google)
+const emailSalvo = () => { try { return localStorage.getItem('cia-email') || ''; } catch (e) { return ''; } };
+function telaLogin(msg) {
+  S.login = S.login || { etapa: 'email', email: emailSalvo() };
+  if (msg) S.login.msg = msg;
+  const L = S.login;
+  document.body.classList.add('sem-acesso');
+  $('#sigla').innerHTML = marcaHTML();
+  $('#org').innerHTML = cabecalhoDoc().filter(l => !/minist[eé]rio/i.test(l)).slice(0, 3).map(esc).join('<br>');
+  $('#crumb').innerHTML = '';
+  $('#user').textContent = 'Entrar';
+  const aviso = L.msg ? `<p class="aviso-leitor">${esc(L.msg)}</p>` : '';
+  let corpo;
+  if (L.etapa === 'pedir') corpo = `<h2 style="font-size:22px">Pedir acesso</h2>
+      <p>O administrador recebe o pedido e libera o seu e-mail. Depois é só entrar com ele.</p>
+      <div class="form"><label class="full">Posto/graduação e nome de guerra<input type="text" id="lg_nome" placeholder="Ex.: 3º Sgt Fulano"></label>
+        <label class="full">Seu e-mail<input type="email" id="lg_email" value="${esc(L.email)}" autocomplete="email"></label></div>
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginPedir()">Enviar pedido</button><button class="btn" onclick="S.login.etapa='email';telaLogin()">Voltar</button></div>`;
+  else if (L.etapa === 'codigo') corpo = `<h2 style="font-size:22px">Digite o código</h2>
+      <p>Mandamos um código de 6 números para <b>${esc(L.email)}</b>. Veja também a pasta de spam.</p>
+      <div class="form"><label class="full">Código<input type="text" id="lg_codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="font-size:22px;letter-spacing:6px;max-width:220px" onkeydown="if(event.key==='Enter')loginEntrar()"></label></div>
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginEntrar()">Entrar</button><button class="btn" onclick="loginCodigo(true)">Mandar outro código</button><button class="btn" onclick="S.login.etapa='email';telaLogin()">Trocar e-mail</button></div>`;
+  else corpo = `<h2 style="font-size:22px">Entrar</h2>
+      <p>Digite o e-mail cadastrado no sistema. Você recebe um código para entrar; <b>não precisa dar nenhuma permissão à sua conta Google</b>.</p>
+      <div class="form"><label class="full">E-mail<input type="email" id="lg_email" value="${esc(L.email)}" autocomplete="email" onkeydown="if(event.key==='Enter')loginCodigo()"></label></div>
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginCodigo()">Receber código</button><button class="btn" onclick="S.login.etapa='pedir';telaLogin()">Ainda não tenho acesso</button></div>`;
+  $('#app').innerHTML = `<div class="card" style="max-width:520px;margin:24px auto">${aviso}${corpo}</div>`;
+  const f = $('#lg_codigo') || $('#lg_email'); if (f) f.focus();
+}
+async function loginCodigo(reenviar) {
+  const L = S.login, email = reenviar ? L.email : ($('#lg_email').value || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Digite um e-mail válido.', true);
+  L.email = email; L.msg = '';
+  try {
+    toast('Enviando o código…');
+    const r = await api('enviarCodigo', email);
+    if (r.situacao === 'nao-cadastrado') { L.etapa = 'pedir'; L.msg = 'Este e-mail ainda não está cadastrado. Peça acesso ao administrador:'; return telaLogin(); }
+    if (r.situacao === 'aguarde') toast('Um código acabou de ser enviado. Espere 1 minuto para pedir outro.');
+    L.etapa = 'codigo'; telaLogin();
+  } catch (e) { toast(e.message, true); }
+}
+async function loginEntrar() {
+  const L = S.login, codigo = ($('#lg_codigo').value || '').replace(/\D/g, '');
+  if (codigo.length !== 6) return toast('O código tem 6 números.', true);
+  try {
+    const r = await api('entrarComCodigo', L.email, codigo, navigator.userAgent.slice(0, 120));
+    guardarSessao(r.token);
+    try { localStorage.setItem('cia-email', r.email); } catch (e) { }
+    S.login = null; document.body.classList.remove('sem-acesso');
+    $('#app').innerHTML = '<div class="loading">Carregando dados da planilha…</div>';
+    iniciar();
+  } catch (e) { toast(e.message, true); }
+}
+async function loginPedir() {
+  const nome = $('#lg_nome').value.trim(), email = ($('#lg_email').value || '').trim().toLowerCase();
+  if (!nome) return toast('Informe o posto/graduação e o nome de guerra.', true);
+  try {
+    const r = await api('pedirAcesso', nome, email);
+    S.login = { etapa: 'email', email, msg: r.situacao === 'ja-cadastrado' ? 'Este e-mail já está cadastrado: é só entrar.' : 'Pedido enviado. Quando o administrador liberar, você recebe um e-mail e entra por aqui.' };
+    telaLogin();
+  } catch (e) { toast(e.message, true); }
+}
+async function sairDoSistema() {
+  try { if (TOKEN) await api('sair', TOKEN); } catch (e) { }
+  guardarSessao(''); S.user = null; S.db = {}; S.login = null;
+  telaLogin('Você saiu deste aparelho.');
 }
 iniciar();
 </script>

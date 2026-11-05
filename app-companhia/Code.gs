@@ -21,6 +21,7 @@ const TABELAS = {
   Cautelas: ['id', 'materialId', 'militarId', 'quantidade', 'dataSaida', 'previsaoDevolucao', 'dataDevolucao', 'status', 'obs', 'arquivoUrl', 'numero', 'numeracao', 'destino', 'especificacao'],
   Pedidos: ['id', 'numero', 'data', 'de', 'para', 'itens', 'status', 'obs', 'arquivoUrl', 'autor', 'sentido'],
   Usuarios: ['email', 'nome', 'perfil', 'areas', 'jd'],
+  Sessoes: ['token', 'email', 'criada', 'expira', 'aparelho'],
   Config: ['chave', 'valor'],
   Documentos: ['id', 'data', 'tipo', 'titulo', 'referencia', 'url', 'autor', 'formato'],
   Acessos: ['email', 'nome', 'data', 'status'],
@@ -40,7 +41,7 @@ const TABELAS = {
 
 const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 // Usuarios e Acessos só mudam pelas funções de acesso abaixo, que também compartilham a planilha e a pasta.
-const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos'];
+const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos', 'Sessoes'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
 const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte', TempoServico: 'sgte',
@@ -127,7 +128,7 @@ function setup() {
 
   if (!lerTabela_('TiposServico').length) gravar_('TiposServico', TIPOS_PADRAO, []);
 
-  const email = Session.getActiveUser().getEmail();
+  const email = emailAtual_();
   if (email && !lerTabela_('Usuarios').length) gravar_('Usuarios', [{ email: email, nome: 'Administrador', perfil: 'admin' }], []);
   protegerAbas_();
 }
@@ -145,7 +146,7 @@ function bootstrap() {
   }
   const dados = {};
   Object.keys(TABELAS).forEach(function (t) {
-    if (t === 'Log') return;
+    if (t === 'Log' || t === 'Sessoes') return;
     if ((t === 'Usuarios' || t === 'Acessos') && u.perfil !== 'admin') return;
     if (RESERVADAS_[t] && !membro_(u, RESERVADAS_[t])) return;
     if (t === 'Fotos') return; // fotos vêm uma a uma (lerFoto), para não pesar a abertura
@@ -199,7 +200,7 @@ function salvarPdf(tipo, titulo, html, referencia) {
   const arquivo = pastaAnoMes_('PDFs', tipo).createFile(pdf);
   const registro = {
     data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo,
-    referencia: referencia || '', url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail(), formato: 'PDF'
+    referencia: referencia || '', url: arquivo.getUrl(), autor: emailAtual_(), formato: 'PDF'
   };
   // Justiça e Disciplina não entra na lista geral de documentos (o título traz o nome do militar)
   const salvo = RESERVADAS.indexOf(tipo) >= 0 ? registro : gravar_('Documentos', [registro], [])[0];
@@ -307,7 +308,7 @@ function criarDoc(tipo, titulo, blocos, referencia) {
   arquivo.moveTo(pastaAnoMes_('Google Docs', tipo));
   const dadosDoc = {
     data: Utilities.formatDate(agora, tz, 'yyyy-MM-dd HH:mm'), tipo: tipo, titulo: titulo, referencia: referencia || '',
-    url: arquivo.getUrl(), autor: Session.getActiveUser().getEmail(), formato: 'Google Doc'
+    url: arquivo.getUrl(), autor: emailAtual_(), formato: 'Google Doc'
   };
   const registro = RESERVADAS.indexOf(tipo) >= 0 ? dadosDoc : gravar_('Documentos', [dadosDoc], [])[0];
   if (tipo === 'Aditamentos' && referencia) {
@@ -321,7 +322,7 @@ function criarDoc(tipo, titulo, blocos, referencia) {
 // ---------------------------------------------------------------- permissões
 
 function usuario_() {
-  const email = (Session.getActiveUser().getEmail() || '').toLowerCase();
+  const email = emailAtual_();
   const usuarios = lerTabela_('Usuarios');
   if (!usuarios.length) return { email: email, nome: email, perfil: 'admin' };
   const u = usuarios.filter(function (x) { return String(x.email).toLowerCase() === email; })[0];
@@ -338,22 +339,124 @@ function lerFoto(id) {
   return f ? f.dado : '';
 }
 
-/** E-mail de quem está acessando. Funciona mesmo sem acesso à planilha (tela "sem acesso"). */
+/** E-mail de quem está acessando. */
 function quemSou() {
-  return { email: (Session.getActiveUser().getEmail() || '').toLowerCase() };
+  return { email: emailAtual_() };
 }
 
-/** Quem não está cadastrado registra o pedido; o e-mail vem da sessão Google, nunca do formulário. */
-function pedirAcesso(nome) {
-  const u = usuario_();
-  if (u.perfil !== 'bloqueado') return { situacao: 'ja-cadastrado' };
-  if (!u.email) throw new Error('Não foi possível identificar o seu e-mail Google.');
-  const atual = lerTabela_('Acessos').filter(function (a) { return a.email === u.email; })[0];
+// ---------------------------------------------------------------- entrada no sistema: e-mail + código
+// O sistema roda só na conta do administrador ("Executar como: Eu"). Ninguém dá acesso à própria conta Google:
+// a pessoa digita o e-mail cadastrado, recebe um código de 6 números e entra; o aparelho fica lembrado por 30 dias.
+let USUARIO_ATUAL_ = '';
+/** E-mail de quem chamou: o da sessão do sistema ou, no editor do Apps Script, o do dono. */
+function emailAtual_() { return USUARIO_ATUAL_ || String(Session.getActiveUser().getEmail() || '').toLowerCase(); }
+const DIAS_SESSAO_ = 30;
+const hash_ = function (t) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(t)).map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join(''); };
+const agora_ = function () { return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'); };
+const emailOk_ = function (e) { e = String(e || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) throw new Error('E-mail inválido.'); return e; };
+const linkSistema_ = function () { try { return ScriptApp.getService().getUrl(); } catch (e) { return ''; } };
+
+/** Manda o código de entrada para um e-mail cadastrado (no máximo 1 por minuto). */
+function enviarCodigo(email) {
+  email = emailOk_(email);
+  if (!lerTabela_('Usuarios').some(function (u) { return String(u.email).toLowerCase() === email; })) return { situacao: 'nao-cadastrado' };
+  const cache = CacheService.getScriptCache();
+  if (cache.get('env:' + email)) return { situacao: 'aguarde' };
+  const codigo = String(Math.floor(100000 + Math.random() * 900000));
+  cache.put('cod:' + email, JSON.stringify({ h: hash_(email + codigo), n: 0 }), 600);
+  cache.put('env:' + email, '1', 60);
+  const sigla = configMap_().nomeCia || configMap_().sigla || 'Sistema da Companhia';
+  MailApp.sendEmail({ to: email, subject: 'Código de acesso: ' + codigo + ' – ' + sigla,
+    body: 'Seu código para entrar no ' + sigla + ' é ' + codigo + '.\n\nVale por 10 minutos. Se não foi você que pediu, ignore este e-mail.' });
+  return { situacao: 'enviado' };
+}
+/** Confere o código e abre uma sessão de 30 dias. Cinco erros invalidam o código. */
+function entrarComCodigo(email, codigo, aparelho) {
+  email = emailOk_(email);
+  const cache = CacheService.getScriptCache(), c = JSON.parse(cache.get('cod:' + email) || 'null');
+  if (!c) throw new Error('Código vencido. Peça outro.');
+  if (c.h !== hash_(email + String(codigo || '').trim())) {
+    c.n++;
+    if (c.n >= 5) { cache.remove('cod:' + email); throw new Error('Código errado 5 vezes. Peça outro.'); }
+    cache.put('cod:' + email, JSON.stringify(c), 600);
+    throw new Error('Código errado. Confira e tente de novo.');
+  }
+  cache.remove('cod:' + email);
+  const token = Utilities.getUuid() + Utilities.getUuid();
+  const expira = Utilities.formatDate(new Date(Date.now() + DIAS_SESSAO_ * 864e5), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+  USUARIO_ATUAL_ = email;
+  gravar_('Sessoes', [{ token: hash_(token), email: email, criada: agora_(), expira: expira, aparelho: String(aparelho || '').slice(0, 120) }], []);
+  registrarLog_('entrar', 'Sessoes', email);
+  return { token: token, email: email };
+}
+/** E-mail da sessão válida (com cache de 6 h para não ler a aba a cada clique). */
+function sessao_(token) {
+  if (!token) return '';
+  const h = hash_(token), cache = CacheService.getScriptCache(), c = cache.get('ses:' + h);
+  if (c) return c;
+  const s = lerTabela_('Sessoes').filter(function (x) { return x.token === h; })[0];
+  if (!s || s.expira < agora_()) return '';
+  cache.put('ses:' + h, s.email, 21600);
+  return s.email;
+}
+/** Sai do sistema neste aparelho. */
+function sair(token) {
+  const h = hash_(token);
+  CacheService.getScriptCache().remove('ses:' + h);
+  gravar_('Sessoes', [], [h]);
+  return true;
+}
+/** Encerra as sessões de um e-mail (ao tirar o acesso). */
+function encerrarSessoes_(email) {
+  const l = lerTabela_('Sessoes').filter(function (x) { return x.email === email; }).map(function (x) { return x.token; });
+  if (l.length) { gravar_('Sessoes', [], l); CacheService.getScriptCache().removeAll(l.map(function (h) { return 'ses:' + h; })); }
+}
+// Funções que a página pode chamar depois de entrar.
+const API_ = { bootstrap: bootstrap, salvarLote: salvarLote, uploadArquivo: uploadArquivo, importarDePlanilha: importarDePlanilha, salvarPdf: salvarPdf, criarDoc: criarDoc,
+  lerFoto: lerFoto, concederAcesso: concederAcesso, removerAcesso: removerAcesso, recusarAcesso: recusarAcesso, arquivarAntigos: arquivarAntigos, retirarCompartilhamentos: retirarCompartilhamentos };
+/** Porta única da página: confere a sessão e chama a função pedida em nome de quem entrou. */
+function chamar(token, fn, args) {
+  if (!Object.prototype.hasOwnProperty.call(API_, fn)) throw new Error('Função desconhecida: ' + fn);
+  const email = sessao_(token);
+  if (!email) throw new Error('SESSAO_EXPIRADA');
+  USUARIO_ATUAL_ = email;
+  try { return API_[fn].apply(null, args || []); } finally { USUARIO_ATUAL_ = ''; }
+}
+
+/** Pedido de acesso de quem ainda não está cadastrado (sem conta Google): avisa os admins por e-mail. */
+function pedirAcesso(nome, email) {
+  email = emailOk_(email);
+  nome = String(nome || '').trim().slice(0, 120);
+  if (!nome) throw new Error('Informe posto/graduação e nome de guerra.');
+  if (lerTabela_('Usuarios').some(function (u) { return String(u.email).toLowerCase() === email; })) return { situacao: 'ja-cadastrado' };
+  const atual = lerTabela_('Acessos').filter(function (a) { return a.email === email; })[0];
   if (atual && atual.status === 'Pendente') return { situacao: 'pendente' };
-  const data = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
-  gravar_('Acessos', [{ email: u.email, nome: String(nome || '').trim().slice(0, 120), data: data, status: 'Pendente' }], []);
-  registrarLog_('pedir acesso', 'Acessos', u.email);
+  const cache = CacheService.getScriptCache();
+  if (cache.get('ped:' + email)) return { situacao: 'pendente' };
+  cache.put('ped:' + email, '1', 600);
+  gravar_('Acessos', [{ email: email, nome: nome, data: agora_(), status: 'Pendente' }], []);
+  USUARIO_ATUAL_ = email; registrarLog_('pedir acesso', 'Acessos', email); USUARIO_ATUAL_ = '';
+  const admins = lerTabela_('Usuarios').filter(function (u) { return u.perfil === 'admin'; }).map(function (u) { return u.email; });
+  try { if (admins.length) MailApp.sendEmail({ to: admins.join(','), subject: 'Pedido de acesso: ' + nome, body: nome + ' (' + email + ') pediu acesso ao sistema.\n\nPara aprovar: ' + linkSistema_() + ' → Configurações → Usuários.' }); } catch (e) { /* cota de e-mail */ }
   return { situacao: 'registrado' };
+}
+/** Tira da planilha, da pasta e das planilhas reservadas todos os compartilhamentos antigos (fica só o dono). */
+function retirarCompartilhamentos() {
+  exigirAdmin_();
+  const cfg = configMap_(), alvos = [planilha_()];
+  try { alvos.push(pasta_()); } catch (e) { /* sem pasta */ }
+  Object.keys(GRUPOS_).forEach(function (g) {
+    try { if (cfg[GRUPOS_[g].planilha]) alvos.push(SpreadsheetApp.openById(cfg[GRUPOS_[g].planilha])); } catch (e) { }
+    try { if (cfg[GRUPOS_[g].pasta]) alvos.push(DriveApp.getFolderById(cfg[GRUPOS_[g].pasta])); } catch (e) { }
+  });
+  let n = 0;
+  alvos.forEach(function (a) {
+    let dono = ''; try { dono = a.getOwner().getEmail().toLowerCase(); } catch (e) { }
+    a.getEditors().forEach(function (u) { const m = u.getEmail().toLowerCase(); if (m && m !== dono) { a.removeEditor(m); n++; } });
+    a.getViewers().forEach(function (u) { const m = u.getEmail().toLowerCase(); if (m && m !== dono) { a.removeViewer(m); n++; } });
+  });
+  registrarLog_('retirar compartilhamentos', 'Drive', String(n));
+  return { retirados: n };
 }
 
 /**
@@ -372,8 +475,14 @@ function concederAcesso(email, nome, perfil, areas, jd) {
   gravar_('Usuarios', [registro], []);
   const pedido = lerTabela_('Acessos').filter(function (a) { return a.email === email; })[0];
   if (pedido) gravar_('Acessos', [Object.assign({}, pedido, { status: 'Aprovado' })], []);
-  const aviso = [compartilhar_(email, perfil), compartilharReservada_()].filter(String).join('; ');
   registrarLog_('conceder acesso', 'Usuarios', email + ' ' + perfil + (registro.jd ? ' +JD' : ''));
+  // Ninguém recebe a planilha: a pessoa entra pelo link com o e-mail e um código. Na primeira vez, avisa por e-mail.
+  let aviso = '';
+  if (!anterior) {
+    try { MailApp.sendEmail({ to: email, subject: 'Acesso liberado – ' + (configMap_().nomeCia || 'Sistema da Companhia'),
+      body: 'Seu acesso ao sistema foi liberado (' + perfil + ').\n\nEntre por este link: ' + linkSistema_() + '\nDigite este e-mail (' + email + ') e o código que chegar na hora. Você não precisa dar nenhuma permissão à sua conta Google.' }); }
+    catch (e) { aviso = 'não foi possível mandar o e-mail de aviso (' + e.message + ')'; }
+  }
   return { usuario: registro, aviso: aviso };
 }
 
@@ -386,9 +495,9 @@ function removerAcesso(email) {
   if (!atual) return { aviso: '' };
   if (atual.perfil === 'admin') garantirOutroAdmin_(email);
   gravar_('Usuarios', [], [email]);
-  const aviso = [compartilhar_(email, null), compartilharReservada_()].filter(String).join('; ');
+  encerrarSessoes_(email);
   registrarLog_('remover acesso', 'Usuarios', email);
-  return { aviso: aviso };
+  return { aviso: '' };
 }
 
 function recusarAcesso(email) {
@@ -537,23 +646,8 @@ function pastaReservada_(g) {
 }
 /** Deixa as planilhas e pastas reservadas compartilhadas exatamente com os membros de cada grupo. */
 function compartilharReservada_() {
-  const cfg = configMap_(), avisos = [], usuarios = lerTabela_('Usuarios');
-  Object.keys(GRUPOS_).forEach(function (g) {
-    const G = GRUPOS_[g];
-    const quero = usuarios.filter(function (u) { return membro_(u, g); }).map(function (u) { return String(u.email).toLowerCase(); });
-    [['a planilha de ' + G.nome, cfg[G.planilha], SpreadsheetApp], ['a pasta de ' + G.nome, cfg[G.pasta], DriveApp]].forEach(function (x) {
-      if (!x[1]) return;
-      try {
-        const alvo = x[2] === SpreadsheetApp ? SpreadsheetApp.openById(x[1]) : DriveApp.getFolderById(x[1]);
-        let dono = ''; try { dono = alvo.getOwner().getEmail().toLowerCase(); } catch (e) { /* sem dono pessoal */ }
-        const atuais = alvo.getEditors().map(function (e) { return e.getEmail().toLowerCase(); });
-        quero.filter(function (e) { return e !== dono && atuais.indexOf(e) < 0; }).forEach(function (e) { alvo.addEditor(e); });
-        atuais.filter(function (e) { return e !== dono && quero.indexOf(e) < 0; }).forEach(function (e) { alvo.removeEditor(e); });
-        alvo.getViewers().forEach(function (e) { const m = e.getEmail().toLowerCase(); if (m !== dono && quero.indexOf(m) < 0) alvo.removeViewer(m); });
-      } catch (e) { avisos.push('não foi possível ajustar ' + x[0] + ' (' + e.message + ')'); }
-    });
-  });
-  return avisos.join('; ');
+  // Com a entrada por e-mail e código, ninguém recebe compartilhamento: as permissões valem só dentro do sistema.
+  return '';
 }
 
 function aba_(tabela) {
@@ -749,7 +843,7 @@ function registrarLog_(acao, tabela, registro) {
     const sh = planilha_().getSheetByName('Log');
     if (!sh) return;
     const quando = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
-    sh.appendRow([quando, Session.getActiveUser().getEmail(), acao, tabela, registro]);
+    sh.appendRow([quando, emailAtual_(), acao, tabela, registro]);
   } catch (e) {
     console.warn('Falha ao registrar log: ' + e);
   }
