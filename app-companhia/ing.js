@@ -1,0 +1,4034 @@
+
+window.__scriptOk = true;
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+
+const ENTIDADES = { '&': '&' + 'amp;', '<': '&' + 'lt;', '>': '&' + 'gt;', '"': '&' + 'quot;', "'": '&' + '#39;' };
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ENTIDADES[c]);
+const pad = n => String(n).padStart(2, '0');
+const isoDe = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dataDe = iso => new Date(iso + 'T12:00:00');
+const hoje = () => isoDe(new Date());
+const addDias = (iso, n) => { const d = dataDe(iso); d.setDate(d.getDate() + n); return isoDe(d); };
+const MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+const MESES_EXT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SEMANA = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+const SEM_CURTA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
+const fmtMil = iso => { if (!iso) return ''; const d = dataDe(iso); return `${pad(d.getDate())} ${MESES[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`; };
+const fmtExt = iso => { const d = dataDe(iso); return `${d.getDate()} de ${MESES_EXT[d.getMonth()]} de ${d.getFullYear()}`; };
+
+const soAscii = s => Array.from(String(s ?? '').normalize('NFD')).filter(c => c.charCodeAt(0) < 128).join('');
+const norm = s => soAscii(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isNaN(n) ? 0 : n; };
+const sim = v => !/^(n|nao|não|false|0|inativo)$/i.test(String(v ?? 'Sim').trim());
+const ids = v => String(v ?? '').split(',').map(s => s.trim()).filter(Boolean);
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function toast(msg, erro) {
+  const el = document.createElement('div');
+  el.textContent = msg; if (erro) el.className = 'err';
+  $('#toast').appendChild(el);
+  setTimeout(() => el.remove(), erro ? 6000 : 3000);
+}
+
+const svg = d => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICO = {
+  grade: `<svg class="i" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="9.5" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><rect x="16" y="9.5" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><rect x="9.5" y="16" width="5" height="5" rx="1"/><rect x="16" y="16" width="5" height="5" rx="1"/></svg>`,
+  user: `<svg class="i" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.5" r="4.5"/><path d="M3.5 21c0-4.4 3.8-7.5 8.5-7.5s8.5 3.1 8.5 7.5z"/></svg>`,
+  lupa: svg('<circle cx="10.5" cy="10.5" r="6.5" stroke-width="2.6"/><path d="m15.5 15.5 5 5" stroke-width="2.8"/>'),
+  menu: svg('<path d="M3 6h18M3 12h18M3 18h18" stroke-width="2.6"/>'),
+  fechar: svg('<path d="M5 5l14 14M19 5 5 19" stroke-width="3"/>'),
+  lua: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
+  sol: svg('<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  cheia: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  sair: svg('<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'),
+  casa: `<svg class="i" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 11.5h3V21h5.5v-6h3v6H19v-9.5h3z"/></svg>`,
+  escudo: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z" opacity=".25"/><path d="m12 6.5 1.6 3.3 3.6.5-2.6 2.5.6 3.6L12 14.7l-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"/></svg>`
+};
+
+
+
+const NO_GOOGLE = typeof google !== 'undefined' && google.script && google.script.run;
+
+
+const SESSAO_KEY = 'cia-sessao';
+let TOKEN = (() => { try { return localStorage.getItem(SESSAO_KEY) || ''; } catch (e) { return ''; } })();
+function guardarSessao(t) { TOKEN = t || ''; try { if (t) localStorage.setItem(SESSAO_KEY, t); else localStorage.removeItem(SESSAO_KEY); } catch (e) { } }
+const ABERTAS = ['enviarCodigo', 'entrarComCodigo', 'pedirAcesso', 'sair'];
+function gas(fn, ...args) {
+  return new Promise((ok, falha) => {
+    const r = google.script.run.withSuccessHandler(ok).withFailureHandler(e => {
+      const err = e && e.message ? e : new Error(String(e));
+      if (/SESSAO_EXPIRADA/.test(err.message)) { guardarSessao(''); telaLogin('Sua entrada neste aparelho venceu. Entre de novo com o código.'); err.message = 'Entre de novo.'; }
+      falha(err);
+    });
+    if (ABERTAS.includes(fn)) r[fn](...args); else r.chamar(TOKEN, fn, args);
+  });
+}
+
+const CHAVE = { Usuarios: 'email', Config: 'chave', Feriados: 'data' };
+const chaveDe = t => CHAVE[t] || 'id';
+
+const Demo = {
+  KEY: 'sistema-cia-demo-v2',
+  ler() { try { return JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { return null; } },
+  gravar(db) { try { localStorage.setItem(this.KEY, JSON.stringify(db)); } catch (e) { this.semArmazenamento = true; } this.mem = db; },
+  db() { return this.mem || this.ler() || (this.mem = semente()); },
+  
+  emailDaSessao() { return String(TOKEN || '').startsWith('demo:') ? TOKEN.slice(5) : ''; },
+  async bootstrap() {
+    const db = this.db(); this.gravar(db);
+    const email = this.emailDaSessao(), u = (db.Usuarios || []).find(x => x.email === email);
+    if (!u) return { usuario: { email, perfil: 'bloqueado' }, dados: { Config: db.Config } };
+    const tudo = JSON.parse(JSON.stringify(db)), jd = u.perfil === 'admin' || u.jd === 'Sim';
+    const sauOk = jd || (u.perfil === 'editor' && (!u.areas || ids(u.areas).includes('sgte')));
+    const fora = [...(u.perfil !== 'admin' ? ['Usuarios', 'Acessos'] : []), ...(jd ? [] : ['Disciplina']), ...(sauOk ? [] : ['Saude'])];
+    const dados = Object.fromEntries(Object.entries(tudo).filter(([t]) => !fora.includes(t)));
+    return { usuario: { email: u.email, nome: u.nome, perfil: u.perfil, areas: u.areas || '', jd: u.jd || '' }, dados };
+  },
+  async enviarCodigo(email) {
+    if (!(this.db().Usuarios || []).some(u => u.email === email)) return { situacao: 'nao-cadastrado' };
+    this.codigo = { email, c: String(Math.floor(100000 + Math.random() * 900000)) };
+    return { situacao: 'enviado', demo: this.codigo.c };
+  },
+  async entrarComCodigo(email, codigo) {
+    if (!this.codigo || this.codigo.email !== email) throw new Error('Código vencido. Peça outro.');
+    if (String(codigo) !== this.codigo.c) throw new Error('Código errado. Confira e tente de novo.');
+    this.codigo = null; return { token: 'demo:' + email, email };
+  },
+  async sair() { return true; },
+  async salvarLote(t, lista, excluir) {
+    const db = this.db(); const k = chaveDe(t); db[t] = (db[t] || []).filter(r => !excluir.includes(String(r[k])));
+    const salvos = lista.map(o => { o = { ...o }; if (k === 'id' && !o.id) o.id = uid(); const i = db[t].findIndex(r => String(r[k]) === String(o[k])); if (i >= 0) db[t][i] = { ...db[t][i], ...o }; else db[t].push(o); return o; });
+    this.gravar(db); return salvos;
+  },
+  async quemSou() { return { email: 'demo@exemplo.com' }; },
+  async pedirAcesso(nome, email) { const db = this.db(); if ((db.Usuarios || []).some(u => u.email === email)) return { situacao: 'ja-cadastrado' }; await this.salvarLote('Acessos', [{ email, nome, data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), status: 'Pendente' }], []); return { situacao: 'registrado' }; },
+  async concederAcesso(email, nome, perfil, areas = '', jd = '') {
+    const db = this.db();
+    if (perfil !== 'admin' && !(db.Usuarios || []).some(u => u.perfil === 'admin' && u.email !== email)) throw new Error('O sistema precisa de pelo menos um administrador. Cadastre outro admin antes.');
+    const [usuario] = await this.salvarLote('Usuarios', [{ email, nome, perfil, areas, jd }], []);
+    const pedido = (db.Acessos || []).find(a => a.email === email); if (pedido) await this.salvarLote('Acessos', [{ ...pedido, status: 'Aprovado' }], []);
+    return { usuario, aviso: '' };
+  },
+  async removerAcesso(email) {
+    if (email === 'demo@exemplo.com') throw new Error('Você não pode remover o seu próprio acesso.');
+    await this.salvarLote('Usuarios', [], [email]); return { aviso: '' };
+  },
+  async recusarAcesso(email) { const a = (this.db().Acessos || []).find(x => x.email === email); if (a) await this.salvarLote('Acessos', [{ ...a, status: 'Recusado' }], []); return true; },
+  async uploadArquivo(nome) { return { url: '#', nome, id: uid() }; },
+  async importarDePlanilha() { throw new Error('A importação direto do Google Drive só funciona com o sistema publicado no Google. Use um arquivo .xlsx ou .csv.'); },
+  async salvarPdf(tipo, titulo, html, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'PDF' }], []))[0]; },
+  async criarDoc(tipo, titulo, blocos, referencia) { return (await this.salvarLote('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo, referencia: referencia || '', url: '', autor: 'demo@exemplo.com', formato: 'Google Doc' }], []))[0]; },
+  async lerFoto(id) { return ((this.db().Fotos || []).find(f => f.id === id) || {}).dado || ''; },
+  async retirarCompartilhamentos() { return { retirados: 0 }; },
+  async arquivarAntigos() { throw new Error('O arquivo anual funciona só na versão instalada no Google.'); },
+  resetar() { localStorage.removeItem(this.KEY); this.mem = null; }
+};
+const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
+
+
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'TempoServico'];
+const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
+const pode = () => podeEm(S.view);
+const admin = () => S.user?.perfil === 'admin';
+const cfg = k => ((S.db.Config || []).find(c => c.chave === k) || {}).valor || PADRAO_CFG[k] || '';
+
+async function salvar(tabela, lista, excluir = []) {
+  try {
+    const salvos = await api('salvarLote', tabela, lista, excluir.map(String));
+    const k = chaveDe(tabela);
+    S.db[tabela] = S.db[tabela].filter(r => !excluir.map(String).includes(String(r[k])));
+    salvos.forEach(o => { const i = S.db[tabela].findIndex(r => String(r[k]) === String(o[k])); if (i >= 0) S.db[tabela][i] = { ...S.db[tabela][i], ...o }; else S.db[tabela].push(o); });
+    indexar();
+    return salvos;
+  } catch (e) { toast('Erro ao salvar: ' + e.message, true); throw e; }
+}
+
+
+const POSTOS = ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', 'ST', '1º Sgt', '2º Sgt', '3º Sgt', 'Cb', 'Sd EP', 'Sd EV', 'Sd'];
+const POSTO_ALIAS = { cabo: 'Cb', soldado: 'Sd', sdep: 'Sd EP', sdev: 'Sd EV', subtenente: 'ST', aspirante: 'Asp', capitao: 'Cap', major: 'Maj', coronel: 'Cel', tenentecoronel: 'TC', '1ten': '1º Ten', '2ten': '2º Ten', '1sgt': '1º Sgt', '2sgt': '2º Sgt', '3sgt': '3º Sgt' };
+
+const postoNorm = p => { const n = norm(p); return n ? (POSTOS.find(x => norm(x) === n) || POSTO_ALIAS[n] || '') : ''; };
+
+const TIPOS_PADRAO = [
+  { id: 'of-dia', nome: 'Oficial de Dia', postos: '1º Ten,2º Ten', ordem: 1, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'adj', nome: 'Adjunto', postos: '1º Sgt,2º Sgt', ordem: 2, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'sgt-dia', nome: 'Sargento de Dia', postos: '3º Sgt', ordem: 3, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'cmt-gda', nome: 'Comandante da Guarda', postos: '3º Sgt', ordem: 4, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+  { id: 'cb-gda', nome: 'Cabo da Guarda', postos: 'Cb', ordem: 5, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Cabos' },
+  { id: 'cb-dia', nome: 'Cabo de Dia', postos: 'Cb', ordem: 6, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Cabos' },
+  { id: 'sentinela', nome: 'Sentinela', postos: 'Sd EP,Sd EV,Sd', ordem: 7, ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' },
+  { id: 'permanencia', nome: 'Permanência', postos: 'Sd EP,Sd EV,Sd', ordem: 8, ativo: 'Sim', grupo: 'Interno', dias: 'Todos', automatico: 'Sim', qtd: 1, folga: 'Soldados' }
+];
+const TIPOS_IMPED = ['Cumprindo punição', 'Férias', 'Dispensa médica', 'Dispensa', 'Dispensa como recompensa', 'Dispensa para instalação', 'Licença', 'Curso/Estágio', 'Trânsito', 'Outro'];
+const TIPOS_MISSAO = ['Operação', 'Apoio', 'Instrução', 'Representação', 'Transporte', 'Guarda/Segurança', 'Outra'];
+const STATUS_MISSAO = ['Planejada', 'Em andamento', 'Concluída', 'Cancelada'];
+const CATEGORIAS = ['Armamento', 'Munição', 'Comunicações', 'Viatura', 'Intendência', 'Saúde', 'Engenharia', 'Informática', 'Mobiliário', 'Outro'];
+const ESTADOS = ['Bom', 'Regular', 'Em manutenção', 'Inservível'];
+
+let MIL = {}, MAT = {}, TIPO = {}, FERIADO = {}, ESC_DIA = {};
+function indexar() {
+  MIL = Object.fromEntries(S.db.Militares.map(m => [m.id, m]));
+  MAT = Object.fromEntries(S.db.Material.map(m => [m.id, m]));
+  TIPO = Object.fromEntries(S.db.TiposServico.map(t => [t.id, t]));
+  FERIADO = Object.fromEntries(S.db.Feriados.map(f => [f.data, f.descricao]));
+  ESC_DIA = {};
+  S.db.Escala.forEach(e => { (ESC_DIA[e.data] ||= []).push(e); });
+}
+const postoIdx = p => { const i = POSTOS.indexOf(p); return i < 0 ? 99 : i; };
+const nomeMil = m => { m = typeof m === 'string' ? MIL[m] : m; return m ? [m.postoGrad, m.numero, m.nomeGuerra].filter(Boolean).join(' ') : '—'; };
+const ordemMil = (a, b) => postoIdx(a.postoGrad) - postoIdx(b.postoGrad) || num(a.antiguidade) - num(b.antiguidade) || String(a.nomeGuerra).localeCompare(b.nomeGuerra);
+const militaresAtivos = () => S.db.Militares.filter(m => sim(m.ativo)).sort(ordemMil);
+const tiposAtivos = () => S.db.TiposServico.filter(t => sim(t.ativo)).sort((a, b) => num(a.ordem) - num(b.ordem));
+const corDoDia = iso => { const w = dataDe(iso).getDay(); return (w === 0 || w === 6 || FERIADO[iso]) ? 'V' : 'P'; };
+const missaoAtiva = m => m.status !== 'Cancelada' && m.status !== 'Concluída';
+
+
+function situacao(militarId, iso) {
+  const imp = S.db.Impedimentos.find(i => i.militarId === militarId && i.inicio <= iso && (i.fim || i.inicio) >= iso);
+  if (imp) return { tipo: 'imp', texto: imp.tipo, ate: imp.fim };
+  const mis = S.db.Missoes.find(m => m.status !== 'Cancelada' && ids(m.militaresIds).concat(m.responsavelId || []).includes(militarId) && m.inicio <= iso && (m.fim || m.inicio) >= iso);
+  if (mis) return { tipo: 'missao', texto: 'Missão: ' + mis.titulo, ate: mis.fim };
+  const pun = S.db.Disciplina && punicaoEmCurso(militarId, iso);
+  if (pun) return { tipo: 'imp', texto: 'Cumprindo punição', ate: fimPunicao(pun) };
+  return { tipo: 'pronto', texto: 'Pronto' };
+}
+const tagSituacao = s => `<span class="tag ${s.tipo === 'pronto' ? 'ok' : s.tipo === 'missao' ? 'info' : 'warn'}">${esc(s.texto)}${s.ate ? ' até ' + fmt(s.ate) : ''}</span>`;
+const aptoPara = (m, tipo) => ids(tipo.postos).includes(m.postoGrad);
+
+const aplica = (tipo, iso) => !tipo.dias || tipo.dias === 'Todos' || (tipo.dias === 'Preta') === (corDoDia(iso) === 'P');
+
+const qtdTipo = tipo => Math.max(1, Math.floor(num(tipo.qtd)) || 1);
+
+
+const chaveFolga = t => t && t.folga ? 'g:' + norm(t.folga) : (t || {}).id;
+const tiposDaFolga = tipoId => { const k = chaveFolga(TIPO[tipoId]); return S.db.TiposServico.filter(t => chaveFolga(t) === k).map(t => t.id).concat(TIPO[tipoId] ? [] : [tipoId]); };
+const nomeFolga = tipoId => { const tp = TIPO[tipoId], l = tiposDaFolga(tipoId).map(id => TIPO[id]).filter(t => t && sim(t.ativo)); return tp && tp.folga && l.length > 1 ? `${tp.folga} (${l.map(t => t.nome).join(' + ')})` : (tp || {}).nome || ''; };
+
+const folgaCorrida = tipoId => tiposDaFolga(tipoId).some(id => TIPO[id] && TIPO[id].contagem === 'Corrida');
+const lancamentos = (iso, tipoId) => (ESC_DIA[iso] || []).filter(x => x.tipoId === tipoId);
+const emBranco = e => !e.militarId;
+
+const quemTira = e => e.troca || e.militarId;
+
+const vagasDoDia = (tipo, iso) => Math.max(aplica(tipo, iso) ? qtdTipo(tipo) : 0, lancamentos(iso, tipo.id).length);
+const faltamNoDia = (tipo, iso) => Math.max(0, (aplica(tipo, iso) ? qtdTipo(tipo) : 0) - lancamentos(iso, tipo.id).length);
+
+
+
+
+
+function calcFolga(militarId, tipoId, cor, iso, entradas) {
+  let ultimo = null;
+  const grupo = new Set(tiposDaFolga(tipoId)), corrida = folgaCorrida(tipoId);
+  for (const e of entradas) if (e.militarId === militarId && grupo.has(e.tipoId) && (corrida || corDoDia(e.data) === cor) && e.data < iso && (!ultimo || e.data > ultimo)) ultimo = e.data;
+  if (!ultimo) return { folga: Infinity, ultimo: null };
+  let n = 0;
+  for (let d = addDias(ultimo, 1); d < iso; d = addDias(d, 1)) if (corrida || corDoDia(d) === cor) n++;
+  return { folga: n, ultimo };
+}
+
+
+
+
+
+
+function gerarEscala(inicio, fim, existentes, filtro = {}) {
+  const entradas = existentes.slice();
+  const ocupado = new Set(entradas.flatMap(e => [e.militarId + '|' + e.data, quemTira(e) + '|' + e.data]));
+  const novos = [], faltas = [];
+  for (let d = inicio; d <= fim; d = addDias(d, 1)) {
+    const cor = corDoDia(d);
+    for (const tipo of tiposAtivos()) {
+      if (tipo.automatico === 'Não' || !aplica(tipo, d) || (filtro.tipos && !filtro.tipos.includes(tipo.id))) continue;
+      
+      const precisa = filtro.qtd && filtro.qtd[tipo.id] !== undefined ? filtro.qtd[tipo.id] : qtdTipo(tipo);
+      for (let k = entradas.filter(e => e.data === d && e.tipoId === tipo.id).length; k < precisa; k++) {
+        const cands = militaresAtivos().filter(m => aptoPara(m, tipo) && (!filtro.postos || filtro.postos.includes(m.postoGrad))
+          && situacao(m.id, d).tipo === 'pronto'
+          && !ocupado.has(m.id + '|' + d) && !ocupado.has(m.id + '|' + addDias(d, -1)) && !ocupado.has(m.id + '|' + addDias(d, 1)));
+        if (!cands.length) { faltas.push(`${fmt(d)} – ${tipo.nome}`); break; }
+        const escolhido = cands.map(m => ({ m, f: calcFolga(m.id, tipo.id, cor, d, entradas).folga }))
+          .sort((a, b) => b.f - a.f || postoIdx(b.m.postoGrad) - postoIdx(a.m.postoGrad) || num(b.m.antiguidade) - num(a.m.antiguidade))[0].m;
+        const e = { id: uid(), data: d, tipoId: tipo.id, militarId: escolhido.id, cor, obs: filtro.lote ? PRE + filtro.lote : '' };
+        entradas.push(e); novos.push(e); ocupado.add(escolhido.id + '|' + d);
+      }
+    }
+  }
+  return { novos, faltas };
+}
+
+function alertasEscala(e) {
+  const a = [];
+  if (emBranco(e)) return a;
+  const s = situacao(quemTira(e), e.data);
+  if (s.tipo !== 'pronto') a.push(s.texto);
+  const doMil = S.db.Escala.filter(x => quemTira(x) === quemTira(e) && x.id !== e.id);
+  if (doMil.some(x => x.data === e.data)) a.push('dois serviços no mesmo dia');
+  if (doMil.some(x => x.data === addDias(e.data, -1) || x.data === addDias(e.data, 1))) a.push('serviço em dias seguidos');
+  return a;
+}
+
+
+function fecharModal() { $('#modal').innerHTML = ''; }
+
+function campoHTML(c, v) {
+  if (c.secao) return `<h4 class="full secao">${esc(c.secao)}</h4>`;
+  const id = 'f_' + c.k, req = c.req ? 'required' : '';
+  const val = v ?? c.padrao ?? '';
+  let input;
+  if (c.t === 'select') {
+    const ops = typeof c.o === 'function' ? c.o() : c.o;
+    input = `<select id="${id}" ${req}>${c.vazio !== false ? '<option value=""></option>' : ''}${ops.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}" ${String(ov) === String(val) ? 'selected' : ''}>${esc(ol)}</option>`; }).join('')}</select>`;
+  } else if (c.t === 'militar') {
+    input = `<select id="${id}" ${req}><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === val ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select>`;
+  } else if (c.t === 'material') {
+    input = `<select id="${id}" ${req}><option value=""></option>${S.db.Material.slice().sort((a, b) => a.descricao.localeCompare(b.descricao)).map(m => `<option value="${m.id}" ${m.id === val ? 'selected' : ''}>${esc((m.patrimonio ? m.patrimonio + ' – ' : '') + m.descricao)} (disp. ${disponivel(m)})</option>`).join('')}</select>`;
+  } else if (c.t === 'postos') {
+    const sel = ids(val);
+    const grupos = [['Oficiais', ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp']], ['Subtenentes e sargentos', ['ST', '1º Sgt', '2º Sgt', '3º Sgt']], ['Cabos e soldados', ['Cb', 'Sd EP', 'Sd EV', 'Sd']]];
+    input = `<div id="${id}" class="postos">${grupos.map(([g, l]) => `<fieldset><legend>${g}</legend>${l.map(pg => `<label><input type="checkbox" value="${esc(pg)}" ${sel.includes(pg) ? 'checked' : ''}> ${esc(pg)}</label>`).join('')}</fieldset>`).join('')}</div>`;
+  } else if (c.t === 'militares') {
+    const sel = ids(val);
+    input = `<div><input type="search" placeholder="Filtrar…" oninput="filtrarChecks(this)" style="margin-bottom:6px"><div class="checks" id="${id}">${militaresAtivos().map(m => `<label data-n="${esc(norm(nomeMil(m)))}"><input type="checkbox" value="${m.id}" ${sel.includes(m.id) ? 'checked' : ''}> ${esc(nomeMil(m))}</label>`).join('')}</div></div>`;
+  } else if (c.t === 'areas') {
+    const sel = ids(val);
+    input = `<div id="${id}" class="postos"><fieldset><legend>Marque as áreas</legend>${['sgte', 'mat', 'furriel'].map(a => `<label><input type="checkbox" value="${a}" ${sel.includes(a) ? 'checked' : ''}> ${esc(AREAS[a])}</label>`).join('')}</fieldset></div>`;
+  } else if (c.t === 'local') {
+    const l = nomesLocais(); if (val && !l.includes(val)) l.push(val);
+    input = `<select id="${id}" ${req} onchange="if(this.value==='${NOVO_LOCAL}')novoLocal(this)"><option value=""></option>${l.map(x => `<option ${x === val ? 'selected' : ''}>${esc(x)}</option>`).join('')}${pode() ? `<option value="${NOVO_LOCAL}">+ Adicionar local…</option>` : ''}</select>`;
+  } else if (c.t === 'textarea') {
+    input = `<textarea id="${id}" ${req}>${esc(val)}</textarea>`;
+  } else if (c.t === 'file') {
+    input = `<input type="file" id="${id}">${val ? `<small><a href="${esc(val)}" target="_blank">arquivo atual</a></small>` : ''}`;
+  } else {
+    input = `<input type="${c.t || 'text'}" id="${id}" value="${esc(val)}" ${req} ${c.t === 'number' ? 'step="any"' : ''}${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}>`;
+  }
+  if (c.ajuda) input += `<small class="muted" style="font-weight:400">${esc(c.ajuda)}</small>`;
+  if (c.t === 'postos' || c.t === 'areas') return `<div class="full campo-postos"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</div>`;
+  return `<label class="${c.full || ['textarea', 'militares'].includes(c.t) ? 'full' : ''}"><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span>${input}</label>`;
+}
+function filtrarChecks(inp) { const q = norm(inp.value); $$('label', inp.nextElementSibling).forEach(l => l.style.display = l.dataset.n.includes(q) ? '' : 'none'); }
+
+function lerArquivoBase64(file) {
+  return new Promise((ok, falha) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = falha; r.readAsDataURL(file); });
+}
+async function enviarArquivo(file) {
+  if (!file) return null;
+  if (file.size > 25 * 1024 * 1024) throw new Error('Arquivo maior que 25 MB.');
+  toast('Enviando arquivo para o Drive…');
+  
+  const tipo = { material: 'Material', efetivo: 'Militares', missoes: 'Missoes', aditamentos: 'Aditamentos', disciplina: 'Disciplina', alteracoes: 'Alteracoes', saude: 'Saude' }[S.view] || 'Documentos';
+  const r = await api('uploadArquivo', file.name, file.type, await lerArquivoBase64(file), tipo);
+  return r.url;
+}
+
+
+function abrirForm({ titulo, campos, valores = {}, aoSalvar, extra = '' }) {
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm">
+    <h3>${esc(titulo)}</h3><div class="form">${campos.map(c => campoHTML(c, valores[c.k])).join('')}</div>${extra}
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" ${pode() ? '' : 'disabled'}>Salvar</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $('#frm .btn.pri'); btn.disabled = true;
+    try {
+      const obj = { ...valores };
+      for (const c of campos.filter(x => x.k)) {
+        const el = $('#f_' + c.k);
+        if (c.t === 'militares' || c.t === 'postos' || c.t === 'areas') obj[c.k] = $$('input:checked', el).map(i => i.value).join(',');
+        else if (c.t === 'file') { const url = await enviarArquivo(el.files[0]); if (url) obj[c.k] = url; }
+        else obj[c.k] = el.value.trim();
+        if (c.t === 'postos' && c.req && !obj[c.k]) throw new Error('Marque pelo menos um posto ou graduação.');
+      }
+      await aoSalvar(obj);
+      fecharModal(); render();
+    } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
+  };
+  const primeiro = $('#frm input, #frm select, #frm textarea'); if (primeiro) primeiro.focus();
+}
+
+
+function dialogo({ msg, campo, valor, ok = 'Confirmar' }) {
+  return new Promise(res => {
+    const el = $('#dialog');
+    el.innerHTML = `<div class="modal-bg" style="z-index:70"><form class="modal" id="dlg" style="max-width:440px"><p style="margin-top:0">${esc(msg)}</p>${campo ? `<input type="${campo}" id="dlg_v" value="${esc(valor || '')}">` : ''}
+      <div class="acts"><button type="button" class="btn" id="dlg_nao">Cancelar</button><button class="btn pri">${esc(ok)}</button></div></form></div>`;
+    const fim = v => { el.innerHTML = ''; res(v); };
+    $('#dlg_nao').onclick = () => fim(campo ? null : false);
+    $('#dlg').onsubmit = e => { e.preventDefault(); fim(campo ? $('#dlg_v').value : true); };
+    (campo ? $('#dlg_v') : $('#dlg .pri')).focus();
+  });
+}
+const confirmar = msg => dialogo({ msg });
+
+
+
+const textoCel = h => String(h ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+function valorOrd(t) {
+  let m = t.match(/^(\d{2})\/(\d{2})\/(\d{4})/); if (m) return { d: m[3] + m[2] + m[1] };
+  m = t.match(/^-?[\d.]+(,\d+)?(?=\s|$)/); if (m) return { n: num(m[0].replace(/\./g, '').replace(',', '.')) };
+  return { t };
+}
+function compararOrd(a, b) {
+  if (a.d !== undefined && b.d !== undefined) return a.d.localeCompare(b.d);
+  if (a.n !== undefined && b.n !== undefined) return a.n - b.n;
+  const x = a.t ?? a.d ?? String(a.n), y = b.t ?? b.d ?? String(b.n);
+  return !x ? 1 : !y ? -1 : x.localeCompare(y, 'pt-BR', { numeric: true, sensitivity: 'base' });
+}
+function ordenar(th) {
+  S.ordem ||= {};
+  const k = th.dataset.k, i = +th.dataset.i, o = S.ordem[k];
+  S.ordem[k] = !o || o.i !== i ? { i, dir: 1 } : o.dir === 1 ? { i, dir: -1 } : null;
+  render();
+}
+function tabela(linhas, cols, acoes) {
+  if (!linhas.length) return '<div class="tw"><div class="empty">Nenhum registro.</div></div>';
+  const k = S.view + '|' + (S.sub[S.view] || '') + '|' + cols.map(c => c.l).join(','), o = (S.ordem || {})[k];
+  if (o && cols[o.i]) { const c = cols[o.i]; linhas = linhas.map(r => [r, valorOrd(textoCel(c.s ? c.s(r) : c.v(r)))]).sort((x, y) => compararOrd(x[1], y[1]) * o.dir).map(x => x[0]); }
+  return `<div class="tw"><table><thead><tr>${cols.map((c, i) => `<th class="${c.c || ''} ord-th" data-k="${esc(k)}" data-i="${i}" onclick="ordenar(this)" title="Ordenar por ${esc(c.l)}" aria-sort="${o && o.i === i ? (o.dir === 1 ? 'ascending' : 'descending') : 'none'}">${esc(c.l)}<span class="ord-ic">${o && o.i === i ? (o.dir === 1 ? '▲' : '▼') : '↕'}</span></th>`).join('')}${acoes ? '<th></th>' : ''}</tr></thead><tbody>
+    ${linhas.map(r => `<tr>${cols.map(c => `<td class="${c.c || ''}">${c.v(r)}</td>`).join('')}${acoes ? `<td class="acts">${acoes(r)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+}
+const linkArq = u => u ? `<a href="${esc(u)}" target="_blank" title="Abrir anexo" class="anexo">anexo</a>` : '';
+const abas = (chave, lista) => `<div class="tabs">${lista.map(([k, l]) => `<button class="${(S.sub[chave] || lista[0][0]) === k ? 'on' : ''}" onclick="S.sub['${chave}']='${k}';render()">${esc(l)}</button>`).join('')}</div>`;
+const aba = (chave, padrao) => S.sub[chave] || padrao;
+const busca = (chave, ph) => `<input type="search" placeholder="${esc(ph || 'Buscar…')}" value="${esc(S.filtro[chave] || '')}" oninput="S.filtro['${chave}']=this.value;clearTimeout(window._bt);window._bt=setTimeout(()=>{render();const i=$('input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)">`;
+const casa = (chave, ...textos) => { const q = norm(S.filtro[chave]); return !q || textos.some(t => norm(t).includes(q)); };
+
+
+
+
+
+
+
+const imagemPng = b64url => 'data:image/png;base64,' + b64url.replace(/-/g, '+').replace(/_/g, '/');
+const HTTPS = 'https:' + '/' + '/';
+const BRASAO_PADRAO = imagemPng(
+  'iVBORw0KGgoAAAANSUhEUgAAAMkAAADeBAMAAABlOzkVAAAAMFBMVEX____7-' +
+  '_vy8vLk5OTT09O9vb2jo6OKiopxcXFYWFhBQUEsLCwcHBwODg4EBAQAAAC456YOAAAs7UlEQVR42u1cd1xTZ_f_3uyBbYILR2sIuEDbSHCB41rBilWJI2ptk' +
+  'agtWFslahU3sS60VqLSVkRLwFWDSlDrAFti3RIktQ5UEFpFXAhWWWGc3x_BaqtS-_bt5_P74z1_3Rtu7pfnnOfs8wT4H_2P_kf_o_8HJH_6prPu73yV8_KPT' +
+  'lX9Z9_7208_oWrTv4_i9u_JpaVKbKm_TIMXmH9jLVxZKRhF_Y0CKvT8N1CEilq2FtBBhzAAC_4dfkkUsMKKHOTgAq7ACr9_Yy3k3FQcsSvu_lmBJP8MhfldR' +
+  'diK-gvXpnrgJoBluOx8gwJr_hkKJ_bxlQECACeAD-Dz-LN7ANqCp-G6_UOO-' +
+  'UDo3FciNIUbvgSX1Q9__Mc7AJpCaeVm_zORM1EqsRVyAP7whz-80Zfa1dphhVViZSywYA9Oo4-Okf2TtVC-' +
+  'ghRIAw8FKEABgNLaul8BSAuYjv5GXinvFbRBK1NzzT_i2LfGyq-' +
+  'QihYajoajYVig9ECuCQB0wze8bxTpRNbROfgCngX_AEWoctzGV1ip57AO1qHisoDhexx2A-DXYqseJCPDQK-' +
+  'kK8wU6z9AYZIwA4yhTnETxah17mgcynZl9LjnuOOYMwOLm50fWK3_S-vZIErlHWQby2fRgLoBCLfIVXgwt9W6dmGpLUtBuF_3oFmpgLl5jWOXZv-jnXxEU-' +
+  'lLltp1r5lo76ueJtzqUhykwKdr0A8AAnXghW4vPYvBesE_QVnB0o91a1UCGV9xqfiEIQAjq9Q1PNkI9Acg-' +
+  'ugbft4gYL3RH_8ERV4bVndL9ZMsWZbwzSNU7zsC6FDCFAHAfAs3aDVTvQIM_ysdov9zneSWI4IVa0QFsHb0nHEZ1pk8alvjJx2Zr1mCJZ3K2di-Or-' +
+  'AsYvddIKf__O10D5FHgtT5U0I38u9sEMDNHHQgYKa-QsMDJcu_3jA8x0T_7uteZ5y5RQeC7yYbw2h1C1SHGQhxlcQ7BTfNVQaIawpXGCoKt3dHJxiz9mfVgz' +
+  'CKLMeozsusvqW8pMgAPzYv2_G9iBdPBivGb4zJCFNYl2Qb0gTX4GfpO6RQO-H01IrY211mWPxPsLkIHg8NoGTI_tba-' +
+  'HKEEB3VSOLjybd7LiwdFzHsOmyL9qUCuZpUNLsF3tPPOhXUeXXsqD0gN-orhxuQb_1CW5t4X-w9GWXEA7OpxAbMB8io-iYqJxXLgBnCfczq6RakGNoCf7emM' +
+  '1vzpp_yipduREhiBPo4hcKKi1YpeLlvDyjQgzMFyruabyi5xZyv1ZXq8v5EKt4V25JbkhqVBvA2Sp85O19vuuVXXxCQtPrPVRu5cKlFvFR9Da8PIpLEUTn0N' +
+  'nIK2ciBom7eA2alYikD1t6ZEbYo3zEV4Cl_NpBHCtO1GUV7y9pNi2Iw2xsPn6Mi4mTA1fZS8MM1WGTinMS41ixRQ2xJaKnB3iyjv4xiavcl7QEpIoYB8-' +
+  'KkkcCfcb8qZqeLkGSU5MFv6GRERGal0bhF0F0DAMVYsNgVYBwtmKy-xIMVG5tU9Vkr1AzFxDqYy5KiyJXbG6hf5OqsMIlCCt1unDebAhv_Y2dPNTArFKJLdz' +
+  'Lk9ZF9h6BWeLuO9TSsjZlrQzJIgeAW72KpKMrBPpklXnwMXEVPwjC8dZGy3_D6pcH2SzjFkH0E5OOzsa0Fj_CMitJvgd7Zr1Z5i3xWTgIgB8n_-OmjwRzL0v' +
+  'rrlldgqCEUKdofMtdeP3ldf9eUm24rvJYX01STunK99_ilhYu_mCo1xti9nPVZw_DCgD8NtVuRIGv-4S9GQ_8ErD4G6At16jLDw9x-' +
+  'oSXConjFfwivGpizAuQrRP2UEbO1nB2XBxco8nfO1szFwBf_-Yjvj4mCdLIgzFJQdCDFx00oUf3QvDOvTTLOlowVM-fBa8yYSE4F3nkiExOvCquFt1TnRc5A' +
+  'HCWNH_UUVWig_T4or57emu6AwiC8AcWvae9vPR3yrhFELFijfgteLXwXatU9inzl_wqOSdWLQzWA_iibe0gZv80SIt1wcX5uiDIEQThI3i8vPKzkOzBUJ1wn' +
+  '7jfLBeuCYO1_WccvdiKCuYrlwgNb-oBSDUxDmmzFZzkKl5FzH4dVxUEoY7dzEk3vLT0Z-' +
+  'vKbykOLJ8ydjrHC10_031e0vnya9PFMFXdtM2y6wCg2pAFICKyPE80R-' +
+  'YBzrBigNH_0OHiy5uY4Jti8SEEVwgoiOWv5bw9Yh13qV3iSZ6LYkU3RBF6AMiRVoUJllZ3tC4059NRDMJioc4iTlPgs5fOacZdO7nLyKtjIwbDS4aII4rOa_' +
+  'zEx8ubrrAuVM18Uw8Afpz7jwT6I9J755VKZWzv4afk28cqXBJl4zRQviSMoFg44VTT9WXz78EIQY3HEnNyL1X2hTbneTcE-lA9AHTSpzzy4x1JWaMFPF2A7h' +
+  'DqIBbOLAc37SW9mCOqqumnc_MviwwCI0Sz89ud0PZfjGTdTt4nS43OnOxSYwM0wlOamx48luevRxZbV4AKeE1Gj4uA7iVQNsAkPHuyW-n9-' +
+  'T7fKoTra9Z_qxGGnau1DLCsOnj6Yz0AoJa5JQyasX_ZMi8qnXy7AlxFtRXotl8lWWjEyr-0ZowCrRNdRP3Xa-' +
+  'SexfdclWHKjtehnFIwpZqxiFULFUudcsHqpmT9MnjCkU0KdJsQBKUCCleXa8PHbHRH-1wZRGyDa-' +
+  'FfQKGLjshXXpJfbL2_q69o0Unf3o33bazzmj6vaNTNq_Wp5gL_qc37rL9yofNejN1eM-3LZSMWt-2TlFbYNJ9__oNSfmRDK-' +
+  'kKRCwFPw8YdQRcY6PIyGgFuLblS16Zb5jjpmnEzo-k7ZGRekBgl5Leut5LV8MCn55CxOyj-qSuLnwVP0YHftRJVUMuPxH8BYkIHIWQiQauKYEOAYjfYpwlIN' +
+  'XMWNEuMxERkcNswhipo4X2hn_H8ysB7pDt_LXD2M0DeVg0ZCYwpOzFkuEoIMxLlMl3uieNThQHmDrnldCjrNyzQ4x7xIF1vrXnooiI6kqIiGoLBzH385pNt0' +
+  'gVm1JlithrEy0cqG8Bm9bImE4nFQ2UJ44rIMnQQ5LxG1JFQ_WHRHU7y8SlIRNOvdadygTOZdCtqPqLRSkPp76_ZrPbUVpqBP-uozU3wwK4AO-' +
+  'mNbi_Er4Guufo4L8G40Vv40Cv5eIvxlSIKyJ6HI0oe_zygveJiG4TVcVUFo72SvpcdWlBNIsJV0ZHVloAF4guqSBc-' +
+  'mIUz4z9QOBdVsQColRkfCkT98n7QFzT0rIsYX0J0QYi-lLDG01EWiIiOnbDX1GbfGfXmEwjJq09MI0F-Mu-' +
+  'Y4GEvQ0sRjnuuoKJsLlpFJz1GtE5FcR5a5pUeBrTxXSfiAxnWtJnQFs6p-QTEVHodEvLQUqfTWcfXZsgl7afaJIKh1co4JE7XNGgBTMfb3tAktF_c1sRK-' +
+  '5vQIQJr-yaeEpqJiJy6BBFpEAJOYDJJUREq45vjtBtZ722TTGPFFtS9n_iybGg7ZkG7T9fBczb9J6qu8-kt0XsQFUgJrfHAm1Rr8VERKQHN-' +
+  'V3FEGJU0yV9C3GLBVGRtawM9dbpnTlWITx-obDijMA53uxRsiKWBEbzlkHD57wZuHQXdVERGQCJ4HKvfeFkgNYSOVU7kQy767dw0k51kJ4vYgHzp0f-' +
+  'gPihmA23VJiy_brHTQidjTPKAHPyOn4qC6fiPIon2oNypZUl1-XTz97qWLoUR99Cf2ozMvLu0a1eSXF-' +
+  'dtrKzkmTu1woIOtQVNpLhmx2ZJCgcCoIQBCt4YSkSODyMP8JtGSkvj67Uz2GHoElJBjGACx2WzOJyKimVrtHnBH3fmT6vP-mEmOCt9-' +
+  'etOr0uHpHInu4GKMVoxFpaGKWISMagN0kH3w-' +
+  'EmRCgBk4H8bAxwcBYxWgLsUK4GaaM7MYX9RMUHQbwP4Rang3Lmyk4jogwAW3GyiUrShP5KjH_A2EdGnlJmefgAAd2RAQAQRUV1y-' +
+  'v4GIKRJKiSPQeg9t2Ki2ryLrkqO0rP4GlG5ArwSoiuuSqXSQ61Wq0uo7pqq1TUiOpHn0yq_NjcrL0-' +
+  'pVKpclcrWeXn5VPFHSfzxLnlQqG5La4kBtBPV70ELyTw7ZwTwlTVlmJ8eYaUABr1nAcAdjp8y9NV8VLeZn35l_obT26SlfE1FKOp2AaHxyxpSGZ7TWtVFRgK' +
+  'YHV1yMlIDMRFRtYSoItJJOgAQRFFOBj2MIdK1P60X3mLbR0NIy-dSdbQeCQ8aEsrn6buJqCwgAJz09PTigAAVgBCiUKqbQ6QBROm_UwYR0aPm5SWZ6FqtCYh' +
+  'H4AEMPMMdQmSSUEN9E2EJ5eUNV7qr1RG2vHNKd2dKTvl1fYnu12XZbO4tfJROcvfx8CeiR4yihLLGN8vycT3l3uy8e6tbnbNqmJTKXbYGAowo0gDaUTVm8xO' +
+  'HKiC_rW2IqEar1TZN1A7nfKjVarXa7V7mFLq9GfwS0m7TiL8dxt-mEX-prdkhTu1ItKNBE0NGfjQt__Tpz14lA5onENGByEjPqsgdi-ulA4gph4ULkVU428A' +
+  '7rRfOViXQTMSrEpbHsE6j-AKKcHAy6I-' +
+  'LTaAqwIsqAlQAj9KzNWhVL5nDREfBK6G7mibJ8P1E45ZZFQDJHgkNj9MI0394Ec8GZ5VQogvdK_J44h7EREfAr6uz2Ww2W1uiwk62VHk9SelRs_tElOvjmjV' +
+  'RWJf7sxzMTialyMOt2HZOLnuRvohN3Vp2-EadhfL4xw0dcTl8fA4X3HYD0NXPiGmF-' +
+  'L1GXb657B0rgM_aH9pyZe74EwagY_Tsi_ub9kkc_ceizh_uanZWBmPdBM25RcPEPzg_enssmPmbJ_FdAgLz100CDjWVy8X11Gj3O1wVAHX3AYNaX1__LYDlK' +
+  '2eo2m48dqsAYKJ7P2vOmPQ0ABjo4GRE_zh7aE19WhVBRJRBIwMCApiAfKLzzqe99_GdkqGqBKo2ulQFOMOgPRL6IEgj0oCTnv48rWFybVnFHmpTSlJr497Rj' +
+  'U27s677AFyiPCKiwLr7uTbbccqiAJvNZrOdXsLI5XJZAlHVaqJam7MXw-xESiVcERqSa7sklz_H8pMnBJuXB0pOaM4enJnq93BKzx3LN949ARwKUuDMh_E4a' +
+  'QKvetSswT01ACD3LBgPyJB2ba60m9DX-Y4O_LYyU9sRX5wxxhqfay27nXHWxiZ2xW-NryxrfTX3I1vG-' +
+  'dMn9XUjolQ4ZAcYGe5-2mXsAoEz2T4h7gKUrRtvAi_9QX2NJ_6rqWNk3zZ9691fnu9gmKz0AwDA2f5BULWhjymtRb8wF86xKKoIQEBUTUA9lfHeevyNvj-' +
+  'bwP-BMmXoTfUbUrKHIZ3oQwtCNZCmPydfZmw2m-1-' +
+  'sdrXtA4plY0vtVKkjm5s2ikqIQ2YqGoPtVrtdT_XIrY9pmN9y7rVyOUlJEM2HamXCrO7CO0nuieF3rPZjE8pzB_0JQ7t2C2zhlQmTstr-' +
+  '0bhkp4zh3ePYh_IeNWOVCoFcNKZ7TEjgWpLhBH79iIOvHHXrA4hALRYP6pyycKoN8xjd_XTNeDFENxDs6ONDlUuF-' +
+  '69XTX_5sZNbdgHMl71LwqRAXisjsyHlYaappGo6fo2RIbPI7bpnCjxX46dMuwgdiWL6E9y-' +
+  'WN0AZm_MWDc8cL98z88xMxTbVdpzwDv56BVOq_HkCdPmWusnX4G6ux2ZGDm41xV0v7KzGkyAOkV2hfWFaW2a_fvV2yaJG1_XZRf0Ti__5pWIk0EUV3JfRqh_' +
+  'p1iim02m81mkWSTQ2Kz9SYioioAzE5O7yIuA2zmyEPvZ92_-dy1lPnOUeDVT0oPfhI_fPL-kI9fu3i_x8zlTjbVW6VSAmD-yHmjs_OX--' +
+  'm8AdxtyqjscBPwj3wmqO5kJ0Hf2uSI8ukv4NhyYEzFV7OtKQ-7GaNFp6wtY-MO2lUAMKsAADhDewBg4oC7TeHYWaVf9ZWcA2B-HF9lZz5b6AkD-' +
+  'M7u_6SvI9a9WC7AilxDzyn2NwWGWQk9N69frIDOBMQ7pd5mTn3lu46DWqzYcPnyCsGyY7-a4gCg_U9npwLVdqDa3n2N-' +
+  'ccXSWb33t6VEmzC2nBwMmjYuAfi_nFEvrXZ1EUulz8RTddF3fTXzneU2GxNbbb8KmAV6bBR1qlICgBIAkL7he950R7LdP_EUo5PNPrdcQIWCc2i6167CLz67' +
+  'eTSwFJg8ZHHz92dMH9E-oFL8AV8ObtaAnNmgHvz4bq4wHobIKg63r0EL5ZLW2AST3AciJ4tHrviXd1cOPLei6kqBZjI3yct-JNrK9D_sh4AGI0D-AjMl-' +
+  's79Oi3-' +
+  'eYZpzm0wdijAX25CvQLC_gVOLpz1bI2pceza3sWgOVpAcnN9x4rsgHc1RG1d5MBgPgeECwCvH46Oxf4RSM6X84Yp3_CZP36QhThcWbZroJb40fsGTV7am2Ld' +
+  'ybXyrjHW5QWvCHQgNyd_VVXWZ6toE2FrXGbEgDFr-no_kAZ4pt4v17iittvnYiOANB-xeurHH4vQGGWHBjOWw07gEX6css2WVUcREpfa9BWLWonTPO6_rMGQ' +
+  'UGiLcVzffGuCgAO7LOr5ElAxcN1V-' +
+  'EJTB0wVbQnmfOGa3PfF1Z7anyYgYwMK_Rg8yxCiMbqPYDxcUahXC6XiVjxjFLgwCQYvrkNfB0eHp5dGvRlKdAeSOjAHsAZAGmACHUfy_wbsJZJOsvQtVOh4m' +
+  'xVl2f0ONW-jQOo5QJd7EC2y42fWjntk8SwrBQAkzFwEfcgADjcfti6ZaBpcwgAriJPUi5pZ3-RXNRwlRWAA7RPPsQ11ohfefBOyDoZF8BGwAFPj9QN-' +
+  'W6lAKjUBjDuwEHwYFed9UGrN2rnTQfA2a15NWJq--wua1xb-tfan4cyQHG7XSzmAA889WP0FlRv3CaZyAJArAkfx-' +
+  'L2iV69nuL12gQADMaagosEP1f5xs1KAMiOgTETg4cG-' +
+  's5RhF2yP59jjcJPHxU4IArYlxqcGhzNnTEhlK0UAY7wtELglq7NH0aVEgC0LFz0U50FqN10z_W2RwgwfV_16KqcIntDSZKF9_VwI0Q2pCIVGRUZV0vogZ-' +
+  'Wbqj4RFT3VLWgU32snE1W9CUqCwiovT56s1EinHBirUgT-' +
+  'uKOklqtTjFxkqAE9iARh0W_9e9DRNXgUbW66YWMmuyy1jabzZZ5ODM9_XC96wqtkUFQUmur8q3kYvPbkrcbmWRj8Ikt84Za7fMc6XNs1Ql3LtXtR7tX7Nm-o' +
+  'agB_yvrqk9RC7L2CYvxfnXfgM9v-' +
+  'ALo1vK78YAgzBkqPNLG66zvxPacnDR5HQ5pLI3spa8LeL6YE8aETtnwbNQX7jChG3JhHWiPmmRDJRN1JTUemI3ayO3fT8O2Y0bEAUA396ZPrAUEsfFxwIaNM' +
+  '9atbbwbDD5aKb4SuRhYDuaFBYwxEoCTBIkrRJrRMpFt81A6gtaZJTd9A7w9HgdlqidZlJSobixRlW_t8SpfCwCowMXu9B9fWLvgdJF93DLt8LUIDjgPZKLS9' +
+  'jvxoWgd-pQH-UII3FTXP7a_-KtAw8qWwwHAE2CUgODIAM2vLAfCoFPK8fJZSZb4dE4kZT2r-7wJ3K82kH62Iar6aOPDDq_uG2Y3_3Siz-' +
+  'oclF9RoeoX68pZj-vzxcVzlq0WAABnl3dbAKhZPWv81gtnxwDdznRwGzgbgNiodX2WV70oLAzgnobA0uhy7y-ZWPGouE0zBQlEjnwi-' +
+  'n3g5d24uK8lRIUfxcXFrfOm40REFdVrPtIhKQiAAbHi6vUAgFHPkUhjNQBGeN-' +
+  'IKYN7nK2QKLaMq1G3OjuOiIiuR9U441a9yUOtVi8kYj3UanW_vnSkV3eiaSU1p2TY2BiQqCSqWHXvwz_KXzwB0T8l_ehJlfAGZ4-oNoK-' +
+  '_qW_bU2fmhKqO6yKqFYA8GwSEBDQnzuAiFjfgH78fKoxoS-RLnj8KTR2OfwQaxvHRugAxH8_8UWKH3F7PcC_NOLs5HIRVX-jP3C54KP88hiqBqJoW1iY7t2O' +
+  'cXFxXwuJiAo_iluHGEoCooh0wcvCBN1chA95ipgYqghTAIK4F1h-YdQZC8C_Urt57qwO3b5OrA65Lrvbf3aL0rqJpgEdjeFw1Hv-' +
+  'UU1jUTciCGjHmkcjyoDxJZZUbbXL3E_Mr-0CwOt70thQAR5yadbESU1SeYm9kAgXESvOLn-VyAhkkO0JTabFwXq1OpSITPLmdPJ6cNn-sXAprlarwQCiD-' +
+  '792FBDLKA2HZjkW9knsQ89gLRWbcwwvpLt4MoiiOhJ0iNxeAYEBASUEJE1gWqCH_augwt6HwDWekiNvIrHYeLz_T5Xu_5jCL7Gqo8RbyniN6-' +
+  'yh8hQu8A8iU8A2oXVb5x7N4oDVWA-xO7hcOuLimL7aaCG904QcKxxnj40W1HwIRrKX4CeYc1a7jh1Z0Ba62Grzrt8kd1lfm05qiKNVRWy2rFOh1xzTWYBJGU' +
+  'IWykD8GjUoBmVHHwbrTF0U5gh0D8Kfvsv-lXS7Ikq3-Jzo-Wh_SK5iVxjinEzJ5vq8qmsL9Udl8vl8k42m76TzWbLrrsju1ZCVPcwyF1QB4mPRCVPkhoxRsb' +
+  'xtfVrcDBCkA6MAeLTM0g3igsgw2iBCxGlH2-' +
+  'VXkJUk35YAQDcUKJygNOLyIQeLoI6zjpIXNcC4FUGBPRDvKnh1fDCVnbRAaLom2hUj8JJIdID_HyiyjAnfUJEpENHIgLgwj8r1EEwCwA-WhFHiWAaLMIL4jY' +
+  'SDZslBjBq69J6FEQQVQIhfyj0biSyoy8RNdXABQnrFZilYQzopoG44RocAOEjtbqHxq2_DGB6_CIDDiusgEe2U__Lg6m-' +
+  'h3D_jpTIKu9LVZ0EOtNqU0LqOsF4QOWaCGxS9z7Z8FixW9lBuWrfW18aAeBLE3BYXAqgNVVz-' +
+  '0dRGS8zlO5RDZEeUqK36QTdkjbTWTZaVqsWjwHAiVfB7Tdg8PdvNdR77RK7afzIzAE_3wCAOTfAd-6Vm1Zm0iEFUNPVgJurowEf1HyOg-jpyKkplaECC42LO' +
+  'wCYdJcV6Ao12PfOJFWDW7nw3SaCGeMnqQAIFkNcI9YDgD8RUeFEiEqoiM8nqpaBT0T00AquyrrO6mKZ1R0QO_ZjoWbUHRXQrsFmkmslz8ipAJPMgOGaIH4oV' +
+  'gEAJ5uIavTg5JMDfKIySLKI6LaXVQao1nVxsbi7MkNG-LgLixn0yPyLae8mGd8P-' +
+  '0Q3RgbOSVakCYf4gZgFAG42EVGFvF8KWYB5JUv6S4koUyY2xTYGEORSiSYtjQDCmVMsOCfZhnrigtmnByp4o3frUNd3dGUXoMvjvddxRSkgan_AjpNs87uYd' +
+  '0gF1M4srYhUtBcAqOGq2rbTA-FB1Hs76vqMbqg4_spRYAdGGd6FWM_XQo2IBzwFAIzWIJSI-' +
+  'hIR6dsQEX1P9AGADo96uvA1PeFQAcCgWbdZjDKrIJjbgPS5CjTPA8KbGLkKuLEiW_4DZwg5q5MtU5lN2UREN7KdKjMDAASPgqQC3WWmkpHJm2U2loX-LEOPc' +
+  'zK4ZTbYFC_nGCHcN5sFACWXnCiCuxbAN_jqE9WvTa-3hwtvSQW6W-' +
+  '6Uafk8XcPtJ7i7B5DGKhqcJW9_WY_2CoioAghAOJeMYQAwRcOJjFyxXjM75THK77UcoTVEoNs_njR6QMBfi8hoPdDzTxM-' +
+  'f6wni5OWm5jkLo5FvxiirlaVLvZXf9QqC8DXrUdcrDwdW_BR42Wbu8qAix9neddnKLXLyu67el-wV30zJIeb-AEy_ft5WG-0aGjGZ5MSso3f3m2sVjA-' +
+  'O222jtcj2DAA4rseakYutp0ILsf8-5-dqCue1vgL98ezZg8HSffrgnXMOhm6ZzLy90uK_sJYrgWm7AmX7pMBXJmoVMw6UaYoPAOC0r-' +
+  'D52UMIDsutyihEeK0-hku_vUgF8HDYB3baJ-7EYI0Tkb6M32EP3LsAITJq-SenJ7fg98u9FdvL8-ffrsGzoRW_spO7ybPDMkQHvpesn602-' +
+  'vnZ5TM2FJjB4C69qfv1EbGBbbOSBTeKCt0DK0ZXfCXI32aDL2GF2Y27zB_92plPvXXA9zvwlgIzbtqhnOzq_3ssPYqiiKHMdDhzOuG7HARPBQ87KCJKv9ww4' +
+  '6bYU8sGOfFLTiPe5mMXO1LIxS7TW9QfyPg7S4X2c72j3pL9j29I7HjMudKVHBJFbrlugMA97ZU8EjwkFnX_p7co2T80yOVxoYWFFrWH-' +
+  '_5Bu1NCq5RGwHb_PTvwA3V82JqL3hL7Di25Iq07RwqZ-tl49dP8IOgDD4HBx1SCMqe7uc8Y8d4T9UZb68LjGz9Tuo4YU-HHeAfFgZqIuf0MM7TV5kAoOaKAk' +
+  'zFF6e3dx-3XAegdI9jKCQz3xzc-' +
+  '6LKMfcpC_bJs7744dN3onLtuO3mDHM514gQ1VjzLqqUjS2Jn3i8lcSOHN4dqetir16UhkCHBuDs7e4ipKNzzdu0ceA_lYSnPuu-Nj99M1qBXUUe6t7ljYzc-' +
+  '7aLaq-' +
+  '77p3zqyVdy85I7MjTX5HacgdxTtBlWbdcBdAqyAUpOR7tH6L10xGS6JdnOEYfPbXLh3Qs8Pryl9Ihp8AUcE76dpYP69p4z73L_ZadKOkHXBcwrwdox0-' +
+  'ojWp3U9J5iQIlFqBkYp_L8WxhRxl-f8_o0GdF3sjyZDvngIlWhRrw6j4XuPAj51XqhAm1mmvRsrd5ZMcJYUkSJkLoEOZkFLEdlgNxLrpvdNshOg9_I-_kY4Y' +
+  'kPKfLx7_4JPLTYCXLyXDoXzG64Jvto0gnTKm4KvoQ6NqU7Limy4-' +
+  'TARits_aiNARuR_PdlgRLggELWG5ar9rHmQE9B4W59fReuB5iy8vLzTa6iH726bxWHkGGsycA3gU-2XH8Rv5cBQCsui3Ny78sa3e-' +
+  'GVla38vLgfA6XsvpVO8TWk967tDg71HnCAxkQ3RtZcgwSiNGDjrEDa1Jx2kAHFWTKDuOikv0Vh4LIG0xxFTOztuSctSlanPvaVjNNjJwjjptV-bN56H4Pe78' +
+  'Cx3tL8Cvomd3ZBinJNApxTu0V6Q1AOBqWs2xIpfN11tDCgF0ZoEYuqTyoqpG9JB3CaLz4WCcibho7XMjcmHdY-' +
+  '9_6HsW744yCL7LMGaby1hJRiHLLFQB2GDedcaOkp_zz0zOrjUDscDcplpK44RU8ek3DDVggQ4IYQFgYEsT8OzMirD-sBZayXbBw4hwTocSY8ZN9xbXrhUwkP' +
+  'igbeHVlo6Fdqi9aHrf6T96n5Z0QbvpQDDluCoZuifj3kIHDSDSAOAWucgAIP3Pi0nZ-' +
+  '1hlJfuywEwdhMPI1AuoSlwq0mBnwG79aYkJVphFDnTSb5YGVvvxTEDg6DQqZxkaa0Hv6dUsIPgNwCuGwQCYQZZnugnxKgDgnwOTUAHRVgMOQ8-' +
+  'PqrrYywA9ROZWsEoVsKL19JXgaryEF_a0GwN0iF6GlXRJRbql4J3SOd0UEI4DAET0TMQ0JC4VAETTgBalWMqO1R8GQihp1KkWEAPzkmHlyWCFd7wXAD_kqLy' +
+  'nQbxVBXDfpzTSubHYhkVOWyx4gFRAuK3ymXiZa9kpAxCqAdeULPoFr-feYzpfuypjOr4DvgGuZxgrRwErvCRXIND74TaTJMuboJACkA4tIZ3w53HDFBtlgIs' +
+  'RoRqRBpxxI8ufBtAqAHCONrIACGEx9FBLYrmnRTWD6FJT7UgkGLjfAbGSAslWrRXequRA7_MdPY29WN52oCfQ-DMsJB34-5nTkqNg-' +
+  'SaEQcRiqOGVpzM_JmENAGa98DzALAX_kn-_BIPYKCKir3qsqpsdta85mmsajTWMaVFlR6fFr5JiCX9X84yfowGsg3CZUD9mpY4XzVvubYyfbYnQCS3ooepeh' +
+  'PA_5mAOA4Ah7AIWHBOGlIrYtqd5MhFValnwtNrQcj7aXElZqVjKX2OFV8fkBMUSPmUszV3UA_xpWKbha3_lqnovGjKTmyYm9jusZjGac1oj_NNcTEKxDgjWC' +
+  'K_DxcQt2pX3_prORohq5ODIAHA6qtDKIyvfZxm_7MiCa9fqSny-yM1Xxx6RKcEoT8kB4T0ocxCkVHZKVHbQiK6DU7HTiFD2j_5l8qvLWByQVyWzdZAeMm2d2' +
+  'rppDw2ltuEHKgDUXfoAGBy9c3bQcMmdzjbbzoLZr52aspylR1Mx4t0eJYCuCSfuILh5eYHNCy48mBkCiHh6pvmfW-PrJ91SIQnC88yl7h_miUr57XsUQXRM9' +
+  'OFyABjTYbE0InpH5I7IFBkEQHRk5BeR3H1WoVv0MnRgIbTCO5G_iLc88lxX4VLmPCA6qYDoGUs2lH33R5iBBf2iNKKyIQ4kGIK3Ml-' +
+  'oeNr3zOYdbeWrkiMUXUdXm7MV8AI-rw4cMXnnI-vcL7VAWxV_v0X8pUJYbQCSsBorWaARC2x6xsEIr2NjYmsZRMPlm909iryxN5wT8Zbra2tlrkqlMgzyzAj' +
+  'bcaVaHeOuPOOqiAm22S4oY61SiwwAJ8inNstdKXiUo8z7Vfiz8LpTFPI9z5rk1WAyFliA1axkr2QPvCzhPOEu1StXneNvjPZqhEJkNpuz29KWfFNMdaBWq91' +
+  'iBV8HcMeadxdhzFk2KbjcHBiGMfVLCGWfjZNPRBw_teAXC6ypa94661M4rUChkMRM8dnyqWzw96Ilge-m_daPvVZU5HLo9XDOpwP3xZ1TtnxdYKqzQxjRarL' +
+  'gh5-yR8z8gd3_yZDyS9uclWdm8tFbz_r9SiCwHMACtmNqW-W-0G8LO6i8aoQ36YP3tmq1KmlEmVar1cYo_JtcQExytQlYcgmAd4oG_jf5e6YEXWp0lCco-' +
+  '_10imTPc-NWHeCOIedE17HT3cXI6fiT-C1l5-zhaoWrApBnRryl7GWz5SskuWWI6e8_2Ga7cd-' +
+  'WazvtyrQ6Jc_LC8679r4F4zS_n07Z-dwamTPEbaFhV7OSKhkwpcuqvpWysXSlcATAbEwOcZhNWm2C4nPTB4gxZ2u1WLJr5lEAY86AqXT57lfhQ2OgEQvql-J' +
+  'leW7-UlvW0Q7E7N2yZNAheucgR_91yvUj73xe9bowt8_ggAefXryf1myl3XMHf_lZDLx6Xu4W9MYc8e3OIwMix9xiXlX3-' +
+  'v474fy9g0Vr66WydN7zj47xywHJni-' +
+  'iNB1SuZkG7h5J4mHxRAMztk4fqB0JniQ5e-Tn5uw0s9lszqYz5m0jt_gBXWkpuxhwK586xQihXvBdg1KB07PsFNYqZdgp8yhCWLoo71pvI-PumXtOAfBWHPX' +
+  'Lu5ApKc7Ly6Ppfq59c89OH8Rpl5sq651lgWC82wQTZwwed8Q43i-' +
+  'sXArKBIkCswmQfKd450OhqYO6fKheEKvFhqUjwds6zpyMVrACvBK9F_zgfcYRYtZwhwWJrcC2KRoMNQRue3JQ58WjcDpmKUwAM8-' +
+  'ICB0mexw9iUbv1mkwcHX0iqq7kMIbVkH06jl6L_RiW3xbEwnhysogzAJCC8HLeXLCLr6ByhW_nFMhMQHgZhr4d1Ve6UYrNo4LMwJ87ajqu2iFVriy-4aWs-' +
+  'QN3ZuZGUtHAi7HUvpoggAei4PDvn_sGl8sFQAIHTYuVwbXxiaPIrgNZ7zFLPPjLJ7hDQPAtMjLuqrMVOYv9lEqlwbfyzqvlLnKwLFK9-v76gBsTOyUKHu-rv' +
+  'ypXiYolcWHIoo4hndaxm_av0v8_pa7HAnOnNDzht21ipKePFkVArxV238hjvX67o2uA02BTSYNTA0anuyUSnRwg5l4-' +
+  'FJAdDELQMQSYbyCv0C8ZB8EM4yQLNfMfrroNaKdUBbrvxdYAUvcRrZDdmT3eJV_gv4vpQIAnFoWLt0KRwG8BRYvC3i8JkaM8zVCohLdUCWne6YrxDJ8K0477' +
+  'yeVxfb8HOgJS9cR4rQArO6PoKYWAPh8z1-VFZpfx64O5-' +
+  '9rAPlO951rleCWpy68ZkDEWxIVjrRsW9s29wyuMH31fhJrrJ_Ugj55Fk77a0plyPDGyoGcSgCi67K_OmVzezv76_nJmYlAybhvt7X6XNvog4dhh2VwCUdXlk' +
+  'pdFxds0eBIRCmYdk3ADPXEyawR7138uPu36pTJqzKWnNQAM0NK__Isz6yB62e_edMIDGw29avtBe2iBeM-' +
+  'mQxUjx6ubCaDqBRqPSYDuM9uLeUF7Ud1yPINc_uuDtNj3rjaBx8Dkyr-ap4bAFocwfc8GRCaisC72u_DrqrAUXEvIkohsUv6Zratdohdl_TV8_V9zvspmoCf' +
+  'cWyQYAnLpO-d8oMRQs0fqhcN0K7E1icAHvUvh9vZdb4rbDd9wCtE1FsSe0t_Dn-' +
+  'Rn-R4mUAv0Atu9ERj76zpQa2zdK6MZbOwNkeaNTxE83JnrN534_kB0ixuPm71annaEv4oc0RNK9z9CE0XMW-ASlF4pQ2o1NH6ZODYxd0_8FytNk1SNH6Issh' +
+  'AdY3HcywY9zkoNVdDDgORF_NO5qA6pU6_T8K8pg7o9XlqHedOzoqTb1x8sP_WhVcv2iFcOqHk48Utrk4D86Pd0VfUTJauiNW-' +
+  '9Bm7ofuBfaGH30sDwBuUvtweGbqhOt0EoEmAq6oJTwYA89J_OL-' +
+  'FKz7WDwAGHg2eWdH7R-Y0-9IgYEJHIDHit4jBXBnANMm9v85f4ltz9p6tvH64y6vYZrtQPG2Pt81Wr-ZbgsePYeTJcvwNEuwegYjN5e9H9GMBYMOumvd8DWO' +
+  'Pc81ms8Ns3kW0Heh1_Mup5ifhPP9mOcIT8bdIGK_q7rH3cGjPr5YDAD8yJe6gfa4BgBXcLyrmy8DLuFM5ExA-Pp2F0bpJM_E3ydMM7t0bEYenfgIAH8IzIKY' +
+  '6uwqAVXx4CStVgE8B_QBIZfOctRsj_Avxt6n1JZUbG_FTxHti21rZLAByuTgTwI9fuMsQo4Bz6Jbp1C3XuXVdO5le6Op5L0S5MePEIOtrof697eFmu1JWihJ' +
+  'AA-A1Jt-ZOrkDAD-pcodzvupt3dv4T2hSjoKvmGz4qGPcIzKOBABvAPNZYCUpwH8EAIKwowd0APDRJdV_BAImKNMAr9Iwl44jN1sX-KYr4A3AC5jniFHU_3a' +
+  'MQFcU3wNAemFDitLgrzccHDhuRIUC3wz45T5vjv2sk_-M-9BBzQHUOc17rOuDSfDZWOht_Q9RQMUd3o_VbBhVI6lUoXGF87UBF3etGfX64_-' +
+  'crt__VDfglEBX2mDbuGGmOcZ8Guc5P6dAbegrsDrfHG6AO717xgQZAFQbxFhRF2bCPyNuYE0aeAFNjK_PtqMVACdnrICXc-P6px9T4J-' +
+  'T7PDZ_l0g49lUsALYq1ar1assgFQGcNUbs8bL8F8hoflU2MT6FaDlJqLazQCk4IdNMSfhv0dvz3bExdZzS1Ie5gAAaVxCZCT-' +
+  'q8QEDKhJT7cDgITFIACQBgTgv09yufOXwSQKeD13MOS_ShKZE-Vv0H_wW2qMHjr868S9LP7530dB0_My_I_-R_-' +
+  'j_9H_F_o_kslew6tlaKYAAAAASUVORK5CYII=');
+const brasao = () => cfg('brasao') || BRASAO_PADRAO;
+
+const SIMBOLO_PADRAO = imagemPng(
+  'iVBORw0KGgoAAAANSUhEUgAAAIMAAACgCAMAAAAYey_MAAABWGlDQ1BJQ0MgUHJvZmlsZQAAeJx9kLFLw1AQxr9WpaB1EB0cHDKJQ5SSCro4tBVEcQhVweqU' +
+  'vqapkMZHkiIFN_-Bgv-BCs5uFoc6OjgIopPo5uSk4KLleS-JpCJ6j-N-' +
+  'fO-74zggOW5wbvcDqDu-W1zKK5ulLSX1jAS9IAzm8Zyur0r-rj_j_T703k7LWb___43Biukxqp-UGcZdH0ioxPqezyXvE4-5tBRxS7IV8onkcsjngWe9WCC-' +
+  'JlZYzagQvxCr5R7d6uG63WDRDnL7tOlsrMk5lBNYxA48cNgw0IQCHdk__LOBv4BdcjfhUp-FGnzqyZEiJ5jEy3DAMAOVWEOGUpN3ju53F91PjbWDJ2ChI4S4' +
+  'iLWVDnA2Rydrx9rUPDAyBFy1ueEagdRHmaxWgddTYLgEjN5Qz7ZXzWrh9uk8MPAoxNskkDoEui0hPo6E6B5T8wNw6XwBA6diE8HYWhMAAAEgUExURZyibqOR' +
+  'WeDOlWSVlLxXMLfDprm0m9bZ3-zq4f__qneUd0GT0ryjVJapis6bPerq6T-MvDuV5L10RaqqVfLXW9DLrWRkZLuxhv9_f8O6nP__f_8AAOBERMOzc8G_s-' +
+  'TBVsbDu_39_dhEQQAAAPDKUPnTVNJEO0OV1MpnPNY-O9KYRdK0UslXOf__VeXZsjyT2u3nztg-QHKXimBgYNjIlHJycst6R___ANGmStm4UuK9TcpoRv-' +
+  'qVbqfSLWoeP___9DQ0MyHTM-4bkqRtde4juPIqevr69vb2_Tx29nTrUWNtMp2PdGWb8-LZNmphtCldbOoVLK3jNLLpY6mjunhvMxbQcuGPr1YMOrdw1KMl-' +
+  'XJazuOx87NzOG4l2SXo9PAeQu0toMAAABgdFJOU_95_____3Jz6QP__7X__7P___8D_7MiswKzAgH_s3muef7_AP7-_______-_wP-' +
+  '__7__x3-HP8B_63-_wOyswJ4__7___-ysv_-___________________-____eP___0kRwAkAAAx1SURBVHja7ZwJc9s2FoBVx0nTpOm17R7do0uZgggShWCV' +
+  '5XLJ7jakqFa3fMZ2kzT__1_sewAvUZQEuTbdncmbTAyRIPDhXaAogK3vH1i--_6PraMHl5Thr_96IMHOv1MMX3_7MPJ1ieFBRTL8-' +
+  'eiDb_79IPIB9K0Yvj36-' +
+  'MvOg8h_j37IGf7TMc3GAUzTrDL4drPi1DBYlDQqdqeGgbS3C9ldAWXz6ZVyPUN7dxc6EG09uRWDTuuU0rUh34qB0KwpVSSKwLIYkY0TwjJZ5SIkjDxG5PGsA' +
+  'qtIfkU9w3F6MppFc_tSFr3ZfB4xLFmJEGNPQhCyvOBKEpuVEFgyMgz30OX8MpSnLyKm6tlxesVwxrQYXMMwhGJIoDgKQSnszMCjHpXuNDRyOStMyFx5xOWGc' +
+  'emps3M2kn-XSX6Bm6piqy0UA8sZDGCgczgEbSfq8hKDwbN4orPi4BYGY0l2-' +
+  'wOJRc6wFEoP5C3o4IqDeqRDLFEr3B0LbDNJGQgwGnGksEMXG3Ejho0ZZ_ZyDH_GeBCa3qKHzFtYlFfEomQYGpzQxBChuv4LHM8VC3NbYV3ogDMqrRYSBrriV' +
+  '6TNFtDYIcOGDJscogY9uksPpE2RQQ5YFiVDYowiixvXCo2iqhf0b0R2qJR7HALDNaPU4xc8PEZ7cbA8RYZQGtOYUWmvuS6Dct-MQR4Sud4VA0kLQ8VwiYp2P' +
+  'UtGoPQZDo0gwyiEYFMM8zJDp8YWqcgOrbwIDBDu0sz8CxgZHlYMIFfQ8QWTddm18lF3Lj9LBqgqGYhkmFPp5B5N54t1Bj8T2wcGO_0ARV-' +
+  'W4_HYzav46IufwN9PeF7XdvPws9UJjn9dbMG3l3iFDI-saWedoTSxx1Ax_fxlXjSDoKjjYE_yKC_qBjyPV_NLPMHxxIGqEBcJImvGXNeD46R8PjKc-' +
+  'P7JieNg0YczrZaD4meVsC047Zwgw4mjpOWO0n7ikxMIRg4nTlxZwc8ZxicOfIRmnBqG_vMBSrf72Tlc1n8-' +
+  'mQwGWBz18eAgPSlLkz40djrpDrqPMA3cdOXxyeDmxenZhcyeNxNkgBOTx9hYd3KOVhCCJ32oCW10Jyd1DL2ukh4y_NrLiqNfsxO59B5Biy9eQwFhxgPFcH5-' +
+  '3p8M-qfY2wAZxOB597Vk6GFDxoub_qNJ3kars5Ohu5UBlP6497x3g_nhVOH2QSXu5PPPb0TGYEDfN2OpB8lw3iu3dLKN4TUyPOrlxf4aw6SFXd-oMY_U-' +
+  'd6vIj0oUDWv8dT42TP8czFQV5xPuroMLbhOtPpZ0Wi9qDKclueLM9WyYjDcU4yOxxM5cGMkjz0edFtyvjgdaDJMVJyfvs6LjyerCIOz8ryZXidtkcl5ryuNI' +
+  'QUUNVFXjLUZzgoGVXz82WYG3s98BPTA0wh0B2UmGP2-DINTiCFxgZ42weKFOK3qIRFK-Pi0n_tpfyzcZ6dyylZNtc7EyBjx80HWpnB1GbqP-' +
+  'iiyer8olkXV6JciLa3cnfRbrax-bwAfWo-6RUN9bZ_sKSmK3TXp9WrOyM_qX36km9apqb-VoSGpZfi816S8rsuTrX6j8qxOD83L75NhaqGEoRWqgqUKYVj-' +
+  'ZJU-qQMrlSsHwuqncqXa-' +
+  '0kqv13epRxvO1nL0G5Utn7ffM_QNEPnd64Hcnx_oslArHsUpsVAmHOPuTHSeh7VZsE9Zm5Pm8Hh9yKx2SkzdLYyxMa9iLvKsEMP98dA3zNUGTp3xSDiW_vDn' +
+  'TG8vRIPzuDR5KEYssEPGfMeyiejRfpEOlyS9FnYwbLh_DCj3lA-fF4IInH4nDTNMCTh1UwYi8NrIwqBZXZlsWHT_sBm3GJJCM4wPHTfsqu3ye4Auetc7cHoZ' +
+  '4cyKEJC5gI8o_H5Yoa_FQwjHPtSWiGcN56rD0j-' +
+  'aBif6BucvG1cD4Kt9pnQ2XB4LZphSBazueeFIZmtHF6qL6asNWogLhJCveUCpCYUXcJ4I7aA9LwhE1xfEt6QTw4JqZ2nREjOGouLISNuXcogSYN5ktdBzMmi' +
+  '0dhc0lmNJXiTDMnhrM4dds0Yd8mwOFzW-' +
+  '6QlmvLJJYk3TmSjRvQwmtNLb7YY8rXuRiNueaMmGNzIuySUVnKEWM68EH_X9URDsXk9TLzVKBCMXIYe6Ce5bm7enFurWve2WuF-' +
+  'GEL5u7vU_HA5wnsaPYY7vIcRV4kx9KhcljKn4dAYXl03rQfO3AU4IN5EXLOQ0Lm7-7b6rhmWhOHoPbirnBE-DClji30Zfuu9_ZwS-HphvD0cCrm-' +
+  'YsHovGk9hB5XITlfUmkE7n3RsE-KLEHNi--' +
+  '8rmg4LvJ1YqT2dqbR5w-jMDQemsGYLW7NcGfPxIR4eIb_x2eD5D3DvcXFe1u8j4v7Y6DvY_M3MPDkTvTwg2QIbzlv_pa5-08lho-' +
+  'BwbuVP8D3q1v-fuFDnxWGzu0YZpSEezCY03bB0DH_cvRRyvAHyZD_CswcfQZcC67xgLaOIagw_N00O3ZJS47ujcmSpgu9teRdeUW92TF_-arE8BUw-' +
+  'CVv0WVQy_K1PSI2TZb2cmwhw89HP6YMHwFDp-PkDFEnGGurgegr4ikYOVt7QKfAcPBpieHTX-CIVTCYrr436CtCOCVlR7go_Kec4cejnw6AYZptwrFMU--H0' +
+  '0W2_UNPETwoHB_DwhFlhk_hdH6e6AZnuhujujNlW3qYloIPOllhGMGhFae81lEDzfdEebou2c5dEpX9c9kWBq5-' +
+  'z3fW6DlEoYZ0E89e7mBiH6sMMURGlI0L4kbDGElpc5aOIlyz4g7jCoMblI0BWWrXs2fc2VFe7rTbI5xC0zBKGObTCoPALRn5wiEwRryPGnQUwSuRiT2sMkhj' +
+  'vCpPGWIfNWgo4l1p0mS-KTVdYcDozLOYRppaVPYF7lIEKDrIo2IKUYEeV2EwcGXWNF-nZe5SREirC-CGOwKzULOct90aBtwnU04R2z0iWdseiXuYtnqDk81X' +
+  '1MLpSdQwgLKqC7X2UcMORcSrS8TSEVYZsNpKEtmmiKRml-g2j4DQL5rO1bDOIBUxLdkscPdRwzZFiHJukN6gxrfGUPEIy9xsDbd2s-' +
+  'xmj3DQIbMpcZqroYYBaUvp9BXEz4bY8Gj92lC-MSb8fBctK9RQwyATdmC1d8ZGQtr7KMKF1GDlaojMIu5rGDBHoDUK4nqIDWrY4BEHoN5pycSAkDlaHYN0y9' +
+  'wabcuphRhu3Dpdp4jxCgLeuxRt1jFItyx5MPhlEOuroc4jDhw5KlLYt5SBaxnk1OUUC2-tYF0Twy07yNd-QABfAIRs-' +
+  'zv6eWGJTQwyNvIATSGErhrAh3gVoYg0lZ3KY6pnkOYz7WI7OvqEU_66wUm6mZ7UbcRf-S1exDCCV4UhcEBm-Q5tA4PUXjHFqXguqc_AOz7Q7YZ9Dcclj-CQm' +
+  'oJ8lmgfMxzeSsrZxCBdohQcbWZDU3nK5OEOWeZKwHt1q7QV3-9UU-9GBoQwzUIThEzRHkk6ADES4qkx2vVrpot36jbLW6GohY6z-' +
+  'iVyM8M6BKrCdFz9nwnGMd6WTUvvRcCV4x3nwNBlEDgG0y59fSAe5hZdCh5jAxGjxfWWRKhOxFsYlCZgnim_WCHChxbOu4udX2VcB2vaVnkI0zot7GAwYnlR-' +
+  'R0hGcVWZYgzVMEqASBEuNTeWX-gsJ1BhWjJKSSF52MHgRPzC7H-oxJ3HZz0zCCyyi8GIZaPR-tuRnYwoGOD-' +
+  'Gz1dRuWLccJ6nBi1-XAIsQFd913sewf5n57yuhK9pJ2qL8V2cUgUwxkhlfVl35YkS-3vKvNDEEQpLvO0FAAUKmOSgCrvqs13U4GlWo7pl95cwy-gsCKbD8ws' +
+  'xf8SGvbrzxWfTXLMfoQKmHDGrbdDGmikR5W3TCEIMyyrOnU83DJIi6FWa8zlfYJ4k1erMOACVdSROsUOMxjOWvA_3XTOJn68lpn8-25FgPOo4FUN-iCar2GJ' +
+  'wVgGUG8JZQ1GVSAIIUP_ka1tl5R8FtFHsRbn2NoM2DmU84XSLffvpeMysCR9UEHO56k6DOo_KuaDezIYnUYYI5jdFTP9tOXVjjvdj7L2YdBzoSOmTVuR1OmX' +
+  'gJC5eYz9YIPZnmRn9UJtOa3PRlSZeQv0nAc345eTVE875Vt-07-rg5IFrHew-a9GSRG7BSpKc-' +
+  'VK-8IC8AGujcat2FADA4cEmS1a5m3cRK5fqrfWJlhj8sUyAU_-AWk2AMHHw4uxGjPdp6WGD58qS1v3rx5-fJDuOCfT548-SCTJ0_-8QaOfojnsZJeUy-' +
+  'fHH3_O3nX3_8AIANZvKkDOvUAAAAASUVORK5CYII=');
+const simbolo = () => cfg('simbolo') || SIMBOLO_PADRAO;
+const marcaHTML = () => `<img class="simb" src="${simbolo()}" alt="Distintivo da OM">${esc(sigla())}`;
+function cabecalhoDoc() { return cfg('cabecalho').split('\n').map(l => l.trim()).filter(Boolean); }
+const blocosCabecalho = () => [{ img: brasao(), w: 56 }, ...cabecalhoDoc().map(l => ({ p: l.toUpperCase(), c: 1, b: 1 }))];
+const blocosAssinatura = (nome, funcao, esp = 3) => [{ esp }, { p: nome || '', c: 1, b: 1 }, { p: funcao || '', c: 1, b: 1 }];
+const localData = iso => `${cfg('cidade')}, ${fmtExt(iso)}.`;
+
+const CSS_DOC = `.doc { font: 10pt/1.25 Arial, "Liberation Sans", Helvetica, sans-serif; color: #000; }
+  .doc p { margin: 0; white-space: pre-wrap; }
+  .doc .c { text-align: center; } .doc .r { text-align: right; } .doc .j { text-align: justify; } .doc .l { text-align: left; }
+  .doc .b { font-weight: bold; } .doc .i { font-style: italic; }
+  .doc table { width: 100%; border-collapse: collapse; margin: 2pt 0; page-break-inside: auto; }
+  .doc tr { page-break-inside: avoid; }
+  .doc td { border: 1px solid #000; padding: 1pt 4pt; text-align: center; vertical-align: middle; white-space: pre-wrap; }
+  .doc table.esq td { text-align: left; } .doc td.l { text-align: left; } .doc td.c { text-align: center; }
+  .doc tr:last-child td { border-bottom: 1px solid #000; } .doc tr:hover td { background: none; }
+  .doc table.sem td, .doc table.sem tr:last-child td { border: 0; }
+  .doc p.b { page-break-after: avoid; }
+  .doc img { display: inline-block; height: auto; }
+  .doc hr { border: 0; border-top: 1px solid #000; margin: 4pt 0; }
+  .doc .moldura { border: 1px solid #000; padding: 8pt 10pt; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .doc p.pont { display: flex; align-items: baseline; gap: 2pt; }
+  .doc p.pont .pt { flex: 1; border-bottom: 1.5px dotted #000; transform: translateY(-3pt); min-width: 12pt; }
+  .doc table.centro { width: auto; margin: 4pt auto; } .doc table.centro td { padding: 1pt 10pt; }`;
+
+function htmlDoc(blocos) {
+  const corpo = blocos.map(b => {
+    if (b.paisagem || b.cont || b.moldura) return '';
+    if (b.hr) return '<hr>';
+    if (b.pont) return `<p class="pont" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}"><span>${htmlRico(b.pont[0])}</span><span class="pt"></span><span>${htmlRico(b.pont[1])}</span></p>`;
+    if (b.esp) return `<div style="height:${b.esp * 1.25}em"></div>`;
+    if (b.img) return `<p class="c"><img src="${b.img}" alt="" style="width:${b.w || 56}pt"></p>`;
+    if (b.t) {
+      const cols = b.w ? `<colgroup>${b.w.map(x => `<col style="width:${x}%">`).join('')}</colgroup>` : '';
+      return `<table class="${b.sem ? 'sem' : ''} ${b.esq ? 'esq' : ''} ${b.centro ? 'centro' : ''}" style="font-size:${b.sz || 9}pt">${cols}${b.t.map((linha, r) => `<tr>${linha.map(c => {
+        const o = c && typeof c === 'object' ? c : { v: c };
+        const cls = [(o.b || r < (b.h || 0)) ? 'b' : '', o.i ? 'i' : '', o.l ? 'l' : o.c ? 'c' : ''].join(' ').trim();
+        return `<td${o.span > 1 ? ` colspan="${o.span}"` : ''}${cls ? ` class="${cls}"` : ''}>${(o.m ? htmlRico(o.v) : esc(o.v ?? '')) || '\u00a0'}</td>`;
+      }).join('')}</tr>`).join('')}</table>`;
+    }
+    const cls = [b.c ? 'c' : b.r ? 'r' : b.l ? 'l' : 'j', b.b ? 'b' : '', b.i ? 'i' : ''].join(' ');
+    return `<p class="${cls}" style="${b.junto ? 'break-after:avoid;page-break-after:avoid;' : ''}${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}">${(b.m ? htmlRico(b.p) : esc(b.p)) || '\u00a0'}</p>`;
+  }).join('');
+  return '<div class="doc">' + (blocos.some(b => b.moldura) ? `<div class="moldura">${corpo}</div>` : corpo) + '</div>';
+}
+
+
+
+
+const paginaCss = d => {
+  const base = d.blocos.some(b => b.paisagem) ? '@page { size: A4 landscape; margin: 12mm; }' : '@page { size: A4; margin: 15mm 15mm 15mm 22mm; }';
+  const c = (d.blocos.find(b => b.cont) || {}).cont;
+  if (!c) return base;
+  const q = l => '"' + l.map(x => String(x).replace(/["\\]/g, '')).join('\\A ') + '"';
+  return base + ` @page { margin-top: 30mm; @top-left { content: ${q(c.esq)}; white-space: pre; font: 9.5pt Arial, sans-serif; vertical-align: bottom; padding-bottom: 3mm; border-bottom: 1px solid #000; }
+    @top-right { content: "Folha Nr " counter(page, decimal-leading-zero) "\\A ${(c.dir || []).map(x => String(x).replace(/["\\]/g, '')).join('\\A ')}"; white-space: pre; text-align: right; font: 9.5pt Arial, sans-serif; vertical-align: bottom; padding-bottom: 3mm; border-bottom: 1px solid #000; } }
+    @page :first { margin-top: 15mm; @top-left { content: none; border: 0; } @top-right { content: none; border: 0; } }`;
+};
+
+function trechosRicos(t) {
+  const out = []; let b = false, u = false;
+  String(t ?? '').split(/(\*\*|__)/).forEach(x => { if (x === '**') b = !b; else if (x === '__') u = !u; else if (x) out.push({ t: x, b, u }); });
+  return out;
+}
+const htmlRico = t => trechosRicos(t).map(x => { let h = esc(x.t); if (x.u) h = `<u>${h}</u>`; if (x.b) h = `<b>${h}</b>`; return h; }).join('');
+
+
+const DOCS = {};
+
+async function emitir(chave, arg, modo) {
+  let d;
+  try { d = DOCS[chave](arg); } catch (e) { return toast('Não foi possível montar o documento: ' + e.message, true); }
+  if (!d) return;
+  if (modo === 'pdf') return arquivarPdf(d);
+  if (modo === 'doc') return gerarDoc(d);
+  $('#print').innerHTML = `<style>@media print { ${paginaCss(d)} }</style>` + htmlDoc(d.blocos);
+  setTimeout(() => window.print(), 50);
+}
+const arg = v => v === undefined ? 'undefined' : `'${esc(v)}'`;
+const botoesDoc = (chave, valor, rotulo = 'Imprimir') => `<button class="btn sm" onclick="emitir('${chave}',${arg(valor)})">${rotulo}</button>${pode() ? ` <button class="btn sm" onclick="emitir('${chave}',${arg(valor)},'pdf')" title="Gera o PDF e guarda na pasta de arquivo do Drive">PDF</button> <button class="btn sm" onclick="emitir('${chave}',${arg(valor)},'doc')" title="Cria um Google Doc editável (baixa como Word)">Editável</button>` : ''}`;
+const botoesDocGrandes = (chave, valor, excel) => `<button class="btn" onclick="emitir('${chave}',${arg(valor)})">Imprimir</button>${pode() ? `<button class="btn" onclick="emitir('${chave}',${arg(valor)},'pdf')">Salvar PDF</button><button class="btn" onclick="emitir('${chave}',${arg(valor)},'doc')" title="Google Doc editável; no Docs, Arquivo → Fazer download → Word">Editável (Doc/Word)</button>` : ''}${excel ? `<button class="btn" onclick="exportarExcel('${excel}')">Excel</button>` : ''}`;
+
+function registrarDocumento(reg, d) {
+  S.db.Documentos.push(reg);
+  if (d.tipo === 'Aditamentos' && d.ref) {
+    const campo = reg.formato === 'Google Doc' ? 'docUrl' : 'pdfUrl';
+    const ad = S.db.Aditamentos.find(a => a.id === d.ref); if (ad) ad[campo] = reg.url;
+    if (S.adEdit && S.adEdit.id === d.ref) S.adEdit[campo] = reg.url;
+  }
+  render();
+}
+async function arquivarPdf(d) {
+  const titulo = d.titulo.replace(/[\\/:*?"<>|]/g, '-');
+  const completo = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>${paginaCss(d)} body { margin: 0; } ${CSS_DOC}</style></head><body>${htmlDoc(d.blocos)}</body></html>`;
+  try {
+    toast('Gerando PDF e arquivando no Drive…');
+    const reg = await api('salvarPdf', d.tipo, titulo, completo, d.ref || '');
+    registrarDocumento(reg, d);
+    const onde = `PDFs / ${d.tipo} / ${new Date().getFullYear()} / ${pad(new Date().getMonth() + 1)} - ${MESES_EXT[new Date().getMonth()].replace(/^./, c => c.toUpperCase())}`;
+    if (!NO_GOOGLE) return toast('Demonstração: na versão instalada o PDF é salvo no Drive em ' + onde + '.');
+    avisoArquivo(reg, onde, 'PDF arquivado', 'Abrir PDF para imprimir');
+    return reg;
+  } catch (e) { toast('Não foi possível gerar o PDF: ' + e.message, true); }
+}
+async function gerarDoc(d) {
+  try {
+    toast('Criando Google Doc editável…');
+    const reg = await api('criarDoc', d.tipo, d.titulo, d.blocos, d.ref || '');
+    registrarDocumento(reg, d);
+    const onde = `Google Docs / ${d.tipo} / ${new Date().getFullYear()}`;
+    if (!NO_GOOGLE) return toast('Demonstração: na versão instalada é criado um Google Doc editável em ' + onde + '.');
+    avisoArquivo(reg, onde, 'Documento editável criado', 'Abrir no Google Docs', 'Para Word: no Docs, Arquivo → Fazer download → Microsoft Word (.docx). Depois de editar, Arquivo → Fazer download → PDF.');
+    return reg;
+  } catch (e) { toast('Não foi possível criar o documento: ' + e.message, true); }
+}
+function avisoArquivo(reg, onde, titulo, botao, dica = '') {
+  $('#dialog').innerHTML = `<div class="modal-bg" style="z-index:70" onclick="if(event.target===this)this.parentNode.innerHTML=''"><div class="modal" style="max-width:480px">
+    <h3>${esc(titulo)}</h3><p><b>${esc(reg.titulo)}</b><br><span class="muted">Pasta do Drive: ${esc(onde)}</span></p>${dica ? `<p class="muted">${esc(dica)}</p>` : ''}
+    <div class="acts"><button class="btn" onclick="$('#dialog').innerHTML=''">Fechar</button><a class="btn pri" href="${esc(reg.url)}" target="_blank" onclick="$('#dialog').innerHTML=''">${esc(botao)}</a></div></div></div>`;
+}
+
+
+const nomeArquivo = n => soAscii(String(n).replace(/ª/g, 'a').replace(/[º°]/g, 'o')).replace(/[^\w .()-]/g, '-');
+
+const LISTAS = {};
+async function exportarExcel(chave, arg) {
+  try {
+    const l = LISTAS[chave](arg);
+    await carregarSheetJS();
+    const ws = XLSX.utils.aoa_to_sheet([l.cab, ...l.linhas]);
+    ws['!cols'] = l.cab.map((h, i) => ({ wch: Math.min(48, Math.max(String(h).length, ...l.linhas.map(r => String(r[i] ?? '').length)) + 2) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, l.nome.slice(0, 31).replace(/[\\/?*[\]:]/g, '-'));
+    const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nomeArquivo(l.nome) + '.xlsx';
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    if (!NO_GOOGLE) toast('Na demonstração o download pode ser bloqueado; na versão instalada a planilha é baixada.');
+  } catch (e) { toast('Não foi possível exportar: ' + e.message, true); }
+}
+
+function docDeLista(l, tipo, titulo, extra = []) {
+  const larga = l.cab.length > 7;
+  return { tipo, titulo: `${l.nome}`, blocos: [...(larga ? [{ paisagem: true }] : []), ...blocosCabecalho(), { esp: 1 }, { p: titulo, c: 1, b: 1 }, { esp: 1 },
+    { t: [l.cab, ...l.linhas.map(r => r.map(v => String(v ?? '')))], h: 1, esq: 1, sz: larga ? 7 : 9 }, ...extra] };
+}
+
+
+
+const VIEWS = [
+  ['painel', 'Painel', ''],
+  ['sargenteacao', 'Sargenteação', 'sgte'], ['efetivo', 'Efetivo', 'sgte'], ['escala', 'Escala de serviço', 'sgte'], ['missoes', 'Missões', 'sgte'], ['aditamentos', 'Aditamentos', 'sgte'], ['alteracoes', 'Alterações', 'sgte'], ['saude', 'Saúde', 'sgte'],
+  ['material', 'Material', 'mat'],
+  ['arranchamento', 'Arranchamento', 'furriel'],
+  ['disciplina', 'Justiça e disciplina', 'jd'],
+  ['arquivo', 'Arquivo', ''], ['config', 'Configurações', '']
+];
+const AREAS = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
+const areaDe = v => (VIEWS.find(x => x[0] === v) || [])[2] || '';
+
+const temArea = a => !a || admin() || (a === 'jd' ? S.user?.jd === 'Sim' : (!S.user?.areas || ids(S.user.areas).includes(a)));
+
+const podeVer = v => v === 'saude' ? temSaude() : areaDe(v) !== 'jd' || temArea('jd');
+
+const podeEm = v => ['admin', 'editor'].includes(S.user?.perfil) && temArea(areaDe(v));
+
+const SUBMENU = {
+  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  sargenteacao: [{ l: 'Controles da Sargenteação', aba: 'controles' }, { l: 'Mapa da Força', aba: 'mapa' }, { l: 'QCP', aba: 'qcp' }, { l: 'Férias, recompensa e instalação', aba: 'ferias' }, { l: 'SAT (auxílio-transporte)', aba: 'sat' }, { l: 'Tempo de serviço (engajamento)', aba: 'tempo' }],
+  saude: [{ l: 'Resumo e prazos', aba: 'resumo' }, { l: 'Livro de visita médica', aba: 'visitas' }, { l: 'Inspeções de saúde', aba: 'is' }, { l: 'Acidentes (AO / ISO)', aba: 'acidentes' }, { l: 'Adidos (LTSP)', aba: 'ltsp' }],
+  alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
+  disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Sindicâncias', filtro: ['jd', 'sind'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }],
+  escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Folha de pernoite', aba: 'pernoite' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
+  missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
+  aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
+  material: [{ l: 'Inventário e relação carga', aba: 'inv' }, { l: 'Cautelas', aba: 'caut' }, { l: 'Pedidos de material', aba: 'ped' }, { l: 'Locais (instalações)', aba: 'locais' }, { l: 'Importar planilha', aba: 'imp', filtro: ['impMat', 'planilha'], editor: true }, { l: 'Importar relação do SISCOFIS (PDF)', aba: 'imp', filtro: ['impMat', 'siscofis'], editor: true }, { l: 'Importar PDF de pedido', aba: 'imp', filtro: ['impMat', 'pedido'], editor: true }],
+  arquivo: [{ l: 'Todos os documentos', filtro: ['docTipo', ''] }, ...TIPOS_DOC_MENU()],
+  config: [{ l: 'Tipos de serviço', aba: 'tipos' }, { l: 'Feriados', aba: 'feriados' }, { l: 'Documentos (cabeçalho e assinatura)', aba: 'geral' }, { l: 'Usuários', aba: 'usuarios', admin: true }, { l: 'Backup', aba: 'backup' }]
+};
+function TIPOS_DOC_MENU() { return [['Aditamentos', 'Aditamentos'], ['Escalas', 'Escalas'], ['Missoes', 'Ordens de missão'], ['Cautelas', 'Cautelas'], ['Material', 'Relações de material'], ['Pedidos', 'Pedidos de material'], ['Efetivo', 'Tripão, chamada e férias']].map(([v, l]) => ({ l, filtro: ['docTipo', v] })); }
+const subsDe = v => (SUBMENU[v] || []).filter(i => (!i.editor || podeEm(v)) && (!i.admin || admin()));
+function subAtivo(v, i) {
+  const lista = subsDe(v);
+  if (i.ativo) return !!i.ativo();
+  if (i.aba && (S.sub[v] || lista.find(x => x.aba).aba) !== i.aba) return false;
+  if (i.aba && !i.filtro) return true;
+  if (i.filtro) { const [f, val] = i.filtro; const pad0 = lista.find(x => x.filtro && x.filtro[0] === f).filtro[1]; return (S.filtro[f] ?? pad0) === val; }
+  return false;
+}
+function irPara(v) { if (!podeVer(v) || !VIEWS_FN[v]) v = 'painel'; S.view = v; if (v !== 'aditamentos') S.adEdit = null; try { localStorage.setItem('cia-view', v); } catch (e) { } fecharMenu(); render(); window.scrollTo(0, 0); }
+function irSub(v, idx) {
+  const i = subsDe(v)[idx];
+  if (i.aba) S.sub[v] = i.aba;
+  if (i.filtro) S.filtro[i.filtro[0]] = i.filtro[1];
+  irPara(v);
+  if (i.acao) i.acao();
+}
+function alternarMenu(abrir) {
+  S.menu = abrir ?? !S.menu;
+  S.menuAberto = S.menu ? S.view : null; S.menuNivel2 = false;
+  renderMenu();
+}
+function fecharMenu() { if (S.menu) alternarMenu(false); }
+function hoverMenu(v) { if (S.menuAberto === v || matchMedia('(max-width: 760px)').matches) return; S.menuAberto = v; renderMenu(); }
+function clicarMenu(v) {
+  if (!subsDe(v).length) return irPara(v);
+  if (matchMedia('(max-width: 760px)').matches) { S.menuAberto = v; S.menuNivel2 = true; return renderMenu(); }
+  irPara(v);
+}
+function renderMenu() {
+  const hamb = $('#hamb');
+  hamb.innerHTML = S.menu ? ICO.fechar : ICO.menu;
+  hamb.setAttribute('aria-expanded', S.menu ? 'true' : 'false');
+  hamb.setAttribute('aria-label', S.menu ? 'Fechar menu' : 'Abrir menu');
+  document.documentElement.style.setProperty('--hdr-h', $('#hdr').offsetHeight + 'px');
+  if (!S.menu) { $('#menu').innerHTML = ''; return; }
+  const aberto = S.menuAberto, subs = subsDe(aberto), nome = (VIEWS.find(x => x[0] === aberto) || [])[1];
+  $('#menu').innerHTML = `<nav class="menu ${S.menuNivel2 ? 'nivel2' : ''}" aria-label="Menu principal" onclick="if(event.target===this)fecharMenu()">
+    <div class="col c1">${VIEWS.filter(([k]) => podeVer(k)).map(([k, l, a], i, arr) => `${a && (i === 0 || arr[i - 1][2] !== a) ? `<div class="area-tit">${esc(AREAS[a])}</div>` : !a && i && arr[i - 1][2] ? '<div class="area-tit"></div>' : ''}<button class="it ${S.view === k ? 'on' : ''} ${aberto === k && S.view !== k ? 'aberto' : ''}" onmouseenter="hoverMenu('${k}')" onfocus="hoverMenu('${k}')" onclick="clicarMenu('${k}')">${esc(l)}${subsDe(k).length ? '<span class="chev">›</span>' : ''}</button>`).join('')}
+      <div class="rodape"><div class="sigla">${marcaHTML()}</div><div>${esc(S.user?.email || '')}</div></div></div>
+    ${subs.length ? `<div class="col c2"><button class="it voltar" onclick="S.menuNivel2=false;renderMenu()">‹ Voltar</button>
+      <button class="it ${S.view === aberto ? 'on' : ''}" onclick="irPara('${aberto}')" style="font-weight:700;color:var(--text)">${esc(nome)}</button>
+      ${subs.map((i, n) => `<button class="it ${S.view === aberto && subAtivo(aberto, i) ? 'on' : ''}" onclick="irSub('${aberto}', ${n})">${esc(i.l)}</button>`).join('')}</div>` : ''}
+    <div class="grow" onclick="fecharMenu()"></div></nav>`;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { fecharMenu(); fecharPops(); } });
+window.addEventListener('resize', () => { const h = $('#hdr'); if (h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px'); });
+
+
+
+const temaPreto = () => document.documentElement.dataset.theme === 'dark';
+function alternarTema() {
+  const preto = !temaPreto();
+  document.documentElement.dataset.theme = preto ? 'dark' : 'light';
+  try { localStorage.setItem('cia-tema', preto ? 'dark' : 'light'); } catch (e) { S.semArmazenamento = true; }
+  atualizarBotoesTopo();
+}
+async function alternarTelaCheia() {
+  const ligada = document.fullscreenElement || document.body.classList.contains('cheia');
+  try {
+    if (ligada) { if (document.fullscreenElement) await document.exitFullscreen(); document.body.classList.remove('cheia'); }
+    else {
+      document.body.classList.add('cheia');
+      if (document.fullscreenEnabled) await document.documentElement.requestFullscreen();
+      else toast('Este navegador não deixa a página ocupar a tela toda; o conteúdo passou a usar a largura inteira. No computador, F11 também deixa em tela cheia.');
+    }
+  } catch (e) { toast('O navegador não liberou a tela cheia; o conteúdo passou a usar a largura inteira. No computador, tente F11.'); }
+  atualizarBotoesTopo();
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) document.body.classList.remove('cheia'); atualizarBotoesTopo(); });
+function atualizarBotoesTopo() {
+  const t = $('#btnTema'), c = $('#btnCheia'), cheia = !!document.fullscreenElement || document.body.classList.contains('cheia');
+  if (t) { t.innerHTML = temaPreto() ? ICO.sol : ICO.lua; t.title = temaPreto() ? 'Tema claro' : 'Tema preto'; t.setAttribute('aria-label', t.title); }
+  if (c) { c.innerHTML = cheia ? ICO.sair : ICO.cheia; c.title = cheia ? 'Sair da tela cheia' : 'Tela cheia'; c.setAttribute('aria-label', c.title); }
+}
+function abrirPop(qual, ev) {
+  ev.stopPropagation();
+  const el = $('#pop-' + qual), estava = !el.hidden;
+  fecharPops(); fecharMenu();
+  if (estava) return;
+  if (qual === 'atalhos') {
+    const itens = pode() ? [['Nova missão', 'irPara(\'missoes\');editarMissao()'], ['Novo aditamento', 'irPara(\'aditamentos\');novoAditamento()'], ['Nova cautela de material', 'irPara(\'material\');novaCautela()'],
+      ['Lançar afastamento', 'irPara(\'efetivo\');editarImp()'], ['Gerar escala do mês', 'irPara(\'escala\');gerarMes()'], ['Salvar PDF da escala do mês', 'emitir(\'escala\',S.mes,\'pdf\')'], ['Novo pedido de material', 'irPara(\'material\');editarPedido()']]
+      : [['Serviço do mês', 'irPara(\'escala\')'], ['Missões', 'irPara(\'missoes\')'], ['Arquivo PDF', 'irPara(\'arquivo\')']];
+    el.innerHTML = itens.map(([l, f]) => `<button onclick="fecharPops();${f}">${l}</button>`).join('');
+  } else {
+    el.innerHTML = `<div class="info"><b>${esc(S.user?.nome || '')}</b>${esc(S.user?.email || '')}<br>Perfil: ${esc(S.user?.perfil || '')}</div>
+      ${admin() ? `<button onclick="fecharPops();S.sub.config='usuarios';irPara('config')">Gerenciar usuários</button>` : ''}
+      <button onclick="fecharPops();S.sub.config='geral';irPara('config')">Configurações</button>
+      <button onclick="fecharPops();alternarTema()">${temaPreto() ? 'Usar tema claro' : 'Usar tema preto'}</button>
+      <button onclick="fecharPops();alternarTelaCheia()">${document.fullscreenElement || document.body.classList.contains('cheia') ? 'Sair da tela cheia' : 'Tela cheia'}</button>
+      ${NO_GOOGLE ? '<button onclick="fecharPops();sairDoSistema()">Sair deste aparelho</button>' : ''}
+      ${!NO_GOOGLE ? `<button onclick="fecharPops();confirmar('Apagar os dados de demonstração?').then(s=>{if(s){Demo.resetar();iniciar()}})">Recomeçar demonstração</button>` : ''}`;
+  }
+  el.hidden = false;
+}
+function fecharPops() { $$('.pop').forEach(p => p.hidden = true); }
+document.addEventListener('click', e => { if (!e.target.closest('.pop')) fecharPops(); });
+
+
+function buscar(ev) { ev.preventDefault(); S.busca = $('#q').value.trim(); if (S.busca) irPara('busca'); }
+function vBusca() {
+  const q = norm(S.busca), tem = (...t) => t.some(x => norm(x).includes(q));
+  const grupos = [
+    ['Militares', S.db.Militares.filter(m => tem(nomeMil(m), m.nomeCompleto, m.idt, m.pelotao)).sort(ordemMil), m => esc(nomeMil(m)) + ` <span class="muted">${esc(m.nomeCompleto)}</span>`, m => `editarMil('${m.id}')`],
+    ['Material', S.db.Material.filter(m => tem(m.patrimonio, m.descricao, m.localizacao)), m => `${esc(m.descricao)} <span class="muted">${esc(m.patrimonio)}</span>`, m => `editarMat('${m.id}')`],
+    ['Missões', S.db.Missoes.filter(m => tem(m.titulo, m.local, m.descricao)), m => `${esc(m.titulo)} <span class="muted">${fmt(m.inicio)}</span>`, m => `editarMissao('${m.id}')`],
+    ['Aditamentos', S.db.Aditamentos.filter(a => tem('aditamento ' + a.numero, a.parte1, a.parte2, a.parte3, a.parte4)), a => `Aditamento nº ${esc(a.numero)} <span class="muted">${fmt(a.data)}</span>`, a => `irPara('aditamentos');abrirAditamento('${a.id}')`],
+    ['Arquivo', S.db.Documentos.filter(d => tem(d.titulo)), d => esc(d.titulo), d => d.url ? `window.open('${esc(d.url)}','_blank')` : `irPara('arquivo')`]
+  ].filter(g => g[1].length);
+  const total = grupos.reduce((n, g) => n + g[1].length, 0);
+  return `<h2>Resultados da busca</h2><p class="sub">${total} resultado(s) para “${esc(S.busca)}”.</p>` + (grupos.map(([t, l, txt, acao]) =>
+    `<div class="res"><h3>${t} <span class="tag">${l.length}</span></h3><div class="tw"><table><tbody>${l.slice(0, 30).map(r => `<tr><td>${txt(r)}</td><td class="acts"><button class="btn sm" onclick="${acao(r)}">Abrir</button></td></tr>`).join('')}</tbody></table></div></div>`).join('') || '<div class="card">Nada encontrado. Tente o nome de guerra, o número de patrimônio ou parte do nome da missão.</div>');
+}
+
+
+const sigla = () => cfg('sigla') || cfg('nomeCia') || 'Cia';
+function render() {
+  if (!podeVer(S.view) || !VIEWS_FN[S.view]) S.view = 'painel';
+  $('#sigla').innerHTML = marcaHTML();
+  const linhas = cabecalhoDoc().filter(l => !/minist[eé]rio/i.test(l));
+  $('#org').innerHTML = linhas.slice(0, 3).map(esc).join('<br>');
+  $('#titulo').textContent = cfg('nomeCia') || 'Sistema da Companhia';
+  const nome = S.view === 'busca' ? 'Busca' : (VIEWS.find(v => v[0] === S.view) || VIEWS[0])[1];
+  const sub = subsDe(S.view).find(i => !i.acao && subAtivo(S.view, i)) || (S.view === 'aditamentos' && S.adEdit ? { l: 'Aditamento nº ' + S.adEdit.numero } : null);
+  $('#crumb').innerHTML = `<nav class="crumb" aria-label="Você está aqui"><a onclick="irPara('painel')" title="Painel">${ICO.casa}</a>
+    ${S.view !== 'painel' ? `<span class="sep">›</span>${sub ? `<a onclick="irPara('${S.view}')">${esc(nome)}</a><span class="sep">›</span><span>${esc(sub.l)}</span>` : `<span>${esc(nome)}</span>`}` : '<span class="sep">›</span><span>Painel</span>'}</nav>`;
+  
+  const avisoLeitor = S.user && S.user.perfil === 'leitor' && NO_GOOGLE ? `<div class="aviso-leitor">Você entrou como <b>leitor</b> (${esc(S.user.email)}): pode consultar e imprimir, mas não alterar. Para lançar e editar, o administrador precisa mudar o seu perfil para <b>editor</b> em Configurações → Usuários.</div>` : '';
+  $('#app').innerHTML = avisoLeitor + (VIEWS_FN[S.view] || vPainel)();
+  if (S.menu) renderMenu();
+}
+
+
+function vPainel() {
+  const d = hoje(), amanha = addDias(d, 1);
+  const mil = militaresAtivos();
+  const sits = mil.map(m => situacao(m.id, d));
+  const prontos = sits.filter(s => s.tipo === 'pronto').length;
+  const emMissao = sits.filter(s => s.tipo === 'missao').length;
+  const imped = mil.map(m => ({ m, s: situacao(m.id, d) })).filter(x => x.s.tipo === 'imp');
+  const servico = dia => tiposAtivos().map(t => {
+    const l = lancamentos(dia, t.id), nomes = l.filter(e => !emBranco(e)).map(e => esc(nomeMil(quemTira(e))));
+    const falta = faltamNoDia(t, dia) ? ' <span class="tag warn">vazio</span>' : '';
+    if (!l.length && !aplica(t, dia)) return '';
+    return `<li><span class="muted">${esc(t.nome)}</span><b>${nomes.join(', ') || (falta ? '' : '<span class="muted">em branco</span>')}${falta}</b></li>`;
+  }).join('');
+  const missoes = S.db.Missoes.filter(m => missaoAtiva(m) && m.inicio <= addDias(d, 7) && (m.fim || m.inicio) >= d).sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const abertas = gruposCautela().filter(g => g.aberta);
+  const vencidas = abertas.filter(g => g.previsaoDevolucao && g.previsaoDevolucao < d);
+  const manut = S.db.Material.filter(m => m.estado === 'Em manutenção' || m.estado === 'Inservível');
+  const pedidosAcesso = admin() ? (S.db.Acessos || []).filter(x => x.status === 'Pendente').length : 0;
+  return `${pedidosAcesso ? `<div class="card" style="border-left:4px solid var(--ouro);margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><b class="grow">${pedidosAcesso} pedido(s) de acesso aguardando aprovação.</b><button class="btn sm pri" onclick="S.sub.config='usuarios';irPara('config')">Ver pedidos</button></div>` : ''}<h2>Painel</h2><p class="sub">${esc(SEMANA[dataDe(d).getDay()])}, ${fmtExt(d)} · escala <span class="tag ${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}">${corDoDia(d) === 'V' ? 'vermelha' : 'preta'}</span>${FERIADO[d] ? ' · ' + esc(FERIADO[d]) : ''}</p>
+  <div class="cards">
+    ${temArea('sgte') ? (() => { const c = controles(), atr = c.filter(atrasado).length, fz = c.filter(x => x.situacao !== 'Em dia').length;
+      const ts = linhasTs().filter(r => r.resta !== null && r.resta <= avisoTs()).length;
+      return `${ts ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='tempo';S.filtro.tsVer='aviso';irPara('sargenteacao')"><h4>Tempo de serviço</h4><div class="big">${ts}</div><div class="tag warn">vence(m) em até ${avisoTs()} dias</div></div>` : ''}<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
+    <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
+    <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
+    <div class="card"><h4>Cautelas abertas</h4><div class="big">${abertas.length}</div><div class="${vencidas.length ? 'tag dng' : 'muted'}">${vencidas.length} vencida(s)</div></div>
+    <div class="card"><h4>Material</h4><div class="big">${S.db.Material.length}<span class="muted" style="font-size:16px"> itens</span></div><div class="muted">${manut.length} em manutenção/inservível</div></div>
+  </div>
+  <div class="cards">
+    <div class="card"><h4>Serviço de hoje</h4><ul class="list">${servico(d) || '<li class="muted">Cadastre os tipos de serviço em Configurações.</li>'}</ul></div>
+    <div class="card"><h4>Serviço de amanhã · ${fmt(amanha)}</h4><ul class="list">${servico(amanha)}</ul></div>
+    <div class="card"><h4>Impedidos hoje</h4><ul class="list">${imped.map(x => `<li><span>${esc(nomeMil(x.m))}</span>${tagSituacao(x.s)}</li>`).join('') || '<li class="muted">Ninguém impedido.</li>'}</ul></div>
+    <div class="card"><h4>Missões</h4><ul class="list">${missoes.map(m => `<li><span>${esc(m.titulo)}</span><span class="muted">${fmt(m.inicio)}</span></li>`).join('') || '<li class="muted">Nenhuma nos próximos 7 dias.</li>'}</ul></div>
+  </div>
+  ${vencidas.length ? `<h3>Cautelas vencidas</h3>${tabelaCautelas(vencidas)}` : ''}`;
+}
+
+
+const TIPOS_SANGUE = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const CNH = ['A', 'B', 'AB', 'C', 'D', 'E', 'AC', 'AD', 'AE'];
+const CAMPOS_MIL = [
+  { k: 'postoGrad', l: 'Posto/Graduação', t: 'select', o: POSTOS, req: true },
+  { k: 'numero', l: 'Número' },
+  { k: 'nomeGuerra', l: 'Nome de guerra', req: true },
+  { k: 'nomeCompleto', l: 'Nome completo' },
+  { k: 'antiguidade', l: 'Antiguidade (1 = mais antigo)', t: 'number' },
+  { k: 'pelotao', l: 'Pelotão/Seção' },
+  { k: 'funcao', l: 'Função' },
+  { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], padrao: 'Sim', vazio: false },
+  { k: 'arma', l: 'Arma / quadro / serviço (ex.: Intendência)' },
+  { k: 'servicoAnterior', l: 'Serviço público/privado anterior à incorporação (órgão e tempo)', full: true },
+  { k: 'dataPraca', l: 'Data de praça', t: 'date' },
+  { k: 'vinculo', l: 'Vínculo', t: 'select', o: [['', '(pelo posto: Cb e Sd = temporário)'], ['Carreira', 'Carreira'], ['Temporário', 'Temporário']], vazio: false },
+  { k: 'termino', l: 'Término do tempo de serviço atual (se já souber)', t: 'date' },
+  { k: 'comportamento', l: 'Comportamento (cabos e soldados)', t: 'select', o: ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'] },
+  { secao: 'Tripão' },
+  { k: 'dataNascimento', l: 'Data de nascimento', t: 'date' },
+  { k: 'idt', l: 'Idt militar' },
+  { k: 'cpf', l: 'CPF' },
+  { k: 'precCp', l: 'Prec-CP' },
+  { k: 'tipoSanguineo', l: 'Tipo sanguíneo', t: 'select', o: TIPOS_SANGUE },
+  { k: 'peso', l: 'Peso (kg)', t: 'number' },
+  { k: 'telefone', l: 'Celular' },
+  { k: 'email', l: 'E-mail', t: 'email' },
+  { k: 'endereco', l: 'Endereço', full: true },
+  { k: 'cttEmergencia', l: 'Contato de emergência (telefone)' },
+  { k: 'nomeCtt', l: 'Nome do contato' },
+  { k: 'parentesco', l: 'Parentesco' },
+  { k: 'cnh', l: 'Carteira de motorista (categoria)', t: 'select', o: CNH },
+  { k: 'motoristaMilitar', l: 'Motorista militar?', t: 'select', o: ['Sim', 'Não'] },
+  { k: 'veiculo', l: 'Veículo próprio (qual)' },
+  { k: 'obs', l: 'Observações', full: true }
+];
+const CAMPOS_IMP = [
+  { k: 'militarId', l: 'Militar', t: 'militar', req: true },
+  { k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_IMPED, req: true },
+  { k: 'inicio', l: 'Início', t: 'date', req: true },
+  { k: 'fim', l: 'Fim', t: 'date', req: true },
+  { k: 'referencia', l: 'Ano de referência (férias)' },
+  { k: 'obs', l: 'Observações', full: true }
+];
+const efetivoOrdenado = () => S.db.Militares.filter(m => sim(m.ativo)).sort(ordemMil);
+const sohData = v => v ? fmt(v) : '';
+
+
+LISTAS.tripao = () => ({
+  nome: `Tripão ${cfg('sigla')} ${hoje()}`,
+  cab: ['Ord', 'P/G', 'Nome completo', 'Nome de guerra', 'Data de nascimento', 'Idt militar', 'CPF', 'Prec-CP', 'Tipo sanguíneo', 'Peso (kg)', 'Telefone', 'E-mail', 'Endereço', 'Ctt emergência', 'Nome ctt', 'Parentesco', 'CNH', 'Motorista militar', 'Veículo próprio', 'Obs'],
+  linhas: efetivoOrdenado().map((m, i) => [i + 1, m.postoGrad, m.nomeCompleto, m.nomeGuerra, sohData(m.dataNascimento), m.idt, m.cpf, m.precCp, m.tipoSanguineo, m.peso, m.telefone, m.email, m.endereco, m.cttEmergencia, m.nomeCtt, m.parentesco, m.cnh, m.motoristaMilitar, m.veiculo, m.obs])
+});
+LISTAS.chamada = () => ({
+  nome: `Plano de chamada ${cfg('sigla')} ${hoje()}`,
+  cab: ['Ord', 'P/G', 'Nome de guerra', 'Nome completo', 'Celular', 'Ctt emergência', 'Nome do ctt', 'Parentesco', 'Endereço'],
+  linhas: efetivoOrdenado().map((m, i) => [i + 1, m.postoGrad, m.nomeGuerra, m.nomeCompleto, m.telefone, m.cttEmergencia, m.nomeCtt, m.parentesco, m.endereco])
+});
+const feriasDe = (militarId, ref) => S.db.Impedimentos.filter(i => i.tipo === 'Férias' && i.militarId === militarId && (!ref || (i.referencia || i.inicio.slice(0, 4)) === ref)).sort((a, b) => a.inicio.localeCompare(b.inicio));
+const diasEntre = (a, b) => Math.round((dataDe(b) - dataDe(a)) / 864e5) + 1;
+const textoParcela = i => {
+  const a = dataDe(i.inicio), b = dataDe(i.fim);
+  const ano = String(b.getFullYear()).slice(2);
+  return a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()
+    ? `${pad(a.getDate())} a ${pad(b.getDate())} ${MESES[b.getMonth()]} ${ano}`
+    : `${pad(a.getDate())} ${MESES[a.getMonth()]} a ${pad(b.getDate())} ${MESES[b.getMonth()]} ${ano}`;
+};
+const refFerias = () => S.filtro.feriasRef || String(new Date().getFullYear());
+LISTAS.ferias = (ref = refFerias()) => ({
+  nome: `Plano de férias ${cfg('sigla')} ${ref}`,
+  cab: ['Ord', 'P/G', 'Nome', 'Período', 'Dia/mês'],
+  linhas: efetivoOrdenado().map((m, i) => {
+    const parc = feriasDe(m.id, ref);
+    const dias = parc.reduce((n, p) => n + diasEntre(p.inicio, p.fim), 0);
+    return [i + 1, m.postoGrad, m.nomeGuerra, parc.length ? `${dias} dias${parc.length > 1 ? ` (${parc.length} parcelas)` : ''}` : '', parc.map(p => '- ' + textoParcela(p)).join('\n')];
+  })
+});
+DOCS.tripao = () => docDeLista(LISTAS.tripao(), 'Efetivo', `TRIPÃO – ${cfg('sigla').toUpperCase()}`);
+DOCS.chamada = () => docDeLista(LISTAS.chamada(), 'Efetivo', `PLANO DE CHAMADA – ${cfg('sigla').toUpperCase()}`,
+  [{ p: `Atualizado em ${fmt(hoje())}.`, mt: 6, l: 1, sz: 8 }]);
+DOCS.ferias = ref => docDeLista(LISTAS.ferias(ref), 'Efetivo', `PLANO DE FÉRIAS ${ref || refFerias()} – ${cfg('sigla').toUpperCase()}`, blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao')));
+
+function vEfetivo() {
+  const t = aba('efetivo', 'mil'), d = hoje();
+  let corpo = '';
+  if (t === 'mil') {
+    const lista = S.db.Militares.slice().sort(ordemMil).filter(m => casa('mil', nomeMil(m), m.nomeCompleto, m.pelotao, m.funcao));
+    corpo = `<div class="bar">${busca('mil', 'Buscar militar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarMil()">+ Militar</button>' : ''}</div>
+    ${tabela(lista, [
+      { l: 'Militar', v: m => `<b>${esc(nomeMil(m))}</b><div class="muted">${esc(m.nomeCompleto)}</div>` },
+      { l: 'Pel/Seç', v: m => esc(m.pelotao) }, { l: 'Função', v: m => esc(m.funcao) },
+      { l: 'Situação hoje', v: m => sim(m.ativo) ? tagSituacao(situacao(m.id, d)) : '<span class="tag">Inativo</span>' },
+      { l: 'Celular', v: m => esc(m.telefone) }
+    ], pode() ? m => `<button class="btn sm" onclick="editarMil('${m.id}')">Editar</button> <button class="btn sm" onclick="editarImp(null,'${m.id}')">Afastar</button>` : null)}
+    <p class="muted">${lista.length} militar(es).</p>`;
+  } else if (t === 'tripao') {
+    const l = LISTAS.tripao();
+    corpo = `<div class="bar"><span class="muted grow">Dados pessoais de todo o efetivo ativo. Edite pelo cadastro do militar ou importe a sua planilha de tripão em "Importar planilha".</span>${botoesDocGrandes('tripao', undefined, 'tripao')}</div>
+      <div class="tw"><table><thead><tr>${l.cab.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${l.linhas.map((r, i) => `<tr onclick="${pode() ? `editarMil('${efetivoOrdenado()[i].id}')` : ''}" style="cursor:${pode() ? 'pointer' : 'default'}">${r.map(v => `<td style="white-space:nowrap">${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <p class="muted">Clique numa linha para editar. ${l.linhas.filter(r => !r[6] || !r[10]).length} militar(es) com CPF ou telefone em branco.</p>`;
+  } else if (t === 'chamada') {
+    const l = LISTAS.chamada();
+    corpo = `<div class="bar"><span class="muted grow">Contatos para acionamento do efetivo, em ordem de antiguidade.</span>${botoesDocGrandes('chamada', undefined, 'chamada')}</div>
+      ${tabela(l.linhas, l.cab.map((h, i) => ({ l: h, v: r => i === 4 || i === 5 ? `<a href="tel:${esc(String(r[i]).replace(/\D/g, ''))}">${esc(r[i])}</a>` : esc(r[i]) })))}
+      <p class="muted">${l.linhas.filter(r => !r[4]).length} militar(es) sem celular cadastrado.</p>`;
+  } else if (t === 'ferias') {
+    const ref = refFerias(), l = LISTAS.ferias(ref);
+    const refs = [...new Set(S.db.Impedimentos.filter(i => i.tipo === 'Férias').map(i => i.referencia || i.inicio.slice(0, 4)).concat(ref))].sort();
+    corpo = `<div class="bar"><label class="muted">Ano de referência <select onchange="S.filtro.feriasRef=this.value;render()">${refs.map(r => `<option ${r === ref ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
+      ${pode() ? `<button class="btn" onclick="novaRefFerias()">Outro ano…</button><button class="btn pri" onclick="editarImp(null,'',{tipo:'Férias',referencia:'${esc(ref)}'})">+ Lançar férias</button>` : ''}<span class="grow"></span>${botoesDocGrandes('ferias', ref, 'ferias')}</div>
+      ${tabela(l.linhas.map((r, i) => ({ r, m: efetivoOrdenado()[i] })), [
+        { l: 'P/G', v: x => esc(x.r[1]) }, { l: 'Nome', v: x => `<b>${esc(x.r[2])}</b>` },
+        { l: 'Período', v: x => x.r[3] ? esc(x.r[3]) : '<span class="tag warn">não lançado</span>' },
+        { l: 'Dia/mês', v: x => feriasDe(x.m.id, ref).map(p => `<div>${pode() ? `<a onclick="editarImp('${p.id}')" style="cursor:pointer">${esc(textoParcela(p))}</a>` : esc(textoParcela(p))}</div>`).join('') }
+      ], pode() ? x => `<button class="btn sm" onclick="editarImp(null,'${x.m.id}',{tipo:'Férias',referencia:'${esc(ref)}'})">+ Parcela</button>` : null)}
+      <p class="muted">As férias lançadas aqui tiram o militar da escala automaticamente no período. Clique numa parcela para alterar.</p>`;
+  } else if (t === 'imp') {
+    const lista = S.db.Impedimentos.slice().sort((a, b) => b.inicio.localeCompare(a.inicio)).filter(i => casa('imp', nomeMil(i.militarId), i.tipo));
+    corpo = `<div class="bar">${busca('imp', 'Buscar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarImp()">+ Afastamento</button>' : ''}</div>
+    ${tabela(lista, [
+      { l: 'Militar', v: i => esc(nomeMil(i.militarId)) }, { l: 'Tipo', v: i => esc(i.tipo) + (i.referencia ? ` <span class="muted">${esc(i.referencia)}</span>` : '') },
+      { l: 'Período', v: i => `${fmt(i.inicio)} a ${fmt(i.fim)}` },
+      { l: 'Situação', v: i => i.fim < d ? '<span class="tag">Encerrado</span>' : i.inicio > d ? '<span class="tag info">Previsto</span>' : '<span class="tag warn">Em curso</span>' },
+      { l: 'Obs', v: i => esc(i.obs) }
+    ], pode() ? i => `<button class="btn sm" onclick="editarImp('${i.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('Impedimentos','${i.id}')">Excluir</button>` : null)}`;
+  } else if (t === 'jd') {
+    corpo = '<div class="card">A Justiça e Disciplina agora tem lugar próprio no menu.</div>';
+  } else {
+    const alvo = S.filtro.impAlvo || 'Militares';
+    corpo = `<div class="bar"><label class="muted">O que importar <select onchange="S.filtro.impAlvo=this.value;S.imp=null;render()">
+      ${[['Militares', 'Militares, tripão ou plano de chamada'], ['Ferias', 'Plano de férias']].map(([v, l]) => `<option value="${v}" ${v === alvo ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>` + vImportar(alvo);
+  }
+  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], , ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
+  return `<h2>Efetivo</h2><p class="sub">Militares da subunidade, tripão, plano de chamada, plano de férias e demais afastamentos.</p>${abas('efetivo', abasEf)}${corpo}`;
+}
+async function novaRefFerias() {
+  const r = await dialogo({ msg: 'Ano de referência do plano de férias (ex.: 2026):', campo: 'text', valor: String(+refFerias() + 1), ok: 'Abrir' });
+  if (r) { S.filtro.feriasRef = r.trim(); render(); }
+}
+function editarMil(id) {
+  const m = id ? MIL[id] : {};
+  abrirForm({ titulo: id ? 'Editar militar' : 'Novo militar', campos: CAMPOS_MIL, valores: m, aoSalvar: o => salvar('Militares', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Militares','${id}',true)">Excluir militar</button></div>` : '' });
+}
+function editarImp(id, militarId, padrao = {}) {
+  abrirForm({ titulo: id ? 'Editar afastamento' : (padrao.tipo === 'Férias' ? 'Lançar férias' : 'Novo afastamento'), campos: CAMPOS_IMP,
+    valores: id ? S.db.Impedimentos.find(i => i.id === id) : { militarId, inicio: hoje(), ...padrao },
+    aoSalvar: o => { if (o.fim < o.inicio) throw new Error('O fim não pode ser antes do início.'); return salvar('Impedimentos', [o]); },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Impedimentos','${id}',true)">Excluir</button></div>` : '' });
+}
+async function excluir(tabela, id, modal) {
+  if (!await confirmar('Excluir este registro? Esta ação não pode ser desfeita.')) return;
+  await salvar(tabela, [], [id]);
+  if (modal) fecharModal();
+  toast('Excluído.'); render();
+}
+
+
+
+
+
+function lerParcelas(texto, periodo, anoPadrao) {
+  const MES = n => MESES.findIndex(m => norm(m) === norm(String(n).slice(0, 3)));
+  const ano = y => !y ? anoPadrao : String(y).length === 2 ? 2000 + +y : +y;
+  const t = String(texto || '').trim(), out = [];
+  const inicioData = dataImportada(t);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(inicioData)) {
+    const dias = parseInt(String(periodo).replace(/\D/g, ''), 10) || 30;
+    return [{ inicio: inicioData, fim: addDias(inicioData, dias - 1) }];
+  }
+  const re = /(\d{1,2})\s*(?:([a-zç]{3})[a-zç.]*)?\s*(?:\/?\s*(\d{2,4}))?\s*(?:a|à|até|-)\s*(\d{1,2})\s*([a-zç]{3})[a-zç.]*\s*(\d{2,4})?/gi;
+  let m;
+  while ((m = re.exec(t))) {
+    const m2 = MES(m[5]), m1 = m[2] ? MES(m[2]) : m2;
+    if (m1 < 0 || m2 < 0) continue;
+    const y2 = ano(m[6]), y1 = m[3] ? ano(m[3]) : (m1 > m2 ? y2 - 1 : y2);
+    out.push({ inicio: `${y1}-${pad(m1 + 1)}-${pad(m[1])}`, fim: `${y2}-${pad(m2 + 1)}-${pad(m[4])}` });
+  }
+  return out;
+}
+
+
+function diasDoMes(ym) { const [y, m] = ym.split('-').map(Number); const n = new Date(y, m, 0).getDate(); return Array.from({ length: n }, (_, i) => `${ym}-${pad(i + 1)}`); }
+
+
+function celulaEscala(tp, d) {
+  const l = lancamentos(d, tp.id), extra = (S.vagaExtra || {})[d + '|' + tp.id] || 0, n = vagasDoDia(tp, d) + extra;
+  if (!n) return `<td class="muted" title="Este serviço não ocorre neste dia">·${pode() ? `<button class="mais" title="Lançar mesmo assim" aria-label="Lançar ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
+  const vagas = Array.from({ length: n }, (_, k) => {
+    const e = l[k], al = e ? alertasEscala(e) : [];
+    const aviso = al.length ? ` <span class="alerta" title="${esc(al.join('; '))}">⚠</span>` : '';
+    const trc = e && e.troca ? `<div class="troca" title="Troca de serviço${e.trocaMotivo ? ': ' + esc(e.trocaMotivo) : ''}. A folga continua contando para o escalado.">⇄ tira: <b>${esc(nomeMil(e.troca))}</b></div>` : '';
+    if (!pode()) return `<div>${e ? (emBranco(e) ? '<span class="muted">em branco</span>' : esc(nomeMil(e.militarId))) : '<span class="muted">—</span>'}${aviso}${trc}</div>`;
+    const ops = militaresAtivos().filter(m => aptoPara(m, tp) || (e && e.militarId === m.id))
+      .map(m => { const s = situacao(m.id, d); return `<option value="${m.id}" ${e && e.militarId === m.id ? 'selected' : ''}>${esc(nomeMil(m))}${s.tipo !== 'pronto' ? ' (' + esc(s.texto) + ')' : ''}</option>`; }).join('');
+    const sobra = k >= (aplica(tp, d) ? qtdTipo(tp) : 0);
+    return `<div class="vaga"><select class="${e && emBranco(e) ? 'branco' : ''}" aria-label="${esc(tp.nome)}${n > 1 ? ' ' + (k + 1) : ''} em ${fmt(d)}" onchange="${e && !emBranco(e) ? `if(this.value==='${TROCA}'){this.value='${e.militarId}';trocaServico('${e.id}')}else ` : ''}trocarServico('${d}','${tp.id}',${k},this.value)"><option value="">${sobra ? '— tirar esta vaga —' : '—'}</option><option value="${BRANCO}" ${e && emBranco(e) ? 'selected' : ''}>Em branco</option>${e && !emBranco(e) ? `<option value="${TROCA}">⇄ ${e.troca ? 'Troca de serviço (alterar ou desfazer)…' : 'Troca de serviço…'}</option>` : ''}${ops}</select>${aviso}${trc}</div>`;
+  }).join('');
+  return `<td>${vagas}${pode() ? `<button class="mais" title="Mais um militar neste dia" aria-label="Mais um ${esc(tp.nome)} em ${fmt(d)}" onclick="maisVaga('${d}','${tp.id}')">+</button>` : ''}</td>`;
+}
+function vEscala() {
+  const t = aba('escala', 'mes');
+  const tipos = tiposAtivos();
+  const dias = diasDoMes(S.mes);
+  const titulo = `<h2>Escala de serviço</h2><p class="sub">Escala <b>preta</b> (dias úteis) e <b>vermelha</b> (sábados, domingos e feriados), com controle automático de folga.</p>`;
+  if (!tipos.length) return titulo + '<div class="card">Cadastre os tipos de serviço em <a href="#" onclick="irPara(\'config\')">Configurações</a>.</div>';
+  const abasEsc = abas('escala', [['mes', 'Escala do mês'], ['folgas', 'Quadro de folgas'], ['trocas', 'Trocas de serviço'], ['pernoite', 'Folha de pernoite'], ...(pode() ? [['imp', 'Importar planilha antiga']] : [])]);
+  if (t === 'imp') return titulo + abasEsc + vImportarHistorico();
+  const barra = `<div class="bar"><input type="month" value="${S.mes}" onchange="S.mes=this.value;render()">
+    <button class="btn" onclick="mudarMes(-1)" aria-label="Mês anterior">◀</button><button class="btn" onclick="mudarMes(1)" aria-label="Próximo mês">▶</button><span class="grow"></span>
+    ${t === 'mes' && pode() ? `<button class="btn pri" onclick="gerarMes()" title="Preenche as vagas vazias do mês pelo quadro de folga, mantendo o que você já lançou">Pré-montar pela folga</button>${lotesPre().length ? '<button class="btn" onclick="desfazerPre()" title="Tira os serviços lançados pela última pré-montagem">Desfazer pré-montagem</button>' : ''}<button class="btn" onclick="refazerDesde()">Refazer a partir de…</button>` : ''}
+    ${t === 'mes' ? botoesDocGrandes('escala', S.mes, 'escala') : botoesDocGrandes('folgas', folgaTipo(), 'folgas')}</div>`;
+  if (t === 'folgas') return titulo + abasEsc + barra + vFolgas();
+  if (t === 'pernoite') return titulo + abasEsc + vPernoite();
+  if (t === 'trocas') return titulo + abasEsc + `<div class="bar"><input type="month" value="${S.mes}" onchange="S.mes=this.value;render()"><button class="btn" onclick="mudarMes(-1)" aria-label="Mês anterior">◀</button><button class="btn" onclick="mudarMes(1)" aria-label="Próximo mês">▶</button></div>` + vTrocas();
+  const linhas = dias.map(d => {
+    const cor = corDoDia(d), w = dataDe(d).getDay();
+    return `<tr class="${cor === 'V' ? 'v' : ''} ${d === hoje() ? 'hoje' : ''}"><td class="dia">${d.slice(8)} ${SEM_CURTA[w]}${FERIADO[d] ? ` <span title="${esc(FERIADO[d])}">★</span>` : ''}</td>
+    ${tipos.map(tp => celulaEscala(tp, d)).join('')}</tr>`;
+  }).join('');
+  const vazios = dias.reduce((n, d) => n + tipos.reduce((s, tp) => s + faltamNoDia(tp, d), 0), 0);
+  
+  const porDia = (S.escVista || (innerWidth < 700 ? 'dia' : 'grade')) === 'dia';
+  const vista = `<div class="bar vista-esc"><span class="muted">Ver:</span><button class="btn sm ${porDia ? '' : 'pri'}" onclick="S.escVista='grade';render()">Grade</button><button class="btn sm ${porDia ? 'pri' : ''}" onclick="S.escVista='dia';render()">Por dia</button>${porDia ? `<button class="btn sm" onclick="document.querySelector('.dia-card.hoje')?.scrollIntoView({behavior:'smooth',block:'start'})">Ir para hoje</button>` : ''}</div>`;
+  if (porDia) return titulo + abasEsc + barra + vista + `<div class="dias-esc">${dias.map(d => { const cor = corDoDia(d), w = dataDe(d).getDay();
+    return `<section class="dia-card ${cor === 'V' ? 'v' : ''} ${d === hoje() ? 'hoje' : ''}"><h4>${d.slice(8)} <span>${SEMANA[w]}</span>${FERIADO[d] ? ` <small>★ ${esc(FERIADO[d])}</small>` : ''}<em>${cor === 'V' ? 'vermelha' : 'preta'}</em></h4>
+      ${tipos.map(tp => { const c = celulaEscala(tp, d); return /title="Este serviço não ocorre/.test(c) && !pode() ? '' : `<div class="srv"><span class="nm">${esc(tp.nome)}</span>${c.replace(/^<td/, '<div').replace(/<\/td>$/, '</div>')}</div>`; }).join('')}</section>`; }).join('')}</div>
+    <p class="muted">${vazios} vaga(s) sem militar neste mês.</p>`;
+  const grupoTit = tp => `<th title="${esc(tp.grupo || 'Externo')} · ${esc(tp.dias || 'Todos')}">${esc(tp.nome)}<div style="font-weight:400;font-size:11px">${qtdTipo(tp) > 1 ? qtdTipo(tp) + ' por dia · ' : ''}${esc(tp.grupo || 'Externo')}${tp.dias && tp.dias !== 'Todos' ? ' · só ' + tp.dias.toLowerCase() : ''}</div></th>`;
+  return titulo + abasEsc + barra +
+    vista + `<div class="tw escala"><table><thead><tr><th>Dia</th>${tipos.map(grupoTit).join('')}</tr></thead><tbody>${linhas}</tbody></table></div>
+    <p class="muted">${vazios} vaga(s) sem militar neste mês. ⚠ = conflito (impedimento, missão ou dias seguidos). ★ = feriado. · = o serviço não ocorre no dia.${pode() ? ' <b>+</b> = mais um militar no serviço naquele dia (ex.: dois sentinelas). <b>Em branco</b> = ninguém escalado de propósito: a geração automática não preenche e o serviço não sai no aditamento.' : ''}</p>`;
+}
+function mudarMes(n) { const [y, m] = S.mes.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); S.mes = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; render(); }
+
+const BRANCO = 'em-branco', TROCA = 'troca-servico';
+
+
+function trocaServico(id) {
+  const e = S.db.Escala.find(x => x.id === id), tp = TIPO[e.tipoId];
+  const ops = militaresAtivos().filter(m => m.id !== e.militarId && (aptoPara(m, tp) || m.id === e.troca)).map(m => { const st = situacao(m.id, e.data), ja = S.db.Escala.some(x => x.data === e.data && x.id !== e.id && quemTira(x) === m.id);
+    return `<option value="${m.id}" ${m.id === e.troca ? 'selected' : ''}>${esc(nomeMil(m))}${st.tipo !== 'pronto' ? ' (' + esc(st.texto) + ')' : ''}${ja ? ' (já de serviço no dia)' : ''}</option>`; }).join('');
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:520px">
+    <h3>Troca de serviço</h3>
+    <p style="margin-top:0"><b>${esc(tp.nome)}</b> em ${fmt(e.data)} (${SEMANA[dataDe(e.data).getDay()]})<br>Escalado: <b>${esc(nomeMil(e.militarId))}</b></p>
+    <div class="form"><label class="full"><span class="req">Quem vai tirar o serviço</span><select id="f_troca" required><option value=""></option>${ops}</select></label>
+      ${campoHTML({ k: 'trocaMotivo', l: 'Motivo / observação (só no controle da escala)', full: true }, e.trocaMotivo)}</div>
+    <p class="muted">O <b>aditamento</b> sai com o nome de quem tira, sem observação. O <b>quadro de folgas</b> não muda: o serviço continua contando para o escalado, e a escala segue andando normalmente.</p>
+    <div class="acts">${e.troca ? '<button type="button" class="btn dng" id="desfazTroca">Desfazer troca</button><span class="grow"></span>' : ''}<button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Registrar troca</button></div></form></div>`;
+  const gravar = async o => { await salvar('Escala', [{ ...e, obs: String(e.obs || '').startsWith(PRE) ? '' : e.obs, ...o }]); fecharModal(); render(); };
+  if ($('#desfazTroca')) $('#desfazTroca').onclick = async () => { await gravar({ troca: '', trocaMotivo: '' }); toast('Troca desfeita.'); };
+  $('#frm').onsubmit = async ev => { ev.preventDefault(); const t = $('#f_troca').value; if (!t) return toast('Escolha quem vai tirar o serviço.', true);
+    await gravar({ troca: t, trocaMotivo: $('#f_trocaMotivo').value.trim() }); toast(`Troca registrada: ${nomeMil(t)} tira no lugar de ${nomeMil(e.militarId)}.`); };
+}
+function vTrocas() {
+  const l = S.db.Escala.filter(e => e.troca && e.data.startsWith(S.mes)).sort((a, b) => a.data.localeCompare(b.data) || num((TIPO[a.tipoId] || {}).ordem) - num((TIPO[b.tipoId] || {}).ordem));
+  return `<p class="muted" style="margin-top:0">Controle interno das trocas. No aditamento sai quem tirou o serviço, sem observação; no quadro de folgas o serviço conta para o escalado.</p>` + tabela(l, [
+    { l: 'Data', v: e => `${fmt(e.data)} <span class="muted">${SEM_CURTA[dataDe(e.data).getDay()]}</span>` }, { l: 'Serviço', v: e => esc((TIPO[e.tipoId] || {}).nome || '') },
+    { l: 'Escalado (folga)', v: e => esc(nomeMil(e.militarId)) }, { l: 'Tirou o serviço', v: e => `<b>${esc(nomeMil(e.troca))}</b>` }, { l: 'Motivo', v: e => esc(e.trocaMotivo || '') }
+  ], pode() ? e => `<button class="btn sm" onclick="trocaServico('${e.id}')">Abrir</button>` : null) + `<p class="muted">${l.length} troca(s) no mês.</p>`;
+}
+async function trocarServico(data, tipoId, k, valor) {
+  const l = lancamentos(data, tipoId), e = l[k], chave = data + '|' + tipoId;
+  const extra = () => { S.vagaExtra ||= {}; if (S.vagaExtra[chave]) S.vagaExtra[chave]--; };
+  try {
+    if (!valor) { if (e) await salvar('Escala', [], [e.id]); else extra(); }
+    else {
+      if (!e && k >= vagasDoDia(TIPO[tipoId], data)) extra();
+      await salvar('Escala', [{ ...(e || { id: uid(), data, tipoId }), obs: '', troca: '', trocaMotivo: '', militarId: valor === BRANCO ? '' : valor, cor: corDoDia(data) }]);
+    }
+    toast('Escala atualizada.'); render();
+  } catch (err) { render(); }
+}
+function maisVaga(data, tipoId) { S.vagaExtra ||= {}; const c = data + '|' + tipoId; S.vagaExtra[c] = (S.vagaExtra[c] || 0) + 1; render(); }
+
+function gerarMes() {
+  const dias = diasDoMes(S.mes), tipos = tiposAtivos().filter(t => t.automatico !== 'Não');
+  const postos = POSTOS.filter(pg => tipos.some(t => ids(t.postos).includes(pg)));
+  const qtd = pg => militaresAtivos().filter(m => m.postoGrad === pg).length;
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:640px">
+    <h3>Pré-montar a escala pela folga</h3>
+    <p class="muted" style="margin-top:0">Preenche só as vagas vazias, pelo quadro de folga (maior folga na cor do dia; empate: o mais moderno). O que você já lançou e as vagas <i>em branco</i> ficam como estão.</p>
+    <div class="form">${campoHTML({ k: 'pm_ini', l: 'De', t: 'date', req: true }, dias[0])}${campoHTML({ k: 'pm_fim', l: 'Até', t: 'date', req: true }, dias[dias.length - 1])}</div>
+    <fieldset class="pm"><legend>Postos e graduações</legend><div class="pm-l">${postos.map(pg => `<label><input type="checkbox" name="pm_pg" value="${esc(pg)}" checked onchange="pmSincronizar()"> ${esc(pg)} <span class="muted">(${qtd(pg)})</span></label>`).join('')}</div></fieldset>
+    <fieldset class="pm"><legend>Serviços e quantos por dia neste período</legend><div class="pm-t">${tipos.map(t => `<label><input type="checkbox" name="pm_tp" value="${t.id}" checked> <span class="grow">${esc(t.nome)} <span class="muted">${esc(ids(t.postos).join(', '))}</span></span><input type="number" id="pm_q_${t.id}" value="${qtdTipo(t)}" min="0" max="20" step="1" aria-label="${esc(t.nome)} por dia"></label>`).join('')}</div>
+    <small class="muted">Ex.: recebeu na semana anterior 3 sentinelas e 2 permanências por dia? Escolha o período da semana e ponha 3 e 2.</small></fieldset>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Pré-montar</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const ini = $('#f_pm_ini').value, fim = $('#f_pm_fim').value;
+    const pgs = $$('input[name=pm_pg]:checked').map(x => x.value), tps = $$('input[name=pm_tp]:checked').map(x => x.value);
+    if (!ini || !fim || fim < ini) return toast('Confira o período.', true);
+    if (!pgs.length || !tps.length) return toast('Marque pelo menos um posto/graduação e um serviço.', true);
+    const qtd = Object.fromEntries(tps.map(id => [id, Math.max(0, Math.floor(num($('#pm_q_' + id).value)))]));
+    const { novos, faltas } = gerarEscala(ini, fim, S.db.Escala, { tipos: tps, postos: pgs, qtd, lote: new Date().toISOString().slice(0, 16).replace('T', ' ') });
+    if (!novos.length) return toast(faltas.length ? 'Sem militares disponíveis para: ' + faltas.slice(0, 3).join(', ') : 'Não há vagas vazias para esses serviços no período.', !!faltas.length);
+    fecharModal();
+    await salvar('Escala', novos);
+    toast(`${novos.length} serviço(s) pré-montado(s). Para voltar atrás, use "Desfazer pré-montagem".` + (faltas.length ? ` ${faltas.length} vaga(s) sem militar disponível (folga de dias seguidos, impedimento ou missão).` : ''));
+    render();
+  };
+}
+
+const PRE = 'pré-montada ';
+const lotesPre = () => [...new Set(S.db.Escala.filter(e => String(e.obs || '').startsWith(PRE)).map(e => e.obs.slice(PRE.length)))].sort();
+async function desfazerPre() {
+  const lote = lotesPre().pop(); if (!lote) return toast('Não há pré-montagem para desfazer.');
+  const l = S.db.Escala.filter(e => e.obs === PRE + lote), [d, h] = lote.split(' ');
+  const datas = l.map(e => e.data).sort();
+  if (!await confirmar(`Desfazer a pré-montagem de ${fmt(d)} às ${h}? Saem ${l.length} serviço(s) lançados por ela (${fmt(datas[0])} a ${fmt(datas[datas.length - 1])}). O que você trocou à mão depois fica.`)) return;
+  await salvar('Escala', [], l.map(e => e.id));
+  toast(`Pré-montagem desfeita: ${l.length} serviço(s) retirado(s).${lotesPre().length ? ' Clique de novo para desfazer a anterior.' : ''}`); render();
+}
+
+function pmSincronizar() {
+  const pgs = $$('input[name=pm_pg]:checked').map(x => x.value);
+  $$('input[name=pm_tp]').forEach(x => { x.checked = ids(TIPO[x.value].postos).some(pg => pgs.includes(pg)); });
+}
+async function refazerDesde() {
+  const dias = diasDoMes(S.mes);
+  const sugestao = hoje() > dias[0] && hoje() <= dias[dias.length - 1] ? addDias(hoje(), 1) : dias[0];
+  const inicio = await dialogo({ msg: 'Apagar e gerar novamente a escala a partir de qual data até o fim do mês? Trocas manuais nesse período serão perdidas.', campo: 'date', valor: sugestao, ok: 'Refazer escala' });
+  if (!inicio) return;
+  const fim = dias[dias.length - 1];
+  if (inicio < dias[0] || inicio > fim) return toast('Escolha uma data dentro do mês exibido.', true);
+  const remover = S.db.Escala.filter(e => e.data >= inicio && e.data <= fim);
+  const { novos } = gerarEscala(inicio, fim, S.db.Escala.filter(e => !(e.data >= inicio && e.data <= fim)));
+  await salvar('Escala', novos, remover.map(e => e.id));
+  toast(`Escala refeita de ${fmt(inicio)} a ${fmt(fim)}.`); render();
+}
+
+
+const folgaTipo = () => { const t = S.filtro.folgaTipo && TIPO[S.filtro.folgaTipo] ? S.filtro.folgaTipo : (tiposAtivos()[0] || {}).id; return t && (opcoesFolga().find(o => tiposDaFolga(o).includes(t)) || t); };
+
+const opcoesFolga = () => { const vistos = new Set(); return tiposAtivos().filter(t => !vistos.has(chaveFolga(t)) && vistos.add(chaveFolga(t))).map(t => t.id); };
+const SIGLA_IMP = { 'Cumprindo punição': 'PUN', 'Férias': 'FÉR', 'Dispensa médica': 'DM', 'Dispensa': 'DISP', 'Licença': 'LIC', 'Curso/Estágio': 'CURSO', 'Trânsito': 'TRÂNS', 'Outro': 'IMP' };
+
+function matrizFolgas(tipoId, ym) {
+  const tp = TIPO[tipoId], dias = diasDoMes(ym);
+  const grupo = tiposDaFolga(tipoId), servicos = S.db.Escala.filter(e => grupo.includes(e.tipoId)), corrida = folgaCorrida(tipoId);
+  const serviu = new Set(servicos.map(e => e.militarId + '|' + e.data));
+  return militaresAtivos().filter(m => grupo.some(id => TIPO[id] && aptoPara(m, TIPO[id]))).map(m => {
+    
+    const c = { P: calcFolga(m.id, tipoId, 'P', dias[0], servicos).folga, V: calcFolga(m.id, tipoId, 'V', dias[0], servicos).folga };
+    if (corrida) c.V = c.P;
+    const celulas = dias.map(d => {
+      const cor = corrida ? 'P' : corDoDia(d);
+      if (serviu.has(m.id + '|' + d)) { c[cor] = 0; return { v: 0, servico: true }; }
+      c[cor] += 1;
+      const s = situacao(m.id, d);
+      if (s.tipo === 'imp') return { v: SIGLA_IMP[s.texto] || 'IMP', imp: s.texto };
+      if (s.tipo === 'missao') return { v: 'MIS', imp: s.texto };
+      return { v: c[cor] === Infinity ? '' : c[cor], n: c[cor] };
+    });
+    return { m, celulas };
+  });
+}
+function vFolgas() {
+  const tid = folgaTipo(), tp = TIPO[tid];
+  if (!tp) return '';
+  const dias = diasDoMes(S.mes), mat = matrizFolgas(tid, S.mes);
+  
+  const vez = dias.map((d, j) => { if (d < hoje()) return null; let mx = -1, quem = null; mat.forEach((l, i) => { const n = l.celulas[j].n; if (n !== undefined && n > mx) { mx = n; quem = i; } }); return quem; });
+  return `<div class="bar"><label class="muted">Serviço <select onchange="S.filtro.folgaTipo=this.value;render()">${opcoesFolga().map(id => `<option value="${id}" ${id === tid ? 'selected' : ''}>${esc(nomeFolga(id))}</option>`).join('')}</select></label>
+    ${pode() ? `<label class="muted">Contagem <select onchange="mudarContagem('${tid}',this.value)"><option value="Por cor">por cor (preta e vermelha)</option><option value="Corrida" ${folgaCorrida(tid) ? 'selected' : ''}>corrida (todos os dias)</option></select></label>` : ''}
+    <span class="muted">${folgaCorrida(tid) ? 'Cada célula mostra a folga corrida (dias desde o último serviço, sem separar as cores).' : 'Cada célula mostra a folga na cor do dia (preta ou vermelha).'} <span class="tag" style="background:var(--ouro);color:#071d41">0</span> = dia do serviço · contorno azul = quem está na vez (de hoje em diante) · FÉR, DM, MIS… = afastado.</span></div>
+    <div class="tw quadro"><table><thead><tr><th>Ant</th><th>P/G</th><th>Nome</th>${dias.map(d => `<th class="${corDoDia(d) === 'V' ? 'v' : ''}" title="${fmt(d)}${FERIADO[d] ? ' – ' + esc(FERIADO[d]) : ''}">${d.slice(8)}<div>${SEM_CURTA[dataDe(d).getDay()][0]}</div></th>`).join('')}</tr></thead>
+    <tbody>${mat.map((l, i) => `<tr><td class="num">${esc(l.m.antiguidade)}</td><td>${esc(l.m.postoGrad)}</td><td style="white-space:nowrap"><b>${esc(l.m.nomeGuerra)}</b></td>${l.celulas.map((c, j) =>
+      `<td class="${c.servico ? 'sv' : c.imp ? 'imp' : ''} ${corDoDia(dias[j]) === 'V' ? 'v' : ''} ${vez[j] === i && !c.servico ? 'vez' : ''}"${c.imp ? ` title="${esc(c.imp)}"` : ''}>${esc(c.v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+async function mudarContagem(tipoId, valor) {
+  await salvar('TiposServico', tiposDaFolga(tipoId).filter(id => TIPO[id]).map(id => ({ ...TIPO[id], contagem: valor })));
+  toast(valor === 'Corrida' ? 'Folga corrida: conta todos os dias desde o último serviço.' : 'Folga por cor: preta e vermelha separadas.'); render();
+}
+LISTAS.folgas = tipoId => {
+  const tp = TIPO[tipoId], dias = diasDoMes(S.mes);
+  return { nome: `Quadro de folgas ${tp.folga || tp.nome} ${S.mes}`, cab: ['Ant', 'P/G', 'Nome', ...dias.map(d => `${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}${corDoDia(d) === 'V' ? ' (V)' : ''}`)],
+    linhas: matrizFolgas(tipoId, S.mes).map(l => [l.m.antiguidade, l.m.postoGrad, l.m.nomeGuerra, ...l.celulas.map(c => c.v)]) };
+};
+DOCS.folgas = tipoId => {
+  const l = LISTAS.folgas(tipoId), [y, m] = S.mes.split('-');
+  return { tipo: 'Escalas', titulo: l.nome, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
+    { p: `QUADRO DE FOLGAS – ${nomeFolga(tipoId).toUpperCase()} – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}`, c: 1, b: 1 }, { esp: 1 },
+    { t: [l.cab.map((h, i) => i < 3 ? h : h.slice(0, 2)), ...l.linhas.map(r => r.map(String))], h: 1, sz: 6.5, w: [4, 7, 13, ...l.cab.slice(3).map(() => 76 / (l.cab.length - 3))] },
+    { p: folgaCorrida(tipoId) ? 'Folga corrida (todos os dias desde o último serviço). 0 = dia do serviço.' : 'Folga contada por cor (P = dias úteis, V = sábados, domingos e feriados). 0 = dia do serviço.', sz: 8, mt: 4, l: 1 }] };
+};
+LISTAS.escala = ym => {
+  const tipos = tiposAtivos();
+  return { nome: `Escala de servico ${ym}`, cab: ['Dia', 'Cor', ...tipos.map(t => t.nome)],
+    linhas: diasDoMes(ym).map(d => [`${d.slice(8)} ${SEM_CURTA[dataDe(d).getDay()]}`, corDoDia(d) === 'V' ? 'V' : 'P', ...tipos.map(t => { const l = lancamentos(d, t.id); return l.length ? l.filter(e => !emBranco(e)).map(e => nomeMil(quemTira(e))).join(' / ') || '—' : aplica(t, d) ? '' : '·'; })]) };
+};
+
+
+
+
+function docPadrao({ tipo, titulo, nome, cab, linhas, w, sz = 8, paisagem, antes = [], depois = [], assin }) {
+  const ass = assin || [[cfg('cmtNome'), cfg('cmtFuncao')]];
+  const assinaturas = ass.length === 1 ? blocosAssinatura(ass[0][0], ass[0][1]) : [{ esp: 3 },
+    { t: [ass.map(() => '______________________________'), ass.map(a => ({ v: a[0] || '', b: 1 })), ass.map(a => ({ v: a[1] || '', b: 1 }))], sem: 1, sz: 9.5 }];
+  return { tipo, titulo: nome, blocos: [...((paisagem ?? cab.length > 7) ? [{ paisagem: true }] : []), ...blocosCabecalho(), { esp: 1 }, { p: titulo, c: 1, b: 1 }, { esp: 1 },
+    ...antes, { t: [cab, ...(linhas.length ? linhas : [[{ v: 'Nada lançado.', span: cab.length }]])], h: 1, sz, ...(w ? { w } : {}) }, ...depois, ...assinaturas] };
+}
+DOCS.escala = ym => {
+  const l = LISTAS.escala(ym), [y, m] = ym.split('-');
+  return { tipo: 'Escalas', titulo: l.nome, blocos: [...(l.cab.length > 7 ? [{ paisagem: true }] : []), ...blocosCabecalho(), { esp: 1 },
+    { p: `ESCALA DE SERVIÇO – ${MESES_EXT[m - 1].toUpperCase()} DE ${y}`, c: 1, b: 1 }, { esp: 1 }, { t: [l.cab, ...l.linhas], h: 1, sz: 8 },
+    ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] };
+};
+
+
+function vImportarHistorico() {
+  const st = S.hist;
+  let html = `<div class="card"><p>Traga a sua planilha de escala no formato de <b>colunas por dia</b> (como a de Sgt de Dia ou Cabo de Dia): uma linha por militar com P/G e nome, e a cada dia o contador de folga, com <b>0 no dia em que tirou serviço</b>. O sistema lê os zeros e recria o histórico, então as folgas continuam exatamente de onde estavam.</p>
+    <div class="bar"><input type="file" accept=".xlsx,.xls,.ods" onchange="lerHistorico(this.files[0])"></div></div>`;
+  if (!st) return html;
+  const aba = st.abas[st.aba];
+  html += `<h3>${esc(st.arquivo)}</h3><div class="card"><div class="form">
+    <label>Aba da planilha<select onchange="S.hist.aba=+this.value;render()">${st.abas.map((a, i) => `<option value="${i}" ${i === st.aba ? 'selected' : ''}>${esc(a.nome)} (${a.militares.length} militares, ${a.datas.length} dias)</option>`).join('')}</select></label>
+    <label>Lançar como o serviço<select id="hist_tipo">${tiposAtivos().map(t => `<option value="${t.id}" ${norm(aba.nome).includes(norm(t.nome).slice(0, 5)) ? 'selected' : ''}>${esc(t.nome)}</option>`).join('')}</select></label>
+    <label>Importar serviços a partir de<input type="date" id="hist_desde" value="${addDias(hoje(), -120)}"></label>
+    <label>Até<input type="date" id="hist_ate" value="${addDias(hoje(), 60)}"></label>
+    <label class="full" style="flex-direction:row;align-items:center;gap:8px;font-weight:400"><input type="checkbox" id="hist_novos" checked> Cadastrar os militares da planilha que ainda não estão no sistema</label>
+    </div><div class="bar" style="margin-top:12px"><span class="muted grow">${aba.militares.filter(x => achaMilitar(x.nome, x.posto)).length} de ${aba.militares.length} nomes já existem no sistema. Datas da aba: ${aba.datas.length ? fmt(aba.datas[0].iso) + ' a ' + fmt(aba.datas[aba.datas.length - 1].iso) : '—'}.</span>
+    <button class="btn" onclick="S.hist=null;render()">Cancelar</button><button class="btn pri" onclick="confirmarHistorico()">Importar histórico</button></div></div>
+    <h3>Prévia</h3>${tabela(aba.militares.slice(0, 8), [{ l: 'P/G', v: x => esc(x.posto) }, { l: 'Nome', v: x => esc(x.nome) }, { l: 'Situação', v: x => esc(x.situacao) },
+      { l: 'No sistema', v: x => achaMilitar(x.nome, x.posto) ? '<span class="tag ok">sim</span>' : '<span class="tag warn">novo</span>' }, { l: 'Serviços na planilha', v: x => x.zeros.length, c: 'num' }])}`;
+  return html;
+}
+const serialParaIso = n => { const d = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 864e5); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
+
+const baseNome = s => norm(String(s).trim().replace(/\s+[A-Za-z]\.?$/, ''));
+function achaMilitar(nome, posto) {
+  const n = baseNome(nome);
+  const cands = S.db.Militares.filter(m => baseNome(m.nomeGuerra) === n);
+  return cands.find(m => !posto || postoNorm(posto) === m.postoGrad) || cands[0];
+}
+async function lerHistorico(file) {
+  if (!file) return;
+  try {
+    toast('Lendo a planilha…');
+    await carregarSheetJS();
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const abas = wb.SheetNames.map(nome => {
+      const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, raw: true, defval: '' });
+      
+      let hi = -1, melhor = 0;
+      linhas.slice(0, 15).forEach((l, i) => { const n = l.filter(v => typeof v === 'number' && v > 42000 && v < 53000).length; if (n > melhor) { melhor = n; hi = i; } });
+      if (hi < 0 || melhor < 7) return null;
+      const cab = linhas[hi];
+      const datas = cab.map((v, c) => typeof v === 'number' && v > 42000 && v < 53000 ? { c, iso: serialParaIso(v) } : null).filter(Boolean);
+      const cN = cab.findIndex(h => /^nome/.test(norm(h))), cP = cab.findIndex(h => ['grad', 'pg', 'posto', 'postograd', 'a'].includes(norm(h)));
+      const cS = cab.findIndex(h => /situacao|obs/.test(norm(h)));
+      const militares = linhas.slice(hi + 1).filter(l => String(l[cN] ?? '').trim()).map(l => ({
+        nome: String(l[cN]).trim(), posto: cP >= 0 ? String(l[cP]).trim() : '', situacao: cS >= 0 ? String(l[cS]).trim() : '',
+        zeros: datas.filter(d => l[d.c] === 0 || l[d.c] === '0').map(d => d.iso)
+      }));
+      return { nome, datas, militares };
+    }).filter(Boolean);
+    if (!abas.length) return toast('Não encontrei nenhuma aba com uma linha de datas (um dia por coluna).', true);
+    S.hist = { arquivo: file.name, abas, aba: 0 };
+    render();
+  } catch (e) { toast('Erro ao ler a planilha: ' + e.message, true); }
+}
+async function confirmarHistorico() {
+  const aba = S.hist.abas[S.hist.aba], tipoId = $('#hist_tipo').value, desde = $('#hist_desde').value, ate = $('#hist_ate').value, cadastrar = $('#hist_novos').checked;
+  const novosMil = [], escala = [];
+  const existe = new Set(S.db.Escala.filter(e => e.tipoId === tipoId).map(e => e.data + '|' + e.militarId));
+  aba.militares.forEach(x => {
+    let m = achaMilitar(x.nome, x.posto) || novosMil.find(n => norm(n.nomeGuerra) === norm(x.nome));
+    if (!m) {
+      if (!cadastrar) return;
+      m = { id: uid(), postoGrad: postoNorm(x.posto) || x.posto, nomeGuerra: tituloNome(x.nome), ativo: 'Sim', obs: x.situacao };
+      novosMil.push(m);
+    }
+    x.zeros.filter(d => d >= desde && d <= ate && !existe.has(d + '|' + m.id)).forEach(d => escala.push({ id: uid(), data: d, tipoId, militarId: m.id, cor: corDoDia(d), obs: 'importado' }));
+  });
+  if (!escala.length && !novosMil.length) return toast('Nada novo para importar nesse período.', true);
+  if (!await confirmar(`Importar ${escala.length} serviço(s) de ${TIPO[tipoId].nome}${novosMil.length ? ` e cadastrar ${novosMil.length} militar(es) novo(s)` : ''}?`)) return;
+  if (novosMil.length) await salvar('Militares', novosMil);
+  if (escala.length) await salvar('Escala', escala);
+  S.hist = null; S.sub.escala = 'folgas'; S.filtro.folgaTipo = tipoId;
+  toast(`Histórico importado: ${escala.length} serviço(s).`); render();
+}
+const tituloNome = s => String(s).trim().toLowerCase().replace(/(^|\s)(\S)/g, (_, a, b) => a + b.toUpperCase()).replace(/\b(De|Da|Do|Dos|Das|E)\b/g, w => w.toLowerCase());
+
+
+const CAMPOS_MISSAO = [
+  { k: 'titulo', l: 'Missão', req: true, full: true },
+  { k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_MISSAO },
+  { k: 'status', l: 'Situação', t: 'select', o: STATUS_MISSAO, padrao: 'Planejada', vazio: false },
+  { k: 'inicio', l: 'Início', t: 'date', req: true },
+  { k: 'fim', l: 'Término', t: 'date' },
+  { k: 'horario', l: 'Horário de apresentação' },
+  { k: 'local', l: 'Local' },
+  { k: 'responsavelId', l: 'Comandante/Responsável', t: 'militar' },
+  { k: 'viaturas', l: 'Viaturas' },
+  { k: 'militaresIds', l: 'Pessoal empregado', t: 'militares' },
+  { k: 'material', l: 'Material', t: 'textarea' },
+  { k: 'descricao', l: 'Descrição / ordem', t: 'textarea' },
+  { k: 'arquivoUrl', l: 'Anexo (ordem de missão, croqui…)', t: 'file', full: true }
+];
+function vMissoes() {
+  const st = S.filtro.missaoStatus || 'ativas';
+  const lista = S.db.Missoes.filter(m => (st === 'todas' || (st === 'ativas' ? missaoAtiva(m) : m.status === st)) && casa('mis', m.titulo, m.local, m.tipo))
+    .sort((a, b) => b.inicio.localeCompare(a.inicio));
+  const tagSt = s => `<span class="tag ${s === 'Em andamento' ? 'info' : s === 'Concluída' ? 'ok' : s === 'Cancelada' ? 'dng' : 'warn'}">${esc(s || 'Planejada')}</span>`;
+  return `<h2>Missões</h2><p class="sub">Planejamento e controle de missões, com o pessoal empregado (fica automaticamente indisponível para a escala).</p>
+  <div class="bar">${busca('mis', 'Buscar missão…')}<select onchange="S.filtro.missaoStatus=this.value;render()">${[['ativas', 'Planejadas e em andamento'], ...STATUS_MISSAO.map(s => [s, s]), ['todas', 'Todas']].map(([v, l]) => `<option value="${v}" ${st === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+  <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarMissao()">+ Missão</button>' : ''}</div>
+  ${tabela(lista, [
+    { l: 'Missão', v: m => `<b>${esc(m.titulo)}</b> ${linkArq(m.arquivoUrl)}<div class="muted">${esc(m.tipo)}${m.local ? ' · ' + esc(m.local) : ''}</div>` },
+    { l: 'Período', v: m => `${fmt(m.inicio)}${m.fim && m.fim !== m.inicio ? ' a ' + fmt(m.fim) : ''}${m.horario ? '<div class="muted">' + esc(m.horario) + '</div>' : ''}` },
+    { l: 'Responsável', v: m => esc(m.responsavelId ? nomeMil(m.responsavelId) : '') },
+    { l: 'Efetivo', v: m => ids(m.militaresIds).length, c: 'num' },
+    { l: 'Situação', v: m => tagSt(m.status) }
+  ], m => `${pode() ? `<button class="btn sm" onclick="editarMissao('${m.id}')">Editar</button> ` : ''}${botoesDoc('missao', m.id)}${pode() ? ` <button class="btn sm dng" onclick="excluir('Missoes','${m.id}')">Excluir</button>` : ''}`)}`;
+}
+function editarMissao(id) {
+  abrirForm({ titulo: id ? 'Editar missão' : 'Nova missão', campos: CAMPOS_MISSAO, valores: id ? S.db.Missoes.find(m => m.id === id) : { inicio: hoje(), status: 'Planejada' },
+    aoSalvar: async o => {
+      if (o.fim && o.fim < o.inicio) throw new Error('O término não pode ser antes do início.');
+      const conflitos = ids(o.militaresIds).map(mid => ({ mid, s: situacao(mid, o.inicio) })).filter(x => x.s.tipo === 'imp');
+      if (conflitos.length && !await confirmar('Atenção: ' + conflitos.map(x => nomeMil(x.mid) + ' (' + x.s.texto + ')').join(', ') + ' está(ão) impedido(s) no início da missão. Salvar mesmo assim?')) throw new Error('Cancelado.');
+      return salvar('Missoes', [o]);
+    } });
+}
+DOCS.missao = id => {
+  const m = S.db.Missoes.find(x => x.id === id);
+  const pessoal = ids(m.militaresIds).map(i => MIL[i]).filter(Boolean).sort(ordemMil);
+  return { tipo: 'Missoes', ref: m.id, titulo: `Ordem de missao - ${m.titulo} - ${m.inicio}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: `ORDEM DE MISSÃO – ${m.titulo.toUpperCase()}`, c: 1, b: 1 }, { esp: 1 },
+    { t: [['Tipo', m.tipo || ''], ['Local', m.local || ''], ['Período', `${fmtMil(m.inicio)}${m.fim && m.fim !== m.inicio ? ' a ' + fmtMil(m.fim) : ''}${m.horario ? ' – apresentação: ' + m.horario : ''}`],
+      ['Comandante', m.responsavelId ? nomeMil(m.responsavelId) : ''], ['Viaturas', m.viaturas || ''], ['Material', m.material || ''], ['Missão', m.descricao || '']].map(([k, v]) => [{ v: k, b: 1, l: 1 }, { v, l: 1 }]), w: [22, 78], sz: 9.5 },
+    { p: `PESSOAL EMPREGADO (${pessoal.length})`, b: 1, l: 1, mt: 10 },
+    { t: [['Nº', 'P/G', 'Nome', 'Identidade', 'Celular'], ...pessoal.map((p, i) => [i + 1, p.postoGrad, { v: p.nomeCompleto || p.nomeGuerra, l: 1 }, p.idt || '', p.telefone || ''])], h: 1, w: [6, 12, 46, 18, 18], sz: 9.5 },
+    { esp: 1 }, { p: localData(hoje()), r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] };
+};
+
+
+const TIPOS_SAUDE = { visita: 'Visita médica', is: 'Inspeção de saúde', acidente: 'Acidente', ltsp: 'Adido (LTSP)' };
+const RES_VISITA = ['Apto', 'Dispensa médica', 'Encaminhado ao especialista', 'Baixado (internado)', 'Outro'];
+const FIN_IS = ['Controle periódico', 'Engajamento / reengajamento', 'LTSP / tratamento de saúde', 'Curso / estágio', 'Outra'];
+const DOC_ACID = ['Em análise', 'AO (Atestado de Origem)', 'ISO (Inquérito Sanitário de Origem)', 'Não se aplica'];
+const sau = tipo => (S.db.Saude || []).filter(x => x.tipo === TIPOS_SAUDE[tipo]);
+
+const temSaude = () => admin() || S.user?.jd === 'Sim' || (S.user?.perfil === 'editor' && temArea('sgte'));
+const fimDispensa = v => v.inicio && num(v.dias) > 0 ? addDias(v.inicio, num(v.dias) - 1) : '';
+
+function prazosSaude() {
+  const l = [];
+  sau('is').filter(x => x.validade).forEach(x => l.push({ d: x.validade, t: `IS vence (${x.motivo || 'inspeção'})`, x }));
+  sau('ltsp').filter(x => x.situacao !== 'Encerrado' && x.proximo).forEach(x => l.push({ d: x.proximo, t: 'Adido: comparecimento / IS', x }));
+  sau('acidente').filter(x => x.situacao !== 'Concluído' && x.proximo).forEach(x => l.push({ d: x.proximo, t: `Acidente: prazo ${x.documento && !/análise|aplica/.test(x.documento) ? x.documento.split(' ')[0] : 'do documento'}`, x }));
+  return l.filter(p => p.d <= addDias(hoje(), 30)).sort((a, b) => a.d.localeCompare(b.d));
+}
+function vSaude() {
+  const t = S.sub.saude || 'resumo';
+  const cab = `<h2>Saúde</h2><p class="sub">Livro de visita médica, inspeções de saúde, acidentes (AO / ISO) e militares adidos em LTSP. Fica numa planilha reservada à Sargenteação.</p>
+    ${abas('saude', [['resumo', 'Resumo'], ['visitas', 'Visitas médicas'], ['is', 'Inspeções de saúde'], ['acidentes', 'Acidentes'], ['ltsp', 'Adidos (LTSP)']])}`;
+  const mil = x => `<b>${esc(nomeMil(x.militarId))}</b>`, edt = x => pode() ? `<button class="btn sm" onclick="editarSaude('${x.id}')">Abrir</button>` : '';
+  if (t === 'resumo') {
+    const disp = S.db.Impedimentos.filter(i => i.tipo === 'Dispensa médica' && i.inicio <= hoje() && (i.fim || i.inicio) >= hoje());
+    const pz = prazosSaude();
+    return cab + `<div class="grid-resumo">
+      <div class="card"><h3>Dispensados hoje <span class="tag ${disp.length ? 'warn' : 'ok'}">${disp.length}</span></h3>${disp.length ? `<ul class="lista-jd">${disp.map(i => `<li><b>${esc(nomeMil(i.militarId))}</b> <span class="muted">até ${fmt(i.fim)}</span></li>`).join('')}</ul>` : '<p class="muted">Ninguém.</p>'}</div>
+      <div class="card"><h3>Prazos (vencidos e próximos 30 dias) <span class="tag ${pz.some(p => p.d < hoje()) ? 'dng' : pz.length ? 'warn' : 'ok'}">${pz.length}</span></h3>${pz.length ? `<ul class="lista-jd">${pz.map(p => `<li><a onclick="editarSaude('${p.x.id}')">${esc(nomeMil(p.x.militarId))}</a> – ${esc(p.t)} <span class="tag ${p.d < hoje() ? 'dng' : 'warn'}">${fmt(p.d)}</span></li>`).join('')}</ul>` : '<p class="muted">Nada vencendo.</p>'}</div>
+      <div class="card"><h3>Adidos em tratamento</h3><div class="big">${sau('ltsp').filter(x => x.situacao !== 'Encerrado').length}</div><p class="muted">${sau('acidente').filter(x => x.situacao !== 'Concluído').length} acidente(s) com documento em aberto.</p></div>
+    </div>`;
+  }
+  if (t === 'visitas') {
+    const mes = S.filtro.sauMes || hoje().slice(0, 7);
+    const l = sau('visita').filter(x => String(x.data).startsWith(mes)).sort((a, b) => b.data.localeCompare(a.data));
+    return cab + `<div class="bar"><input type="month" value="${mes}" onchange="S.filtro.sauMes=this.value;render()" aria-label="Mês"><span class="grow"></span>${pode() ? `<button class="btn pri" onclick="editarSaude(null,'visita')">+ Visita médica</button>` : ''}${botoesDocGrandes('livroVisita', mes)}</div>
+      ${tabela(l, [{ l: 'Data', v: x => fmt(x.data) }, { l: 'Militar', v: mil }, { l: 'Motivo', v: x => esc(x.motivo || '') }, { l: 'Local', v: x => esc(x.local || '') },
+        { l: 'Resultado', v: x => `<span class="tag ${x.resultado === 'Apto' ? 'ok' : 'warn'}">${esc(x.resultado || '')}</span>${num(x.dias) ? ` <span class="muted">${x.dias} dia(s) até ${fmt(fimDispensa(x))}</span>` : ''}` },
+        { l: 'BI', v: x => esc(x.bi || '') }], edt)}
+      <p class="muted">Dispensa médica lançada aqui vira afastamento sozinha (sai da escala e entra no mapa da força), sem o motivo.</p>`;
+  }
+  if (t === 'is') return cab + `<div class="bar"><span class="grow"></span>${pode() ? `<button class="btn pri" onclick="editarSaude(null,'is')">+ Inspeção de saúde</button>` : ''}</div>
+    ${tabela(sau('is').sort((a, b) => b.data.localeCompare(a.data)), [{ l: 'Data', v: x => fmt(x.data) }, { l: 'Militar', v: mil }, { l: 'Finalidade', v: x => esc(x.motivo || '') }, { l: 'Parecer', v: x => esc(x.resultado || '') },
+      { l: 'Validade / próxima', v: x => x.validade ? `<span class="tag ${x.validade < hoje() ? 'dng' : x.validade <= addDias(hoje(), 30) ? 'warn' : ''}">${fmt(x.validade)}</span>` : '' }, { l: 'BI', v: x => esc(x.bi || '') }], edt)}`;
+  if (t === 'acidentes') return cab + `<div class="bar"><span class="grow"></span>${pode() ? `<button class="btn pri" onclick="editarSaude(null,'acidente')">+ Acidente</button>` : ''}</div>
+    ${tabela(sau('acidente').sort((a, b) => b.data.localeCompare(a.data)), [{ l: 'Data', v: x => fmt(x.data) }, { l: 'Militar', v: mil }, { l: 'O que houve', v: x => esc(x.motivo || '') },
+      { l: 'Em serviço?', v: x => esc(x.emServico || 'Em apuração') }, { l: 'Documento', v: x => `${esc(x.documento || '')}${x.numeroDoc ? ` <span class="muted">nº ${esc(x.numeroDoc)}</span>` : ''}${x.sindicancia ? `<div class="muted">Sindicância ${esc(x.sindicancia)}</div>` : ''}` },
+      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Concluído' ? 'ok' : 'warn'}">${esc(x.situacao || 'Aberto')}</span>${x.proximo && x.situacao !== 'Concluído' ? ` <span class="muted">prazo ${fmt(x.proximo)}</span>` : ''}` }], edt)}
+    <p class="muted">Acompanhe a manifestação do médico sobre a necessidade de AO ou ISO e se o fato foi considerado acidente em serviço (sindicância).</p>`;
+  return cab + `<div class="bar"><span class="grow"></span>${pode() ? `<button class="btn pri" onclick="editarSaude(null,'ltsp')">+ Adido (LTSP)</button>` : ''}</div>
+    ${tabela(sau('ltsp').sort((a, b) => b.data.localeCompare(a.data)), [{ l: 'Militar', v: mil }, { l: 'Desde', v: x => fmt(x.data) }, { l: 'Motivo / tratamento', v: x => esc(x.motivo || '') },
+      { l: 'Próximo comparecimento / IS', v: x => x.proximo ? `<span class="tag ${x.proximo < hoje() ? 'dng' : x.proximo <= addDias(hoje(), 15) ? 'warn' : ''}">${fmt(x.proximo)}</span>` : '' },
+      { l: 'Prorrogações / BI', v: x => `${esc(x.obs || '')}${x.bi ? `<div class="muted">${esc(x.bi)}</div>` : ''}` }, { l: 'Situação', v: x => esc(x.situacao || 'Em tratamento') }], edt)}`;
+}
+function editarSaude(id, tipo) {
+  const x = id ? S.db.Saude.find(y => y.id === id) : { tipo: TIPOS_SAUDE[tipo], data: hoje(), inicio: hoje() };
+  tipo = tipo || Object.keys(TIPOS_SAUDE).find(k => TIPOS_SAUDE[k] === x.tipo);
+  const C = {
+    visita: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'motivo', l: 'Motivo / queixa', full: true }, { k: 'local', l: 'Onde foi atendido' },
+      { k: 'resultado', l: 'Resultado', t: 'select', o: RES_VISITA, vazio: false }, { k: 'dias', l: 'Dias de dispensa', t: 'number' }, { k: 'inicio', l: 'Dispensa a partir de', t: 'date' }, { k: 'bi', l: 'Publicação da dispensa (BI)' }],
+    is: [{ k: 'data', l: 'Data da inspeção', t: 'date', req: true }, { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'motivo', l: 'Finalidade', t: 'select', o: FIN_IS, vazio: false },
+      { k: 'resultado', l: 'Parecer (ex.: Apto A, Incapaz B1)' }, { k: 'validade', l: 'Validade / próxima inspeção', t: 'date' }, { k: 'bi', l: 'Publicação (BI)' }],
+    acidente: [{ k: 'data', l: 'Data do acidente', t: 'date', req: true }, { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'motivo', l: 'O que houve', t: 'textarea' }, { k: 'local', l: 'Local' },
+      { k: 'emServico', l: 'Acidente em serviço?', t: 'select', o: ['Em apuração', 'Sim', 'Não'], vazio: false }, { k: 'documento', l: 'Documento sanitário de origem', t: 'select', o: DOC_ACID, vazio: false },
+      { k: 'numeroDoc', l: 'Nº do AO / ISO' }, { k: 'proximo', l: 'Prazo do documento', t: 'date' }, { k: 'sindicancia', l: 'Sindicância (nº)' }, { k: 'bi', l: 'Solução publicada em (BI)' },
+      { k: 'situacao', l: 'Situação', t: 'select', o: ['Aberto', 'Concluído'], vazio: false }],
+    ltsp: [{ k: 'militarId', l: 'Militar adido', t: 'militar', req: true }, { k: 'data', l: 'Adido desde', t: 'date', req: true }, { k: 'motivo', l: 'Motivo / tratamento', full: true },
+      { k: 'proximo', l: 'Próximo comparecimento / IS', t: 'date' }, { k: 'obs', l: 'Prorrogações e soluções', t: 'textarea' }, { k: 'bi', l: 'Publicação (BI)' }, { k: 'situacao', l: 'Situação', t: 'select', o: ['Em tratamento', 'Encerrado'], vazio: false }]
+  }[tipo];
+  abrirForm({ titulo: (id ? '' : 'Novo registro: ') + TIPOS_SAUDE[tipo], valores: x, campos: [...C, { k: 'arquivoUrl', l: 'Documento digitalizado', t: 'file', full: true }],
+    aoSalvar: async o => {
+      if (tipo === 'visita' && o.resultado === 'Dispensa médica' && !num(o.dias)) throw new Error('Informe os dias de dispensa.');
+      const [salvo] = await salvar('Saude', [{ ...o, tipo: TIPOS_SAUDE[tipo] }]);
+      if (tipo === 'visita') await sincronizarDispensa({ ...o, ...salvo });
+    },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluirSaude('${id}')">Excluir</button></div>` : '' });
+}
+
+async function sincronizarDispensa(v) {
+  const id = 'sau-' + v.id, existe = S.db.Impedimentos.find(i => i.id === id);
+  if (v.resultado === 'Dispensa médica' && num(v.dias) > 0) await salvar('Impedimentos', [{ id, militarId: v.militarId, tipo: 'Dispensa médica', inicio: v.inicio || v.data, fim: fimDispensa({ ...v, inicio: v.inicio || v.data }), obs: '', referencia: v.bi || '' }]);
+  else if (existe) await salvar('Impedimentos', [], [id]);
+}
+async function excluirSaude(id) {
+  if (!await confirmar('Excluir este registro de saúde?')) return;
+  await salvar('Saude', [], [id]);
+  if (S.db.Impedimentos.some(i => i.id === 'sau-' + id)) await salvar('Impedimentos', [], ['sau-' + id]);
+  fecharModal(); toast('Excluído.'); render();
+}
+DOCS.livroVisita = mes => {
+  const [a, m] = mes.split('-'), l = sau('visita').filter(x => String(x.data).startsWith(mes)).sort((x, y) => x.data.localeCompare(y.data));
+  return docPadrao({ tipo: 'Saude', nome: `Livro de visita medica ${mes}`, titulo: `LIVRO DE VISITA MÉDICA – ${MESES_EXT[m - 1].toUpperCase()} DE ${a}`, paisagem: true,
+    cab: ['Nº', 'Data', 'P/G e nome', 'Motivo', 'Local', 'Resultado', 'Dispensa', 'BI', 'Visto'],
+    linhas: l.map((x, i) => [pad(i + 1), fmt(x.data), { v: nomeMil(x.militarId), l: 1 }, { v: x.motivo || '', l: 1 }, x.local || '', x.resultado || '', num(x.dias) ? `${x.dias} dia(s) até ${fmt(fimDispensa(x))}` : '', x.bi || '', '']),
+    w: [5, 9, 17, 21, 11, 12, 12, 7, 6], assin: [[cfg('sgteNome'), 'Sargenteante'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
+};
+
+
+const SIT_SAT = ['Ativo', 'Suspenso', 'Cancelado'];
+function calcSat(mes, comMissao) {
+  const dias = diasDoMes(mes).filter(d => corDoDia(d) === 'P');
+  return (S.db.SAT || []).filter(x => x.situacao !== 'Cancelado' || (x.fim && x.fim >= dias[0])).map(x => {
+    const uteis = dias.filter(d => d >= (x.inicio || '0000') && (!x.fim || d <= x.fim));
+    const fora = uteis.filter(d => { const s = situacao(x.militarId, d); return s.tipo === 'imp' || (comMissao && s.tipo === 'missao'); });
+    const motivos = {}; fora.forEach(d => { const s = situacao(x.militarId, d).texto; motivos[s] = (motivos[s] || 0) + 1; });
+    const direito = x.situacao === 'Suspenso' ? 0 : uteis.length - fora.length;
+    return { x, uteis: uteis.length, fora: fora.length, direito, motivos, valor: num(x.valor) && uteis.length ? num(x.valor) / uteis.length * direito : 0 };
+  });
+}
+function vSat() {
+  const mes = S.filtro.satMes || hoje().slice(0, 7), comMissao = !!S.filtro.satMissao, l = calcSat(mes, comMissao);
+  return `<div class="bar"><input type="month" value="${mes}" onchange="S.filtro.satMes=this.value;render()" aria-label="Mês">
+      <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" ${comMissao ? 'checked' : ''} onchange="S.filtro.satMissao=this.checked;render()"> Descontar também os dias de missão</label>
+      <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarSat()">+ Militar com auxílio</button>' : ''}${botoesDocGrandes('sat', mes, 'sat')}</div>
+    ${tabela(l, [{ l: 'Militar', v: r => `<b>${esc(nomeMil(r.x.militarId))}</b><div class="muted">${esc(r.x.ref || '')}</div>` }, { l: 'Situação', v: r => `<span class="tag ${r.x.situacao === 'Ativo' ? 'ok' : 'warn'}">${esc(r.x.situacao || 'Ativo')}</span>` },
+      { l: 'Dias úteis', v: r => r.uteis, c: 'num' }, { l: 'Afastado', v: r => r.fora ? `<b>${r.fora}</b><div class="muted">${esc(Object.entries(r.motivos).map(([k, n]) => `${k}: ${n}`).join(', '))}</div>` : '0', c: 'num', s: r => r.fora },
+      { l: 'Com direito', v: r => r.direito, c: 'num' }, { l: 'Valor no mês', v: r => r.valor ? reais(r.valor) : '<span class="muted">—</span>', c: 'num', s: r => r.valor }],
+      pode() ? r => `<button class="btn sm" onclick="editarSat('${r.x.id}')">Editar</button>` : null)}
+    <p class="muted">Os dias afastados vêm do que está lançado no sistema (férias, dispensas, licenças, cursos, punição…), não só dos aditamentos. Confira antes de mandar a relação.</p>`;
+}
+function editarSat(id) {
+  const x = id ? S.db.SAT.find(y => y.id === id) : { situacao: 'Ativo', inicio: hoje() };
+  abrirForm({ titulo: id ? 'Auxílio-transporte' : 'Militar com auxílio-transporte', valores: x, campos: [
+    { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'situacao', l: 'Situação', t: 'select', o: SIT_SAT, vazio: false },
+    { k: 'inicio', l: 'Recebe desde', t: 'date', req: true }, { k: 'fim', l: 'Até (se cancelado)', t: 'date' }, { k: 'valor', l: 'Valor mensal (R$)', t: 'number' },
+    { k: 'ref', l: 'Requerimento / DIEx / BI', full: true }, { k: 'obs', l: 'Observações', full: true }],
+    aoSalvar: o => salvar('SAT', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('SAT','${id}',true)">Excluir</button></div>` : '' });
+}
+LISTAS.sat = () => { const mes = S.filtro.satMes || hoje().slice(0, 7);
+  return { nome: `Auxilio-transporte ${mes}`, cab: ['P/G', 'Nome', 'Situação', 'Dias úteis', 'Dias afastado', 'Motivos', 'Dias com direito', 'Valor no mês', 'Referência'],
+    linhas: calcSat(mes, !!S.filtro.satMissao).map(r => [MIL[r.x.militarId]?.postoGrad || '', MIL[r.x.militarId]?.nomeGuerra || '', r.x.situacao, r.uteis, r.fora, Object.entries(r.motivos).map(([k, n]) => `${k}: ${n}`).join(', '), r.direito, r.valor ? Number(r.valor.toFixed(2)) : '', r.x.ref || '']) }; };
+DOCS.sat = mes => { S.filtro.satMes = mes; const l = LISTAS.sat(), [a, m] = mes.split('-');
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `AUXÍLIO-TRANSPORTE – ${MESES_EXT[m - 1].toUpperCase()} DE ${a}`, paisagem: true,
+    cab: ['Nº', ...l.cab], linhas: l.linhas.map((r, i) => [pad(i + 1), ...r.map((v, j) => j === 1 || j === 5 ? { v: String(v), l: 1 } : j === 7 && v !== '' ? reais(v) : String(v))]), w: [4, 6, 13, 8, 7, 8, 21, 8, 10, 15] });
+};
+
+
+const extrasPernoite = d => { try { return JSON.parse(((S.db.Pernoite || []).find(x => x.id === d) || {}).extras || '[]'); } catch (e) { return []; } };
+function linhasPernoite(d) {
+  const da = tiposAtivos().flatMap(t => lancamentos(d, t.id).filter(e => !emBranco(e)).map(e => ({ nome: nomeMil(quemTira(e)), sv: t.nome, su: cfg('sigla') })));
+  return [...da, ...extrasPernoite(d).map(x => ({ nome: x.nome, sv: x.sv, su: x.su, extra: 1 }))];
+}
+function vPernoite() {
+  const d = S.filtro.pernoite || hoje(), l = linhasPernoite(d), ex = extrasPernoite(d);
+  return `<div class="bar"><label class="muted">Noite de <input type="date" value="${d}" onchange="S.filtro.pernoite=this.value;render()"></label><span class="grow"></span>${pode() ? '<button class="btn" onclick="maisPernoite()">+ Militar de outra SU / extra</button>' : ''}${botoesDocGrandes('pernoite', d)}</div>
+    ${tabela(l.map((x, i) => ({ ...x, i })), [{ l: 'Nº', v: x => x.i + 1, c: 'num' }, { l: 'P/G e nome', v: x => `<b>${esc(x.nome)}</b>` }, { l: 'Serviço / motivo', v: x => esc(x.sv || '') }, { l: 'SU', v: x => `${esc(x.su || '')}${x.extra ? ' <span class="tag info">outra SU / extra</span>' : ''}` }],
+      pode() ? x => x.extra ? `<button class="btn sm dng" onclick="tirarPernoite(${x.i - (l.length - ex.length)})">Tirar</button>` : '' : null)}
+    <p class="muted">Sai da escala do dia (quem tira, com as trocas). Militar de outra SU escalado aqui, ou quem pernoita por outro motivo, entra pelo botão acima. Imprima em 2 vias para o arquivo, com as assinaturas.</p>`;
+}
+async function maisPernoite() {
+  const d = S.filtro.pernoite || hoje();
+  const nome = ((await dialogo({ msg: 'P/G e nome do militar (ex.: Cb Fulano):', campo: 'text', ok: 'Próximo' })) || '').trim(); if (!nome) return;
+  const su = ((await dialogo({ msg: 'SU de origem (ex.: 2ª Cia):', campo: 'text', valor: cfg('sigla'), ok: 'Próximo' })) || '').trim();
+  const sv = ((await dialogo({ msg: 'Serviço ou motivo do pernoite:', campo: 'text', ok: 'Incluir' })) || '').trim();
+  await salvar('Pernoite', [{ id: d, extras: JSON.stringify([...extrasPernoite(d), { nome, su, sv }]) }]); render();
+}
+async function tirarPernoite(i) { const d = S.filtro.pernoite || hoje(), ex = extrasPernoite(d); ex.splice(i, 1); await salvar('Pernoite', [{ id: d, extras: JSON.stringify(ex) }]); render(); }
+DOCS.pernoite = d => { const l = linhasPernoite(d);
+  return docPadrao({ tipo: 'Escalas', nome: `Folha de pernoite ${d}`, titulo: `FOLHA DE PERNOITE – ${dataMai(d)}`, paisagem: false,
+    cab: ['Nº', 'P/G e nome', 'Serviço / motivo', 'SU', 'Rubrica'], linhas: [...l.map((x, i) => [pad(i + 1), { v: x.nome, l: 1 }, { v: x.sv || '', l: 1 }, x.su || '', '']), ...Array.from({ length: Math.max(0, 4 - l.length) }, (_, i) => [pad(l.length + i + 1), '', '', '', ''])],
+    w: [6, 34, 30, 12, 18], sz: 9, assin: [[nomeServico(d, /sargento de dia/i), 'Sargento de Dia'], [nomeServico(d, /oficial de dia/i), 'Oficial de Dia'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
+};
+
+const nomeServico = (d, re) => { const t = tiposAtivos().find(x => re.test(x.nome)); const e = t && lancamentos(d, t.id).find(x => !emBranco(x)); return e ? nomeMil(quemTira(e)) : ''; };
+
+
+const TIPOS_TS = ['Engajamento', 'Reengajamento', 'Prorrogação de tempo de serviço', 'Licenciamento'];
+const SIT_TS = ['Em andamento', 'Deferido', 'Indeferido'];
+
+const temporario = m => m.vinculo ? m.vinculo === 'Temporário' : postoIdx(m.postoGrad) >= POSTOS.indexOf('Cb');
+const processosTs = mid => (S.db.TempoServico || []).filter(x => x.militarId === mid).sort((a, b) => String(b.inicio || b.requerimento).localeCompare(a.inicio || a.requerimento));
+
+function terminoTs(m) {
+  const def = processosTs(m.id).filter(x => x.situacao === 'Deferido' && x.fim && x.tipo !== 'Licenciamento').map(x => x.fim).sort().pop();
+  if (def) return def;
+  if (m.postoGrad === 'Sd EV' && m.dataPraca) { const d = dataDe(m.dataPraca); d.setFullYear(d.getFullYear() + 1); return addDias(isoDe(d), -1); }
+  return m.termino || '';
+}
+const avisoTs = () => num(cfg('avisoEngaj')) || 90;
+function linhasTs() {
+  return militaresAtivos().filter(temporario).map(m => {
+    const fim = terminoTs(m), resta = fim ? diasEntre(hoje(), fim) - 1 : null, andamento = processosTs(m.id).find(x => x.situacao === 'Em andamento');
+    return { m, fim, resta, andamento, tempo: m.dataPraca ? amdTxt(amd(diasCorridos(m.dataPraca, hoje()))) : '' };
+  }).sort((a, b) => (a.resta ?? 99999) - (b.resta ?? 99999));
+}
+const tagResta = r => r.resta === null ? '<span class="muted">sem término</span>' : `<span class="tag ${r.resta < 0 ? 'dng' : r.resta <= 30 ? 'dng' : r.resta <= avisoTs() ? 'warn' : 'ok'}">${r.resta < 0 ? `vencido há ${-r.resta} dia(s)` : `${r.resta} dia(s)`}</span>`;
+function vTempoServico() {
+  const ver = S.filtro.tsVer || 'todos';
+  let l = linhasTs();
+  if (ver === 'aviso') l = l.filter(r => r.resta !== null && r.resta <= avisoTs());
+  return `<div class="bar"><select onchange="S.filtro.tsVer=this.value;render()" aria-label="Quais"><option value="todos">Todos os temporários</option><option value="aviso" ${ver === 'aviso' ? 'selected' : ''}>Só quem vence em até ${avisoTs()} dias</option></select>
+      <span class="grow"></span>${botoesDocGrandes('tempoServico', '', 'tempoServico')}</div>
+    ${tabela(l, [{ l: 'Militar', v: r => `<b>${esc(nomeMil(r.m))}</b>` }, { l: 'Praça', v: r => fmt(r.m.dataPraca) || '<span class="muted">—</span>', s: r => r.m.dataPraca || '' },
+      { l: 'Tempo de serviço', v: r => r.tempo || '<span class="muted">sem data de praça</span>' }, { l: 'Término do tempo atual', v: r => fmt(r.fim) || '<span class="muted">—</span>', s: r => r.fim || '9' },
+      { l: 'Falta', v: tagResta, s: r => r.resta ?? 99999 },
+      { l: 'Processo', v: r => r.andamento ? `${esc(r.andamento.tipo)}<div class="muted">${[r.andamento.requerimento && 'req. ' + fmt(r.andamento.requerimento), r.andamento.is && 'IS ' + r.andamento.is, r.andamento.bi].filter(Boolean).map(esc).join(' · ') || 'iniciado'}</div>` : r.resta !== null && r.resta <= avisoTs() ? '<span class="tag warn">iniciar</span>' : '' }],
+      pode() ? r => `<button class="btn sm" onclick="editarTs(null,'${r.m.id}')">+ Processo</button> <button class="btn sm" onclick="historicoTs('${r.m.id}')">Histórico</button>` : null)}
+    <p class="muted">Temporários: quem está marcado assim no cadastro (ou cabo e soldado sem vínculo informado). O término vem do último engajamento ou prorrogação <b>deferido</b>; sem ele, o Sd EV conta 12 meses da praça. O aviso começa ${avisoTs()} dias antes (muda em Configurações). Guarde na pasta os requerimentos, a IS e a cópia do BI.</p>`;
+}
+function editarTs(id, mid) {
+  const x = id ? S.db.TempoServico.find(y => y.id === id) : { militarId: mid, tipo: 'Prorrogação de tempo de serviço', situacao: 'Em andamento', requerimento: hoje(), inicio: mid && terminoTs(MIL[mid]) ? addDias(terminoTs(MIL[mid]), 1) : '' };
+  abrirForm({ titulo: id ? 'Processo de tempo de serviço' : 'Novo processo de tempo de serviço', valores: x, campos: [
+    { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_TS, vazio: false },
+    { k: 'requerimento', l: 'Requerimento entregue em', t: 'date' }, { k: 'is', l: 'Inspeção de saúde (data / parecer)' },
+    { k: 'inicio', l: 'Novo período: de', t: 'date' }, { k: 'fim', l: 'até', t: 'date' },
+    { k: 'situacao', l: 'Situação', t: 'select', o: SIT_TS, vazio: false }, { k: 'bi', l: 'Publicação (BI do deferimento / licenciamento)' }, { k: 'obs', l: 'Observações', full: true },
+    { k: 'arquivoUrl', l: 'Requerimento / BI digitalizado', t: 'file', full: true }],
+    aoSalvar: o => { if (o.situacao === 'Deferido' && o.tipo !== 'Licenciamento' && !o.fim) throw new Error('Informe até quando vai o novo período.'); return salvar('TempoServico', [o]); },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('TempoServico','${id}',true)">Excluir</button></div>` : '' });
+}
+function historicoTs(mid) {
+  const l = processosTs(mid);
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><div class="modal" style="max-width:760px"><h3>Tempo de serviço – ${esc(nomeMil(mid))}</h3>
+    <p class="muted" style="margin-top:0">Praça em ${fmt(MIL[mid].dataPraca) || '—'} · término atual ${fmt(terminoTs(MIL[mid])) || '—'}</p>
+    ${tabela(l, [{ l: 'Tipo', v: x => esc(x.tipo) }, { l: 'Período', v: x => x.inicio ? `${fmt(x.inicio)} a ${fmt(x.fim)}` : '' }, { l: 'Requerimento', v: x => fmt(x.requerimento) }, { l: 'IS', v: x => esc(x.is || '') },
+      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Deferido' ? 'ok' : x.situacao === 'Indeferido' ? 'dng' : 'warn'}">${esc(x.situacao)}</span>` }, { l: 'BI', v: x => esc(x.bi || '') }],
+      pode() ? x => `<button class="btn sm" onclick="editarTs('${x.id}')">Abrir</button>` : null)}
+    <div class="acts"><button class="btn" onclick="fecharModal()">Fechar</button>${pode() ? `<button class="btn pri" onclick="editarTs(null,'${mid}')">+ Processo</button>` : ''}</div></div></div>`;
+}
+LISTAS.tempoServico = () => ({ nome: `Tempo de servico ${hoje()}`, cab: ['P/G', 'Nome', 'Praça', 'Tempo de serviço', 'Término atual', 'Dias restantes', 'Processo em andamento'],
+  linhas: linhasTs().map(r => [r.m.postoGrad, r.m.nomeGuerra, fmt(r.m.dataPraca), r.tempo, fmt(r.fim), r.resta ?? '', r.andamento ? `${r.andamento.tipo}${r.andamento.requerimento ? ' (req. ' + fmt(r.andamento.requerimento) + ')' : ''}` : '']) });
+DOCS.tempoServico = () => { const l = LISTAS.tempoServico();
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `CONTROLE DE TEMPO DE SERVIÇO (ENGAJAMENTO E PRORROGAÇÃO) – ${fmtMil(hoje())}`, paisagem: true, cab: ['Nº', ...l.cab],
+    linhas: l.linhas.map((r, i) => [pad(i + 1), r[0], { v: r[1], l: 1 }, r[2], r[3], r[4], String(r[5]), { v: r[6], l: 1 }]), w: [4, 8, 18, 10, 12, 11, 9, 28], sz: 8.5,
+    assin: [[cfg('sgteNome'), 'Sargenteante'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
+};
+
+
+const SIT_SIND = ['Em andamento', 'Prorrogada', 'Concluída', 'Solução publicada'];
+const prazoSind = x => x.prazo || (x.data ? addDias(x.data, 30) : '');
+function vSindicancias() {
+  const l = disc('Sindicancia').sort((a, b) => String(b.data).localeCompare(a.data));
+  return `<div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarSindicancia()">+ Sindicância</button>${botoesDocGrandes('sindicancias', '', 'sindicancias')}</div>
+    ${tabela(l, [{ l: 'Nº', v: x => `<b>${esc(x.numero || '')}</b>` }, { l: 'Portaria', v: x => fmt(x.data) }, { l: 'Objeto', v: x => esc(String(x.relato || '').slice(0, 110)) },
+      { l: 'Encarregado', v: x => esc(x.participante || '') }, { l: 'Envolvido', v: x => x.militarId ? esc(nomeMil(x.militarId)) : '' },
+      { l: 'Prazo', v: x => /Concluída|publicada/.test(x.decisao) ? '' : `<span class="tag ${prazoSind(x) < hoje() ? 'dng' : prazoSind(x) <= addDias(hoje(), 7) ? 'warn' : ''}">${fmt(prazoSind(x))}</span>`, s: x => prazoSind(x) },
+      { l: 'Situação', v: x => `<span class="tag ${x.decisao === 'Solução publicada' ? 'ok' : x.decisao === 'Concluída' ? 'info' : 'warn'}">${esc(x.decisao || 'Em andamento')}</span>${x.bi ? `<div class="muted">${esc(x.bi)}</div>` : ''}` }],
+      x => `<button class="btn sm" onclick="editarSindicancia('${x.id}')">Abrir</button>`)}
+    <p class="muted">Prazo sugerido: 30 dias da portaria (pode ser prorrogado). Quando a solução sair, lance o BI: o controle "BI solução de sindicância" fica em dia.</p>`;
+}
+function editarSindicancia(id) {
+  const x = id ? disc('Sindicancia').find(y => y.id === id) : { tipo: 'Sindicancia', data: hoje(), decisao: 'Em andamento', numero: proximoNumero(disc('Sindicancia').map(y => y.numero), hoje().slice(0, 4)) };
+  abrirForm({ titulo: id ? 'Sindicância nº ' + x.numero : 'Nova sindicância', valores: { ...x, prazo: prazoSind(x) }, campos: [
+    { k: 'numero', l: 'Nº', req: true }, { k: 'data', l: 'Data da portaria', t: 'date', req: true }, { k: 'relato', l: 'Objeto (o que se apura)', t: 'textarea', req: true },
+    { k: 'participante', l: 'Encarregado (P/G e nome)' }, { k: 'militarId', l: 'Militar envolvido (se houver)', t: 'militar' }, { k: 'prazo', l: 'Prazo', t: 'date' },
+    { k: 'decisao', l: 'Situação', t: 'select', o: SIT_SIND, vazio: false }, { k: 'obs', l: 'Solução (resumo)', t: 'textarea' }, { k: 'bi', l: 'Solução publicada em (BI)' }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Sindicancia' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+LISTAS.sindicancias = () => ({ nome: `Sindicancias ${hoje()}`, cab: ['Nº', 'Portaria', 'Objeto', 'Encarregado', 'Envolvido', 'Prazo', 'Situação', 'Solução (BI)'],
+  linhas: disc('Sindicancia').sort((a, b) => String(a.data).localeCompare(b.data)).map(x => [x.numero, fmt(x.data), x.relato || '', x.participante || '', x.militarId ? nomeMil(x.militarId) : '', fmt(prazoSind(x)), x.decisao || '', x.bi || '']) });
+DOCS.sindicancias = () => { const l = LISTAS.sindicancias();
+  return docPadrao({ tipo: 'Disciplina', nome: l.nome, titulo: `CONTROLE DE SINDICÂNCIAS – ${fmtMil(hoje())}`, paisagem: true, cab: l.cab,
+    linhas: l.linhas.map(r => r.map((v, i) => i === 2 ? { v, l: 1 } : v)), w: [7, 9, 30, 14, 12, 9, 9, 10], sz: 8.5 });
+};
+
+
+
+const CONTROLES_PADRAO = [
+  ['mapa', 'Mapa da Força (SUCEMNet / mapa físico)', ['sargenteacao', 'mapa']], ['chamada', 'Plano de chamada', ['efetivo', 'chamada']],
+  ['fatd', 'Controle de FATD', ['disciplina', 'fatd']], ['banco', 'Banco de dados dos militares', ['efetivo', 'tripao']],
+  ['visita', 'Livro de visita médica', ['saude', 'visitas']], ['sat', 'SAT (auxílio-transporte)', ['sargenteacao', 'sat']], ['alteracoes', 'Alterações', ['alteracoes', 'folha']],
+  ['fichas', 'Fichas disciplinares', ['disciplina', 'ficha']], ['aditamentos', 'Aditamentos', ['aditamentos']], ['pernoite', 'Folha de pernoite', ['escala', 'pernoite']],
+  ['qcp', 'QCP atualizado', ['sargenteacao', 'qcp']], ['servpub', 'Cabos com serviço público/privado anterior à incorporação', ['efetivo', 'mil']],
+  ['adidos', 'Pasta dos militares adidos (LTSP)', ['saude', 'ltsp']], ['acidente', 'Registro de acidente', ['saude', 'acidentes']], ['sindicancia', 'BI solução de sindicância', ['disciplina', 'sind']],
+  ['dso', 'Documentos sanitários de origem (AO e ISO)', ['saude', 'acidentes']], ['incapazes', 'Tratamento médico dos incapazes e inspeções de saúde', ['saude', 'is']],
+  ['ferias', 'Controle de férias', ['sargenteacao', 'ferias']], ['recompensa', 'Controle de dispensas como recompensa', ['sargenteacao', 'ferias']],
+  ['instalacao', 'Controle de instalação', ['sargenteacao', 'ferias']], ['escala', 'Escrituração da escala de serviço', ['escala', 'mes']],
+  ['engaj', 'Engajamento e reengajamento (prorrogação de tempo de serviço)', ['sargenteacao', 'tempo']], ['feriasotemp', 'Férias dos oficiais temporários / reengajamento', ['sargenteacao', 'ferias']]
+].map(([id, item, ir], i) => ({ id, ordem: i + 1, item, ir }));
+const SIT_CONTROLE = ['Em dia', 'Melhorar', 'Fazer'];
+
+const controles = () => CONTROLES_PADRAO.map(c => ({ ...c, situacao: 'Fazer', ...((S.db.Controles || []).find(x => x.id === c.id) || {}) }));
+const atrasado = c => c.situacao !== 'Em dia' && c.prazo && c.prazo < hoje();
+
+function vSargenteacao() {
+  const t = S.sub.sargenteacao || 'controles';
+  const cab = `<h2>Sargenteação</h2><p class="sub">Controles da Sargenteação no modelo da orientação técnica, mapa da força, QCP e controle de férias, recompensas e instalação.</p>
+    ${abas('sargenteacao', [['controles', 'Controles'], ['mapa', 'Mapa da Força'], ['qcp', 'QCP'], ['ferias', 'Férias e dispensas'], ['sat', 'SAT'], ['tempo', 'Tempo de serviço']])}`;
+  if (t === 'sat') return cab + vSat();
+  if (t === 'tempo') return cab + vTempoServico();
+  if (t === 'mapa') return cab + vMapaForca();
+  if (t === 'qcp') return cab + vQcp();
+  if (t === 'ferias') return cab + vFeriasCtrl();
+  const resp = S.filtro.ctrlResp || '';
+  const lista = controles().filter(c => !resp || c.responsavelId === resp);
+  const n = s => controles().filter(c => c.situacao === s).length, atr = controles().filter(atrasado).length;
+  const quem = [...new Set(controles().map(c => c.responsavelId).filter(Boolean))];
+  return cab + `<div class="cards">${[['Em dia', 'ok'], ['Melhorar', 'warn'], ['Fazer', 'dng']].map(([s, c]) => `<div class="card"><h4>${s}</h4><div class="big"><span class="tag ${c}" style="font-size:28px;padding:2px 14px">${n(s)}</span></div></div>`).join('')}
+      <div class="card"><h4>Prazo vencido</h4><div class="big">${atr}</div><div class="muted">de ${controles().length} controles</div></div></div>
+    <div class="bar"><label class="muted">Responsável <select onchange="S.filtro.ctrlResp=this.value;render()"><option value="">Todos</option>${quem.map(id => `<option value="${id}" ${id === resp ? 'selected' : ''}>${esc(nomeMil(id))}</option>`).join('')}</select></label><span class="grow"></span>${botoesDocGrandes('controles', '', 'controles')}</div>
+    ${tabela(lista, [
+      { l: 'Nº', v: c => c.ordem, c: 'num', s: c => c.ordem }, { l: 'Controle', v: c => `<b>${esc(c.item)}</b>${c.obs ? `<div class="muted">${esc(c.obs)}</div>` : ''}` },
+      { l: 'Responsável', v: c => c.responsavelId ? esc(nomeMil(c.responsavelId)) : '<span class="muted">—</span>' },
+      { l: 'Prazo', v: c => c.prazo ? `<span class="${atrasado(c) ? 'tag dng' : ''}">${fmt(c.prazo)}</span>` : '' },
+      { l: 'Situação', v: c => `<span class="tag ${c.situacao === 'Em dia' ? 'ok' : c.situacao === 'Melhorar' ? 'warn' : 'dng'}">${esc(c.situacao)}</span>` },
+      { l: 'No sistema', v: c => c.ir ? `<a style="cursor:pointer" onclick="abrirControle('${c.id}')">abrir →</a>` : '<span class="muted">em breve</span>' }
+    ], pode() ? c => `<button class="btn sm" onclick="editarControle('${c.id}')">Editar</button>` : null)}
+    <p class="muted">"No sistema" leva à tela que resolve o controle. Registre aqui a situação de cada controle e a orientação recebida.</p>`;
+}
+function abrirControle(id) {
+  const c = CONTROLES_PADRAO.find(x => x.id === id), [v, aba] = c.ir;
+  if (aba) { if (v === 'disciplina') S.filtro.jd = aba; else S.sub[v] = aba; }
+  irPara(v);
+}
+function editarControle(id) {
+  const c = controles().find(x => x.id === id);
+  abrirForm({ titulo: `${c.ordem}. ${c.item}`, valores: c, campos: [
+    { k: 'responsavelId', l: 'Responsável', t: 'militar' }, { k: 'prazo', l: 'Prazo', t: 'date' },
+    { k: 'situacao', l: 'Situação', t: 'select', o: SIT_CONTROLE, vazio: false }, { k: 'obs', l: 'Orientação / observação', t: 'textarea' }],
+    aoSalvar: o => salvar('Controles', [{ id, responsavelId: o.responsavelId, prazo: o.prazo, situacao: o.situacao, obs: o.obs, atualizado: hoje() }]) });
+}
+LISTAS.controles = () => ({ nome: `Controles da Sargenteacao ${hoje()}`, cab: ['Nº', 'Controle', 'Responsável', 'Prazo', 'Situação', 'Observação'],
+  linhas: controles().map(c => [c.ordem, c.item, c.responsavelId ? nomeMil(c.responsavelId) : '', fmt(c.prazo), c.situacao, c.obs || '']) });
+DOCS.controles = () => { const l = LISTAS.controles();
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `CONTROLES DA SARGENTEAÇÃO – ${fmtMil(hoje())}`, paisagem: true, cab: l.cab,
+    linhas: l.linhas.map(r => r.map((v, i) => i === 1 || i === 5 ? { v: String(v), l: 1 } : String(v))), w: [5, 38, 18, 10, 9, 20], sz: 8.5,
+    assin: [[cfg('sgteNome'), 'Sargenteante'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
+};
+
+
+const COLS_MAPA = [['pronto', 'Pronto'], ['ferias', 'Férias'], ['dispensa', 'Dispensa'], ['missao', 'Missão'], ['curso', 'Curso / estágio'], ['punicao', 'Cumprindo punição'], ['outro', 'Outros']];
+const colunaMapa = s => s.tipo === 'pronto' ? 'pronto' : s.tipo === 'missao' ? 'missao' : s.texto === 'Férias' ? 'ferias' : /^Dispensa/.test(s.texto) ? 'dispensa' : /^Curso/.test(s.texto) ? 'curso' : s.texto === 'Cumprindo punição' ? 'punicao' : 'outro';
+function dadosMapa(iso) {
+  const ativos = militaresAtivos(), qcp = S.db.QCP || [];
+  const postos = POSTOS.filter(p => ativos.some(m => m.postoGrad === p) || qcp.some(q => q.postoPrevisto === p));
+  const linhas = postos.map(p => {
+    const l = { p, previsto: qcp.filter(q => q.postoPrevisto === p).length, existente: 0, ...Object.fromEntries(COLS_MAPA.map(([k]) => [k, 0])), quem: {} };
+    ativos.filter(m => m.postoGrad === p).forEach(m => { l.existente++; const k = colunaMapa(situacao(m.id, iso)); l[k]++; if (k !== 'pronto') (l.quem[k] ||= []).push(m); });
+    return l;
+  });
+  const tot = { p: 'TOTAL', previsto: 0, existente: 0, ...Object.fromEntries(COLS_MAPA.map(([k]) => [k, 0])) };
+  linhas.forEach(l => ['previsto', 'existente', ...COLS_MAPA.map(c => c[0])].forEach(k => { tot[k] += l[k]; }));
+  return { linhas, tot };
+}
+function vMapaForca() {
+  const iso = S.filtro.mapaData || hoje(), { linhas, tot } = dadosMapa(iso);
+  
+  const dif = l => l === tot ? (linhas.some(x => x.previsto) ? linhas.filter(x => x.previsto).reduce((s, x) => s + x.existente - x.previsto, 0) : '') : l.previsto ? l.existente - l.previsto : '';
+  const cel = (l, k) => l[k] ? (l.quem && l.quem[k] ? `<span title="${esc(l.quem[k].map(nomeMil).join(', '))}">${l[k]}</span>` : l[k]) : '<span class="muted">0</span>';
+  return `<div class="bar"><label class="muted">Situação em <input type="date" value="${iso}" onchange="S.filtro.mapaData=this.value;render()"></label><span class="grow"></span>${botoesDocGrandes('mapaForca', iso, 'mapaForca')}</div>
+    <div class="tw"><table><thead><tr><th>P/G</th><th class="num">Previsto (QCP)</th><th class="num">Existente</th><th class="num">Claro (−) / excesso (+)</th>${COLS_MAPA.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead>
+    <tbody>${[...linhas, tot].map((l, i) => `<tr ${i === linhas.length ? 'style="font-weight:700;background:var(--surface-2)"' : ''}><td>${esc(l.p)}</td><td class="num">${l.previsto || (i === linhas.length ? 0 : '<span class="muted">—</span>')}</td><td class="num">${l.existente}</td>
+      <td class="num">${dif(l) === '' ? '' : `<span class="tag ${dif(l) < 0 ? 'dng' : dif(l) > 0 ? 'info' : 'ok'}">${dif(l) > 0 ? '+' : ''}${dif(l)}</span>`}</td>${COLS_MAPA.map(([k]) => `<td class="num">${cel(l, k)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="muted">Sai do efetivo, dos afastamentos e das missões lançados no sistema; passe o mouse no número para ver os nomes. O previsto vem do QCP (aba ao lado). Confira e lance no SUCEMNet.</p>`;
+}
+LISTAS.mapaForca = () => { const iso = S.filtro.mapaData || hoje(), { linhas, tot } = dadosMapa(iso);
+  return { nome: `Mapa da Forca ${iso}`, cab: ['P/G', 'Previsto', 'Existente', 'Claro/excesso', ...COLS_MAPA.map(c => c[1])], linhas: [...linhas, tot].map(l => [l.p, l.previsto, l.existente, l === tot ? linhas.filter(x => x.previsto).reduce((s, x) => s + x.existente - x.previsto, 0) : l.previsto ? l.existente - l.previsto : '', ...COLS_MAPA.map(([k]) => l[k])]) }; };
+DOCS.mapaForca = iso => { S.filtro.mapaData = iso; const l = LISTAS.mapaForca(), { linhas } = dadosMapa(iso);
+  const fora = linhas.flatMap(x => COLS_MAPA.filter(([k]) => k !== 'pronto' && x.quem[k]).flatMap(([k, n]) => x.quem[k].map(m => [{ v: nomeMil(m), l: 1 }, n, situacao(m.id, iso).ate ? fmt(situacao(m.id, iso).ate) : ''])));
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `MAPA DA FORÇA – ${dataMai(iso)}`, paisagem: true, cab: l.cab, linhas: l.linhas.map((r, i) => r.map(v => i === l.linhas.length - 1 ? { v: String(v), b: 1 } : String(v))),
+    depois: fora.length ? [{ esp: 1 }, { p: 'MILITARES FORA DE PRONTO', c: 1, b: 1 }, { t: [['P/G e nome', 'Situação', 'Até'], ...fora], h: 1, w: [45, 35, 20], sz: 8 }] : [] });
+};
+
+
+function vQcp() {
+  const qcp = (S.db.QCP || []).slice().sort((a, b) => String(a.fracao).localeCompare(b.fracao) || postoIdx(a.postoPrevisto) - postoIdx(b.postoPrevisto) || num(a.ordem) - num(b.ordem));
+  const ocupados = new Set(qcp.map(q => q.ocupanteId).filter(Boolean));
+  const semCargo = militaresAtivos().filter(m => !ocupados.has(m.id));
+  return `<div class="bar"><span class="muted">${qcp.length} cargo(s) · <b>${qcp.filter(q => !q.ocupanteId).length}</b> vago(s) · ${semCargo.length} militar(es) sem cargo no QCP</span><span class="grow"></span>
+      ${pode() ? '<button class="btn pri" onclick="editarQcp()">+ Cargo</button>' : ''}${botoesDocGrandes('qcp', '', 'qcp')}</div>
+    ${tabela(qcp, [{ l: 'Fração', v: q => esc(q.fracao || '') }, { l: 'Cargo / função', v: q => `<b>${esc(q.funcao)}</b>` }, { l: 'P/G previsto', v: q => esc(q.postoPrevisto) },
+      { l: 'Ocupante', v: q => q.ocupanteId ? `${esc(nomeMil(q.ocupanteId))}${MIL[q.ocupanteId] && MIL[q.ocupanteId].postoGrad !== q.postoPrevisto ? ' <span class="tag warn" title="P/G diferente do previsto">P/G ≠</span>' : ''}` : '<span class="tag dng">vago</span>' }],
+      pode() ? q => `<button class="btn sm" onclick="editarQcp('${q.id}')">Editar</button>` : null)}
+    ${semCargo.length ? `<p class="muted">Sem cargo no QCP: ${semCargo.map(m => esc(nomeMil(m))).join(', ')}.</p>` : ''}`;
+}
+function editarQcp(id) {
+  const q = id ? S.db.QCP.find(x => x.id === id) : { fracao: '', ordem: String((S.db.QCP || []).length + 1) };
+  abrirForm({ titulo: id ? 'Cargo do QCP' : 'Novo cargo no QCP', valores: q, campos: [
+    { k: 'funcao', l: 'Cargo / função (ex.: Sargenteante)', req: true }, { k: 'postoPrevisto', l: 'P/G previsto', t: 'select', o: POSTOS, req: true },
+    { k: 'fracao', l: 'Fração (Cmdo, 1º Pel, Pel Sup…)' }, { k: 'ocupanteId', l: 'Ocupante', t: 'militar' }, { k: 'ordem', l: 'Ordem', t: 'number' }],
+    aoSalvar: o => salvar('QCP', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('QCP','${id}',true)">Excluir</button></div>` : '' });
+}
+LISTAS.qcp = () => ({ nome: `QCP ${hoje()}`, cab: ['Fração', 'Cargo / função', 'P/G previsto', 'Ocupante'],
+  linhas: (S.db.QCP || []).slice().sort((a, b) => String(a.fracao).localeCompare(b.fracao) || postoIdx(a.postoPrevisto) - postoIdx(b.postoPrevisto)).map(q => [q.fracao || '', q.funcao, q.postoPrevisto, q.ocupanteId ? nomeMil(q.ocupanteId) : 'VAGO']) });
+DOCS.qcp = () => { const l = LISTAS.qcp();
+  return docPadrao({ tipo: 'Efetivo', nome: l.nome, titulo: `QUADRO DE CARGOS PREVISTOS (QCP) – ${fmtMil(hoje())}`, paisagem: false, cab: ['Nº', ...l.cab],
+    linhas: l.linhas.map((r, i) => [pad(i + 1), r[0], { v: r[1], l: 1 }, r[2], { v: r[3], l: 1 }]), w: [6, 16, 38, 13, 27], sz: 9 });
+};
+
+
+const diasAfast = i => i.inicio ? diasEntre(i.inicio, i.fim || i.inicio) : 0;
+function linhasFerias(ano) {
+  const doAno = (m, tipo, porRef) => S.db.Impedimentos.filter(i => i.militarId === m.id && i.tipo === tipo && (porRef && i.referencia ? String(i.referencia) === ano : String(i.inicio).startsWith(ano)));
+  return militaresAtivos().map(m => {
+    const f = doAno(m, 'Férias', true), r = doAno(m, 'Dispensa como recompensa'), ins = doAno(m, 'Dispensa para instalação');
+    const fd = f.reduce((s, i) => s + diasAfast(i), 0);
+    return { m, f, fd, gozadas: f.filter(i => (i.fim || i.inicio) < hoje()).reduce((s, i) => s + diasAfast(i), 0), r, rd: r.reduce((s, i) => s + diasAfast(i), 0), ins, id: ins.reduce((s, i) => s + diasAfast(i), 0) };
+  });
+}
+function vFeriasCtrl() {
+  const ano = S.filtro.ferAno || hoje().slice(0, 4), ver = S.filtro.ferVer || 'todos';
+  let l = linhasFerias(ano);
+  if (ver === 'falta') l = l.filter(x => x.fd < 30);
+  const per = list => list.map(i => `${fmt(i.inicio)}${i.fim && i.fim !== i.inicio ? ' a ' + fmt(i.fim) : ''}`).join('; ');
+  return `<div class="bar"><label class="muted">Ano <input type="number" value="${ano}" style="width:90px" onchange="S.filtro.ferAno=this.value;render()"></label>
+      <select onchange="S.filtro.ferVer=this.value;render()" aria-label="Quem"><option value="todos">Todos</option><option value="falta" ${ver === 'falta' ? 'selected' : ''}>Só quem ainda não tirou os 30 dias</option></select>
+      <span class="grow"></span>${pode() ? `<button class="btn" onclick="S.sub.efetivo='imp';irPara('efetivo');editarImp()">+ Lançar afastamento</button>` : ''}<button class="btn" onclick="exportarExcel('feriasCtrl')">Excel</button></div>
+    ${tabela(l, [{ l: 'Militar', v: x => `<b>${esc(nomeMil(x.m))}</b>` },
+      { l: `Férias ${ano}`, v: x => `<span class="tag ${x.fd >= 30 ? 'ok' : x.fd ? 'warn' : 'dng'}">${x.fd}/30 dias</span>${x.f.length ? `<div class="muted">${esc(per(x.f))}</div>` : ''}`, s: x => x.fd },
+      { l: 'Já gozadas', v: x => `${x.gozadas} dia(s)`, s: x => x.gozadas },
+      { l: 'Dispensa como recompensa', v: x => x.rd ? `${x.rd} dia(s)<div class="muted">${esc(per(x.r))}</div>` : '<span class="muted">—</span>', s: x => x.rd },
+      { l: 'Instalação', v: x => x.id ? `${x.id} dia(s)<div class="muted">${esc(per(x.ins))}</div>` : '<span class="muted">—</span>', s: x => x.id }])}
+    <p class="muted">Férias contam pelo ano de referência lançado no afastamento (ou pelo ano de início). Recompensa e instalação são lançadas em Efetivo → Afastamentos, com o tipo "Dispensa como recompensa" ou "Dispensa para instalação" e o BI na referência.</p>`;
+}
+LISTAS.feriasCtrl = () => { const ano = S.filtro.ferAno || hoje().slice(0, 4);
+  return { nome: `Ferias e dispensas ${ano}`, cab: ['P/G', 'Nome', `Férias ${ano} (dias)`, 'Períodos de férias', 'Recompensa (dias)', 'Instalação (dias)'],
+    linhas: linhasFerias(ano).map(x => [x.m.postoGrad, x.m.nomeGuerra, x.fd, x.f.map(i => `${fmt(i.inicio)} a ${fmt(i.fim)}`).join('; '), x.rd, x.id]) }; };
+
+
+const FOTOS = {};
+async function fotoDe(mid) {
+  if (FOTOS[mid] !== undefined) return FOTOS[mid];
+  try { FOTOS[mid] = (await api('lerFoto', mid)) || ''; } catch (e) { FOTOS[mid] = ''; }
+  return FOTOS[mid];
+}
+
+async function trocarFoto(mid, file) {
+  if (!file) return;
+  try {
+    const img = new Image(); img.src = URL.createObjectURL(file); await img.decode();
+    const k = Math.min(1, 240 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+    cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    const dado = cv.toDataURL('image/jpeg', 0.82);
+    await api('salvarLote', 'Fotos', [{ id: mid, dado }], []);
+    FOTOS[mid] = dado; toast('Foto atualizada.'); render();
+  } catch (e) { toast('Não foi possível usar esta imagem: ' + e.message, true); }
+}
+function fotoHTML(mid, editar) {
+  const f = FOTOS[mid];
+  if (f === undefined) { fotoDe(mid).then(() => { const el = document.getElementById('foto-' + mid); if (el) el.outerHTML = fotoHTML(mid, editar); }); }
+  return `<div class="foto-mil" id="foto-${mid}">${f ? `<img src="${f}" alt="Foto de ${esc(nomeMil(mid))}">` : `<span class="muted">${f === undefined ? '…' : 'sem foto'}</span>`}
+    ${editar ? `<label class="btn sm">${f ? 'Trocar' : 'Pôr foto'}<input type="file" accept=".jpg,.jpeg,.png,.webp" hidden onchange="trocarFoto('${mid}',this.files[0])"></label>` : ''}</div>`;
+}
+
+
+
+const MESES_MAI = MESES_EXT.map(m => m.toUpperCase());
+const semestreDe = iso => `${iso.slice(0, 4)}-${Number(iso.slice(5, 7)) <= 6 ? 1 : 2}`;
+const periodoSem = sem => { const [a, s] = sem.split('-'); return s === '1' ? { ini: `${a}-01-01`, fim: `${a}-06-30` } : { ini: `${a}-07-01`, fim: `${a}-12-31` }; };
+const nomeSem = sem => `${sem.slice(5)}º SEMESTRE DE ${sem.slice(0, 4)}`;
+const semAnterior = sem => { const [a, s] = sem.split('-'); return s === '2' ? `${a}-1` : `${Number(a) - 1}-2`; };
+
+const diasCorridos = (ini, fim) => ini && fim && fim >= ini ? Math.round((dataDe(fim) - dataDe(ini)) / 86400000) + 1 : 0;
+const amd = dias => { dias = Math.max(0, Math.round(dias)); return { a: Math.floor(dias / 360), m: Math.floor((dias % 360) / 30), d: dias % 30 }; };
+const amdTxt = o => `${String(o.a).padStart(2, '0')}a ${String(o.m).padStart(2, '0')}m ${String(o.d).padStart(2, '0')}d`;
+const amdDias = t => { const m = String(t || '').match(/(\d+)\s*a\D+(\d+)\s*m\D+(\d+)\s*d/i); return m ? Number(m[1]) * 360 + Number(m[2]) * 30 + Number(m[3]) : 0; };
+const refBi = r => r ? `, ${r}` : '';
+
+
+function itensFolha(mid, sem, op = {}) {
+  const { ini, fim } = periodoSem(sem), dentro = d => d && d >= ini && d <= fim, it = [];
+  (S.db.Alteracoes || []).filter(a => a.militarId === mid && dentro(a.data)).forEach(a => it.push({ k: 'alt-' + a.id, data: a.data, titulo: a.titulo, texto: a.texto, ref: a.ref, origem: a.origem || 'lançamento', id: a.id }));
+  if (op.afast !== false) S.db.Impedimentos.filter(i => i.militarId === mid && i.tipo !== 'Cumprindo punição' && (dentro(i.inicio) || dentro(i.fim))).forEach(i => it.push({ k: 'imp-' + i.id, data: dentro(i.inicio) ? i.inicio : ini, titulo: i.tipo.toUpperCase(),
+    texto: `${i.tipo === 'Férias' ? `Entrou em gozo de férias${i.referencia ? ` referentes ao ano de ${i.referencia}` : ''}` : i.tipo}, no período de ${fmtMil(i.inicio)} a ${fmtMil(i.fim || i.inicio)}${i.obs ? ` (${i.obs})` : ''}.`, ref: '', origem: 'afastamento' }));
+  if (op.disc !== false && S.db.Disciplina) S.db.Disciplina.forEach(x => {
+    if (x.tipo === 'FATD' && x.militarId === mid && x.decisao === 'Punido' && dentro(x.dataDecisao)) it.push({ k: 'jd-' + x.id, data: x.dataDecisao, titulo: 'PUNIÇÃO DISCIPLINAR', ref: x.bi,
+      texto: `${x.punicao}${num(x.dias) ? ` de ${x.dias} (${x.dias}) dia(s)` : ''}, por transgressão ${String(x.classificacao || '').toLowerCase()}${x.enquadramento ? ` (nº ${x.enquadramento} do Anexo I do RDE)` : ''}: ${x.relato || ''}`.trim(), origem: 'disciplina' });
+    if (x.tipo === 'Elogio' && ids(x.militaresIds).includes(mid) && dentro(x.data)) it.push({ k: 'jd-' + x.id, data: x.data, titulo: x.subtipo.toUpperCase(), ref: x.bi, texto: x.relato || '', origem: 'disciplina' });
+  });
+  if (op.missoes) S.db.Missoes.filter(m => m.status !== 'Cancelada' && ids(m.militaresIds).concat(m.responsavelId || []).includes(mid) && dentro(m.inicio)).forEach(m => it.push({ k: 'mis-' + m.id, data: m.inicio, titulo: 'MISSÃO', ref: '',
+    texto: `Participou da missão "${m.titulo}"${m.local ? `, em ${m.local}` : ''}, no período de ${fmtMil(m.inicio)} a ${fmtMil(m.fim || m.inicio)}.`, origem: 'missão' }));
+  return it.sort((a, b) => a.data.localeCompare(b.data));
+}
+
+function temposFolha(mid, sem) {
+  const g = (S.db.FolhasAlt || []).find(f => f.id === mid + '|' + sem) || {}, m = MIL[mid], { ini, fim } = periodoSem(sem);
+  const desde = m.dataPraca && m.dataPraca > ini ? m.dataPraca : ini;
+  const arregDias = m.dataPraca && m.dataPraca > fim ? 0 : diasCorridos(desde, fim);
+  const tnc = amdDias(g.tnc), naoArreg = amdDias(g.naoArreg);
+  const tcDias = Math.max(0, arregDias - tnc);
+  const ant = (S.db.FolhasAlt || []).find(f => f.id === mid + '|' + semAnterior(sem));
+  const acumulado = ant && ant.ttes ? amdDias(ant.ttes) + tcDias : m.dataPraca ? Math.max(0, diasCorridos(m.dataPraca, fim) - tnc) : tcDias;
+  return {
+    folhaNr: g.folhaNr || '01', arreg: g.arreg || amdTxt(amd(tcDias - naoArreg)), arregPeriodo: g.arregPeriodo || `De ${Number(desde.slice(8))} ${MESES[Number(desde.slice(5, 7)) - 1]} a ${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]}`,
+    arregObs: g.arregObs || 'pronto na OM', naoArreg: g.naoArreg || '00a 00m 00d', tc: g.tc || amdTxt(amd(tcDias)), tnc: g.tnc || '00a 00m 00d',
+    tscmm: g.tscmm || amdTxt(amd(acumulado)), tsnr: g.tsnr || '00a 00m 00d', ttes: g.ttes || amdTxt(amd(acumulado)), gravado: !!g.id, anterior: !!(ant && ant.ttes)
+  };
+}
+
+function vAlteracoes() {
+  const abasAlt = abas('alteracoes', [['folha', 'Folha de alterações'], ['lanc', 'Lançamentos'], ...(pode() ? [['bi', 'Importar BI (SISBOL)']] : [])]);
+  S.sub.alteracoes = S.sub.alteracoes || 'folha';
+  const ta = S.sub.alteracoes;
+  const titulo = `<h2>Alterações</h2><p class="sub">Folhas de alterações por semestre, no modelo da Cia. O que sai no BI entra pela importação do PDF do SISBOL; afastamentos, punições e elogios já lançados no sistema entram sozinhos.</p>`;
+  if (ta === 'bi') return titulo + abasAlt + vImportarBi();
+  const sem = S.filtro.altSem || semestreDe(hoje());
+  const sems = [...new Set([semestreDe(hoje()), semAnterior(semestreDe(hoje())), ...(S.db.Alteracoes || []).map(a => semestreDe(a.data))])].sort().reverse();
+  const selSem = `<select onchange="S.filtro.altSem=this.value;render()" aria-label="Semestre">${sems.map(s => `<option value="${s}" ${s === sem ? 'selected' : ''}>${nomeSem(s).toLowerCase()}</option>`).join('')}</select>`;
+  if (ta === 'lanc') {
+    const { ini, fim } = periodoSem(sem);
+    const lista = (S.db.Alteracoes || []).filter(a => a.data >= ini && a.data <= fim && casa('alt', nomeMil(a.militarId), a.titulo, a.texto, a.ref)).sort((a, b) => a.data.localeCompare(b.data));
+    return titulo + abasAlt + `<div class="bar">${busca('alt', 'Buscar militar, assunto ou BI…')}${selSem}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarAlteracao()">+ Lançamento</button>' : ''}</div>
+      ${tabela(lista, [{ l: 'Data', v: a => fmt(a.data) }, { l: 'Militar', v: a => `<b>${esc(nomeMil(a.militarId))}</b>` }, { l: 'Assunto', v: a => `${esc(a.titulo)}<div class="muted">${esc(String(a.texto).slice(0, 110))}${String(a.texto).length > 110 ? '…' : ''}</div>` },
+        { l: 'BI', v: a => esc(a.ref || '') }, { l: 'Origem', v: a => `<span class="muted">${esc(a.origem || 'manual')}</span>` }], pode() ? a => `<button class="btn sm" onclick="editarAlteracao('${a.id}')">Editar</button>` : null)}`;
+  }
+  
+  const mid = S.filtro.altMil && MIL[S.filtro.altMil] ? S.filtro.altMil : '';
+  const op = S.filtro.altOp || { afast: true, disc: true, missoes: false };
+  const barra = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.altMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label>${selSem}<span class="grow"></span>
+    ${mid ? botoesDocGrandes('folhaAlt', mid + '|' + sem) : ''}</div>`;
+  if (!mid) return titulo + abasAlt + barra + `<div class="card muted">Escolha o militar e o semestre. ${(S.db.Alteracoes || []).length ? '' : 'Comece importando um BI do SISBOL na aba ao lado.'}</div>`;
+  const it = itensFolha(mid, sem, op), fora = S.filtro.altFora || {}, tp = temposFolha(mid, sem), m = MIL[mid];
+  const meses = []; for (let k = 0; k < 6; k++) meses.push((sem.endsWith('1') ? 0 : 6) + k);
+  const chk = (k, l) => `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" ${op[k] ? 'checked' : ''} onchange="S.filtro.altOp={...(S.filtro.altOp||{afast:true,disc:true,missoes:false}),${k}:this.checked};render()"> ${l}</label>`;
+  return titulo + abasAlt + barra + `<div class="bar">${chk('afast', 'Afastamentos')}${chk('disc', 'Punições e elogios')}${chk('missoes', 'Missões')}<span class="muted">entram sozinhos · desmarque um item para tirá-lo da folha</span></div>
+    ${!m.arma || !m.idt ? `<div class="aviso-leitor">Complete no cadastro do militar: ${[!m.idt && 'identidade', !m.arma && 'arma/serviço'].filter(Boolean).join(' e ')}. <a onclick="editarMil('${mid}')" style="cursor:pointer;color:var(--azul)">Abrir cadastro</a></div>` : ''}
+    <div class="card"><h3 style="margin-top:0">1ª parte</h3>${meses.map(mm => {
+      const doMes = it.filter(x => Number(x.data.slice(5, 7)) - 1 === mm);
+      return `<div class="mes-alt"><b>${MESES_MAI[mm]}</b>${doMes.length ? doMes.map(x => `<div class="item-alt ${fora[x.k] ? 'fora' : ''}"><label><input type="checkbox" ${fora[x.k] ? '' : 'checked'} onchange="S.filtro.altFora={...(S.filtro.altFora||{}),'${x.k}':!this.checked};render()"></label>
+        <div><b>${esc(x.titulo)}</b> <span class="tag">${esc(x.origem)}</span>${htmlDoc(blocosTextoAlt(`- a ${pad(Number(x.data.slice(8)))}${refBi(x.ref)} - `, x.texto)).replace('class="doc"', 'class="doc" style="font-size:13px"')}</div>${x.id && pode() ? `<button class="btn sm" onclick="editarAlteracao('${x.id}')">Editar</button>` : ''}</div>`).join('') : ' <span class="muted">Sem Alteração</span>'}</div>`; }).join('')}
+      ${pode() ? `<div class="bar" style="margin-top:8px"><button class="btn sm" onclick="editarAlteracao(null,'${mid}')">+ Lançamento para ${esc(nomeMil(m))}</button></div>` : ''}</div>
+    <div class="card" style="margin-top:14px"><div class="bar"><h3 style="margin:0" class="grow">2ª parte – tempos de serviço</h3>${pode() ? `<button class="btn sm" onclick="editarTempos('${mid}','${sem}')">Conferir / corrigir</button>` : ''}</div>
+      <table class="mini tempos">${[['1. Tempo computado de efetivo serviço (TC)', tp.tc], ['a. Arregimentado', tp.arreg], [`&nbsp;&nbsp;- ${esc(tp.arregPeriodo)}`, esc(tp.arregObs)], ['b. Não arregimentado', tp.naoArreg], ['2. Tempo de serviço não computável (TNC)', tp.tnc],
+        [`3. Tempo computável para a medalha militar até ${fmtMil(periodoSem(sem).fim)} (TSCMM)`, tp.tscmm], ['4. Tempo de serviço nacional relevante (TSNR)', tp.tsnr], [`5. Tempo total de efetivo serviço até ${fmtMil(periodoSem(sem).fim)} (TTES)`, tp.ttes]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v}</b></td></tr>`).join('')}</table>
+      <p class="muted" style="font-size:12.5px">${tp.gravado ? 'Tempos conferidos e gravados.' : `Calculado pelo sistema (dias corridos em meses de 30 dias)${tp.anterior ? ', somando a folha do semestre anterior' : m.dataPraca ? ', desde a data de praça' : '. Sem data de praça nem folha anterior: confira o TSCMM e o TTES'}. Clique em "Conferir / corrigir" para gravar.`}</p></div>`;
+}
+function editarAlteracao(id, mid) {
+  const a = id ? (S.db.Alteracoes || []).find(x => x.id === id) : { data: hoje(), militarId: mid || S.filtro.altMil || '', origem: 'manual' };
+  abrirForm({ titulo: id ? 'Alteração' : 'Novo lançamento de alteração', valores: a, campos: [
+    { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'data', l: 'Data (dia do BI)', t: 'date', req: true },
+    { k: 'ref', l: 'Publicação (ex.: Adt Nr 178 ao BI Nr 231)' }, { k: 'titulo', l: 'Assunto (sai em maiúsculas)', req: true },
+    { k: 'texto', l: 'Texto da alteração', t: 'textarea', req: true, ajuda: 'Negrito: **assim**. Tabela pequena (ex.: Turma e Menção): uma linha por linha, com | entre as colunas: Turma | Menção  e na linha de baixo  S-1 | R' }],
+    aoSalvar: o => salvar('Alteracoes', [{ ...o, titulo: o.titulo.toUpperCase() }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Alteracoes','${id}',true)">Excluir</button></div>` : '' });
+}
+function editarTempos(mid, sem) {
+  const tp = temposFolha(mid, sem);
+  abrirForm({ titulo: `2ª parte – ${nomeMil(mid)} – ${nomeSem(sem).toLowerCase()}`, valores: tp, campos: [
+    { k: 'folhaNr', l: 'Folha Nr' }, { k: 'tc', l: '1. TC (ex.: 00a 06m 04d)' }, { k: 'arreg', l: 'a. Arregimentado' }, { k: 'arregPeriodo', l: 'Período arregimentado' }, { k: 'arregObs', l: 'Situação no período' },
+    { k: 'naoArreg', l: 'b. Não arregimentado' }, { k: 'tnc', l: '2. TNC' }, { k: 'tscmm', l: '3. TSCMM' }, { k: 'tsnr', l: '4. TSNR' }, { k: 'ttes', l: '5. TTES' }],
+    aoSalvar: o => { const bad = ['tc', 'arreg', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'].find(k => !/^\d+a \d{2}m \d{2}d$/.test(o[k])); if (bad) throw new Error('Use o formato 00a 00m 00d.');
+      return salvar('FolhasAlt', [{ id: mid + '|' + sem, militarId: mid, semestre: sem, ...Object.fromEntries(['folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'].map(k => [k, o[k]])) }]); } });
+}
+
+function blocosTextoAlt(prefixo, texto) {
+  const B = [], linhas = String(texto || '').split('\n'); let par = [], tab = [];
+  const fechaPar = () => { if (par.length) { B.push({ p: (B.length ? '' : prefixo) + par.join(' '), m: 1, mt: 3 }); par = []; } };
+  const fechaTab = () => { if (tab.length) { B.push({ t: tab.map(l => l.split('|').map(c => ({ v: c.trim(), m: 1 }))), h: 1, centro: 1, sz: 10 }); tab = []; } };
+  linhas.forEach(l => { if (/\s\|\s|^\s*\|/.test(l)) { fechaPar(); tab.push(l.replace(/^\s*\||\|\s*$/g, '')); } else if (l.trim()) { fechaTab(); par.push(l.trim()); } });
+  fechaPar(); fechaTab();
+  if (!B.length || B[0].t) B.unshift({ p: prefixo, m: 1, mt: 3 });
+  return B;
+}
+
+function nomeSublinhado(m) {
+  const nome = (m.nomeCompleto || m.nomeGuerra || '').toUpperCase(), g = normNome(m.nomeGuerra);
+  if (!g) return nome;
+  const pal = nome.split(' '), gp = g.split(' ');
+  for (let i = 0; i + gp.length <= pal.length; i++) if (gp.every((x, k) => normNome(pal[i + k]) === x)) { pal[i] = '__' + pal[i]; pal[i + gp.length - 1] += '__'; break; }
+  return pal.join(' ');
+}
+DOCS.folhaAlt = chave => {
+  let [mid, sem] = chave.split('|'); if (!/^\d{4}-[12]$/.test(sem || '')) sem = semestreDe(hoje());
+  const m = MIL[mid], { ini, fim } = periodoSem(sem), tp = temposFolha(mid, sem), fora = S.filtro.altFora || {};
+  const it = itensFolha(mid, sem, S.filtro.altOp || { afast: true, disc: true, missoes: false }).filter(x => !fora[x.k]);
+  const periodo = `PERÍODO DE ${pad(Number(ini.slice(8)))} ${MESES[Number(ini.slice(5, 7)) - 1]} A ${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]}`;
+  const guarnicao = String(cfg('guarnicao') || cfg('cidade').replace(/^Quartel em\s*/i, '').split(/[-,]/)[0]).toUpperCase();
+  const esq = cabecalhoDoc().map(l => l.toUpperCase()), dir = ['FOLHA DE ALTERAÇÕES', `GUARNIÇÃO ${/^(D[AEO]|EM)\s/.test(guarnicao) ? '' : 'DE '}${guarnicao}`, `FOLHA Nr ${tp.folhaNr}`];
+  const n = Math.max(esq.length, dir.length);
+  const B = [{ moldura: true }, { cont: { esq: [cfg('siglaOM') || '', 'Continuação das Folhas de Alterações', `Do ${m.postoGrad || ''} ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`], dir: [nomeSem(sem), periodo] } },
+    { t: Array.from({ length: n }, (_, i) => [{ v: esq[i] || '', b: 1, l: 1 }, { v: dir[i] || '', b: 1, l: 1 }]), sem: 1, w: [55, 45], sz: 10.5 }, { esp: 1 },
+    { t: [[{ v: `**NOME: ${nomeSublinhado(m)}**`, l: 1, m: 1 }, ''], [{ v: `POSTO: ${(m.postoGrad || '').toUpperCase()}`, b: 1, l: 1 }, ''],
+      [{ v: `ARMA (SERVIÇO): ${(m.arma || '').toUpperCase()}`, b: 1, l: 1 }, { v: nomeSem(sem), b: 1, l: 1 }], [{ v: `IDENTIDADE: ${m.idt || ''}`, b: 1, l: 1 }, { v: periodo, b: 1, l: 1 }]], sem: 1, w: [55, 45], sz: 10.5 },
+    { hr: 1 }, { p: '**__1ª PARTE__**', m: 1, l: 1, mt: 8 }];
+  for (let k = 0; k < 6; k++) {
+    const mm = (sem.endsWith('1') ? 0 : 6) + k, doMes = it.filter(x => Number(x.data.slice(5, 7)) - 1 === mm);
+    if (!doMes.length) { B.push({ p: `__${MESES_MAI[mm]}__: Sem Alteração`, m: 1, l: 1, mt: 10 }); continue; }
+    B.push({ p: `__${MESES_MAI[mm]}__`, m: 1, l: 1, mt: 10, junto: 1 });
+    doMes.forEach(x => B.push({ p: `**${x.titulo}**`, m: 1, l: 1, mt: 8, sz: 10.5, junto: 1 }, ...blocosTextoAlt(`- a ${pad(Number(x.data.slice(8)))}${refBi(x.ref)} - `, x.texto)));
+  }
+  const ate = `${Number(fim.slice(8))} ${MESES[Number(fim.slice(5, 7)) - 1]} ${fim.slice(0, 4)}`;
+  B.push({ p: '**__2ª PARTE__**', m: 1, l: 1, mt: 12, junto: 1 },
+    { pont: ['1. TEMPO COMPUTADO DE EFETIVO SERVIÇO (TC)', tp.tc], mt: 6 }, { pont: ['a. Arregimentado', tp.arreg] }, { pont: [`- ${tp.arregPeriodo}`, tp.arregObs], ind: 28 }, { pont: ['b. Não Arregimentado', tp.naoArreg] },
+    { pont: ['2. TEMPO SV NÃO COMPUTÁVEL (TNC)', tp.tnc], mt: 8 },
+    { p: '3. TEMPO DE SERVIÇO COMPUTÁVEL PARA A MEDALHA MILITAR', l: 1, mt: 8, junto: 1 }, { pont: [`até ${ate} (TSCMM)`, tp.tscmm], ind: 150 },
+    { pont: ['4. TEMPO DE SERVIÇO NACIONAL RELEVANTE (TSNR)', tp.tsnr], mt: 8 },
+    { p: '5. TEMPO TOTAL DE EFETIVO SERVIÇO', l: 1, mt: 8, junto: 1 }, { pont: [`até ${ate} (TTES)`, tp.ttes], ind: 150 },
+    { esp: 1 }, { p: localData(hoje()), c: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao')));
+  return { tipo: 'Alteracoes', ref: chave, titulo: `Alteracoes ${sem.replace('-', ' ')} semestre - ${m.postoGrad} ${m.nomeGuerra}`, blocos: B };
+};
+
+
+const normNome = s => soAscii(s).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+const POSTO_BI = { 'Gen': 'GEN', 'Cel': 'CEL', 'TC': 'TC|TEN CEL', 'Maj': 'MAJ', 'Cap': 'CAP', '1º Ten': 'TEN|1 TEN', '2º Ten': 'TEN|2 TEN', 'Asp': 'ASP', 'ST': 'ST|SUBTEN', '1º Sgt': 'SGT|1 SGT', '2º Sgt': 'SGT|2 SGT', '3º Sgt': 'SGT|3 SGT', 'Cb': 'CB', 'Sd EP': 'SD', 'Sd EV': 'SD', 'Sd': 'SD' };
+
+function linhasBi(paginas) {
+  const out = [];
+  paginas.forEach(itens => {
+    const grupos = [];
+    itens.forEach(it => { let g = grupos.find(x => Math.abs(x.y - it.y) < 2.5); if (!g) grupos.push(g = { y: it.y, itens: [] }); g.itens.push(it); });
+    grupos.sort((a, b) => b.y - a.y).forEach(g => {
+      g.itens.sort((a, b) => a.x - b.x);
+      let t = '', fim = null; g.itens.forEach(i => { if (fim !== null && i.x - fim > 1) t += ' '; t += i.s; fim = i.fim; });
+      t = t.replace(/\s+/g, ' ').trim();
+      if (!t || /Continua[çc][ãa]o do (Bol|Boletim)/i.test(t) || /^\d{1,4}$/.test(t)) return;
+      out.push({ x: g.itens[0].x, t });
+    });
+  });
+  return out;
+}
+const ehTitulo = t => { const m = t.match(/^(\d+(?:\.\d+)*)\.?\s+(.+)$/); if (!m) return null; const sem = m[2].split(/\s[–-]\s/)[0]; return /[A-ZÀ-Ü]{3}/.test(sem) && !/[a-zà-ü]{2}/.test(sem) ? m : null; };
+const limparTitulo = t => { const p = t.split(/\s[–-]\s/); while (p.length > 1 && /[a-zà-ü]{2}/.test(p[p.length - 1])) p.pop(); return p.join(' – ').replace(/[–-]\s*$/, '').trim(); };
+
+function lerBi(paginas) {
+  const linhas = linhasBi(paginas), tudo = linhas.map(l => l.t).join('\n');
+  const bi = (tudo.match(/BOLETIM INTERNO\s*N[º°o.]*\s*(\d+)/i) || [])[1] || '';
+  const adt = tudo.match(/ADITAMENTO\s*N[º°o.]*\s*([\w./-]+)\s+AO\s+(?:BOLETIM INTERNO|BI|BOL INT)\s*N[º°o.]*\s*(\d+)/i);
+  const dm = tudo.match(/\bEm\s+(\d{1,2})º?\s+de\s+([a-zç]+)\s+de\s+(\d{4})/i);
+  const mes = dm ? MESES_EXT.findIndex(x => norm(x) === norm(dm[2])) : -1;
+  const data = dm && mes >= 0 ? `${dm[3]}-${pad(mes + 1)}-${pad(dm[1])}` : '';
+  const ref = adt ? `Adt Nr ${adt[1]} ao BI Nr ${adt[2]}` : bi ? `BI Nr ${bi}` : '';
+  const margem = Math.min(...linhas.map(l => l.x));
+  const assuntos = []; let parte = 0, atual = null;
+  for (let i = 0; i < linhas.length; i++) {
+    const { x, t } = linhas[i];
+    const p = t.match(/^([1-4])ª PARTE/); if (p) { parte = Number(p[1]); atual = null; continue; }
+    if (parte < 2) continue;
+    const tit = ehTitulo(t);
+    if (tit) {
+      let titulo = tit[2];
+      if (/[–-]\s*$/.test(titulo) && linhas[i + 1] && !ehTitulo(linhas[i + 1].t)) { titulo += ' ' + linhas[i + 1].t; i++; }
+      atual = { num: tit[1], titulo: limparTitulo(titulo), parte, pars: [] }; assuntos.push(atual); continue;
+    }
+    if (!atual) continue;
+    const novo = x > margem + 15 || /^[-•]\s|^[a-z]\)\s|^[a-z]\.\s/.test(t) || !atual.pars.length;
+    if (novo) atual.pars.push(t); else atual.pars[atual.pars.length - 1] += ' ' + t;
+  }
+  assuntos.forEach(a => {
+    a.pars = a.pars.map(s => s.replace(/\s+/g, ' ').trim()).filter(s => !/^Em conseq[üu][êe]ncia/i.test(s) && !/^-?\s*Sem altera[çc][ãa]o\.?$/i.test(s));
+    
+    while (a.pars.length && /^[A-ZÀ-Ü ]+ [–-] \S+$|^Comandante\b/.test(a.pars[a.pars.length - 1])) a.pars.pop();
+  });
+  return { bi, ref, data, assuntos: assuntos.filter(a => a.pars.length) };
+}
+
+function sugestoesBi(lido) {
+  const sug = [];
+  militaresAtivos().forEach(m => {
+    const completo = m.nomeCompleto && normNome(m.nomeCompleto).split(' ').length >= 2 ? normNome(m.nomeCompleto) : '';
+    const guerra = normNome(m.nomeGuerra), postos = (POSTO_BI[m.postoGrad] || '').split('|').filter(Boolean);
+    const reGuerra = guerra && postos.length ? new RegExp(`\\b(?:${postos.join('|')})\\b(?: [A-Z]{2,4})? ${guerra}\\b`) : null;
+    lido.assuntos.forEach(a => {
+      const achou = p => { const n = ' ' + normNome(p) + ' '; return completo && n.includes(' ' + completo + ' ') ? 'nome completo' : reGuerra && reGuerra.test(n) ? 'posto e nome de guerra' : ''; };
+      const comNome = a.pars.map((p, i) => ({ p, i, c: achou(p) })).filter(x => x.c);
+      if (!comNome.length) return;
+      const certo = comNome.some(x => x.c === 'nome completo');
+      
+      const blocos = comNome.map(x => { const l = [x.p]; for (let j = x.i + 1; j < a.pars.length && /^-\s/.test(a.pars[j]) && x.p.length < 140; j++) l.push(a.pars[j]); return l.join(' '); });
+      let pars = blocos.filter(p => !/^[A-ZÀ-Ü\s–-]{6,}$/.test(p));
+      
+      if (pars.length > 1 && pars.some(p => !/^O presente procedimento/i.test(p))) pars = pars.filter(p => !/^O presente procedimento/i.test(p));
+      if (!pars.length) pars = blocos;
+      
+      if (comNome.every(x => x.p.length < 140) && a.pars[0] && !pars.some(p => p.startsWith(a.pars[0]))) pars.unshift(a.pars[0]);
+      sug.push({ militarId: m.id, titulo: a.titulo, texto: pars.join(' '), data: lido.data, ref: lido.ref, conf: certo ? 'nome completo' : 'posto e nome de guerra', sel: certo, assunto: `${a.num}. ${a.titulo}` });
+    });
+  });
+  return sug;
+}
+function vImportarBi() {
+  const st = S.impBi;
+  if (!st) return `<div class="card"><p style="margin-top:0">Escolha o PDF do boletim (BI ou aditamento) gerado pelo <b>SISBOL</b>. O sistema procura os militares da Cia pelo <b>nome completo</b> (ou posto + nome de guerra) e sugere a alteração de cada um, para você conferir e marcar o que entra.</p>
+    <label class="btn pri">Escolher PDF do BI<input type="file" accept=".pdf,application/pdf" hidden onchange="lerArquivoBi(this.files[0])"></label>
+    <p class="muted" style="font-size:12.5px">Precisa ser o PDF original do SISBOL (com texto). BI escaneado não tem texto para ler. A 1ª parte (serviços diários) é ignorada.</p></div>`;
+  const sel = st.itens.filter(i => i.sel).length;
+  return `<div class="card"><div class="bar"><div class="grow"><b>${esc(st.arquivo)}</b><div class="muted">${esc(st.ref || 'nº do BI não encontrado')} · ${st.data ? fmt(st.data) : 'data não encontrada'} · ${st.assuntos} assunto(s) lidos · ${st.itens.length} alteração(ões) de militares da Cia</div></div>
+      <button class="btn" onclick="S.impBi=null;render()">Outro PDF</button><button class="btn pri" onclick="gravarImpBi()" ${sel ? '' : 'disabled'}>Lançar ${sel} alteração(ões)</button></div>
+    <div class="form" style="margin-top:6px"><label>Publicação (sai na folha)<input type="text" value="${esc(st.ref)}" onchange="S.impBi.ref=this.value;S.impBi.itens.forEach(i=>i.ref=this.value)"></label><label>Data do BI<input type="date" value="${esc(st.data)}" onchange="S.impBi.data=this.value;S.impBi.itens.forEach(i=>i.data=this.value)"></label></div></div>
+    ${st.itens.length ? st.itens.map((it, i) => `<div class="card item-bi ${it.sel ? '' : 'fora'}" style="margin-top:10px"><div class="bar"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${it.sel ? 'checked' : ''} onchange="S.impBi.itens[${i}].sel=this.checked;render()"> <b>${esc(nomeMil(it.militarId))}</b></label>
+      <span class="tag ${it.conf === 'nome completo' ? 'ok' : 'warn'}">${it.conf === 'nome completo' ? 'achado pelo nome completo' : 'achado por posto e nome de guerra: conferir'}</span><span class="muted grow" style="text-align:right">${esc(it.assunto)}</span></div>
+      <div class="form"><label class="full">Assunto<input type="text" value="${esc(it.titulo)}" onchange="S.impBi.itens[${i}].titulo=this.value"></label>
+      <label class="full">Texto da alteração<textarea rows="4" style="font-family:inherit" onchange="S.impBi.itens[${i}].texto=this.value">${esc(it.texto)}</textarea></label></div></div>`).join('')
+      : '<div class="card muted" style="margin-top:10px">Nenhum militar da Cia encontrado neste boletim. Confira se o nome completo de cada militar está certo no cadastro do efetivo.</div>'}`;
+}
+async function lerArquivoBi(file) {
+  if (!file) return;
+  try {
+    toast('Lendo o BI…');
+    const paginas = await itensDoPdf(file), lido = lerBi(paginas);
+    if (!lido.assuntos.length) throw new Error('Não encontrei assuntos neste PDF. Confira se é um BI do SISBOL com texto.');
+    const ja = new Set((S.db.Alteracoes || []).map(a => a.militarId + '|' + a.ref + '|' + a.titulo));
+    const itens = sugestoesBi(lido).map(s => ({ ...s, sel: s.sel && !ja.has(s.militarId + '|' + s.ref + '|' + s.titulo) }));
+    S.impBi = { arquivo: file.name, ref: lido.ref, data: lido.data, assuntos: lido.assuntos.length, itens };
+    render();
+  } catch (e) { toast(e.message, true); }
+}
+async function gravarImpBi() {
+  const st = S.impBi, l = st.itens.filter(i => i.sel);
+  if (!st.data) return toast('Informe a data do BI.', true);
+  await salvar('Alteracoes', l.map(i => ({ militarId: i.militarId, data: i.data || st.data, ref: i.ref, titulo: String(i.titulo).toUpperCase(), texto: i.texto, origem: 'importado ' + (st.ref || st.arquivo) })));
+  toast(`${l.length} alteração(ões) lançada(s).`);
+  S.impBi = null; S.sub.alteracoes = 'lanc'; S.filtro.altSem = semestreDe(st.data); render();
+}
+
+
+
+const PUNICOES = ['Advertência', 'Impedimento disciplinar', 'Repreensão', 'Detenção disciplinar', 'Prisão disciplinar'];
+const PUN_COM_DIAS = ['Impedimento disciplinar', 'Detenção disciplinar', 'Prisão disciplinar'];
+const CLASSIF_TRANSG = ['Leve', 'Média', 'Grave'];
+const COMPORTAMENTOS = ['Excepcional', 'Ótimo', 'Bom', 'Insuficiente', 'Mau'];
+const TIPOS_ELOGIO = ['Elogio individual', 'Elogio coletivo', 'Referência elogiosa'];
+const TIPOS_ANOT = ['Observação', 'Orientação', 'Falta leve', 'Atraso', 'Apresentação pessoal', 'Outra'];
+const PRAZO_DEFESA = 3;
+const disc = tipo => (S.db.Disciplina || []).filter(x => x.tipo === tipo);
+
+const temComportamento = m => m && postoIdx(m.postoGrad) >= POSTOS.indexOf('Cb');
+
+function addDiasUteis(iso, n) { let d = iso; while (n > 0) { d = addDias(d, 1); if (corDoDia(d) === 'P') n--; } return d; }
+const fimPunicao = f => f.inicio && num(f.dias) > 0 ? addDias(f.inicio, num(f.dias) - 1) : '';
+
+
+function situacaoFatd(f) {
+  if (f.decisao === 'Justificada') return { t: 'Justificada (arquivada)', c: 'ok', fim: 1 };
+  if (f.decisao === 'Punido') {
+    const fim = fimPunicao(f);
+    if (f.inicio && f.inicio <= hoje() && fim >= hoje()) return { t: `Cumprindo ${f.punicao.toLowerCase()} até ${fmt(fim)}`, c: 'dng', fim: 1 };
+    return f.bi ? { t: `Punido · publicado (${f.bi})`, c: 'info', fim: 1 } : { t: 'Punido · falta publicar', c: 'warn', fim: 1 };
+  }
+  if (!f.ciencia) return { t: 'Aguardando ciência do militar', c: 'warn' };
+  const prazo = addDiasUteis(f.ciencia, PRAZO_DEFESA);
+  if (!f.defesaData && prazo >= hoje()) return { t: `Prazo de defesa até ${fmt(prazo)}`, c: 'info', prazo };
+  return { t: f.defesaData ? 'Defesa entregue · para decisão' : 'Prazo de defesa vencido · para decisão', c: 'warn' };
+}
+
+function punicaoEmCurso(militarId, iso) {
+  return disc('FATD').find(f => f.militarId === militarId && f.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(f.punicao) && f.inicio && f.inicio <= iso && fimPunicao(f) >= iso);
+}
+
+
+
+
+
+
+function comportamentoSugerido(m) {
+  if (!temComportamento(m)) return null;
+  const pun = disc('FATD').filter(f => f.militarId === m.id && f.decisao === 'Punido');
+  const peso = p => p === 'Prisão disciplinar' ? 1 : p === 'Detenção disciplinar' ? 0.5 : p === 'Repreensão' ? 0.25 : 0;
+  const desde = anos => { const d = dataDe(hoje()); d.setFullYear(d.getFullYear() - anos); return isoDe(d); };
+  const em = anos => pun.filter(f => (f.dataDecisao || f.dataFato) >= desde(anos));
+  const prisoes = anos => em(anos).reduce((s, f) => s + peso(f.punicao), 0);
+  const servico = m.dataPraca ? (dataDe(hoje()) - dataDe(m.dataPraca)) / 31557600000 : null;
+  const det = anos => `${em(anos).length} punição(ões) em ${anos} ano(s), equivalente a ${String(prisoes(anos)).replace('.', ',')} prisão(ões)`;
+  let c;
+  if (servico !== null && servico >= 8 && !em(8).some(f => peso(f.punicao) > 0)) c = 'Excepcional';
+  else if (servico !== null && servico >= 4 && prisoes(4) <= 0.5) c = 'Ótimo';
+  else if (prisoes(2) <= 2 && (servico === null || servico >= 0)) c = prisoes(1) > 2 ? 'Mau' : 'Bom';
+  else c = prisoes(1) > 2 ? 'Mau' : 'Insuficiente';
+  return { c, motivo: `${det(1)}; ${det(2)}${servico === null ? '. Sem data de praça cadastrada: Excepcional e Ótimo não são calculados.' : '.'}` };
+}
+const tagComp = c => `<span class="tag ${c === 'Excepcional' || c === 'Ótimo' ? 'ok' : c === 'Bom' ? 'info' : c ? 'dng' : ''}">${esc(c || '—')}</span>`;
+
+function vDisciplina() {
+  if (!pode()) return '<div class="card">Justiça e disciplina: só administradores e editores têm acesso.</div>';
+  const t = S.filtro.jd || 'resumo';
+  const abasJd = `<div class="tabs" style="margin-top:-6px">${[['resumo', 'Resumo'], ['fatd', 'FATD'], ['pun', 'Punições'], ['elo', 'Elogios'], ['boca', 'Boca Podre'], ['sind', 'Sindicâncias'], ['ficha', 'Ficha do militar']]
+    .map(([k, l]) => `<button class="${t === k ? 'on' : ''}" onclick="S.filtro.jd='${k}';render()">${l}</button>`).join('')}</div>`;
+  let corpo = '';
+  if (t === 'resumo') {
+    const abertas = disc('FATD').filter(f => !situacaoFatd(f).fim).sort((a, b) => a.dataFato.localeCompare(b.dataFato));
+    const cumprindo = disc('FATD').filter(f => f.decisao === 'Punido' && f.inicio && f.inicio <= hoje() && fimPunicao(f) >= hoje());
+    const semBi = disc('FATD').filter(f => f.decisao === 'Punido' && !f.bi).length + disc('Elogio').filter(e => !e.bi).length;
+    const ano = hoje().slice(0, 4);
+    const cbSd = militaresAtivos().filter(temComportamento);
+    const dist = COMPORTAMENTOS.map(c => [c, cbSd.filter(m => (m.comportamento || (comportamentoSugerido(m) || {}).c) === c).length]);
+    corpo = `<div class="grid-resumo">
+      <div class="card"><h3>FATD em andamento <span class="tag ${abertas.length ? 'warn' : 'ok'}">${abertas.length}</span></h3>${abertas.length ? `<ul class="lista-jd">${abertas.map(f => { const s = situacaoFatd(f); return `<li><a onclick="editarFatd('${f.id}')">FATD nº ${esc(f.numero)} – ${esc(nomeMil(f.militarId))}</a><br><span class="tag ${s.c}">${esc(s.t)}</span></li>`; }).join('')}</ul>` : '<p class="muted">Nenhuma.</p>'}</div>
+      <div class="card"><h3>Cumprindo punição hoje <span class="tag ${cumprindo.length ? 'dng' : 'ok'}">${cumprindo.length}</span></h3>${cumprindo.length ? `<ul class="lista-jd">${cumprindo.map(f => `<li><b>${esc(nomeMil(f.militarId))}</b><br><span class="muted">${esc(f.punicao)} de ${fmt(f.inicio)} a ${fmt(fimPunicao(f))} (fora da escala)</span></li>`).join('')}</ul>` : '<p class="muted">Ninguém.</p>'}</div>
+      <div class="card"><h3>Para publicar em BI <span class="tag ${semBi ? 'warn' : 'ok'}">${semBi}</span></h3><p class="muted">Punições decididas e elogios ainda sem BI. No aditamento, o botão <b>Preencher</b> da 4ª parte traz esse texto pronto.</p>
+        <p>Em ${ano}: <b>${disc('FATD').filter(f => f.decisao === 'Punido' && (f.dataDecisao || '').startsWith(ano)).length}</b> punição(ões) e <b>${disc('Elogio').filter(e => e.data.startsWith(ano)).length}</b> elogio(s).</p></div>
+      <div class="card"><h3>Comportamento dos cabos e soldados</h3><table class="mini">${dist.map(([c, n]) => `<tr><td>${tagComp(c)}</td><td class="num"><b>${n}</b></td></tr>`).join('')}</table><p class="muted" style="font-size:12px">Usa o comportamento lançado no cadastro do militar; sem ele, o sugerido pelo sistema.</p></div>
+    </div>`;
+  } else if (t === 'fatd') {
+    const ver = S.filtro.fatdVer || 'and';
+    const lista = disc('FATD').filter(f => (ver === 'todas' || !situacaoFatd(f).fim) && casa('fatd', f.numero, nomeMil(f.militarId), f.relato)).sort((a, b) => b.dataFato.localeCompare(a.dataFato) || String(b.numero).localeCompare(a.numero));
+    corpo = `<div class="bar">${busca('fatd', 'Buscar nº, militar ou fato…')}<select onchange="S.filtro.fatdVer=this.value;render()" aria-label="Quais"><option value="and">Em andamento</option><option value="todas" ${ver === 'todas' ? 'selected' : ''}>Todas</option></select><span class="grow"></span><button class="btn pri" onclick="editarFatd()">+ FATD</button></div>
+    ${tabela(lista, [
+      { l: 'Nº', v: f => `<b>${esc(f.numero)}</b>` }, { l: 'Data do fato', v: f => fmt(f.dataFato) }, { l: 'Militar', v: f => esc(nomeMil(f.militarId)) },
+      { l: 'Fato', v: f => `<span class="muted">${esc(String(f.relato || '').slice(0, 90))}${String(f.relato || '').length > 90 ? '…' : ''}</span>` },
+      { l: 'Situação', v: f => { const s = situacaoFatd(f); return `<span class="tag ${s.c}">${esc(s.t)}</span>`; } }
+    ], f => `<button class="btn sm" onclick="editarFatd('${f.id}')">Abrir</button> ${botoesDoc('fatd', f.id, 'FATD')}`)}`;
+  } else if (t === 'pun') {
+    const ano = S.filtro.punAno || hoje().slice(0, 4);
+    const lista = disc('FATD').filter(f => f.decisao === 'Punido' && (ano === 'todos' || (f.dataDecisao || f.dataFato).startsWith(ano)) && casa('pun', nomeMil(f.militarId), f.punicao, f.enquadramento));
+    const anos = [...new Set(disc('FATD').map(f => (f.dataDecisao || f.dataFato || '').slice(0, 4)).concat(hoje().slice(0, 4)))].filter(Boolean).sort().reverse();
+    corpo = `<div class="bar">${busca('pun', 'Buscar militar ou punição…')}<select onchange="S.filtro.punAno=this.value;render()" aria-label="Ano">${anos.map(a => `<option ${a === ano ? 'selected' : ''}>${a}</option>`).join('')}<option value="todos" ${ano === 'todos' ? 'selected' : ''}>Todos os anos</option></select><span class="grow"></span><button class="btn" onclick="editarFatd(null,{historico:'Sim'})" title="Punição de antes do sistema, só para a ficha e o comportamento">+ Punição anterior</button></div>
+    <p class="muted" style="margin-top:0">As punições saem das FATD decididas. Detenção e prisão em cumprimento tiram o militar da escala automaticamente.</p>
+    ${tabela(lista, [
+      { l: 'Militar', v: f => `<b>${esc(nomeMil(f.militarId))}</b>` }, { l: 'Punição', v: f => `${esc(f.punicao)}${num(f.dias) ? ` <span class="muted">${esc(f.dias)} dia(s)</span>` : ''}` },
+      { l: 'Transgressão', v: f => `${esc(f.classificacao || '')}${f.enquadramento ? `<div class="muted">${esc(f.enquadramento)}</div>` : ''}` },
+      { l: 'Decisão', v: f => fmt(f.dataDecisao) }, { l: 'Cumprimento', v: f => f.inicio ? `${fmt(f.inicio)} a ${fmt(fimPunicao(f))}` : '' },
+      { l: 'BI', v: f => f.bi ? esc(f.bi) : '<span class="tag warn">falta publicar</span>' }
+    ], f => `<button class="btn sm" onclick="editarFatd('${f.id}')">Abrir</button>`)}`;
+  } else if (t === 'elo') {
+    const lista = disc('Elogio').filter(e => casa('elo', e.relato, e.subtipo, ...ids(e.militaresIds).map(nomeMil))).sort((a, b) => b.data.localeCompare(a.data));
+    corpo = `<div class="bar">${busca('elo', 'Buscar militar ou texto…')}<span class="grow"></span><button class="btn pri" onclick="editarElogio()">+ Elogio</button></div>
+    ${tabela(lista, [
+      { l: 'Data', v: e => fmt(e.data) }, { l: 'Tipo', v: e => esc(e.subtipo) },
+      { l: 'Militar(es)', v: e => { const l = ids(e.militaresIds).map(nomeMil); return esc(l.slice(0, 3).join(', ')) + (l.length > 3 ? ` <span class="muted">e mais ${l.length - 3}</span>` : ''); } },
+      { l: 'Motivo', v: e => `<span class="muted">${esc(String(e.relato || '').slice(0, 100))}${String(e.relato || '').length > 100 ? '…' : ''}</span>` },
+      { l: 'BI', v: e => e.bi ? esc(e.bi) : '<span class="tag warn">falta publicar</span>' }
+    ], e => `<button class="btn sm" onclick="editarElogio('${e.id}')">Abrir</button>`)}`;
+  } else if (t === 'boca') {
+    const lista = disc('Anotacao').filter(a => casa('boca', nomeMil(a.militarId), a.relato, a.subtipo)).sort((a, b) => b.data.localeCompare(a.data));
+    corpo = `<div class="bar">${busca('boca', 'Buscar militar ou anotação…')}<span class="grow"></span><button class="btn pri" onclick="editarAnotacao()">+ Anotação</button></div>
+    <p class="muted" style="margin-top:0">Registro rápido do dia a dia (observações, orientações, faltas leves), por militar. Se o fato for transgressão, <b>Abrir FATD</b> já leva o relato.</p>
+    ${tabela(lista, [
+      { l: 'Data', v: a => fmt(a.data) }, { l: 'Militar', v: a => `<b>${esc(nomeMil(a.militarId))}</b>` }, { l: 'Tipo', v: a => esc(a.subtipo) },
+      { l: 'Anotação', v: a => esc(a.relato) }, { l: 'Quem anotou', v: a => `<span class="muted">${esc(a.participante || '')}</span>` },
+      { l: 'FATD', v: a => { const f = disc('FATD').find(x => x.origemId === a.id); return f ? `<a onclick="editarFatd('${f.id}')">nº ${esc(f.numero)}</a>` : ''; } }
+    ], a => `${disc('FATD').some(x => x.origemId === a.id) ? '' : `<button class="btn sm" onclick="fatdDaAnotacao('${a.id}')">Abrir FATD</button> `}<button class="btn sm" onclick="editarAnotacao('${a.id}')">Editar</button>`)}`;
+  } else if (t === 'sind') {
+    corpo = vSindicancias();
+  } else {
+    const mid = S.filtro.jdMil && MIL[S.filtro.jdMil] ? S.filtro.jdMil : '';
+    corpo = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.jdMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label><span class="grow"></span>${mid ? botoesDoc('fichaDisc', mid, 'Imprimir ficha') : ''}</div>` + (mid ? fichaDisciplinar(mid) : '<div class="card muted">Escolha o militar para ver a ficha disciplinar: comportamento, punições, elogios e anotações.</div>');
+  }
+  return abasJd + corpo;
+}
+
+
+function eventosDisc(mid) {
+  const ev = [];
+  disc('FATD').filter(f => f.militarId === mid).forEach(f => {
+    ev.push({ d: f.dataFato, t: `FATD nº ${f.numero}`, x: f.relato, c: 'warn', id: f.id, k: 'fatd' });
+    if (f.decisao === 'Punido') ev.push({ d: f.dataDecisao || f.dataFato, t: `${f.punicao}${num(f.dias) ? ` (${f.dias} dia(s))` : ''}`, x: [f.classificacao && 'Transgressão ' + f.classificacao.toLowerCase(), f.enquadramento, f.bi].filter(Boolean).join(' · '), c: 'dng', id: f.id, k: 'fatd' });
+    if (f.decisao === 'Justificada') ev.push({ d: f.dataDecisao || f.dataFato, t: 'FATD justificada (arquivada)', x: '', c: 'ok', id: f.id, k: 'fatd' });
+  });
+  disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).forEach(e => ev.push({ d: e.data, t: e.subtipo, x: [e.relato, e.bi].filter(Boolean).join(' · '), c: 'ok', id: e.id, k: 'elo' }));
+  disc('Sindicancia').filter(x => x.militarId === mid).forEach(x => ev.push({ d: x.data, t: `Sindicância nº ${x.numero}`, x: [x.relato, x.decisao, x.bi].filter(Boolean).join(' · '), c: 'info', id: x.id, k: 'sind' }));
+  disc('Anotacao').filter(a => a.militarId === mid).forEach(a => ev.push({ d: a.data, t: 'Boca Podre: ' + a.subtipo, x: a.relato, c: '', id: a.id, k: 'boca' }));
+  return ev.sort((a, b) => b.d.localeCompare(a.d));
+}
+function fichaDisciplinar(mid) {
+  const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid);
+  const abrir = e => e.k === 'sind' ? `editarSindicancia('${e.id}')` : e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
+  return `<div class="card"><div class="bar" style="align-items:flex-start">${fotoHTML(mid, pode())}<div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
+    ${temComportamento(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Sem classificação de comportamento (só cabos e soldados).</span>'}</div>
+    ${sug ? `<p class="muted" style="font-size:12.5px">${esc(sug.motivo)} Conferir sempre com o RDE.</p>` : ''}
+    <div class="bar"><span class="tag dng">${disc('FATD').filter(f => f.militarId === mid && f.decisao === 'Punido').length} punição(ões)</span><span class="tag ok">${disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).length} elogio(s)</span><span class="tag">${disc('Anotacao').filter(a => a.militarId === mid).length} anotação(ões)</span><span class="grow"></span>
+      <button class="btn sm" onclick="editarFatd(null,{militarId:'${mid}'})">+ FATD</button><button class="btn sm" onclick="editarElogio(null,'${mid}')">+ Elogio</button><button class="btn sm" onclick="editarAnotacao(null,'${mid}')">+ Anotação</button></div>
+    ${ev.length ? `<ul class="linha-tempo">${ev.map(e => `<li><span class="quando">${fmt(e.d)}</span><span class="tag ${e.c}">${esc(e.t)}</span> ${e.x ? `<span class="muted">${esc(e.x)}</span>` : ''} <a onclick="${abrir(e)}">abrir</a></li>`).join('')}</ul>` : '<p class="muted">Nada registrado.</p>'}</div>`;
+}
+async function usarComportamento(mid, c) {
+  if (!await confirmar(`Gravar "${c}" como comportamento de ${nomeMil(mid)} no cadastro?`)) return;
+  await salvar('Militares', [{ ...MIL[mid], comportamento: c }]); toast('Comportamento atualizado.'); render();
+}
+
+
+function editarFatd(id, base = {}) {
+  const ano = hoje().slice(0, 4);
+  const f = id ? { ...disc('FATD').find(x => x.id === id) } : { tipo: 'FATD', numero: proximoNumero(disc('FATD').map(x => x.numero), ano), dataFato: hoje(), participante: S.user.nome || '', ...base };
+  const hist = f.historico === 'Sim';
+  const sec = (n, t, html) => `<fieldset class="pm"><legend>${n}. ${t}</legend><div class="form">${html}</div></fieldset>`;
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:820px">
+    <h3>${hist ? 'Punição anterior ao sistema' : id ? 'FATD nº ' + esc(f.numero) : 'Nova FATD'}</h3>
+    ${id && !hist ? `<p style="margin-top:0"><span class="tag ${situacaoFatd(f).c}">${esc(situacaoFatd(f).t)}</span></p>` : hist ? '<p class="muted" style="margin-top:0">Só para a ficha e o cálculo do comportamento.</p>' : ''}
+    ${sec(1, 'Fato', `${campoHTML({ k: 'numero', l: hist ? 'Nº (FATD ou BI)' : 'Nº da FATD', req: true }, f.numero)}${campoHTML({ k: 'dataFato', l: 'Data do fato', t: 'date', req: true }, f.dataFato)}
+      ${campoHTML({ k: 'militarId', l: 'Militar', t: 'militar', req: true }, f.militarId)}${campoHTML({ k: 'participante', l: 'Quem relatou (participante)' }, f.participante)}
+      ${campoHTML({ k: 'relato', l: 'Relato do fato', t: 'textarea', req: !hist }, f.relato)}`)}
+    ${hist ? '' : sec(2, 'Ciência e defesa', `${campoHTML({ k: 'ciencia', l: 'Ciência do militar (entrega da FATD)', t: 'date' }, f.ciencia)}
+      <label><span>Prazo para a defesa</span><input type="text" id="f_prazo" readonly value="${f.ciencia ? fmt(addDiasUteis(f.ciencia, PRAZO_DEFESA)) + ` (${PRAZO_DEFESA} dias úteis)` : 'conta a partir da ciência'}"></label>
+      ${campoHTML({ k: 'defesaData', l: 'Defesa entregue em', t: 'date' }, f.defesaData)}${campoHTML({ k: 'arquivoUrl', l: 'FATD assinada / defesa (digitalizada)', t: 'file' }, f.arquivoUrl)}
+      ${campoHTML({ k: 'defesa', l: 'Resumo da defesa / justificativa', t: 'textarea' }, f.defesa)}`)}
+    ${sec(hist ? 2 : 3, 'Decisão', `${campoHTML({ k: 'decisao', l: 'Decisão', t: 'select', o: hist ? ['Punido'] : [['', 'Ainda não decidida'], ['Justificada', 'Justificada (arquiva)'], ['Punido', 'Punido']], vazio: false }, hist ? 'Punido' : f.decisao)}
+      ${campoHTML({ k: 'dataDecisao', l: 'Data da decisão', t: 'date' }, f.dataDecisao)}
+      ${campoHTML({ k: 'classificacao', l: 'Transgressão', t: 'select', o: CLASSIF_TRANSG }, f.classificacao)}${campoHTML({ k: 'enquadramento', l: 'Enquadramento (nº do Anexo I do RDE)' }, f.enquadramento)}
+      ${campoHTML({ k: 'punicao', l: 'Punição', t: 'select', o: PUNICOES }, f.punicao)}${campoHTML({ k: 'dias', l: 'Dias (impedimento, detenção, prisão)', t: 'number' }, f.dias)}
+      ${campoHTML({ k: 'inicio', l: 'Início do cumprimento', t: 'date' }, f.inicio)}${campoHTML({ k: 'autoridade', l: 'Autoridade que aplicou' }, f.autoridade || cfg('cmtNome'))}`)}
+    ${sec(hist ? 3 : 4, 'Publicação', `${campoHTML({ k: 'bi', l: 'Publicado em (ex.: BI nº 45 / ADT nº 12)' }, f.bi)}${campoHTML({ k: 'obs', l: 'Observações' }, f.obs)}`)}
+    <div class="acts">${id ? `<button type="button" class="btn dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button><span class="grow"></span>` : ''}<button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar</button></div></form></div>`;
+  const ajustar = () => {
+    const pun = $('#f_decisao').value === 'Punido', p = $('#f_punicao').value;
+    ['classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade'].forEach(k => { const el = $('#f_' + k).closest('label'); el.style.display = pun ? '' : 'none'; });
+    $('#f_dias').closest('label').style.display = pun && PUN_COM_DIAS.includes(p) ? '' : 'none';
+    $('#f_inicio').closest('label').style.display = pun && PUN_COM_DIAS.includes(p) ? '' : 'none';
+    if ($('#f_ciencia')) $('#f_prazo').value = $('#f_ciencia').value ? fmt(addDiasUteis($('#f_ciencia').value, PRAZO_DEFESA)) + ` (${PRAZO_DEFESA} dias úteis)` : 'conta a partir da ciência';
+  };
+  ['decisao', 'punicao', 'ciencia'].forEach(k => { if ($('#f_' + k)) $('#f_' + k).onchange = ajustar; });
+  ajustar();
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $('#frm .btn.pri'); btn.disabled = true;
+    try {
+      const v = k => $('#f_' + k) ? $('#f_' + k).value.trim() : (f[k] || '');
+      const o = { ...f, tipo: 'FATD' };
+      ['numero', 'dataFato', 'militarId', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'obs'].forEach(k => { o[k] = v(k); });
+      if (!o.numero || !o.dataFato || !o.militarId) throw new Error('Preencha número, data do fato e militar.');
+      if (o.decisao === 'Punido') {
+        if (!o.punicao) throw new Error('Escolha a punição.');
+        if (!o.dataDecisao) o.dataDecisao = hoje();
+        if (!PUN_COM_DIAS.includes(o.punicao)) { o.dias = ''; o.inicio = ''; }
+        else if (!num(o.dias)) throw new Error('Informe os dias de ' + o.punicao.toLowerCase() + '.');
+      } else ['classificacao', 'enquadramento', 'punicao', 'dias', 'inicio'].forEach(k => { o[k] = ''; });
+      if (o.decisao === 'Justificada' && !o.dataDecisao) o.dataDecisao = hoje();
+      if (!id && disc('FATD').some(x => x.numero === o.numero && !hist)) throw new Error(`Já existe a FATD nº ${o.numero}.`);
+      if ($('#f_arquivoUrl')) { const url = await enviarArquivo($('#f_arquivoUrl').files[0]); if (url) o.arquivoUrl = url; }
+      const [salva] = await salvar('Disciplina', [o]);
+      await sincronizarCumprimento(salva || o);
+      fecharModal(); toast(o.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(o.punicao) && o.inicio ? 'Salvo. O militar fica fora da escala durante o cumprimento.' : 'FATD salva.'); render();
+    } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
+  };
+}
+
+
+
+
+async function sincronizarCumprimento(f) {
+  const id = 'pun-' + f.id, existe = S.db.Impedimentos.find(i => i.id === id);
+  const cumpre = f.decisao === 'Punido' && ['Detenção disciplinar', 'Prisão disciplinar'].includes(f.punicao) && f.inicio && num(f.dias) > 0;
+  if (cumpre) await salvar('Impedimentos', [{ id, militarId: f.militarId, tipo: 'Cumprindo punição', inicio: f.inicio, fim: fimPunicao(f), obs: '', referencia: '' }]);
+  else if (existe) await salvar('Impedimentos', [], [id]);
+}
+function fatdDaAnotacao(id) {
+  const a = disc('Anotacao').find(x => x.id === id);
+  editarFatd(null, { militarId: a.militarId, dataFato: a.data, relato: a.relato, participante: a.participante, origemId: a.id });
+}
+function editarElogio(id, mid) {
+  const e = id ? disc('Elogio').find(x => x.id === id) : { tipo: 'Elogio', data: hoje(), subtipo: 'Elogio individual', militaresIds: mid || '', autoridade: cfg('cmtNome') };
+  abrirForm({ titulo: id ? 'Elogio' : 'Novo elogio', valores: e, campos: [
+    { k: 'data', l: 'Data', t: 'date', req: true }, { k: 'subtipo', l: 'Tipo', t: 'select', o: TIPOS_ELOGIO, vazio: false },
+    { k: 'militaresIds', l: 'Militar(es) elogiado(s)', t: 'militares' }, { k: 'relato', l: 'Texto / motivo do elogio', t: 'textarea' },
+    { k: 'autoridade', l: 'Quem elogiou' }, { k: 'bi', l: 'Publicado em (BI / ADT)' }],
+    aoSalvar: o => { if (!o.militaresIds) throw new Error('Marque pelo menos um militar.'); return salvar('Disciplina', [{ ...o, tipo: 'Elogio' }]); },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+function editarAnotacao(id, mid) {
+  const a = id ? disc('Anotacao').find(x => x.id === id) : { tipo: 'Anotacao', data: hoje(), subtipo: 'Observação', militarId: mid || '', participante: S.user.nome || '' };
+  abrirForm({ titulo: id ? 'Anotação (Boca Podre)' : 'Nova anotação (Boca Podre)', valores: a, campos: [
+    { k: 'data', l: 'Data', t: 'date', req: true }, { k: 'militarId', l: 'Militar', t: 'militar', req: true },
+    { k: 'subtipo', l: 'Tipo', t: 'select', o: TIPOS_ANOT, vazio: false }, { k: 'participante', l: 'Quem anotou' },
+    { k: 'relato', l: 'Anotação', t: 'textarea', req: true }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Anotacao' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+
+
+function textoParte4() {
+  const pun = disc('FATD').filter(f => f.decisao === 'Punido' && !f.bi && f.historico !== 'Sim').sort((a, b) => (a.dataDecisao || '').localeCompare(b.dataDecisao || ''));
+  const elo = disc('Elogio').filter(e => !e.bi).sort((a, b) => a.data.localeCompare(b.data));
+  if (!pun.length && !elo.length) return SEM_ALT;
+  const partes = [];
+  if (elo.length) partes.push('ELOGIOS\n' + elo.map(e => `- ${e.subtipo}: ${ids(e.militaresIds).map(nomeMil).join(', ')}. ${e.relato || ''}`.trim()).join('\n'));
+  if (pun.length) partes.push('PUNIÇÕES DISCIPLINARES\n' + pun.map(f => `- ${nomeMil(f.militarId)}: ${f.punicao.toLowerCase()}${num(f.dias) ? ` de ${f.dias} dia(s)` : ''}${f.inicio ? `, a contar de ${fmtMil(f.inicio)}` : ''}, por transgressão ${String(f.classificacao || '').toLowerCase()}${f.enquadramento ? ` (nº ${f.enquadramento} do Anexo I do RDE)` : ''}: ${f.relato || ''}`.trim()).join('\n'));
+  return partes.map((p, i) => `${i + 1}. ${p}`).join('\n\n');
+}
+
+async function marcarPublicados(a) {
+  if (!temArea('jd')) return;
+  if (!(S.db.Disciplina || []).length || !a.parte4 || norm(a.parte4) === norm(SEM_ALT)) return;
+  const ref = `ADT nº ${a.numero}${a.biNumero ? ' / BI nº ' + a.biNumero : ''}`;
+  const lista = (S.db.Disciplina || []).filter(x => !x.bi && ((x.tipo === 'FATD' && x.decisao === 'Punido' && a.parte4.includes(nomeMil(x.militarId))) || (x.tipo === 'Elogio' && ids(x.militaresIds).some(m => a.parte4.includes(nomeMil(m))))));
+  if (lista.length) await salvar('Disciplina', lista.map(x => ({ ...x, bi: ref })));
+}
+
+DOCS.fatd = id => {
+  const f = disc('FATD').find(x => x.id === id), m = MIL[f.militarId] || {};
+  const linha = '_______________________________________';
+  return { tipo: 'Disciplina', ref: f.id, titulo: `FATD ${String(f.numero).replace('/', '-')} - ${m.nomeGuerra || ''}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: `FORMULÁRIO DE APURAÇÃO DE TRANSGRESSÃO DISCIPLINAR Nº ${f.numero}`, c: 1, b: 1 }, { esp: 1 },
+    { p: '1. IDENTIFICAÇÃO DO MILITAR', b: 1, l: 1 },
+    { t: [[{ v: 'Posto/Grad', b: 1, l: 1 }, { v: m.postoGrad || '', l: 1 }, { v: 'Idt', b: 1, l: 1 }, { v: m.idt || '', l: 1 }], [{ v: 'Nome', b: 1, l: 1 }, { v: m.nomeCompleto || m.nomeGuerra || '', l: 1, span: 3 }], [{ v: 'Subunidade', b: 1, l: 1 }, { v: `${cfg('sigla')}${m.pelotao ? ' – ' + m.pelotao : ''}`, l: 1, span: 3 }]], w: [16, 34, 12, 38], sz: 9.5 },
+    { p: '2. RELATO DO FATO', b: 1, l: 1, mt: 8 },
+    { p: `Em ${fmtMil(f.dataFato)}, ${f.relato || ''}` }, { p: `Participante: ${f.participante || linha}`, mt: 4 },
+    { p: '3. CIÊNCIA', b: 1, l: 1, mt: 8 },
+    { p: `Recebi a 1ª via deste formulário em ${f.ciencia ? fmtMil(f.ciencia) : '____/____/______'}, ciente de que tenho o prazo de ${PRAZO_DEFESA} (três) dias úteis para apresentar, por escrito, as minhas justificativas ou razões de defesa.` },
+    ...blocosAssinatura('_______________________________', 'Assinatura do militar', 2),
+    { p: '4. JUSTIFICATIVAS / RAZÕES DE DEFESA', b: 1, l: 1, mt: 8 },
+    { p: f.defesa || `${linha}${linha}\n${linha}${linha}\n${linha}${linha}` },
+    { p: '5. DECISÃO DA AUTORIDADE', b: 1, l: 1, mt: 8 },
+    { p: f.decisao === 'Justificada' ? 'Considero justificado o fato e determino o arquivamento deste formulário.'
+      : f.decisao === 'Punido' ? `Aplico ao militar a punição de ${f.punicao.toLowerCase()}${num(f.dias) ? ` de ${f.dias} (${f.dias}) dia(s)` : ''}, por transgressão ${String(f.classificacao || '').toLowerCase()}${f.enquadramento ? `, enquadrada no nº ${f.enquadramento} do Anexo I do RDE` : ''}${f.inicio ? `, a contar de ${fmtMil(f.inicio)}` : ''}.`
+      : `( ) Justificado – arquivar     ( ) Punir: ${linha}` },
+    { esp: 1 }, { p: localData(f.dataDecisao || hoje()), r: 1 }, ...blocosAssinatura(f.autoridade || cfg('cmtNome'), cfg('cmtFuncao'))] };
+};
+DOCS.fichaDisc = mid => {
+  const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid).slice().reverse();
+  return { tipo: 'Disciplina', ref: mid, titulo: `Ficha disciplinar - ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, { esp: 1 }, ...(FOTOS[mid] ? [{ img: FOTOS[mid], w: 70 }] : []),
+    { t: [[{ v: 'Militar', b: 1, l: 1 }, { v: `${nomeMil(m)}${m.nomeCompleto ? ' – ' + m.nomeCompleto : ''}`, l: 1 }], ...(sug ? [[{ v: 'Comportamento', b: 1, l: 1 }, { v: (m.comportamento || '—') + ` (sugerido pelo sistema: ${sug.c})`, l: 1 }]] : [])], w: [22, 78], sz: 9.5 },
+    { esp: 1 },
+    { t: [['Data', 'Registro', 'Detalhe'], ...(ev.length ? ev.map(e => [fmt(e.d), { v: e.t, l: 1 }, { v: e.x || '', l: 1 }]) : [['', 'Nada registrado', '']])], h: 1, w: [13, 30, 57], sz: 9 },
+    { esp: 1 }, { p: localData(hoje()), r: 1 }] };
+};
+
+
+const PARTES = [['1ª PARTE', 'SERVIÇOS DIÁRIOS'], ['2ª PARTE', 'INSTRUÇÃO'], ['3ª PARTE', 'ASSUNTOS GERAIS E ADMINISTRATIVOS'], ['4ª PARTE', 'JUSTIÇA E DISCIPLINA']];
+const SEM_ALT = 'sem alteração';
+
+const dataMai = iso => { const d = dataDe(iso); return `${d.getDate() === 1 ? '1º' : d.getDate()} DE ${MESES_EXT[d.getMonth()].toUpperCase()} DE ${d.getFullYear()} (${SEMANA[d.getDay()].toUpperCase()})`; };
+
+function periodoPadrao(data) {
+  const ini = addDias(data, 1);
+  let fim = ini;
+  for (let k = 0; k < 10 && corDoDia(fim) !== 'P'; k++) fim = addDias(fim, 1);
+  return { ini, fim };
+}
+
+function montarServicos(ini, fim) {
+  const dias = [];
+  for (let d = ini; d && d <= (fim || ini); d = addDias(d, 1)) {
+    
+    const linhas = tiposAtivos().flatMap(t => [...lancamentos(d, t.id).filter(e => !emBranco(e)).map(e => ({ t, nome: nomeMil(quemTira(e)) })),
+      ...Array.from({ length: faltamNoDia(t, d) }, () => ({ t, nome: '(a designar)' }))]);
+    const lado = g => linhas.filter(x => (x.t.grupo || 'Externo') === g).map(x => [x.t.nome, x.nome]);
+    dias.push({ data: d, ext: lado('Externo'), int: lado('Interno') });
+  }
+  return dias;
+}
+
+function servicosDoAditamento(a) {
+  if (a.status === 'Publicado' && a.servicos) { try { return JSON.parse(a.servicos); } catch (e) { a.servicos = ''; } }
+  return montarServicos(a.dataServico, a.servicoAte);
+}
+function vAditamentos() {
+  if (S.adEdit) return vEditorAditamento();
+  const lista = S.db.Aditamentos.slice().sort((a, b) => b.data.localeCompare(a.data) || num(b.numero) - num(a.numero)).filter(a => casa('ad', a.numero, a.biNumero, a.parte2, a.parte3, a.parte4));
+  return `<h2>Aditamentos</h2><p class="sub">Aditamentos ao boletim, no modelo da Cia: a 1ª parte sai da escala (serviços externos e internos de cada dia) e a 3ª parte dos afastamentos, missões e cautelas.</p>
+  <div class="bar">${busca('ad', 'Buscar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novoAditamento()">+ Aditamento</button>' : ''}</div>
+  ${tabela(lista, [
+    { l: 'Nº', v: a => `<b>${esc(a.numero)}</b>`, c: 'num' }, { l: 'Data', v: a => fmt(a.data) }, { l: 'Boletim nº', v: a => esc(a.biNumero) },
+    { l: 'Serviços', v: a => a.dataServico ? `${fmt(a.dataServico)}${a.servicoAte && a.servicoAte !== a.dataServico ? ' a ' + fmt(a.servicoAte) : ''}` : '' },
+    { l: 'Situação', v: a => `<span class="tag ${a.status === 'Publicado' ? 'ok' : 'warn'}">${esc(a.status || 'Rascunho')}</span>` },
+    { l: 'Arquivos', v: a => [a.pdfUrl ? `<a href="${esc(a.pdfUrl)}" target="_blank">PDF</a>` : '', a.docUrl ? `<a href="${esc(a.docUrl)}" target="_blank">Editável</a>` : ''].filter(Boolean).join(' · ') }
+  ], a => `<button class="btn sm" onclick="abrirAditamento('${a.id}')">${pode() ? 'Abrir' : 'Ver'}</button> ${botoesDoc('aditamento', a.id)}`)}`;
+}
+function novoAditamento() {
+  const d = hoje(), ano = d.slice(0, 4);
+  const doAno = S.db.Aditamentos.filter(a => (a.data || '').slice(0, 4) === ano);
+  const n = doAno.reduce((mx, a) => Math.max(mx, num(a.numero)), 0) + 1;
+  const ultimoBi = doAno.reduce((mx, a) => Math.max(mx, num(a.biNumero)), 0);
+  const { ini, fim } = periodoPadrao(d);
+  S.adEdit = { id: '', numero: String(n), data: d, biNumero: String(ultimoBi ? ultimoBi + 1 : n), dataServico: ini, servicoAte: fim, parte1: '', parte2: SEM_ALT, parte3: '', parte4: SEM_ALT, status: 'Rascunho', autor: S.user.email };
+  S.adEdit.parte3 = textoParte3(S.adEdit.data, fim);
+  S.view = 'aditamentos';
+  render();
+}
+function abrirAditamento(id) { S.adEdit = { ...S.db.Aditamentos.find(a => a.id === id) }; render(); }
+function mudarDataAditamento(v) {
+  const a = S.adEdit; a.data = v;
+  const { ini, fim } = periodoPadrao(v); a.dataServico = ini; a.servicoAte = fim;
+  render();
+}
+
+function textoParte3(de, ate) {
+  const blocos = [];
+  const imps = S.db.Impedimentos.filter(i => i.tipo !== 'Cumprindo punição' && i.inicio >= de && i.inicio <= ate).sort((a, b) => a.tipo.localeCompare(b.tipo));
+  if (imps.length) {
+    const porTipo = {};
+    imps.forEach(i => (porTipo[i.tipo] ||= []).push(i));
+    blocos.push('1. AFASTAMENTOS\n' + Object.entries(porTipo).map(([tipo, l], k) =>
+      `${'abcdefghij'[k]}. ${tipo}\n` + l.map(i => `- ${nomeMil(i.militarId)}: de ${fmtMil(i.inicio)} a ${fmtMil(i.fim)}${i.obs ? ' (' + i.obs + ')' : ''}.`).join('\n')).join('\n'));
+  }
+  const retornos = S.db.Impedimentos.filter(i => i.tipo !== 'Cumprindo punição' && i.fim && addDias(i.fim, 1) >= de && addDias(i.fim, 1) <= ate);
+  if (retornos.length) blocos.push(`${blocos.length + 1}. APRESENTAÇÃO / RETORNO\n` + retornos.map(i => `- ${nomeMil(i.militarId)}, por término de ${i.tipo.toLowerCase()}, em ${fmtMil(addDias(i.fim, 1))}.`).join('\n'));
+  const mis = S.db.Missoes.filter(m => m.status !== 'Cancelada' && m.inicio >= de && m.inicio <= ate);
+  if (mis.length) blocos.push(`${blocos.length + 1}. MISSÕES\n` + mis.map((m, k) => {
+    const pessoal = ids(m.militaresIds).map(i => MIL[i]).filter(Boolean).sort(ordemMil).map(nomeMil);
+    return `${'abcdefghij'[k]}. ${m.titulo}\nDesigno os militares abaixo para a missão em epígrafe, ${m.local ? 'em ' + m.local + ', ' : ''}no período de ${fmtMil(m.inicio)}${m.fim && m.fim !== m.inicio ? ' a ' + fmtMil(m.fim) : ''}${m.responsavelId ? ', sob o comando do ' + nomeMil(m.responsavelId) : ''}:\n${pessoal.map(p => '- ' + p).join('\n') || '- (pessoal a definir)'}`;
+  }).join('\n'));
+  const caut = gruposCautela().filter(g => g.dataSaida >= de && g.dataSaida <= ate);
+  if (caut.length) blocos.push(`${blocos.length + 1}. MATERIAL – CAUTELAS\n` + caut.map(g => `- Cautela nº ${g.numero} ao ${nomeMil(g.militarId)}: ${g.itens.map(c => `${c.quantidade} ${(MAT[c.materialId] || {}).unidade || 'un'} de ${descCautela(c)}`).join('; ')}.`).join('\n'));
+  return blocos.join('\n\n') || SEM_ALT;
+}
+
+function vEditorAditamento() {
+  const a = S.adEdit, ro = !pode();
+  const campo = (k, l, t = 'text', on = `S.adEdit.${k}=this.value;render()`) => `<label class="muted"><b>${l}</b><input type="${t}" value="${esc(a[k])}" ${ro ? 'readonly' : ''} onchange="${on}"></label>`;
+  const area = (k, i, dica) => `<div class="parte"><div class="bar"><b class="grow">${PARTES[i].join(' – ')}</b>
+    ${!ro && k === 'parte3' ? '<button class="btn sm" onclick="preencherParte3()">Preencher (afastamentos, missões, cautelas)</button>' : ''}${!ro && k === 'parte4' && pode() && temArea('jd') ? '<button class="btn sm" onclick="preencherParte4()">Preencher (punições e elogios a publicar)</button>' : ''}</div>
+    ${dica ? `<p class="muted" style="margin:0 0 6px">${dica}</p>` : ''}<textarea id="ad_${k}" rows="${k === 'parte3' ? 10 : k === 'parte1' ? 3 : 4}" ${ro ? 'readonly' : ''} oninput="S.adEdit.${k}=this.value">${esc(a[k])}</textarea></div>`;
+  const servicos = servicosDoAditamento(a);
+  const previa = htmlDoc(servicos.flatMap(blocosDia));
+  return `<div class="bar"><button class="btn" onclick="S.adEdit=null;render()">◀ Voltar</button><h2 class="grow" style="margin:0">Aditamento nº ${esc(a.numero)}</h2>
+    <span class="tag ${a.status === 'Publicado' ? 'ok' : 'warn'}">${esc(a.status)}</span></div>
+  <div class="card"><div class="ad-grid">${campo('numero', 'Número')}${campo('data', 'Data', 'date', 'mudarDataAditamento(this.value)')}${campo('biNumero', `Ao boletim nº (${esc(cfg('siglaOM'))})`)}
+    <label class="muted"><b>Serviços de … até</b><span style="display:flex;gap:6px"><input type="date" value="${esc(a.dataServico)}" ${ro ? 'readonly' : ''} onchange="S.adEdit.dataServico=this.value;render()" aria-label="Serviços de"><input type="date" value="${esc(a.servicoAte)}" ${ro ? 'readonly' : ''} onchange="S.adEdit.servicoAte=this.value;render()" aria-label="Serviços até"></span></label></div>
+  <div class="parte"><div class="bar"><b class="grow">1ª PARTE – SERVIÇOS DIÁRIOS</b>${!ro && a.status === 'Publicado' ? '<button class="btn sm" onclick="atualizarParte1()">Atualizar pela escala</button>' : ''}</div>
+    <p class="muted" style="margin:0 0 6px">${a.status === 'Publicado' ? 'Congelada na publicação.' : 'Montada da escala de serviço, que é onde se troca um nome.'} Para mudar o que é externo ou interno, ou os dias de cada serviço, use Configurações → Tipos de serviço.</p>
+    <div class="adprev">${previa || '<p class="muted">Nenhum serviço no período.</p>'}</div></div>
+  ${area('parte1', 0, 'Texto adicional da 1ª parte (opcional), impresso depois das tabelas.').replace('1ª PARTE – SERVIÇOS DIÁRIOS', '1ª PARTE – texto adicional')}
+  ${area('parte2', 1)}${area('parte3', 2)}${area('parte4', 3)}
+  <div class="bar" style="margin-top:14px">${!ro ? `<button class="btn pri" onclick="salvarAditamento()">Salvar</button>
+    <button class="btn" onclick="publicarAditamento()" title="Salva, marca como publicado, congela a 1ª parte e arquiva o PDF no Drive">Publicar e arquivar PDF</button>` : ''}
+    <button class="btn" onclick="emitir('aditamento')">Imprimir</button>
+    ${!ro ? `<button class="btn" onclick="salvarAditamento().then(a=>a&&emitir('aditamento',a.id,'pdf'))">Salvar PDF</button>
+    <button class="btn" onclick="salvarAditamento().then(a=>a&&emitir('aditamento',a.id,'doc'))" title="Google Doc editável; no Docs, Arquivo → Fazer download → Word">Editável (Doc/Word)</button>` : ''}
+    ${a.pdfUrl ? `<a class="btn" href="${esc(a.pdfUrl)}" target="_blank">Abrir PDF</a>` : ''}${a.docUrl ? `<a class="btn" href="${esc(a.docUrl)}" target="_blank">Abrir editável</a>` : ''}
+    <span class="grow"></span>${!ro && a.id ? `<button class="btn dng" onclick="excluirAditamento()">Excluir</button>` : ''}</div></div>`;
+}
+async function preencherParte4() {
+  const a = S.adEdit;
+  if (a.parte4 && norm(a.parte4) !== norm(SEM_ALT) && !await confirmar('Substituir o texto atual da 4ª parte?')) return;
+  a.parte4 = textoParte4(); render();
+}
+async function preencherParte3() {
+  const a = S.adEdit;
+  if (a.parte3 && norm(a.parte3) !== norm(SEM_ALT) && !await confirmar('Substituir o texto atual da 3ª parte?')) return;
+  a.parte3 = textoParte3(a.data, a.servicoAte || a.dataServico);
+  render();
+}
+function atualizarParte1() { S.adEdit.servicos = JSON.stringify(montarServicos(S.adEdit.dataServico, S.adEdit.servicoAte)); toast('1ª parte atualizada pela escala. Salve para gravar.'); render(); }
+async function salvarAditamento(status) {
+  const a = S.adEdit;
+  if (!a.numero || !a.data) return toast('Informe número e data.', true);
+  if (a.servicoAte && a.dataServico && a.servicoAte < a.dataServico) return toast('O fim do período de serviços é antes do início.', true);
+  const gravado = S.db.Aditamentos.find(x => x.id === a.id);
+  
+  if (!gravado || gravado.status !== 'Publicado') a.servicos = JSON.stringify(montarServicos(a.dataServico, a.servicoAte));
+  if (status) a.status = status;
+  const [salvo] = await salvar('Aditamentos', [a]);
+  if (status === 'Publicado') await marcarPublicados(a);
+  S.adEdit = { ...a, id: salvo.id };
+  toast(status === 'Publicado' ? 'Aditamento publicado.' : 'Aditamento salvo.'); render();
+  return S.adEdit;
+}
+async function excluirAditamento() { if (!await confirmar('Excluir este aditamento?')) return; await salvar('Aditamentos', [], [S.adEdit.id]); S.adEdit = null; render(); }
+async function publicarAditamento() {
+  const a = await salvarAditamento('Publicado');
+  if (a) await emitir('aditamento', a.id, 'pdf');
+}
+
+
+function blocosDia(dia) {
+  const B = [{ p: `ESCALA DE SERVIÇO PARA O DIA ${dataMai(dia.data)}`, c: 1, b: 1, mt: 12 }];
+  let n = 0;
+  [['SERVIÇOS EXTERNOS', dia.ext], ['SERVIÇOS INTERNOS', dia.int]].forEach(([t, l]) => {
+    if (!l || !l.length) return;
+    B.push({ p: `${++n} - ${t}:`, b: 1, l: 1, mt: 6 }, { t: l, w: [30, 70], sz: 9.5 });
+  });
+  return B;
+}
+
+function blocosParte(txt) {
+  const linhas = String(txt || SEM_ALT).replace(/\s+$/, '').split('\n');
+  if (linhas.length === 1 && linhas[0].length <= 90) return [{ p: linhas[0], c: 1, i: 1 }];
+  return linhas.map(l => ({ p: l }));
+}
+DOCS.aditamento = id => {
+  const a = id ? S.db.Aditamentos.find(x => x.id === id) : S.adEdit;
+  const B = [...blocosCabecalho(), { esp: 1 },
+    { p: `${cfg('cidade').toUpperCase()}, ${dataMai(a.data)}`, c: 1 }, { esp: 1 },
+    { p: `ADITAMENTO Nº ${a.numero} DA ${cfg('sigla').toUpperCase()}, AO BOLETIM Nº ${a.biNumero || '___'} DO ${cfg('siglaOM').toUpperCase()}`, c: 1, b: 1 },
+    { p: 'PARA CONHECIMENTO DESTA COMPANHIA E DEVIDA EXECUÇÃO, PUBLICO O SEGUINTE:', c: 1, b: 1 }, { esp: 1 },
+    { p: PARTES[0].join(' – '), c: 1, b: 1 },
+    ...servicosDoAditamento(a).flatMap(blocosDia)];
+  if (a.parte1 && a.parte1.trim()) B.push({ esp: 1 }, ...a.parte1.trim().split('\n').map(l => ({ p: l })));
+  PARTES.slice(1).forEach(([n, t], i) => B.push({ p: n, c: 1, b: 1, mt: 18 }, { p: t, c: 1, b: 1 }, ...blocosParte(a['parte' + (i + 2)])));
+  B.push(...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'), 4));
+  return { tipo: 'Aditamentos', titulo: `ADT ${String(a.numero).padStart(3, '0')} ${fmtMil(a.data)} - ${SEMANA[dataDe(a.data).getDay()]}`, ref: a.id, blocos: B };
+};
+
+
+const TIPOS_MATERIAL = ['Permanente', 'Uso duradouro', 'Consumo'];
+const CAMPOS_MAT = [
+  { k: 'descricao', l: 'Nome do material (especificação)', req: true, full: true },
+  { k: 'tipoMaterial', l: 'Tipo', t: 'select', o: TIPOS_MATERIAL, padrao: 'Permanente', vazio: false },
+  { k: 'categoria', l: 'Categoria', t: 'select', o: CATEGORIAS },
+  { k: 'nrFicha', l: 'Nr ficha' },
+  { k: 'codMat', l: 'Cód. material' },
+  { k: 'contaContabil', l: 'Conta contábil' },
+  { k: 'acervo', l: 'Acervo', t: 'select', o: ['N', 'S'], padrao: 'N', vazio: false },
+  { k: 'quantidade', l: 'Quantidade', t: 'number', req: true, padrao: '1' },
+  { k: 'unidade', l: 'Unidade', padrao: 'un' },
+  { k: 'estoqueMinimo', l: 'Estoque mínimo (para o pedido de reposição)', t: 'number' },
+  { k: 'valor', l: 'Valor unitário (R$)', t: 'number' },
+  { k: 'localizacao', l: 'Dependência / local', t: 'local' },
+  { k: 'estado', l: 'Estado', t: 'select', o: ESTADOS, padrao: 'Bom' },
+  { k: 'ultimaConferencia', l: 'Última conferência', t: 'date' },
+  { k: 'patrimonio', l: 'Nr patrimoniais (separados por vírgula)', t: 'textarea' },
+  { k: 'obs', l: 'Observações', full: true },
+  { k: 'arquivoUrl', l: 'Anexo (foto, nota fiscal…)', t: 'file', full: true }
+];
+const descCautela = c => (MAT[c.materialId] || {}).descricao || c.especificacao || '(excluído)';
+const cauteladoDe = m => S.db.Cautelas.filter(c => c.materialId === m.id && c.status !== 'Devolvida').reduce((s, c) => s + num(c.quantidade), 0);
+const disponivel = m => num(m.quantidade) - cauteladoDe(m);
+const reais = v => num(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const patrimonios = m => ids(String(m.patrimonio || '').replace(/[;\n]/g, ','));
+
+
+const numCautela = c => c.numero || c.id;
+function gruposCautela() {
+  const g = {};
+  S.db.Cautelas.forEach(c => { const k = numCautela(c); (g[k] ||= { numero: k, itens: [] }).itens.push(c); });
+  return Object.values(g).map(x => {
+    const c0 = x.itens[0];
+    const aberta = x.itens.some(c => c.status !== 'Devolvida');
+    return { ...x, militarId: c0.militarId, dataSaida: c0.dataSaida, previsaoDevolucao: c0.previsaoDevolucao, obs: c0.obs, arquivoUrl: x.itens.map(c => c.arquivoUrl).find(Boolean) || '',
+      aberta, dataDevolucao: aberta ? '' : x.itens.map(c => c.dataDevolucao).sort().pop() };
+  }).sort((a, b) => b.dataSaida.localeCompare(a.dataSaida) || String(b.numero).localeCompare(String(a.numero)));
+}
+const proximoNumero = (lista, ano) => `${String(lista.filter(n => String(n).endsWith('/' + ano)).reduce((mx, n) => Math.max(mx, parseInt(n, 10) || 0), 0) + 1).padStart(3, '0')}/${ano}`;
+
+function vMaterial() {
+  const t = aba('material', 'inv');
+  let corpo;
+  if (t === 'inv') {
+    const cat = S.filtro.cat || '', tm = S.filtro.tipoMat || '';
+    const lista = S.db.Material.filter(m => (!cat || m.categoria === cat) && (!tm || (m.tipoMaterial || 'Permanente') === tm) && casa('mat', m.patrimonio, m.descricao, m.localizacao, m.categoria, m.nrFicha, m.codMat))
+      .sort((a, b) => String(a.categoria).localeCompare(b.categoria) || a.descricao.localeCompare(b.descricao));
+    const total = lista.reduce((s, m) => s + num(m.valor) * num(m.quantidade), 0);
+    corpo = `<div class="bar">${busca('mat', 'Buscar material, ficha ou patrimônio…')}
+      <select onchange="S.filtro.tipoMat=this.value;render()" aria-label="Tipo"><option value="">Todos os tipos</option>${TIPOS_MATERIAL.map(c => `<option ${c === tm ? 'selected' : ''}>${c}</option>`).join('')}</select>
+      <select onchange="S.filtro.cat=this.value;render()" aria-label="Categoria"><option value="">Todas as categorias</option>${CATEGORIAS.map(c => `<option ${c === cat ? 'selected' : ''}>${c}</option>`).join('')}</select>
+      <span class="grow"></span>${pode() ? `<button class="btn" onclick="S.filtro.impMat='siscofis';S.sub.material='imp';render()">Importar relação do SISCOFIS (PDF)</button><button class="btn pri" onclick="editarMat()">+ Material</button>` : ''}</div>
+    <div class="bar"><span class="muted grow">Relação de material carga (formato SISCOFIS), por dependência:</span>${botoesDocGrandes('relacao', S.filtro.dep || '', 'relacao')}
+      <select onchange="S.filtro.dep=this.value;render()" aria-label="Dependência"><option value="">Todas as dependências</option>${dependencias().map(d => `<option ${d === S.filtro.dep ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select></div>
+    ${tabela(lista, [
+      { l: 'Material', v: m => `<b>${esc(m.descricao)}</b> ${linkArq(m.arquivoUrl)}<div class="muted">${esc(m.tipoMaterial || 'Permanente')} · ${esc(m.categoria || '—')}${m.localizacao ? ' · ' + esc(m.localizacao) : ''}</div>` },
+      { l: 'Ficha / Cód', v: m => `${esc(m.nrFicha)}<div class="muted">${esc(m.codMat)}</div>` },
+      { l: 'Qtd', v: m => `${esc(m.quantidade)} ${esc(m.unidade)}`, c: 'num' },
+      { l: 'Disponível', v: m => { const d = disponivel(m); return `<span class="${d < num(m.quantidade) ? 'tag info' : ''}">${d}</span>`; }, c: 'num' },
+      { l: 'Valor total', v: m => num(m.valor) ? reais(num(m.valor) * num(m.quantidade)) : '', c: 'num' },
+      { l: 'Estado', v: m => `<span class="tag ${m.estado === 'Bom' ? 'ok' : m.estado === 'Inservível' ? 'dng' : 'warn'}">${esc(m.estado || '—')}</span>` },
+      { l: 'Conferido', v: m => fmt(m.ultimaConferencia) }
+    ], pode() ? m => `<button class="btn sm" onclick="conferir('${m.id}')" title="Marcar como conferido hoje">✔</button> <button class="btn sm" onclick="novaCautela('${m.id}')">Cautelar</button> <button class="btn sm" onclick="editarMat('${m.id}')">Editar</button>` : null)}
+    <p class="muted">${lista.length} item(ns)${total ? ' · valor total R$ ' + reais(total) : ''}.</p>`;
+  } else if (t === 'caut') {
+    const ver = S.filtro.cautVer || 'abertas';
+    const lista = gruposCautela().filter(g => (ver === 'todas' || g.aberta) && casa('caut', g.numero, nomeMil(g.militarId), ...g.itens.map(descCautela)));
+    corpo = `<div class="bar">${busca('caut', 'Buscar nº, militar ou material…')}<select onchange="S.filtro.cautVer=this.value;render()" aria-label="Quais cautelas"><option value="abertas">Em aberto</option><option value="todas" ${ver === 'todas' ? 'selected' : ''}>Todas</option></select>
+      <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="novaCautela()">+ Cautela</button>' : ''}</div>${tabelaCautelas(lista)}`;
+  } else if (t === 'ped') {
+    const sent = S.filtro.pedSent || 'rec', rec = sent === 'rec';
+    const lista = S.db.Pedidos.filter(p => sentidoPedido(p) === (rec ? 'Recebido' : 'Enviado')).sort((a, b) => b.data.localeCompare(a.data) || String(b.numero).localeCompare(String(a.numero))).filter(p => casa('ped', p.numero, p.de, p.para, p.itens));
+    const pend = S.db.Pedidos.filter(p => sentidoPedido(p) === 'Recebido' && ['Pendente', 'Atendido parcialmente', ''].includes(p.status || '')).length;
+    const rep = sugestoesReposicao().length;
+    corpo = `<div class="tabs" style="margin-top:-6px"><button class="${rec ? 'on' : ''}" onclick="S.filtro.pedSent='rec';render()">Recebidos dos Pel / Seç${pend ? ` <span class="tag warn">${pend}</span>` : ''}</button><button class="${rec ? '' : 'on'}" onclick="S.filtro.pedSent='env';render()">Enviados ao Fisc Adm / S4</button></div>
+    <p class="muted" style="margin-top:0">${rec ? 'Pedidos que os pelotões e seções fazem para a Cia. <b>Atender</b> dá baixa no estoque; o que faltar entra no pedido de reposição.' : 'Pedidos da Cia ao Fisc Adm / S4 para repor o estoque. <b>Dar entrada</b> soma no inventário o que chegou.'}</p>
+    <div class="bar">${busca('ped', 'Buscar pedido…')}<span class="grow"></span>${pode() ? `<button class="btn" onclick="S.filtro.impMat='pedido';S.impPdf=null;S.sub.material='imp';render()">Importar PDF de pedido</button>${rec ? '<button class="btn pri" onclick="editarPedido(null,\'Recebido\')">+ Pedido recebido</button>' : `<button class="btn" onclick="editarPedido(null,'Enviado')">+ Pedido em branco</button><button class="btn pri" onclick="pedidoReposicao()">+ Pedido de reposição${rep ? ` (${rep})` : ''}</button>`}` : ''}</div>
+    ${tabela(lista, [
+      { l: 'Nº', v: p => `<b>${esc(p.numero)}</b>` }, { l: 'Data', v: p => fmt(p.data) }, { l: 'Do / ao', v: p => `${esc(p.de)}<div class="muted">ao ${esc(p.para)}</div>` },
+      { l: 'Itens', v: p => { const it = itensPedido(p); return `${it.length} item(ns)<div class="muted">${esc(it.slice(0, 3).map(i => i.esp).join(', '))}${it.length > 3 ? '…' : ''}</div>`; } },
+      { l: 'Situação', v: p => `<span class="tag ${/^(Recebido|Atendido)$/.test(p.status) ? 'ok' : p.status === 'Negado' ? 'dng' : /Autorizado|parcial/.test(p.status) ? 'info' : 'warn'}">${esc(p.status || (rec ? 'Pendente' : 'Rascunho'))}</span>` }
+    ], p => `${pode() && rec && !/^(Atendido|Negado)$/.test(p.status) ? `<button class="btn sm pri" onclick="atenderPedido('${p.id}')">Atender</button> ` : ''}${pode() && !rec && !/^(Recebido|Negado)$/.test(p.status) ? `<button class="btn sm pri" onclick="entradaPedido('${p.id}')">Dar entrada</button> ` : ''}${pode() ? `<button class="btn sm" onclick="editarPedido('${p.id}')">Abrir</button> ` : ''}${botoesDoc('pedido', p.id)}`)}`;
+  } else if (t === 'locais') {
+    corpo = gerenciarLocais();
+  } else {
+    const modo = S.filtro.impMat || 'planilha';
+    corpo = `<div class="tabs" style="margin-top:-6px">${[['planilha', 'Planilha (Excel, CSV ou Google)'], ['siscofis', 'Relação do SISCOFIS (PDF)'], ['pedido', 'Pedido de material (PDF)']]
+      .map(([k, l]) => `<button class="${modo === k ? 'on' : ''}" onclick="S.filtro.impMat='${k}';render()">${l}</button>`).join('')}</div>` + (modo === 'planilha' ? vImportar('Material') : vImportarPdf(modo));
+  }
+  return `<h2>Material</h2><p class="sub">Material carga da subunidade, cautelas, pedidos de material e relação carga, com anexos no Google Drive.</p>
+  ${abas('material', [['inv', 'Inventário'], ['caut', 'Cautelas'], ['ped', 'Pedidos de material'], ['locais', 'Locais'], ...(pode() ? [['imp', 'Importar']] : [])])}${corpo}`;
+}
+const dependencias = () => [...new Set(S.db.Material.map(m => m.localizacao).filter(Boolean))].sort();
+
+const LOCAIS_PADRAO = ['Enc Mat', 'Furriel', 'Sargenteação', 'Reserva de armamento', 'Depósito da 1ª Cia', 'Sala do Cmt Cia', 'Alojamento', 'Pel Sup'];
+const NOVO_LOCAL = '__novo_local';
+
+const nomesLocais = () => [...new Set([...((S.db.Locais || []).length ? S.db.Locais : LOCAIS_PADRAO.map((nome, i) => ({ nome, ordem: i + 1 }))).slice().sort((a, b) => num(a.ordem) - num(b.ordem) || a.nome.localeCompare(b.nome)).map(l => l.nome), ...dependencias()])];
+async function novoLocal(sel) {
+  const nome = ((await dialogo({ msg: 'Nome do novo local (instalação da Cia):', campo: 'text', ok: 'Adicionar' })) || '').trim();
+  if (!nome) { sel.value = ''; return; }
+  const igual = nomesLocais().find(x => norm(x) === norm(nome));
+  if (!igual) await salvar('Locais', comPadrao({ id: uid(), nome }));
+  const v = igual || nome;
+  if (![...sel.options].some(o => o.value === v)) sel.insertAdjacentHTML('beforeend', `<option>${esc(v)}</option>`), sel.appendChild(sel.querySelector(`option[value="${NOVO_LOCAL}"]`));
+  sel.value = v; toast(igual ? `"${igual}" já existia e foi escolhido.` : `Local "${nome}" adicionado.`);
+}
+function gerenciarLocais() {
+  const usados = l => S.db.Material.filter(m => m.localizacao === l.nome).length;
+  if (!(S.db.Locais || []).length && pode()) return `<div class="card"><h3 style="margin-top:0">Locais do material (instalações da Cia)</h3><p>Por enquanto o sistema usa a lista padrão: <b>${LOCAIS_PADRAO.join(', ')}</b>.</p><button class="btn pri" onclick="locaisPadrao()">Começar a editar a lista</button></div>`;
+  const lista = (S.db.Locais || []).slice().sort((a, b) => num(a.ordem) - num(b.ordem));
+  return `<div class="card"><h3 style="margin-top:0">Locais do material (instalações da Cia)</h3>
+    <p class="muted" style="margin-top:0">Aparecem para escolher no cadastro do material, nos pedidos e nas cautelas. Também dá para adicionar na hora, pela opção "+ Adicionar local…".</p>
+    ${tabela(lista, [{ l: 'Local', v: l => `<b>${esc(l.nome)}</b>` }, { l: 'Itens no inventário', v: l => usados(l), c: 'num' }],
+      pode() ? l => `<button class="btn sm" onclick="moverLocal('${l.id}',-1)" title="Subir" aria-label="Subir">▲</button> <button class="btn sm" onclick="moverLocal('${l.id}',1)" title="Descer" aria-label="Descer">▼</button> <button class="btn sm" onclick="renomearLocal('${l.id}')">Renomear</button> <button class="btn sm dng" onclick="excluir('Locais','${l.id}')">Excluir</button>` : null)}
+    ${pode() ? `<div class="bar" style="margin-top:8px"><button class="btn sm pri" onclick="maisLocal()">+ Local</button></div>` : ''}</div>`;
+}
+
+function comPadrao(novo) {
+  const base = (S.db.Locais || []).length ? [] : LOCAIS_PADRAO.filter(n => norm(n) !== norm(novo.nome)).map((nome, i) => ({ id: uid(), nome, ordem: String(i + 1) }));
+  return [...base, { ...novo, ordem: String((S.db.Locais || []).length + base.length + 1) }];
+}
+async function maisLocal() {
+  const nome = ((await dialogo({ msg: 'Nome do novo local (instalação da Cia):', campo: 'text', ok: 'Adicionar' })) || '').trim();
+  if (!nome) return;
+  if (nomesLocais().some(x => norm(x) === norm(nome)) && (S.db.Locais || []).some(l => norm(l.nome) === norm(nome))) return toast('Esse local já existe.', true);
+  await salvar('Locais', comPadrao({ id: uid(), nome })); render();
+}
+async function locaisPadrao() { await salvar('Locais', LOCAIS_PADRAO.filter(n => !(S.db.Locais || []).some(l => norm(l.nome) === norm(n))).map((nome, i) => ({ id: uid(), nome, ordem: String(i + 1) }))); render(); }
+
+async function moverLocal(id, d) {
+  const l = S.db.Locais.slice().sort((a, b) => num(a.ordem) - num(b.ordem)), i = l.findIndex(x => x.id === id), j = i + d;
+  if (j < 0 || j >= l.length) return;
+  [l[i], l[j]] = [l[j], l[i]];
+  await salvar('Locais', l.map((x, k) => ({ ...x, ordem: String(k + 1) }))); render();
+}
+async function renomearLocal(id) {
+  const l = S.db.Locais.find(x => x.id === id), nome = ((await dialogo({ msg: `Novo nome para "${l.nome}" (os materiais desse local mudam junto):`, campo: 'text', valor: l.nome, ok: 'Renomear' })) || '').trim();
+  if (!nome || nome === l.nome) return;
+  const mats = S.db.Material.filter(m => m.localizacao === l.nome).map(m => ({ ...m, localizacao: nome }));
+  await salvar('Locais', [{ ...l, nome }]); if (mats.length) await salvar('Material', mats);
+  toast('Local renomeado.'); render();
+}
+
+const chaveMat = s => soAscii(s).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map(w => w.length > 3 ? w.replace(/(oes|aes|ais|eis|res|zes|ns|s)$/, x => ({ oes: 'ao', aes: 'ao', ais: 'al', eis: 'el', res: 'r', zes: 'z', ns: 'm', s: '' })[x]) : w).join(' ');
+const materialParecido = (desc, id) => S.db.Material.find(m => m.id !== id && chaveMat(m.descricao) === chaveMat(desc));
+
+function materialRapido(desc) {
+  return new Promise(res => {
+    const campos = CAMPOS_MAT.filter(c => !['patrimonio', 'ultimaConferencia', 'arquivoUrl', 'nrFicha', 'codMat', 'contaContabil', 'acervo', 'valor'].includes(c.k)).map(c => ({ ...c, k: 'nm_' + c.k, req: c.k === 'descricao' }));
+    const val = { nm_descricao: desc, nm_tipoMaterial: 'Consumo', nm_categoria: 'Intendência', nm_quantidade: '0', nm_unidade: 'un', nm_estado: 'Bom', nm_localizacao: cfg('dependencia') };
+    const el = document.createElement('div'); el.id = 'modal2'; document.body.appendChild(el);
+    el.innerHTML = `<div class="modal-bg" style="z-index:65"><form class="modal" id="frm2" style="max-width:640px"><h3>Cadastrar material</h3>
+      <p class="muted" style="margin-top:0">O item entra no cadastro de material (com quantidade 0 se ainda não tem no estoque) e fica disponível nos próximos pedidos, sem duplicar.</p>
+      <div class="form">${campos.map(c => campoHTML(c, val[c.k])).join('')}</div>
+      <div class="acts"><button type="button" class="btn" id="nm_nao">Cancelar</button><button class="btn pri">Cadastrar</button></div></form></div>`;
+    const fim = v => { el.remove(); res(v); };
+    $('#nm_nao').onclick = () => fim(null);
+    $('#f_nm_descricao').focus();
+    $('#frm2').onsubmit = async ev => {
+      ev.preventDefault();
+      const o = Object.fromEntries(campos.map(c => [c.k.slice(3), $('#f_' + c.k).value.trim()]));
+      if (!o.descricao) return toast('Escreva o nome do material.', true);
+      const igual = materialParecido(o.descricao);
+      if (igual) { toast(`Já existe "${igual.descricao}" no cadastro: foi usado esse.`); return fim(igual); }
+      try { const [m] = await salvar('Material', [{ ...o, ultimaConferencia: hoje() }]); fim(m); } catch (e) { }
+    };
+  });
+}
+function tabelaCautelas(lista) {
+  const d = hoje();
+  return tabela(lista, [
+    { l: 'Nº', v: g => `<b>${esc(g.numero.length > 12 ? '—' : g.numero)}</b>` },
+    { l: 'Material', v: g => g.itens.map(c => `<div>${esc(c.quantidade)} × ${esc(descCautela(c))}${c.numeracao ? ` <span class="muted">${esc(c.numeracao)}</span>` : ''}${c.status === 'Devolvida' && g.aberta ? ' <span class="tag ok">devolvido</span>' : ''}</div>`).join('') + ' ' + linkArq(g.arquivoUrl) },
+    { l: 'Militar', v: g => esc(nomeMil(g.militarId)) },
+    { l: 'Saída', v: g => fmt(g.dataSaida) },
+    { l: 'Devolução', v: g => !g.aberta ? `<span class="tag ok">Devolvida ${fmt(g.dataDevolucao)}</span>` : g.previsaoDevolucao && g.previsaoDevolucao < d ? `<span class="tag dng">Vencida ${fmt(g.previsaoDevolucao)}</span>` : `<span class="tag warn">Prev. ${fmt(g.previsaoDevolucao) || '—'}</span>` }
+  ], g => `${botoesDoc('cautela', g.numero, 'Cautela')}${pode() && g.aberta ? ` <button class="btn sm" onclick="devolver('${esc(g.numero)}')">Devolver</button> <button class="btn sm" onclick="editarCautela('${esc(g.numero)}')">Editar</button>` : ''}`);
+}
+function editarMat(id) {
+  abrirForm({ titulo: id ? 'Editar material' : 'Novo material', campos: CAMPOS_MAT, valores: id ? MAT[id] : { localizacao: cfg('dependencia') },
+    aoSalvar: async o => {
+      const igual = materialParecido(o.descricao, id);
+      if (igual && !await confirmar(`Já existe "${igual.descricao}" (${igual.quantidade} ${igual.unidade || ''}${igual.localizacao ? ', ' + igual.localizacao : ''}). Para não duplicar, o melhor é editar o que já existe. Cadastrar este mesmo assim?`)) throw new Error('Cadastro cancelado: use o material que já existe.');
+      return salvar('Material', [o]);
+    },
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Material','${id}',true)">Excluir material</button></div>` : '' });
+}
+async function conferir(id) { await salvar('Material', [{ ...MAT[id], ultimaConferencia: hoje() }]); toast('Conferência registrada.'); render(); }
+
+
+function novaCautela(materialId) { editarCautela(null, materialId); }
+function editarCautela(numero, materialId) {
+  const g = numero ? gruposCautela().find(x => x.numero === numero) : null;
+  const ano = hoje().slice(0, 4);
+  const cab = g ? { ...g } : { numero: proximoNumero(gruposCautela().map(x => x.numero), ano), dataSaida: hoje(), previsaoDevolucao: '', militarId: '', obs: '' };
+  const itens = g ? g.itens.map(c => ({ ...c })) : [{ materialId: materialId || '', quantidade: '1', numeracao: '', destino: '' }];
+  
+  const rotulo = m => `${m.descricao}${m.nrFicha ? ' · Ficha ' + m.nrFicha : ''} · disp. ${disponivel(m)}${m.unidade ? ' ' + m.unidade : ''}`;
+  const mats = S.db.Material.slice().sort((x, y) => x.descricao.localeCompare(y.descricao));
+  const linhaItem = (it, i) => `<div class="item-caut" data-i="${i}">
+    <span class="ord" aria-hidden="true"></span>
+    <label class="ic-esp"><span>Especificação do material</span><input type="text" id="it_esp_${i}" list="dl_mat" value="${esc(it.materialId && MAT[it.materialId] ? rotulo(MAT[it.materialId]) : it.especificacao || '')}" placeholder="Digite para buscar no inventário (nome, ficha ou patrimônio) ou escreva o material" autocomplete="off" oninput="itemCautela(${i})"><input type="hidden" id="it_mat_${i}" value="${esc(it.materialId || '')}"></label>
+    <label class="ic-qtd"><span>Qnt</span><input type="number" id="it_qtd_${i}" value="${esc(it.quantidade)}" min="1" step="any"></label>
+    <label class="ic-num"><span>Numeração</span><input type="text" id="it_num_${i}" value="${esc(it.numeracao)}" placeholder="série / patrimônio" list="dl_pat_${i}" autocomplete="off"><datalist id="dl_pat_${i}"></datalist></label>
+    <label class="ic-dest"><span>Destino</span><input type="text" id="it_dest_${i}" value="${esc(it.destino)}" placeholder="ex.: Pel Sup"></label>
+    <button type="button" class="btn sm dng ic-x" onclick="this.closest('.item-caut').remove()" aria-label="Remover item" title="Remover item">×</button>
+    <small class="muted ic-info" id="it_info_${i}"></small></div>`;
+  window._itensCautela = itens.length;
+  window._rotuloMat = rotulo;
+  window._cautelaAtual = g;
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:860px">
+    <h3>${g ? 'Editar cautela nº ' + esc(g.numero) : 'Nova cautela de material'}</h3>
+    <div class="form">${campoHTML({ k: 'numero', l: 'Nº da cautela', req: true }, cab.numero)}${campoHTML({ k: 'militarId', l: 'Militar responsável', t: 'militar', req: true }, cab.militarId)}
+      ${campoHTML({ k: 'dataSaida', l: 'Data', t: 'date', req: true }, cab.dataSaida)}${campoHTML({ k: 'previsaoDevolucao', l: 'Devolução prevista para', t: 'date' }, cab.previsaoDevolucao)}</div>
+    <h3 style="font-size:15px;margin-bottom:4px">Material</h3>
+    ${mats.length ? '' : '<p class="muted" style="margin:0 0 6px">O inventário está vazio: escreva o material à mão ou importe a relação do SISCOFIS em Material → Importar.</p>'}
+    <datalist id="dl_mat">${mats.map(m => `<option value="${esc(rotulo(m))}">${esc(patrimonios(m).slice(0, 3).join(', '))}</option>`).join('')}</datalist>
+    <div id="itens" class="itens-caut">${itens.map(linhaItem).join('')}</div>
+    <div class="bar" style="margin-top:8px"><button type="button" class="btn sm" id="maisItem">+ Item</button></div>
+    <div class="form">${campoHTML({ k: 'obs', l: 'Observações', full: true }, cab.obs)}${campoHTML({ k: 'arquivoUrl', l: 'Cautela assinada (digitalizada)', t: 'file', full: true }, cab.arquivoUrl)}</div>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar cautela</button></div></form></div>`;
+  $('#maisItem').onclick = () => { const i = window._itensCautela++; $('#itens').insertAdjacentHTML('beforeend', linhaItem({ quantidade: '1' }, i)); $('#it_esp_' + i).focus(); };
+  itens.forEach((_, i) => itemCautela(i));
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $('#frm .btn.pri'); btn.disabled = true;
+    try {
+      const comum = { numero: $('#f_numero').value.trim(), militarId: $('#f_militarId').value, dataSaida: $('#f_dataSaida').value, previsaoDevolucao: $('#f_previsaoDevolucao').value, obs: $('#f_obs').value.trim(), status: 'Aberta' };
+      if (!comum.numero || !comum.militarId || !comum.dataSaida) throw new Error('Preencha número, militar e data.');
+      if (!g && gruposCautela().some(x => x.numero === comum.numero)) throw new Error(`Já existe a cautela nº ${comum.numero}.`);
+      const arquivo = await enviarArquivo($('#f_arquivoUrl').files[0]);
+      const novos = $$('#itens .item-caut').map(el => { const i = el.dataset.i, mid = $('#it_mat_' + i).value;
+        return { materialId: mid, especificacao: mid && MAT[mid] ? MAT[mid].descricao : $('#it_esp_' + i).value.trim(), quantidade: $('#it_qtd_' + i).value, numeracao: $('#it_num_' + i).value.trim(), destino: $('#it_dest_' + i).value.trim(), _id: (itens[i] || {}).id }; })
+        .filter(x => x.materialId || x.especificacao);
+      if (!novos.length) throw new Error('Inclua pelo menos um item de material.');
+      
+      const porMat = {};
+      novos.forEach(x => { if (num(x.quantidade) <= 0) throw new Error('Quantidade inválida em ' + x.especificacao + '.'); if (x.materialId) porMat[x.materialId] = (porMat[x.materialId] || 0) + num(x.quantidade); });
+      Object.entries(porMat).forEach(([mid, q]) => {
+        const livre = disponivel(MAT[mid]) + (g ? g.itens.filter(c => c.materialId === mid && c.status !== 'Devolvida').reduce((s, c) => s + num(c.quantidade), 0) : 0);
+        if (q > livre) throw new Error(`Só há ${livre} disponível(is) de ${MAT[mid].descricao}.`);
+      });
+      const lista = novos.map(x => ({ ...comum, id: x._id || uid(), materialId: x.materialId, especificacao: x.especificacao, quantidade: x.quantidade, numeracao: x.numeracao, destino: x.destino, arquivoUrl: arquivo || (g ? g.arquivoUrl : ''), dataDevolucao: '' }));
+      const remover = g ? g.itens.map(c => c.id).filter(id => !lista.some(x => x.id === id)) : [];
+      await salvar('Cautelas', lista, remover);
+      fecharModal(); toast('Cautela salva.'); S.sub.material = 'caut'; render();
+    } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
+  };
+}
+
+function itemCautela(i) {
+  const inp = $('#it_esp_' + i); if (!inp) return;
+  const v = inp.value.trim(), m = S.db.Material.find(x => window._rotuloMat(x) === v || x.descricao === v);
+  $('#it_mat_' + i).value = m ? m.id : '';
+  if (m && inp.value !== window._rotuloMat(m)) inp.value = window._rotuloMat(m);
+  const g = window._cautelaAtual, emUso = new Set(gruposCautela().filter(x => x !== g && (!g || x.numero !== g.numero)).flatMap(x => x.itens.filter(c => c.status !== 'Devolvida').flatMap(c => ids(String(c.numeracao || '').replace(/[;\n]/g, ',')))));
+  const livres = m ? patrimonios(m).filter(p => !emUso.has(p)) : [];
+  $('#dl_pat_' + i).innerHTML = livres.map(p => `<option value="${esc(p)}">`).join('');
+  const info = $('#it_info_' + i);
+  info.innerHTML = m ? `Do inventário${m.nrFicha ? ' · Ficha ' + esc(m.nrFicha) : ''}${m.codMat ? ' · Cód ' + esc(m.codMat) : ''} · <b>${disponivel(m)}</b> disponível(is)${livres.length ? ` · ${livres.length} patrimônio(s) livre(s): clique em Numeração para escolher` : ''}`
+    : v ? 'Fora do inventário: entra só com a descrição escrita (não controla o disponível).' : '';
+  if (m && livres.length === 1 && !$('#it_num_' + i).value) $('#it_num_' + i).value = livres[0];
+}
+async function devolver(numero) {
+  const g = gruposCautela().find(x => x.numero === numero);
+  const data = await dialogo({ msg: `Data da devolução da cautela nº ${numero} (todos os itens):`, campo: 'date', valor: hoje(), ok: 'Registrar devolução' });
+  if (!data) return;
+  await salvar('Cautelas', g.itens.filter(c => c.status !== 'Devolvida').map(c => ({ ...c, status: 'Devolvida', dataDevolucao: data })));
+  toast('Devolução registrada.'); render();
+}
+const TEXTO_CAUTELA = 'Declaro estar ciente de que será lavrada uma Sindicância ou Processo Administrativo com finalidade de ressarcimento do Material e/ou do quantum correspondente ao valor deste material ao Erário Público (Fazenda Nacional), caso não seja entregue na data supramencionada, independente de reconhecimento de dívida, estando, na forma do que prescreve o artigo 24 da Portaria nº 008 – SEF, de 23 de dezembro de 2003, o Cmt, Ch ou Dir de OM autorizado a determinar desconto no contracheque deste militar, observado o disposto no ERA e os limites estabelecidos na legislação em vigor.';
+DOCS.cautela = numero => {
+  const g = gruposCautela().find(x => x.numero === numero), mil = MIL[g.militarId] || {};
+  const setor = cfg('cautelaSetor');
+  const itens = g.itens.map((c, i) => [pad(i + 1), { v: descCautela(c), l: 1 }, c.quantidade, c.numeracao || '', c.destino || '']);
+  while (itens.length < 6) itens.push([pad(itens.length + 1), '', '', '', '']);
+  const prev = g.previsaoDevolucao ? fmt(g.previsaoDevolucao) : '____ / ____ / ______';
+  return { tipo: 'Cautelas', ref: g.numero, titulo: `Cautela ${g.numero.replace('/', '-')} - ${mil.nomeGuerra || ''} - ${g.dataSaida}`, blocos: [
+    ...blocosCabecalho(), { esp: 1 },
+    { p: `CAUTELA DE MATERIAL Nº ${g.numero}`, c: 1, b: 1, sz: 13 }, { esp: 1 },
+    { p: '1. ' + TEXTO_CAUTELA }, { esp: 1 },
+    { p: `2. Recebi do ${setor}, o(s) seguinte(s) material(is) abaixo discriminado(s), pertencente(s) à carga geral desta seção, com devolução prevista para o dia: ${prev}.` }, { esp: 1 },
+    { t: [['Nr Ordem', 'Especificação do Material', 'Qnt', 'Numeração', 'Destino'], ...itens], h: 1, w: [10, 46, 8, 18, 18], sz: 9.5 }, { esp: 1 },
+    { t: [['MILITAR RESPONSÁVEL', setor.toUpperCase()],
+      [`DATA: ${fmt(g.dataSaida)}`, 'PAGO POR:'],
+      [`POSTO/GRAD: ${mil.postoGrad || ''}`, `DATA DO REC.: ${g.aberta ? '____/____/______' : fmt(g.dataDevolucao)}`],
+      [`NOME: ${mil.nomeCompleto || mil.nomeGuerra || ''}`, 'RECEBIDO POR:'],
+      [`OM: ${cfg('siglaOM')} – ${cfg('sigla')}`, ''], [`CONTATO: ${mil.telefone || ''}`, ''], ['ASSINATURA:', '']], esq: 1, w: [50, 50], sz: 9.5 },
+    ...(g.obs ? [{ esp: 1 }, { p: 'Obs: ' + g.obs }] : []),
+    { esp: 1 }, { esp: 1 }, { esp: 1 },
+    { t: [['_______________________________', '_______________________________'], [cfg('cautelaAss1'), cfg('cautelaAss2')]], sem: 1, sz: 9.5 }] };
+};
+
+
+DOCS.relacao = dep => {
+  const lista = S.db.Material.filter(m => !dep || m.localizacao === dep).sort((a, b) => String(a.nrFicha).localeCompare(String(b.nrFicha)) || a.descricao.localeCompare(b.descricao));
+  const doTipo = t => lista.filter(m => (m.tipoMaterial || 'Permanente') === t);
+  const total = l => l.reduce((s, m) => s + num(m.valor) * num(m.quantidade), 0);
+  const nomeDep = dep || cfg('dependencia');
+  const B = [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
+    { p: `RELAÇÃO DE MATERIAL CARGA DA DEPENDÊNCIA ${cfg('siglaOM').toUpperCase()} / ${nomeDep.toUpperCase()}`, c: 1, b: 1 }, { esp: 1 }];
+  let sec = 0;
+  const perm = doTipo('Permanente');
+  if (perm.length) {
+    B.push({ p: `${++sec}. MATERIAL PERMANENTE`, b: 1, l: 1 });
+    const linhas = [['Nome material', 'Nr Ficha', 'Cod Mat', 'Conta Contábil', 'Acervo', 'Quantidade', 'Valor Unitário', 'Valor Total']];
+    perm.forEach(m => {
+      linhas.push([{ v: m.descricao, l: 1 }, m.nrFicha || '', m.codMat || '', m.contaContabil || '', m.acervo || 'N', m.quantidade, reais(m.valor), { v: reais(num(m.valor) * num(m.quantidade)), c: 0, l: 0 }]);
+      const pats = patrimonios(m);
+      if (pats.length) linhas.push([{ v: 'Nr Patrimoniais: ' + pats.join(', '), span: 8, l: 1, i: 1 }]);
+    });
+    B.push({ t: linhas, h: 1, w: [38, 8, 10, 10, 6, 8, 10, 10], sz: 8 },
+      { p: `Número total de materiais permanentes da dependência: ${perm.reduce((s, m) => s + num(m.quantidade), 0)}        Valor total: R$ ${reais(total(perm))}`, b: 1, sz: 8.5, mt: 3 });
+  }
+  ['Uso duradouro', 'Consumo'].forEach(tp => {
+    const l = doTipo(tp);
+    if (!l.length) return;
+    B.push({ p: `${++sec}. MATERIAL DE ${tp.toUpperCase()}`, b: 1, l: 1, mt: 12 },
+      { t: [['Nr Ficha', 'Cod Mat', 'Conta Contábil', 'Nome material', 'Quantidade', 'Valor Unitário', 'Valor Total'],
+        ...l.map(m => [m.nrFicha || '', m.codMat || '', m.contaContabil || '', { v: m.descricao, l: 1 }, m.quantidade, reais(m.valor), reais(num(m.valor) * num(m.quantidade))])], h: 1, w: [9, 11, 11, 43, 8, 9, 9], sz: 8 },
+      { p: `Número total de materiais de ${tp.toLowerCase()} da dependência: ${l.reduce((s, m) => s + num(m.quantidade), 0)}        Valor total: R$ ${reais(total(l))}`, b: 1, sz: 8.5, mt: 3 });
+  });
+  B.push(...blocosAssinatura(cfg('detentorNome'), cfg('detentorFuncao'), 3), { esp: 1 },
+    { p: `Relação emitida pelo ${cfg('nomeCia')} em ${SEMANA[new Date().getDay()]}, ${fmtExt(hoje())}.`, r: 1, sz: 8 });
+  return { tipo: 'Material', titulo: `Relacao material carga ${nomeDep} ${hoje()}`, blocos: B };
+};
+LISTAS.relacao = dep => ({
+  nome: `Relacao material carga ${dep || cfg('dependencia')} ${hoje()}`,
+  cab: ['Tipo', 'Nome material', 'Nr Ficha', 'Cod Mat', 'Conta Contábil', 'Acervo', 'Quantidade', 'Unidade', 'Valor Unitário', 'Valor Total', 'Dependência', 'Estado', 'Nr Patrimoniais'],
+  linhas: S.db.Material.filter(m => !dep || m.localizacao === dep).map(m => [m.tipoMaterial || 'Permanente', m.descricao, m.nrFicha, m.codMat, m.contaContabil, m.acervo || 'N', num(m.quantidade), m.unidade, num(m.valor), num(m.valor) * num(m.quantidade), m.localizacao, m.estado, patrimonios(m).join(', ')])
+});
+
+
+const itensPedido = p => { try { return JSON.parse(p.itens || '[]'); } catch (e) { return []; } };
+const sentidoPedido = p => p.sentido === 'Recebido' ? 'Recebido' : 'Enviado';
+const STATUS_PED = { Recebido: ['Pendente', 'Atendido parcialmente', 'Atendido', 'Negado'], Enviado: ['Rascunho', 'Enviado', 'Autorizado', 'Recebido parcialmente', 'Recebido', 'Negado'] };
+
+const materialDoItem = it => (it.materialId && MAT[it.materialId]) || S.db.Material.find(m => chaveMat(m.descricao) === chaveMat(it.esp));
+function novoPedido(sentido, extra = {}) {
+  const daSentido = S.db.Pedidos.filter(x => sentidoPedido(x) === sentido).map(x => x.numero);
+  return sentido === 'Recebido'
+    ? { sentido, numero: proximoNumero(daSentido, hoje().slice(0, 4)), data: hoje(), de: '', para: cfg('pedidoRecebidoPara'), status: 'Pendente', itens: '[]', ...extra }
+    : { sentido, numero: proximoNumero(daSentido, hoje().slice(0, 4)), data: hoje(), de: cfg('pedidoDe'), para: cfg('pedidoPara'), status: 'Rascunho', itens: '[]', ...extra };
+}
+function editarPedido(id, sentido = 'Enviado', base) {
+  const p = id ? { ...S.db.Pedidos.find(x => x.id === id) } : base || novoPedido(sentido);
+  sentido = sentidoPedido(p);
+  const fracoes = [...new Set(S.db.Pedidos.filter(x => sentidoPedido(x) === 'Recebido').map(x => x.de).concat(S.db.Militares.map(m => m.pelotao)).filter(Boolean))].sort();
+  const itens = itensPedido(p); if (!itens.length) itens.push({ esp: '', qtd: '', un: 'Unidades', obs: '' });
+  itens.forEach(it => { const m = !it.materialId && it.esp && materialDoItem(it); if (m) it.materialId = m.id; });
+  const linha = (it, i) => `<tr data-i="${i}"><td><input type="text" id="pi_esp_${i}" value="${esc(it.materialId && MAT[it.materialId] ? rotuloPed(MAT[it.materialId]) : it.esp)}" list="lista_mat" aria-label="Especificação" autocomplete="off" placeholder="Digite para buscar no cadastro de material" oninput="itemPedido(${i})" onchange="itemPedido(${i},true)"><input type="hidden" id="pi_mat_${i}" value="${esc(it.materialId || '')}"><small class="muted" id="pi_info_${i}"></small></td>
+    <td style="width:11%"><input type="number" id="pi_qtd_${i}" value="${esc(it.qtd)}" min="0" step="any" aria-label="Quantidade"></td>
+    <td style="width:16%"><input type="text" id="pi_un_${i}" value="${esc(it.un)}" aria-label="Unidade"></td>
+    <td style="width:20%"><input type="text" id="pi_obs_${i}" value="${esc(it.obs)}" aria-label="Obs"></td>
+    <td><button type="button" class="btn sm dng" onclick="this.closest('tr').remove()" aria-label="Remover item">×</button></td></tr>`;
+  let n = itens.length;
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:860px">
+    <h3>${id ? 'Pedido de material nº ' + esc(p.numero) : sentido === 'Recebido' ? 'Pedido recebido de Pel / Seç' : 'Pedido ao Fisc Adm / S4'}</h3>
+    <div class="form">${campoHTML({ k: 'numero', l: 'Nº do pedido', req: true }, p.numero)}${campoHTML({ k: 'data', l: 'Data', t: 'date', req: true }, p.data)}
+      ${campoHTML({ k: 'de', l: sentido === 'Recebido' ? 'Do (pelotão / seção que pede)' : 'Do (quem pede)', req: true }, p.de).replace('id="f_de"', 'id="f_de" list="lista_fracoes"')}${campoHTML({ k: 'para', l: 'Ao (quem autoriza)', req: true }, p.para)}
+      ${campoHTML({ k: 'status', l: 'Situação', t: 'select', o: STATUS_PED[sentido], vazio: false }, p.status || STATUS_PED[sentido][0])}</div>
+    <datalist id="lista_fracoes">${(sentido === 'Recebido' ? fracoes : []).map(f => `<option value="${esc(f)}">`).join('')}</datalist>
+    <datalist id="lista_mat">${S.db.Material.slice().sort((a, b) => a.descricao.localeCompare(b.descricao)).map(m => `<option value="${esc(rotuloPed(m))}">`).join('')}</datalist>
+    <h3 style="font-size:15px;margin-bottom:2px">Itens</h3><p class="muted" style="margin:0 0 6px">Escolha os itens do cadastro de material, para não ter nomes repetidos (ex.: "Vassoura" e "Vassouras"). Item novo: escreva o nome e clique em <b>Cadastrar</b>.</p>
+    <div class="tw"><table><thead><tr><th>Especificação</th><th>Quantidade</th><th>Unidade</th><th>Obs</th><th></th></tr></thead><tbody id="itens">${itens.map(linha).join('')}</tbody></table></div>
+    <div class="bar" style="margin-top:8px"><button type="button" class="btn sm" id="maisItem">+ Item</button></div>
+    <div class="form">${campoHTML({ k: 'obs', l: 'Observações', full: true }, p.obs)}${campoHTML({ k: 'arquivoUrl', l: 'Pedido assinado (digitalizado)', t: 'file', full: true }, p.arquivoUrl)}</div>
+    <div class="acts">${id ? `<button type="button" class="btn dng" onclick="excluir('Pedidos','${id}',true)">Excluir</button><span class="grow"></span>` : ''}<button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar pedido</button></div></form></div>`;
+  $('#maisItem').onclick = () => { $('#itens').insertAdjacentHTML('beforeend', linha({ un: 'Unidades' }, n)); $('#pi_esp_' + n++).focus(); };
+  itens.forEach((_, i) => itemPedido(i));
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $('#frm .btn.pri'); btn.disabled = true;
+    try {
+      const it = $$('#itens tr').map(tr => { const i = tr.dataset.i, mid = $('#pi_mat_' + i).value, m = MAT[mid];
+        return { ...(itens[i] || {}), materialId: m ? mid : '', esp: m ? m.descricao : $('#pi_esp_' + i).value.trim(), qtd: $('#pi_qtd_' + i).value, un: $('#pi_un_' + i).value.trim(), obs: $('#pi_obs_' + i).value.trim() }; }).filter(x => x.esp);
+      if (!it.length) throw new Error('Inclua pelo menos um item.');
+      const soltos = it.filter(x => !x.materialId);
+      if (sentido === 'Enviado' && soltos.length) throw new Error(`Cadastre no material antes de pedir ao S4: ${soltos.map(x => x.esp).join(', ')}. Use o botão Cadastrar ao lado do item.`);
+      const arquivo = await enviarArquivo($('#f_arquivoUrl').files[0]);
+      const o = { ...p, sentido, numero: $('#f_numero').value.trim(), data: $('#f_data').value, de: $('#f_de').value.trim(), para: $('#f_para').value.trim(), status: $('#f_status').value, obs: $('#f_obs').value.trim(), itens: JSON.stringify(it), autor: p.autor || S.user.email };
+      if (arquivo) o.arquivoUrl = arquivo;
+      await salvar('Pedidos', [o]);
+      fecharModal(); toast('Pedido salvo.'); render();
+    } catch (e) { btn.disabled = false; if (!/Erro ao salvar/.test(e.message)) toast(e.message, true); }
+  };
+}
+
+function atenderPedido(id) {
+  const p = S.db.Pedidos.find(x => x.id === id), itens = itensPedido(p);
+  const linhas = itens.map((it, i) => {
+    const m = materialDoItem(it), falta = Math.max(0, num(it.qtd) - num(it.ent)), tem = m ? Math.max(0, m.tipoMaterial === 'Consumo' ? num(m.quantidade) : disponivel(m)) : 0;
+    return `<tr><td>${esc(it.esp)}${it.obs ? `<div class="muted">${esc(it.obs)}</div>` : ''}</td><td class="num">${esc(it.qtd)} ${esc(it.un || '')}${num(it.ent) ? `<div class="muted">já entregue ${esc(it.ent)}</div>` : ''}</td>
+      <td class="num">${m ? tem : '<span class="muted" title="Não está no inventário">—</span>'}</td>
+      <td><input type="number" id="at_${i}" value="${Math.min(falta, m ? tem : falta)}" min="0" max="${falta}" step="any" style="width:90px" aria-label="Entregar"></td></tr>`;
+  }).join('');
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:760px">
+    <h3>Atender pedido nº ${esc(p.numero)} – ${esc(p.de)}</h3>
+    <p class="muted" style="margin-top:0">Ponha quanto vai entregar de cada item. O que está no inventário tem baixa no estoque; o que ficar faltando aparece no <b>pedido de reposição</b> ao Fisc Adm / S4.</p>
+    <div class="tw"><table><thead><tr><th>Item</th><th>Pedido</th><th>Em estoque</th><th>Entregar</th></tr></thead><tbody>${linhas}</tbody></table></div>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="at_baixa" checked> Dar baixa no estoque do que for entregue</label>
+    <div class="acts"><button type="button" class="btn dng" onclick="negarPedido('${id}')">Negar pedido</button><span class="grow"></span><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Registrar entrega</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const novos = itens.map((it, i) => ({ ...it, ent: String(Math.min(num(it.qtd), num(it.ent) + Math.max(0, num($('#at_' + i).value)))) }));
+    const baixa = {};
+    if ($('#at_baixa').checked) itens.forEach((it, i) => { const m = materialDoItem(it), q = num(novos[i].ent) - num(it.ent); if (m && q > 0) baixa[m.id] = (baixa[m.id] || 0) + q; });
+    for (const [mid, q] of Object.entries(baixa)) if (q > num(MAT[mid].quantidade)) return toast(`Só há ${MAT[mid].quantidade} de ${MAT[mid].descricao} no estoque.`, true);
+    const completo = novos.every(it => num(it.ent) >= num(it.qtd)), algum = novos.some(it => num(it.ent) > 0);
+    await salvar('Pedidos', [{ ...p, itens: JSON.stringify(novos), status: completo ? 'Atendido' : algum ? 'Atendido parcialmente' : 'Pendente' }]);
+    const mats = Object.entries(baixa).map(([mid, q]) => ({ ...MAT[mid], quantidade: String(num(MAT[mid].quantidade) - q) }));
+    if (mats.length) await salvar('Material', mats);
+    fecharModal();
+    toast(completo ? 'Pedido atendido.' : `Entrega registrada. O que faltou entra no pedido de reposição.`); render();
+  };
+}
+async function negarPedido(id) {
+  const p = S.db.Pedidos.find(x => x.id === id);
+  if (!await confirmar(`Negar o pedido nº ${p.numero} de ${p.de}?`)) return;
+  await salvar('Pedidos', [{ ...p, status: 'Negado' }]); fecharModal(); toast('Pedido negado.'); render();
+}
+
+function entradaPedido(id) {
+  const p = S.db.Pedidos.find(x => x.id === id), itens = itensPedido(p);
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:760px">
+    <h3>Dar entrada – pedido nº ${esc(p.numero)} ao ${esc(p.para)}</h3>
+    <p class="muted" style="margin-top:0">Ponha quanto chegou de cada item. Itens que já estão no inventário têm a quantidade somada; os outros entram como material de consumo.</p>
+    <div class="tw"><table><thead><tr><th>Item</th><th>Pedido</th><th>No inventário</th><th>Chegou</th></tr></thead><tbody>${itens.map((it, i) => { const m = materialDoItem(it), falta = Math.max(0, num(it.qtd) - num(it.rec));
+      return `<tr><td>${esc(it.esp)}</td><td class="num">${esc(it.qtd)} ${esc(it.un || '')}${num(it.rec) ? `<div class="muted">já chegou ${esc(it.rec)}</div>` : ''}</td><td>${m ? `${esc(m.quantidade)} ${esc(m.unidade || '')}` : '<span class="tag ok">novo</span>'}</td>
+      <td><input type="number" id="en_${i}" value="${falta}" min="0" step="any" style="width:90px" aria-label="Chegou"></td></tr>`; }).join('')}</tbody></table></div>
+    <div class="form">${campoHTML({ k: 'en_dep', l: 'Local dos itens novos', t: 'local' }, cfg('dependencia'))}</div>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Dar entrada no estoque</button></div></form></div>`;
+  $('#frm').onsubmit = async ev => {
+    ev.preventDefault();
+    const novos = itens.map((it, i) => ({ ...it, rec: String(num(it.rec) + Math.max(0, num($('#en_' + i).value))) }));
+    const soma = {}, criar = [];
+    itens.forEach((it, i) => { const q = num(novos[i].rec) - num(it.rec); if (q <= 0) return; const m = materialDoItem(it);
+      if (m) soma[m.id] = (soma[m.id] || 0) + q;
+      else criar.push({ descricao: it.esp, tipoMaterial: 'Consumo', quantidade: String(q), unidade: it.un || 'un', localizacao: $('#f_en_dep').value.trim(), estado: 'Bom', obs: 'pedido ' + p.numero, ultimaConferencia: hoje() }); });
+    const mats = [...Object.entries(soma).map(([mid, q]) => ({ ...MAT[mid], quantidade: String(num(MAT[mid].quantidade) + q) })), ...criar];
+    if (!mats.length) return toast('Nada para dar entrada.', true);
+    const completo = novos.every(it => num(it.rec) >= num(it.qtd));
+    await salvar('Material', mats);
+    await salvar('Pedidos', [{ ...p, itens: JSON.stringify(novos), status: completo ? 'Recebido' : 'Recebido parcialmente' }]);
+    fecharModal(); toast(`Entrada registrada: ${mats.length} item(ns) no inventário.`); render();
+  };
+}
+
+
+
+
+function sugestoesReposicao() {
+  const mapa = {}, add = (esp, un, q, motivo) => { const k = norm(esp); if (!k || q <= 0) return; (mapa[k] ||= { esp, un, qtd: 0, motivos: [] }); mapa[k].qtd += q; mapa[k].motivos.push(motivo); };
+  S.db.Pedidos.filter(p => sentidoPedido(p) === 'Recebido' && ['Pendente', 'Atendido parcialmente', ''].includes(p.status || '')).forEach(p =>
+    itensPedido(p).forEach(it => { const m = materialDoItem(it), falta = num(it.qtd) - num(it.ent) - (m && m.tipoMaterial === 'Consumo' ? num(m.quantidade) : 0); add(it.esp, it.un, falta, `${p.de} (ped ${p.numero})`); }));
+  S.db.Material.filter(m => num(m.estoqueMinimo) > 0 && num(m.quantidade) < num(m.estoqueMinimo)).forEach(m => {
+    add(m.descricao, m.unidade, num(m.estoqueMinimo) - num(m.quantidade), `estoque mín. ${m.estoqueMinimo}, há ${m.quantidade}`); });
+  S.db.Pedidos.filter(p => sentidoPedido(p) === 'Enviado' && !/^(Recebido|Negado)$/.test(p.status)).forEach(p =>
+    itensPedido(p).forEach(it => { const k = norm(it.esp); if (mapa[k]) mapa[k].qtd -= num(it.qtd) - num(it.rec); }));
+  return Object.values(mapa).filter(x => x.qtd > 0);
+}
+function pedidoReposicao() {
+  const sug = sugestoesReposicao();
+  if (!sug.length) toast('Nada a repor agora: nenhum pedido dos Pel/Seç com falta e nenhum material abaixo do estoque mínimo. O pedido abre em branco.');
+  editarPedido(null, 'Enviado', novoPedido('Enviado', { obs: sug.length ? 'Reposição de estoque' : '', itens: JSON.stringify(sug.map(x => ({ esp: x.esp, qtd: String(x.qtd), un: x.un || 'Unidades', obs: x.motivos.join('; ').slice(0, 120) }))) }));
+}
+const rotuloPed = m => `${m.descricao} · ${m.unidade || 'un'}${m.localizacao ? ' · ' + m.localizacao : ''} · tem ${m.quantidade || 0}`;
+
+function itemPedido(i, saiu) {
+  const inp = $('#pi_esp_' + i); if (!inp) return;
+  const v = inp.value.trim(), m = S.db.Material.find(x => rotuloPed(x) === v) || (saiu && v ? materialParecido(v) : null);
+  $('#pi_mat_' + i).value = m ? m.id : '';
+  if (m) { if (inp.value !== rotuloPed(m)) inp.value = rotuloPed(m); const un = $('#pi_un_' + i); if (!un.value || un.value === 'Unidades') un.value = m.unidade || un.value; }
+  $('#pi_info_' + i).innerHTML = m ? '' : v ? `Não está no cadastro. <button type="button" class="btn sm" onclick="cadastrarItemPedido(${i})">Cadastrar</button>` : '';
+}
+async function cadastrarItemPedido(i) {
+  const m = await materialRapido($('#pi_esp_' + i).value.trim());
+  if (!m) return;
+  $('#lista_mat').insertAdjacentHTML('beforeend', `<option value="${esc(rotuloPed(m))}">`);
+  $('#pi_esp_' + i).value = rotuloPed(m); itemPedido(i); $('#pi_qtd_' + i).focus();
+}
+DOCS.pedido = id => {
+  const p = S.db.Pedidos.find(x => x.id === id), it = itensPedido(p);
+  const linhas = it.map((x, i) => [pad(i + 1), { v: x.esp, l: 1 }, x.qtd ? String(x.qtd).padStart(2, '0') : '', x.un || '', x.obs || '']);
+  while (linhas.length < 10) linhas.push(['', '', '', '', '']);
+  return { tipo: 'Pedidos', ref: p.id, titulo: `Pedido de material ${p.numero.replace('/', '-')}`, blocos: [
+    ...blocosCabecalho(), { esp: 1 },
+    { t: [[`AUTORIZO\n\n\n_____________________\n${cfg('pedidoAutorizo')}`, { v: `PEDIDO DE MATERIAL\nNº ${p.numero}\n\nDO: ${p.de}\nAO: ${p.para}`, b: 1 }, `VISTO\n\n\n___________________\n${cfg('pedidoVisto')}`]], w: [28, 44, 28], sz: 9.5 },
+    { t: [['Nº ORD', 'ESPECIFICAÇÃO', 'QUANTIDADE', 'UNIDADE', 'OBS'], ...linhas], h: 1, w: [8, 50, 12, 15, 15], sz: 9.5 },
+    ...(p.obs ? [{ p: 'Obs: ' + p.obs, mt: 4 }] : []),
+    { t: [[`RECEBI OS ARTIGOS CONSTANTES DESTE PEDIDO EM ____ DE ______________ DE ________\n\n\n__________________________________________\nASSINATURA`,
+      `${cfg('cidade').toUpperCase()}\n${fmtExt(p.data)}\n\n\nLOCAL E DATA`]], w: [60, 40], sz: 9 }] };
+};
+
+
+const IMPORT = {
+  Material: { chaves: ['nrFicha', 'descricao'], campos: CAMPOS_MAT.filter(c => c.t !== 'file'),
+    sin: { patrimonio: ['patrimonio', 'nrpatrimonio', 'nrpatrimoniais', 'patrimoniais', 'numeropatrimonio', 'serie', 'nserie', 'registro'], descricao: ['descricao', 'material', 'nomematerial', 'item', 'nomenclatura', 'especificacao', 'especificacaodomaterial', 'nome'],
+      quantidade: ['quantidade', 'qtd', 'qtde', 'quant', 'qnt', 'existencia'], unidade: ['unidade', 'un', 'und', 'unid'], localizacao: ['local', 'localizacao', 'deposito', 'reserva', 'setor', 'dependencia'], estado: ['estado', 'situacao', 'condicao'],
+      valor: ['valor', 'valorunitario', 'preco', 'vlunit'], categoria: ['categoria', 'classe', 'grupo'], nrFicha: ['nrficha', 'ficha', 'nficha'], codMat: ['codmat', 'codigo', 'codmaterial', 'codigomaterial'], contaContabil: ['contacontabil', 'conta'], acervo: ['acervo'], tipoMaterial: ['tipo', 'tipomaterial'] } },
+  Militares: { chaves: ['idt', 'nomeGuerra'], campos: CAMPOS_MIL.filter(c => c.k),
+    sin: { postoGrad: ['posto', 'postograd', 'pg', 'grad', 'graduacao', 'postograduacao'], nomeGuerra: ['nomedeguerra', 'nomeguerra', 'guerra', 'nomedeguera'], nomeCompleto: ['nomecompleto', 'nome'], idt: ['idt', 'idtmilitar', 'identidade', 'idtmil'],
+      numero: ['numero', 'nr', 'num'], pelotao: ['pelotao', 'pel', 'secao', 'fracao', 'su', 'cia'], telefone: ['telefone', 'celular', 'fone', 'tel', 'contato'], funcao: ['funcao', 'cargo'], antiguidade: ['antiguidade', 'ant', 'ord', 'ordem'],
+      dataNascimento: ['datadenascimento', 'nascimento', 'datanascimento', 'dtnasc', 'datanasc'], cpf: ['cpf'], precCp: ['preccp', 'prec'], tipoSanguineo: ['tiposanguineo', 'tiposangue', 'ts', 'fatorrh'], peso: ['pesokg', 'peso'], email: ['email'],
+      endereco: ['endereco', 'enderecoresidencial'], cttEmergencia: ['cttemergencia', 'contatodeemergencia', 'contatoemergencia', 'telemergencia'], nomeCtt: ['nomectt', 'nomedoctt', 'nomedocontato', 'nomecontato'], parentesco: ['parentesco'],
+      cnh: ['carteiramotorista', 'cnh', 'categoriacnh', 'catcnh'], motoristaMilitar: ['motoristamilitar'], veiculo: ['possuiveiculoproprioqual', 'possuiveiuloproprioqual', 'veiculoproprio', 'veiculo'], obs: ['obs', 'algumaobs', 'observacao', 'observacoes', 'situacao'] } },
+  Ferias: { chaves: [], campos: [{ k: 'postoGrad', l: 'Posto/Graduação' }, { k: 'nome', l: 'Nome (de guerra)', req: true }, { k: 'periodo', l: 'Período (ex.: 30 dias)' }, { k: 'parcelas', l: 'Dia/mês (data de início ou parcelas)', req: true }],
+    sin: { postoGrad: ['pg', 'posto', 'grad'], nome: ['nome', 'nomedeguerra'], periodo: ['periodo', 'dias'], parcelas: ['diames', 'data', 'parcelas', 'inicio'] } }
+};
+function vImportar(tabelaAlvo) {
+  const st = S.imp && S.imp.tabela === tabelaAlvo ? S.imp : null;
+  const cfgI = IMPORT[tabelaAlvo];
+  const dica = tabelaAlvo === 'Ferias' ? `Cada linha vira uma ou mais parcelas de férias no ano de referência <b>${esc(refFerias())}</b>. A coluna de datas pode ter uma data de início (com o período em dias) ou as parcelas escritas, como "- 10 a 19 FEV 27".`
+    : `Na próxima etapa você confere qual coluna vai para qual campo. Registros com o mesmo <b>${cfgI.chaves.join(' / ')}</b> são atualizados em vez de duplicados, e células vazias não apagam o que já está cadastrado.`;
+  let html = `<div class="card"><p>Traga sua planilha atual (do computador ou do Google Drive). ${dica}</p>
+    <div class="bar"><input type="file" accept=".xlsx,.xls,.csv,.ods" onchange="importarArquivo(this.files[0],'${tabelaAlvo}')">
+    <span class="muted">ou</span><input type="text" id="imp_url" placeholder="Link da planilha Google (docs.google.com/spreadsheets/…)" style="flex:1;min-width:220px">
+    <button class="btn" onclick="importarGoogle('${tabelaAlvo}')">Ler do Drive</button></div></div>`;
+  if (st) {
+    const cab = st.linhas[0] || [];
+    const corpo = st.linhas.slice(1).filter(l => l.some(v => String(v).trim()));
+    html += `<h3>Associação de colunas — ${corpo.length} linha(s) em "${esc(st.origem)}"</h3><div class="card"><div class="form">
+      ${cfgI.campos.map(c => `<label>${esc(c.l)}<select id="map_${c.k}"><option value="">(não importar)</option>${cab.map((h, i) => `<option value="${i}" ${st.mapa[c.k] === i ? 'selected' : ''}>${esc(h || 'Coluna ' + (i + 1))}</option>`).join('')}</select></label>`).join('')}
+      </div><div class="bar" style="margin-top:12px"><span class="grow"></span><button class="btn" onclick="S.imp=null;render()">Cancelar</button><button class="btn pri" onclick="confirmarImportacao()">Importar ${corpo.length} linha(s)</button></div></div>
+      <h3>Prévia</h3>${tabela(corpo.slice(0, 5), cab.map((h, i) => ({ l: h || 'Coluna ' + (i + 1), v: l => esc(l[i]) })))}`;
+  }
+  return html;
+}
+function prepararImportacao(tabelaAlvo, linhas, origem) {
+  
+  const sin = IMPORT[tabelaAlvo].sin;
+  let melhor = 0, pts = -1;
+  linhas.slice(0, 10).forEach((l, i) => { const p = l.filter(h => Object.values(sin).some(s => s.includes(norm(h)))).length; if (p > pts) { pts = p; melhor = i; } });
+  linhas = linhas.slice(melhor).map(l => l.map(v => v == null ? '' : String(v)));
+  const cab = linhas[0].map(norm), mapa = {}, usados = new Set();
+  const campos = IMPORT[tabelaAlvo].campos;
+  
+  [h => o => o.includes(h), h => o => o.some(s => s.length >= 5 && h.includes(s))].forEach(regra => campos.forEach(c => {
+    if (c.k in mapa) return;
+    const opcoes = [norm(c.k), norm(c.l), ...(sin[c.k] || [])];
+    const i = cab.findIndex((h, j) => h && !usados.has(j) && regra(h)(opcoes));
+    if (i >= 0) { mapa[c.k] = i; usados.add(i); }
+  }));
+  S.imp = { tabela: tabelaAlvo, linhas, mapa, origem };
+  render();
+}
+function carregarSheetJS() {
+  if (window.XLSX) return Promise.resolve();
+  return new Promise((ok, falha) => { const s = document.createElement('script'); s.src = HTTPS + 'cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = () => falha(new Error('Não foi possível carregar o leitor de planilhas.')); document.head.appendChild(s); });
+}
+async function importarArquivo(file, tabelaAlvo) {
+  if (!file) return;
+  try {
+    await carregarSheetJS();
+    
+    const wb = /\.csv$/i.test(file.name)
+      ? XLSX.read(await file.text(), { type: 'string', cellDates: true })
+      : XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+    const sh = wb.Sheets[wb.SheetNames[0]];
+    const linhas = XLSX.utils.sheet_to_json(sh, { header: 1, raw: false, defval: '', dateNF: 'yyyy-mm-dd' });
+    prepararImportacao(tabelaAlvo, linhas, file.name);
+  } catch (e) { toast('Erro ao ler arquivo: ' + e.message, true); }
+}
+async function importarGoogle(tabelaAlvo) {
+  const url = $('#imp_url').value.trim();
+  if (!url) return toast('Cole o link da planilha.', true);
+  try { toast('Lendo planilha…'); prepararImportacao(tabelaAlvo, await api('importarDePlanilha', url), 'Google Drive'); }
+  catch (e) { toast(e.message, true); }
+}
+function dataImportada(v) {
+  v = String(v).trim();
+  let m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${pad(m[2])}-${pad(m[1])}`;
+  m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : v;
+}
+async function confirmarImportacao() {
+  const st = S.imp, cfgI = IMPORT[st.tabela];
+  const mapa = {};
+  cfgI.campos.forEach(c => { const v = $('#map_' + c.k).value; if (v !== '') mapa[c.k] = +v; });
+  const obrig = cfgI.campos.filter(c => c.req).map(c => c.k).filter(k => !(k in mapa));
+  if (obrig.length) return toast('Associe os campos obrigatórios: ' + obrig.join(', '), true);
+  const corpo = st.linhas.slice(1).filter(l => l.some(v => String(v).trim()));
+  if (st.tabela === 'Ferias') return importarFerias(corpo, mapa);
+  const existentes = S.db[st.tabela];
+  const registros = corpo.map(l => {
+    const o = {};
+    Object.entries(mapa).forEach(([k, i]) => {
+      let v = String(l[i] ?? '').trim();
+      const c = cfgI.campos.find(x => x.k === k);
+      if (c.t === 'date') v = dataImportada(v);
+      if (c.t === 'number') v = v ? String(num(v.replace(/\.(?=\d{3}(\D|$))/g, ''))) : v;
+      if (v && v !== '-') o[k] = v;
+    });
+    if (st.tabela === 'Militares') {
+      const p = postoNorm(o.postoGrad);
+      if (p) o.postoGrad = p; else delete o.postoGrad;
+      if (o.tipoSanguineo) o.tipoSanguineo = o.tipoSanguineo.toUpperCase().replace(/\s/g, '').replace(/^0/, 'O').replace(/\+\+$/, '+');
+      if (o.nomeGuerra) o.nomeGuerra = o.nomeGuerra.trim();
+    }
+    if (st.tabela === 'Material') { o.tipoMaterial = TIPOS_MATERIAL.find(t => norm(t) === norm(o.tipoMaterial)) || o.tipoMaterial; }
+    
+    const mesmo = (r, k) => k === 'nomeGuerra' ? baseNome(r[k]) === baseNome(o[k]) && (!o.postoGrad || !r.postoGrad || r.postoGrad === o.postoGrad) : norm(r[k]) === norm(o[k]);
+    const igual = cfgI.chaves.map(k => o[k] && existentes.find(r => r[k] && mesmo(r, k))).find(Boolean);
+    
+    return igual ? { ...igual, ...o } : { ...(st.tabela === 'Militares' ? { ativo: 'Sim' } : { quantidade: '1', unidade: 'un', tipoMaterial: 'Permanente' }), ...o };
+  }).filter(o => cfgI.campos.filter(c => c.req).every(c => o[c.k]));
+  const sem = corpo.length - registros.length;
+  if (!registros.length) return toast('Nenhuma linha válida para importar.', true);
+  const novos = registros.filter(r => !r.id).length;
+  if (!await confirmar(`Importar ${registros.length} registro(s) para ${st.tabela}: ${novos} novo(s) e ${registros.length - novos} atualizado(s)?${sem ? ` ${sem} linha(s) sem os campos obrigatórios serão ignoradas.` : ''}`)) return;
+  await salvar(st.tabela, registros);
+  S.imp = null; toast(`${registros.length} registro(s) importado(s).`); render();
+}
+async function importarFerias(corpo, mapa) {
+  const ref = refFerias(), anoBase = +ref.slice(0, 4) || new Date().getFullYear();
+  const lanc = [], faltando = [];
+  corpo.forEach(l => {
+    const nome = String(l[mapa.nome] ?? '').trim(); if (!nome) return;
+    const m = achaMilitar(nome, mapa.postoGrad !== undefined ? l[mapa.postoGrad] : '');
+    if (!m) { faltando.push(nome); return; }
+    lerParcelas(l[mapa.parcelas], mapa.periodo !== undefined ? l[mapa.periodo] : '', anoBase).forEach(p => {
+      if (!S.db.Impedimentos.some(i => i.militarId === m.id && i.tipo === 'Férias' && i.inicio === p.inicio)) lanc.push({ id: uid(), militarId: m.id, tipo: 'Férias', inicio: p.inicio, fim: p.fim, referencia: ref, obs: 'importado do plano de férias' });
+    });
+  });
+  if (!lanc.length) return toast('Nenhuma parcela de férias reconhecida.' + (faltando.length ? ` Militares não encontrados: ${faltando.slice(0, 5).join(', ')}.` : ''), true);
+  if (!await confirmar(`Lançar ${lanc.length} parcela(s) de férias (referência ${ref})?${faltando.length ? ` ${faltando.length} nome(s) não encontrado(s) no efetivo: ${faltando.slice(0, 5).join(', ')}${faltando.length > 5 ? '…' : ''}.` : ''}`)) return;
+  await salvar('Impedimentos', lanc);
+  S.imp = null; S.sub.efetivo = 'ferias'; toast(`${lanc.length} parcela(s) de férias lançada(s).`); render();
+}
+
+
+
+function carregarPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve();
+  const base = HTTPS + 'cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  const carrega = src => new Promise((ok, falha) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => falha(new Error('Não foi possível carregar o leitor de PDF.')); document.head.appendChild(s); });
+  return carrega(base + 'pdf.worker.min.js').then(() => carrega(base + 'pdf.min.js')).then(() => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js'; });
+}
+
+async function itensDoPdf(file) {
+  await carregarPdfJs();
+  const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const paginas = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const conteudo = await (await pdf.getPage(n)).getTextContent();
+    paginas.push(conteudo.items.filter(it => it.str && it.str.trim()).map(it => ({ x: it.transform[4], y: it.transform[5], s: it.str.trim(), fim: it.transform[4] + (it.width || 0) })));
+  }
+  if (!paginas.some(pg => pg.length)) throw new Error('Este PDF não tem texto (parece digitalizado como imagem). Use o PDF original, gerado pelo sistema de origem.');
+  return paginas;
+}
+
+function linhasDe(paginas) {
+  const linhas = [];
+  paginas.forEach(itens => {
+    const porAltura = [];
+    itens.forEach(it => { let l = porAltura.find(g => Math.abs(g.y - it.y) < 2.5); if (!l) porAltura.push(l = { y: it.y, itens: [] }); l.itens.push(it); });
+    porAltura.sort((a, b) => b.y - a.y).forEach(l => {
+      l.itens.sort((a, b) => a.x - b.x);
+      let texto = '', fim = null;
+      l.itens.forEach(i => { if (fim !== null && i.x - fim > 1) texto += ' '; texto += i.s; fim = i.fim; });
+      linhas.push(texto.replace(/\s+/g, ' ').trim());
+    });
+  });
+  return linhas;
+}
+const numBR = v => num(String(v ?? '').replace(/\./g, '').replace(',', '.'));
+
+
+
+
+
+
+function lerSiscofis(linhas) {
+  const PERM = /^(.+?)\s+(\w{6,8})\s+(\d{6,12})\s+(\d{9})\s+([NS])\s+(\d+)\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})$/;
+  const DUR = /^(\w{6,8})\s+(\d{6,12})\s+(\d{9})\s+(.+?)\s+(\d+)\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})$/;
+  const IGNORAR = /^(p[áa]gina \d|minist[ée]rio da defesa|ex[ée]rcito brasileiro|nome material|nr ficha|rela[çc][ãa]o dos patrim|rela[çc][ãa]o emitida|rel mat carga|observa[çc][ãa]o|movimento|n[úu]mero total|valor total|detentor)/i;
+  const ehPatrimonios = l => { const p = l.split(/[,\s]+/).filter(Boolean); return p.length > 0 && p.every(x => /^\d{6,20}$/.test(x)); };
+  const itens = [];
+  let atual = null, tipo = 'Permanente', dep = '', detentor = '', depoisDosNumeros = false;
+  linhas.forEach((l, i) => {
+    let m;
+    if (/RELA[ÇC][ÃA]O DE MATERIAL CARGA DA DEPEND[ÊE]NCIA/i.test(l)) { dep = l.replace(/.*DEPEND[ÊE]NCIA\s*/i, '').trim(); return; }
+    if (/^\d\.\s*MATERIAL PERMANENTE/i.test(l)) { tipo = 'Permanente'; atual = null; return; }
+    if (/^\d\.\s*MATERIAL DE USO DURADOURO/i.test(l) || /^\d\.\s*MATERIAL DURADOURO/i.test(l)) { tipo = 'Uso duradouro'; atual = null; return; }
+    if (/^\d\.\s*MATERIAL DE CONSUMO/i.test(l)) { tipo = 'Consumo'; atual = null; return; }
+    if (/detentor direto/i.test(l)) { detentor = String(linhas[i - 1] || '').replace(/\s*-\s*$/, '').trim(); atual = null; return; }
+    if (/^nr patrimoniais:?$/i.test(l)) { depoisDosNumeros = true; return; }
+    if (atual && ehPatrimonios(l)) { atual.patrimonios.push(...l.split(/[,\s]+/).filter(Boolean)); return; }
+    if ((m = l.match(DUR))) {
+      atual = { tipoMaterial: tipo === 'Consumo' ? 'Consumo' : 'Uso duradouro', descricao: m[4], nrFicha: m[1], codMat: m[2], contaContabil: m[3], acervo: 'N', quantidade: m[5], valor: numBR(m[6]), patrimonios: [] };
+      itens.push(atual); depoisDosNumeros = false; return;
+    }
+    if ((m = l.match(PERM))) {
+      atual = { tipoMaterial: 'Permanente', descricao: m[1], nrFicha: m[2], codMat: m[3], contaContabil: m[4], acervo: m[5], quantidade: m[6], valor: numBR(m[7]), patrimonios: [] };
+      itens.push(atual); depoisDosNumeros = false; return;
+    }
+    if (/^(observa[çc][ãa]o|n[úu]mero total|valor total)/i.test(l)) atual = null;
+    if (IGNORAR.test(l)) return;
+    
+    if (atual && !depoisDosNumeros && !atual.patrimonios.length && l === l.toUpperCase() && /[A-ZÀ-Ú]/.test(l) && l.length < 140) atual.descricao += ' ' + l;
+  });
+  itens.forEach(it => { it.descricao = it.descricao.replace(/\s*\/\s*\.$/, '').replace(/\s+/g, ' ').trim(); });
+  return { itens, dep, detentor };
+}
+
+
+const UNIDADES = 'unid\\w*|uni\\w*|un|und|pe[çc]as?|metros?|mts?|m|litros?|lts?|l|pacotes?|pcts?|caixas?|cxs?|kgs?|kg|gramas?|g|rolos?|pares?|resmas?|frascos?|gal[õo]es?|latas?|jogos?|kits?|folhas?|blocos?|sacos?|fardos?|tubos?|d[úu]zias?|cento|com';
+function lerItemPedido(l) {
+  const s = l.replace(/^\d{1,3}\s*[.)\-–]?\s+(?=\D)/, '').trim();
+  if (!s) return null;
+  const re = new RegExp('(^|\\s)(\\d+(?:[.,]\\d+)?)\\s+(' + UNIDADES + ')\\b(.*)$', 'i');
+  const m = s.match(re);
+  if (m) {
+    const esp = s.slice(0, m.index).trim();
+    if (esp) return { esp, qtd: String(numBR(m[2])), un: (m[3] + m[4]).trim(), obs: '' };
+  }
+  const n = s.match(/^(.*\D)\s+(\d+(?:[.,]\d+)?)\s*$/);
+  if (n) return { esp: n[1].trim(), qtd: String(numBR(n[2])), un: '', obs: '' };
+  return { cont: s };
+}
+
+
+
+
+
+function lerPedidoTabela(paginas) {
+  const itens = [];
+  let b1 = null, b2 = Infinity;
+  paginas.forEach(pg => {
+    const achar = re => pg.find(i => re.test(i.s));
+    const hEsp = achar(/^ESPECIFICA/i), hQtd = achar(/^QUANTIDADE/i), hObs = achar(/^OBS/i), hFim = achar(/^RECEBI/i);
+    if (hEsp && hQtd) { b1 = (hEsp.fim + hQtd.x) / 2; b2 = hObs ? (hQtd.fim + hObs.x) / 2 : Infinity; }
+    if (b1 === null) return;
+    const topo = hEsp ? Math.min(hEsp.y, hQtd.y) - 3 : Infinity, base = hFim ? hFim.y + 3 : -Infinity;
+    const corpo = pg.filter(i => i.y < topo && i.y > base);
+    const ancoras = corpo.filter(i => i.x >= b1 && i.x < b2 && /^\d+([.,]\d+)?$/.test(i.s)).sort((a, b) => b.y - a.y);
+    ancoras.forEach((a, k) => {
+      const cima = k === 0 ? topo : (ancoras[k - 1].y + a.y) / 2, baixo = k === ancoras.length - 1 ? Math.max(base, a.y - 14) : (a.y + ancoras[k + 1].y) / 2;
+      const faixa = corpo.filter(i => i !== a && i.y <= cima && i.y > baixo).sort((p, q) => q.y - p.y || p.x - q.x);
+      const junta = l => l.map(i => i.s).join(' ').replace(/\s+/g, ' ').trim();
+      const esp = junta(faixa.filter(i => i.fim <= b1 + 20 && !(/^\d{1,3}\.?$/.test(i.s) && i.x < b1 / 2) && !/^N[º°o.]?\s*ORD/i.test(i.s)));
+      if (esp) itens.push({ esp, qtd: String(numBR(a.s)), un: junta(faixa.filter(i => i.x >= b1 && i.x < b2)), obs: junta(faixa.filter(i => i.x >= b2)) });
+    });
+  });
+  return itens;
+}
+
+function cabecalhoPedido(paginas, linhas) {
+  const todos = paginas.flat(), texto = linhas.join('\n');
+  const pedaco = re => { const i = todos.find(t => re.test(t.s)); return i ? i.s.replace(re, '').trim() : ''; };
+  return { numero: ((texto.match(/N[º°o.]?\s*(\d{1,4}\s*\/\s*\d{2,4})/i) || [])[1] || '').replace(/\s+/g, ''), de: pedaco(/^DO:\s*/i), para: pedaco(/^AO:\s*/i) };
+}
+function lerPedidoPdf(linhas) {
+  const texto = linhas.join('\n');
+  const pega = re => ((texto.match(re) || [])[1] || '').trim();
+  const itens = [];
+  let dentro = false;
+  linhas.forEach(l => {
+    if (/ESPECIFICA/i.test(l)) { dentro = true; return; }
+    if (/^RECEBI|LOCAL E DATA|^QUARTEL EM|^ASSINATURA/i.test(l)) { dentro = false; return; }
+    if (!dentro || /^OBS:?$/i.test(l)) return;
+    const it = lerItemPedido(l);
+    if (!it) return;
+    if (it.cont) { if (itens.length && !/^\d+$/.test(it.cont)) itens[itens.length - 1].esp += ' ' + it.cont; return; }
+    itens.push(it);
+  });
+  return {
+    numero: pega(/N[º°o.]?\s*(\d{1,4}\s*\/\s*\d{2,4})/i), de: pega(/\bDO:\s*(.+)/i).replace(/\s*AO:.*$/i, ''), para: pega(/\bAO:\s*(.+)/i),
+    itens
+  };
+}
+
+
+function vImportarPdf(tipo) {
+  const st = S.impPdf && S.impPdf.tipo === tipo ? S.impPdf : null;
+  const titulo = tipo === 'siscofis'
+    ? '<p>Traga o PDF da <b>Relação de Material Carga</b> emitido pelo <b>SISCOFIS</b>. O sistema lê o material permanente (com os Nr Patrimoniais) e o de uso duradouro, e mostra a lista para você conferir e escolher o que entra no inventário.</p>'
+    : '<p>Traga o PDF de um <b>pedido de material</b>. O sistema lê os itens (especificação, quantidade e unidade) e você escolhe quais incluir, podendo registrar como pedido no sistema ou lançar direto no inventário.</p>';
+  let html = `<div class="card">${titulo}<div class="bar"><input type="file" accept=".pdf" onchange="lerPdfImportacao(this.files[0],'${tipo}')" aria-label="Arquivo PDF"></div></div>`;
+  if (!st) return html;
+  const sel = st.itens.filter(i => i.sel).length;
+  const marcar = `<button class="btn sm" onclick="marcarImpPdf(true)">Marcar todos</button><button class="btn sm" onclick="marcarImpPdf(false)">Desmarcar todos</button>`;
+  const cx = (i, campo, w, tipoCampo = 'text') => `<input type="${tipoCampo}" value="${esc(st.itens[i][campo])}" onchange="S.impPdf.itens[${i}].${campo}=this.value" style="height:32px;${w ? 'min-width:' + w + 'px' : ''}" aria-label="${campo}">`;
+  if (tipo === 'siscofis') {
+    const novos = st.itens.filter(i => i.sel && !i.existe).length;
+    html += `<h3>${esc(st.arquivo)} — ${st.itens.length} item(ns) encontrados</h3>
+    <div class="card"><div class="form">
+      <label>Dependência (vai para o campo Dependência / local)<input type="text" id="imp_dep" value="${esc(st.dep)}" onchange="S.impPdf.dep=this.value"></label>
+      <label style="justify-content:flex-end"><span style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="imp_atualiza" ${st.atualiza !== false ? 'checked' : ''} onchange="S.impPdf.atualiza=this.checked"> Atualizar quantidade e patrimônios dos itens que já existem</span></label>
+      ${st.detentor ? `<label class="full"><span style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="imp_detentor" checked> Usar "${esc(st.detentor)}" como detentor direto do material carga</span></label>` : ''}
+    </div>
+    <div class="bar" style="margin-top:12px">${marcar}<span class="grow"></span><span class="muted">${novos} novo(s) · ${sel - novos} já existe(m)</span><button class="btn pri" id="btnImpPdf" onclick="confirmarImpSiscofis()">Importar ${sel} item(ns)</button></div></div>
+    <div class="tw" style="max-height:560px;overflow:auto"><table><thead><tr><th></th><th>Tipo</th><th>Nome material</th><th>Nr Ficha</th><th>Cod Mat</th><th>Conta</th><th class="num">Qtd</th><th class="num">Valor unit.</th><th>Patrimônios</th><th>Situação</th></tr></thead><tbody>
+    ${st.itens.map((it, i) => `<tr><td><input type="checkbox" ${it.sel ? 'checked' : ''} onchange="S.impPdf.itens[${i}].sel=this.checked;contarImpPdf()" aria-label="Incluir item"></td>
+      <td>${esc(it.tipoMaterial)}</td><td>${cx(i, 'descricao', 260)}</td><td>${esc(it.nrFicha)}</td><td>${esc(it.codMat)}</td><td>${esc(it.contaContabil)}</td>
+      <td class="num">${cx(i, 'quantidade', 60, 'number')}</td><td class="num">${reais(it.valor)}</td>
+      <td>${it.patrimonios.length ? `<span title="${esc(it.patrimonios.join(', '))}">${it.patrimonios.length} nº</span>` : '<span class="muted">—</span>'}</td>
+      <td>${it.existe ? '<span class="tag info">atualiza</span>' : '<span class="tag ok">novo</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  } else {
+    html += `<h3>${esc(st.arquivo)} — ${st.itens.length} item(ns) encontrados</h3>
+    <div class="card"><div class="form">
+      <label>O que fazer com os itens marcados<select id="imp_destino" onchange="S.impPdf.destino=this.value;S.impPdf.status=this.value==='recebido'?'Pendente':'Enviado';render()">
+        <option value="pedido" ${st.destino === 'pedido' ? 'selected' : ''}>Registrar como pedido enviado ao Fisc Adm / S4</option>
+        <option value="recebido" ${st.destino === 'recebido' ? 'selected' : ''}>Registrar como pedido recebido de Pel / Seç</option>
+        <option value="inventario" ${st.destino === 'inventario' ? 'selected' : ''}>Lançar no inventário (material de consumo)</option></select></label>
+      ${st.destino === 'inventario'
+        ? `<label>Dependência / local<input type="text" value="${esc(st.dep)}" onchange="S.impPdf.dep=this.value"></label>`
+        : `<label>Nº do pedido<input type="text" value="${esc(st.numero)}" onchange="S.impPdf.numero=this.value"></label>
+           <label>Do<input type="text" value="${esc(st.de)}" onchange="S.impPdf.de=this.value"></label><label>Ao<input type="text" value="${esc(st.para)}" onchange="S.impPdf.para=this.value"></label>
+           <label>Situação<select onchange="S.impPdf.status=this.value">${STATUS_PED[st.destino === 'recebido' ? 'Recebido' : 'Enviado'].map(x => `<option ${x === st.status ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`}
+    </div>
+    <div class="bar" style="margin-top:12px">${marcar}<button class="btn sm" onclick="S.impPdf.itens.push({esp:'',qtd:'1',un:'Unidades',obs:'',sel:true});render()">+ Linha</button><span class="grow"></span>
+      <button class="btn pri" id="btnImpPdf" onclick="confirmarImpPedido()">Incluir ${sel} item(ns)</button></div></div>
+    <div class="tw"><table class="itens"><thead><tr><th></th><th>Especificação</th><th>Quantidade</th><th>Unidade</th><th>Obs</th></tr></thead><tbody>
+    ${st.itens.map((it, i) => `<tr><td><input type="checkbox" ${it.sel ? 'checked' : ''} onchange="S.impPdf.itens[${i}].sel=this.checked;contarImpPdf()" aria-label="Incluir item"></td>
+      <td>${cx(i, 'esp', 260)}</td><td style="width:11%">${cx(i, 'qtd', 60, 'number')}</td><td style="width:20%">${cx(i, 'un', 90)}</td><td style="width:20%">${cx(i, 'obs', 80)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="muted">Confira a especificação e a quantidade de cada linha: o PDF não guarda as colunas da tabela, então o sistema separa pelo número e pela unidade.</p>`;
+  }
+  return html;
+}
+function contarImpPdf() { const n = S.impPdf.itens.filter(i => i.sel).length, b = $('#btnImpPdf'); if (b) b.textContent = (S.impPdf.tipo === 'siscofis' ? 'Importar ' : 'Incluir ') + n + ' item(ns)'; }
+function marcarImpPdf(v) { S.impPdf.itens.forEach(i => { i.sel = v; }); render(); }
+
+const materialIgual = it => S.db.Material.find(m => norm(m.nrFicha) === norm(it.nrFicha) && norm(m.codMat) === norm(it.codMat) && Math.abs(num(m.valor) - num(it.valor)) < 0.005);
+async function lerPdfImportacao(file, tipo) {
+  if (!file) return;
+  try {
+    toast('Lendo o PDF…');
+    const paginas = await itensDoPdf(file), linhas = linhasDe(paginas);
+    if (tipo === 'siscofis') {
+      const r = lerSiscofis(linhas);
+      if (!r.itens.length) return toast('Não reconheci itens de relação de material carga neste PDF. Confira se é a relação emitida pelo SISCOFIS.', true);
+      r.itens.forEach(it => { it.sel = true; it.existe = !!materialIgual(it); });
+      S.impPdf = { tipo, arquivo: file.name, itens: r.itens, dep: r.dep || cfg('dependencia'), detentor: r.detentor, atualiza: true };
+    } else {
+      const tabela = lerPedidoTabela(paginas), cab = cabecalhoPedido(paginas, linhas);
+      const r = tabela.length ? { ...cab, itens: tabela } : { ...lerPedidoPdf(linhas), ...Object.fromEntries(Object.entries(cab).filter(([, v]) => v)) };
+      if (!r.itens.length) return toast('Não reconheci itens de pedido neste PDF. Ele precisa ter a tabela com ESPECIFICAÇÃO e QUANTIDADE.', true);
+      r.itens.forEach(it => { it.sel = true; });
+      S.impPdf = { tipo, arquivo: file.name, itens: r.itens, numero: r.numero || proximoNumero(S.db.Pedidos.map(x => x.numero), hoje().slice(0, 4)), de: r.de || cfg('pedidoDe'), para: r.para || cfg('pedidoPara'), destino: 'pedido', status: 'Enviado', dep: cfg('dependencia') };
+    }
+    render();
+  } catch (e) { toast('Erro ao ler o PDF: ' + e.message, true); }
+}
+async function confirmarImpSiscofis() {
+  const st = S.impPdf, escolhidos = st.itens.filter(i => i.sel);
+  if (!escolhidos.length) return toast('Marque pelo menos um item.', true);
+  const dep = ($('#imp_dep') || {}).value || st.dep, atualiza = $('#imp_atualiza') ? $('#imp_atualiza').checked : true;
+  const lista = [];
+  escolhidos.forEach(it => {
+    const igual = materialIgual(it);
+    const dados = { descricao: it.descricao.trim(), tipoMaterial: it.tipoMaterial, nrFicha: it.nrFicha, codMat: it.codMat, contaContabil: it.contaContabil, acervo: it.acervo, quantidade: String(num(it.quantidade)), valor: String(it.valor), localizacao: dep, patrimonio: it.patrimonios.join(', ') };
+    if (igual) { if (atualiza) lista.push({ ...igual, ...dados, descricao: igual.descricao || dados.descricao }); }
+    else lista.push({ ...dados, unidade: 'un', estado: 'Bom', categoria: '', ultimaConferencia: hoje(), obs: 'importado do SISCOFIS' });
+  });
+  if (!lista.length) return toast('Nada a importar: os itens marcados já existem e "atualizar" está desmarcado.', true);
+  const novos = lista.filter(x => !x.id).length;
+  if (!await confirmar(`Importar ${lista.length} item(ns) da relação do SISCOFIS: ${novos} novo(s) e ${lista.length - novos} atualizado(s), na dependência "${dep}"?`)) return;
+  await salvar('Material', lista);
+  if ($('#imp_detentor') && $('#imp_detentor').checked && st.detentor) await salvar('Config', [{ chave: 'detentorNome', valor: st.detentor }]);
+  S.impPdf = null; S.sub.material = 'inv'; S.filtro.dep = dep;
+  toast(`${lista.length} item(ns) importado(s) do SISCOFIS.`); render();
+}
+async function confirmarImpPedido() {
+  const st = S.impPdf, escolhidos = st.itens.filter(i => i.sel && String(i.esp).trim());
+  if (!escolhidos.length) return toast('Marque pelo menos um item com especificação.', true);
+  if (st.destino === 'inventario') {
+    const lista = escolhidos.map(it => {
+      const igual = S.db.Material.find(m => norm(m.descricao) === norm(it.esp));
+      return igual ? { ...igual, quantidade: String(num(igual.quantidade) + num(it.qtd)) }
+        : { descricao: it.esp.trim(), tipoMaterial: 'Consumo', quantidade: String(num(it.qtd) || 1), unidade: it.un || 'un', localizacao: st.dep, estado: 'Bom', obs: [it.obs, 'pedido ' + (st.numero || '')].filter(Boolean).join(' · '), ultimaConferencia: hoje() };
+    });
+    const somados = lista.filter(x => x.id).length;
+    if (!await confirmar(`Lançar ${lista.length} item(ns) no inventário? ${somados ? somados + ' já existe(m) e terá(ão) a quantidade somada.' : 'Todos entram como itens novos de consumo.'}`)) return;
+    await salvar('Material', lista);
+    S.impPdf = null; S.sub.material = 'inv'; toast(`${lista.length} item(ns) lançado(s) no inventário.`); return render();
+  }
+  if (S.db.Pedidos.some(p => p.numero === st.numero) && !await confirmar(`Já existe um pedido nº ${st.numero}. Registrar outro com o mesmo número?`)) return;
+  await salvar('Pedidos', [{ sentido: st.destino === 'recebido' ? 'Recebido' : 'Enviado', numero: st.numero, data: hoje(), de: st.de, para: st.para, status: st.status || 'Enviado', itens: JSON.stringify(escolhidos.map(({ esp, qtd, un, obs }) => ({ esp: esp.trim(), qtd, un, obs }))), obs: 'importado de ' + st.arquivo, autor: S.user.email }]);
+  S.impPdf = null; S.sub.material = 'ped'; S.filtro.pedSent = st.destino === 'recebido' ? 'rec' : 'env'; toast(`Pedido nº ${st.numero} registrado com ${escolhidos.length} item(ns).`); render();
+}
+
+
+const CAMPOS_CFG = [
+  { secao: 'Identificação' },
+  { k: 'sigla', l: 'Sigla da subunidade (topo e aditamento, ex.: 1ª Cia)' },
+  { k: 'siglaOM', l: 'Sigla da OM (ex.: 11º D Sup)' },
+  { k: 'nomeCia', l: 'Nome do sistema (ao lado do menu)' },
+  { k: 'cidade', l: 'Local (ex.: Quartel em Brasília-DF)' },
+  { k: 'guarnicao', l: 'Guarnição (folha de alterações, ex.: Brasília)' },
+  { k: 'cabecalho', l: 'Cabeçalho dos documentos, uma linha por linha (sai em maiúsculas, abaixo do brasão)', t: 'textarea' },
+  { secao: 'Assinatura dos documentos' },
+  { k: 'cmtNome', l: 'Nome do comandante (ex.: FULANO DE TAL – Cap)' },
+  { k: 'cmtFuncao', l: 'Função (ex.: Cmt Cia)' },
+  { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
+  { k: 'avisoEngaj', l: 'Avisar o fim do tempo de serviço com quantos dias de antecedência', t: 'number' },
+  { secao: 'Material' },
+  { k: 'cautelaSetor', l: 'Setor que entrega o material na cautela (ex.: Depósito da 1ª Cia)' },
+  { k: 'cautelaAss1', l: 'Assinatura no alto da cautela, à esquerda' },
+  { k: 'cautelaAss2', l: 'Assinatura no alto da cautela, à direita' },
+  { k: 'dependencia', l: 'Dependência padrão da relação de material carga' },
+  { k: 'detentorNome', l: 'Detentor direto do material carga (nome – posto)' },
+  { k: 'detentorFuncao', l: 'Função do detentor' },
+  { k: 'pedidoDe', l: 'Pedido de material: "Do"' },
+  { k: 'pedidoPara', l: 'Pedido de material: "Ao"' },
+  { k: 'pedidoRecebidoPara', l: 'Pedidos dos Pel / Seç: "Ao" (a quem eles pedem)' },
+  { k: 'pedidoVisto', l: 'Pedido de material: quem dá o visto' },
+  { k: 'pedidoAutorizo', l: 'Pedido de material: quem autoriza' }
+];
+const PADRAO_CFG = {
+  sigla: '1ª Cia', siglaOM: '11º D Sup', nomeCia: 'Sistema da 1ª Companhia', cidade: 'Quartel em Brasília-DF',
+  cabecalho: 'MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n11º DEPÓSITO DE SUPRIMENTO\n1ª COMPANHIA',
+  cmtNome: 'NOME DO COMANDANTE – Cap', cmtFuncao: 'Cmt Cia',
+  cautelaSetor: 'Depósito da 1ª Cia', cautelaAss1: 'Cmt Pel', cautelaAss2: 'Chefe do Depósito', dependencia: '1ª Cia',
+  detentorNome: '', detentorFuncao: 'Detentor direto do material carga',
+  pedidoDe: 'Cmt Pel Sup da 1ª Cia', pedidoPara: 'Fiscal Administrativo', pedidoRecebidoPara: 'Cmt 1ª Cia', guarnicao: 'Brasília', pedidoVisto: 'Cmt Pel Sup', pedidoAutorizo: 'Fiscal Adm'
+};
+
+const NOMES_TAB = { Escala: 'serviços da escala', Aditamentos: 'aditamentos publicados', Documentos: 'registros de documentos', Impedimentos: 'afastamentos encerrados', Missoes: 'missões concluídas/canceladas', Cautelas: 'itens de cautelas devolvidas', Pedidos: 'pedidos encerrados', Log: 'linhas do registro de alterações' };
+function cardArquivo() {
+  let lista = []; try { lista = JSON.parse(cfg('arquivosDados') || '[]'); } catch (e) { }
+  const sugestao = `${Number(hoje().slice(0, 4)) - 1}-01-01`;
+  return `<div class="card" style="margin-top:16px"><h3 style="margin-top:0">Arquivo anual (manter o sistema rápido)</h3>
+    <p class="muted" style="margin-top:0">O sistema lê a planilha inteira ao abrir. Com os anos ela cresce e fica mais lenta. Uma vez por ano (ex.: em janeiro), arquive o que já acabou antes de uma data: vai para outra planilha, na pasta do sistema no Drive (<i>Arquivo de dados</i>), e continua consultável lá. Escala: o último serviço de cada militar fica, para a folga não mudar. Nada que esteja em aberto (cautela, pedido, missão) sai.</p>
+    <div class="bar"><label>Arquivar o que terminou antes de <input type="date" id="arq_ate" value="${sugestao}"></label><button class="btn" onclick="arquivar(true)">Ver o que sai</button><button class="btn pri" onclick="arquivar(false)">Arquivar</button></div>
+    <div id="arq_res"></div>
+    ${lista.length ? `<h4 style="margin:12px 0 4px">Arquivos já feitos</h4><ul>${lista.map(a => `<li><a href="${esc(a.url)}" target="_blank">Arquivo até ${fmt(a.ate)}</a> <span class="muted">(${esc(a.quando)}: ${Object.entries(a.contagem || {}).map(([t, n]) => n + ' ' + (NOMES_TAB[t] || t)).join(', ')})</span></li>`).join('')}</ul>` : ''}</div>`;
+}
+async function arquivar(simular) {
+  const ate = $('#arq_ate').value;
+  if (!ate) return toast('Escolha a data.', true);
+  if (ate > hoje()) return toast('Escolha uma data no passado.', true);
+  if (!simular && !await confirmar(`Arquivar tudo o que terminou antes de ${fmt(ate)}? Os registros saem da planilha principal e vão para uma planilha de arquivo no Drive.`)) return;
+  try {
+    toast(simular ? 'Contando…' : 'Arquivando… pode levar alguns segundos.');
+    const r = await api('arquivarAntigos', ate, simular);
+    const itens = Object.entries(r.contagem || {});
+    const texto = itens.length ? itens.map(([t, n]) => `<li><b>${n}</b> ${NOMES_TAB[t] || t}</li>`).join('') : '<li>Nada para arquivar antes dessa data.</li>';
+    $('#arq_res').innerHTML = `<div class="aviso-leitor" style="margin-top:10px">${simular ? 'Sairiam da planilha principal:' : 'Arquivado:'}<ul style="margin:6px 0">${texto}</ul>${r.url ? `<a href="${esc(r.url)}" target="_blank">Abrir a planilha de arquivo</a>` : ''}</div>`;
+    if (!simular && itens.length) { toast('Arquivo feito. Recarregando…'); setTimeout(() => location.reload(), 1500); }
+  } catch (e) { toast(e.message, true); }
+}
+function vConfig() {
+  const t = aba('config', 'tipos');
+  let corpo = '';
+  if (t === 'geral') {
+    corpo = `<div class="card"><div class="form">${CAMPOS_CFG.map(c => campoHTML(c, cfg(c.k))).join('')}
+      <div class="full"><h3 style="margin:8px 0">Distintivo da OM</h3><div class="bar"><img src="${simbolo()}" alt="Distintivo atual" style="height:72px">
+        ${admin() ? `<label class="btn">Trocar imagem<input type="file" accept=".png,.jpg,.jpeg,.gif,.webp" onchange="trocarImagem('simbolo',this.files[0])" hidden></label>${cfg('simbolo') ? '<button class="btn" onclick="trocarImagem(\'simbolo\',null)">Usar o distintivo do 11º D Sup</button>' : ''}` : ''}
+        <span class="muted">Aparece no topo do sistema, ao lado da sigla.</span></div></div>
+      <div class="full"><h3 style="margin:8px 0">Brasão dos documentos</h3><div class="bar"><img src="${brasao()}" alt="Brasão atual" style="height:72px;background:#fff;padding:4px;border-radius:4px">
+        ${admin() ? `<label class="btn">Trocar imagem<input type="file" accept=".png,.jpg,.jpeg,.gif,.webp" onchange="trocarImagem('brasao',this.files[0])" hidden></label>${cfg('brasao') ? '<button class="btn" onclick="trocarImagem(\'brasao\',null)">Usar o Brasão da República</button>' : ''}` : ''}
+        <span class="muted">Aparece no alto de todos os documentos.</span></div></div></div>
+      <div class="bar" style="margin-top:12px"><span class="grow"></span>${admin() ? '<button class="btn pri" onclick="salvarConfig()">Salvar</button>' : '<span class="muted">Somente o administrador altera.</span>'}</div></div>
+      ${admin() ? cardArquivo() : ''}`;
+  } else if (t === 'tipos') {
+    corpo = `<p class="muted">Cada tipo de serviço é uma coluna na escala e uma linha na 1ª parte do aditamento (em "Serviços externos" ou "Serviços internos"). Ao cadastrar ou editar um serviço, marque os postos e graduações que concorrem a ele.</p>
+      <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn" onclick="restaurarServicosPadrao()">Restaurar serviços padrão</button><button class="btn pri" onclick="editarTipo()">+ Tipo de serviço</button>' : ''}</div>
+      ${tabela(S.db.TiposServico.slice().sort((a, b) => num(a.ordem) - num(b.ordem)), [
+        { l: 'Ordem', v: x => esc(x.ordem), c: 'num' }, { l: 'Serviço', v: x => `<b>${esc(x.nome)}</b>` }, { l: 'Grupo', v: x => esc(x.grupo || 'Externo') },
+        { l: 'Dias', v: x => esc(x.dias || 'Todos') }, { l: 'Concorrem', v: x => esc(ids(x.postos).join(', ')) },
+        { l: 'Aptos', v: x => militaresAtivos().filter(m => aptoPara(m, x)).length, c: 'num' }, { l: 'Gera sozinho', v: x => x.automatico === 'Não' ? 'Não' : 'Sim' }, { l: 'Ativo', v: x => sim(x.ativo) ? 'Sim' : 'Não' }
+      ], pode() ? x => `<button class="btn sm" onclick="editarTipo('${x.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('TiposServico','${x.id}')">Excluir</button>` : null)}`;
+  } else if (t === 'feriados') {
+    corpo = `<p class="muted">Feriados e dias sem expediente entram na escala vermelha.</p>
+      <div class="bar"><span class="grow"></span>${pode() ? '<button class="btn" onclick="feriadosNacionais()">Incluir feriados nacionais do ano</button><button class="btn pri" onclick="editarFeriado()">+ Feriado</button>' : ''}</div>
+      ${tabela(S.db.Feriados.slice().sort((a, b) => a.data.localeCompare(b.data)), [{ l: 'Data', v: f => `${fmt(f.data)} <span class="muted">${SEM_CURTA[dataDe(f.data).getDay()]}</span>` }, { l: 'Descrição', v: f => esc(f.descricao) }],
+        pode() ? f => `<button class="btn sm dng" onclick="excluir('Feriados','${f.data}')">Excluir</button>` : null)}`;
+  } else if (t === 'usuarios') {
+    const pend = (S.db.Acessos || []).filter(a => a.status === 'Pendente');
+    corpo = `${pend.length ? `<h3 style="margin-top:0">Pedidos de acesso <span class="tag warn">${pend.length}</span></h3>
+      ${tabela(pend, [{ l: 'Pedido em', v: a => `${fmt(a.data.slice(0, 10))} <span class="muted">${esc(a.data.slice(11))}</span>` }, { l: 'Nome informado', v: a => `<b>${esc(a.nome || '—')}</b>` }, { l: 'E-mail Google', v: a => esc(a.email) }],
+        a => `<button class="btn sm pri" onclick="aprovarAcesso('${esc(a.email)}')">Aprovar…</button> <button class="btn sm dng" onclick="recusarAcesso('${esc(a.email)}')">Recusar</button>`)}<h3>Usuários cadastrados</h3>` : ''}
+      <p class="muted"><b>admin</b>: tudo, inclusive usuários e configurações · <b>editor</b>: lança e altera dados · <b>leitor</b>: só consulta (não vê o tripão). A pessoa entra pelo link do sistema com o <b>e-mail</b> e um <b>código</b> que chega na hora, sem dar permissão nenhuma à conta Google dela. A planilha e o Drive não são compartilhados com ninguém. Ao excluir, a pessoa sai de todos os aparelhos.</p>
+      <div class="bar"><button class="btn sm" onclick="retirarCompartilhamentos()" title="Para quem usou a versão antiga, em que a planilha era compartilhada">Tirar compartilhamentos antigos da planilha e do Drive</button></div>
+      <div class="bar"><span class="grow"></span><button class="btn pri" onclick="editarUsuario()">+ Usuário</button></div>
+      ${tabela((S.db.Usuarios || []).slice().sort((a, b) => PERFIS.indexOf(a.perfil) - PERFIS.indexOf(b.perfil) || String(a.nome).localeCompare(b.nome)), [{ l: 'Nome', v: u => `<b>${esc(u.nome)}</b>${u.email === S.user.email ? ' <span class="tag info">você</span>' : ''}` }, { l: 'E-mail', v: u => esc(u.email) }, { l: 'Perfil', v: u => `<span class="tag ${u.perfil === 'admin' ? 'info' : u.perfil === 'editor' ? 'ok' : ''}">${esc(u.perfil)}</span>` },
+        { l: 'Áreas', v: u => u.perfil === 'admin' ? '<span class="muted">todas</span>' : `${u.areas ? ids(u.areas).map(a => esc(AREAS[a] || a)).join(', ') : '<span class="muted">todas</span>'}${u.jd === 'Sim' ? ' <span class="tag info">Justiça e Disciplina</span>' : ''}` }],
+        u => `<button class="btn sm" onclick="editarUsuario('${esc(u.email)}')">Editar</button>${u.email !== S.user.email ? ` <button class="btn sm dng" onclick="removerUsuario('${esc(u.email)}')">Excluir</button>` : ''}`)}`;
+  } else {
+    corpo = `<div class="card"><p>Baixe uma cópia de todos os dados em JSON (além do histórico de versões que o próprio Google Sheets guarda).</p>
+      <button class="btn" onclick="baixarBackup()">Baixar backup</button>
+      ${!NO_GOOGLE ? '<p class="muted" style="margin-top:16px">Modo demonstração: <button class="btn sm dng" onclick="confirmar(\'Apagar os dados de demonstração?\').then(s=>{if(s){Demo.resetar();iniciar()}})">Recomeçar demonstração</button></p>' : ''}</div>`;
+  }
+  return `<h2>Configurações</h2><p class="sub">Tipos de serviço, feriados, identificação e assinaturas dos documentos, usuários.</p>
+  ${abas('config', [['tipos', 'Tipos de serviço'], ['feriados', 'Feriados'], ['geral', 'Documentos'], ...(admin() ? [['usuarios', 'Usuários']] : []), ['backup', 'Backup']])}${corpo}`;
+}
+async function salvarConfig() {
+  await salvar('Config', CAMPOS_CFG.filter(c => c.k).map(c => ({ chave: c.k, valor: $('#f_' + c.k).value.trim() })));
+  toast('Configurações salvas.'); render();
+}
+
+
+
+
+async function trocarImagem(chave, file) {
+  const nome = chave === 'simbolo' ? 'Distintivo' : 'Brasão';
+  if (!file) { await salvar('Config', [{ chave, valor: '' }]); toast(chave === 'simbolo' ? 'Voltou ao distintivo do 11º D Sup.' : 'Voltou ao Brasão da República.'); return render(); }
+  try {
+    const url = await new Promise((ok, falha) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = falha; r.readAsDataURL(file); });
+    const img = await new Promise((ok, falha) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => falha(new Error('Imagem inválida.')); i.src = url; });
+    const k = Math.min(1, (chave === 'simbolo' ? 160 : 260) / Math.max(img.width, img.height));
+    const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+    const ctx = cv.getContext('2d');
+    if (chave !== 'simbolo') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height); }
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    let dado = cv.toDataURL('image/png');
+    if (dado.length > 45000) { ctx.globalCompositeOperation = 'destination-over'; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height); dado = cv.toDataURL('image/jpeg', 0.85); }
+    if (dado.length > 49000) throw new Error('Imagem grande demais mesmo reduzida. Use uma imagem mais simples.');
+    await salvar('Config', [{ chave, valor: dado }]);
+    toast(nome + ' atualizado.'); render();
+  } catch (e) { toast(e.message, true); }
+}
+function editarTipo(id) {
+  abrirForm({ titulo: id ? 'Editar tipo de serviço' : 'Novo tipo de serviço', valores: id ? { qtd: '1', ...TIPO[id] } : { ordem: String(S.db.TiposServico.length + 1), qtd: '1', ativo: 'Sim', grupo: 'Externo', dias: 'Todos', automatico: 'Sim', qtd: 1 },
+    campos: [{ k: 'nome', l: 'Nome do serviço (como sai no aditamento)', req: true }, { k: 'ordem', l: 'Ordem', t: 'number' },
+      { k: 'grupo', l: 'Grupo no aditamento', t: 'select', o: ['Externo', 'Interno'], vazio: false }, { k: 'dias', l: 'Em que dias ocorre', t: 'select', o: [['Todos', 'Todos os dias'], ['Preta', 'Só dias úteis (preta)'], ['Vermelha', 'Só sáb, dom e feriados (vermelha)']], vazio: false },
+      { k: 'qtd', l: 'Militares por dia (ex.: 2 sentinelas)', t: 'number', padrao: '1' },
+      { k: 'folga', full: true, l: 'Escala de folga compartilhada (opcional)', ph: 'ex.: Soldados', ajuda: 'Serviços com o mesmo nome aqui dividem a folga: quem tirou Sentinela ontem conta como de serviço também para a Permanência.' },
+      { k: 'postos', l: 'Postos/graduações que concorrem a este serviço', t: 'postos', req: true },
+      { k: 'contagem', l: 'Contagem da folga', t: 'select', o: [['Por cor', 'Por cor (preta e vermelha separadas)'], ['Corrida', 'Corrida (todos os dias, sem separar)']], vazio: false },
+      { k: 'automatico', l: 'Preencher na geração automática', t: 'select', o: [['Sim', 'Sim, pela folga'], ['Não', 'Não, lançamento manual']], vazio: false },
+      { k: 'ativo', l: 'Ativo', t: 'select', o: ['Sim', 'Não'], vazio: false }],
+    aoSalvar: o => salvar('TiposServico', [o]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('TiposServico','${id}',true)">Excluir serviço</button></div>` : '' });
+}
+
+async function restaurarServicosPadrao() {
+  if (!await confirmar('Voltar aos serviços padrão da 1ª Cia (Oficial de Dia, Adjunto, Sargento de Dia, Comandante da Guarda, Cabo da Guarda, Cabo de Dia, Sentinela e Permanência)? Os serviços que você criou e que já têm escala lançada ficam desativados; os outros são apagados.')) return;
+  const padrao = TIPOS_PADRAO.map(t => t.id);
+  const extras = S.db.TiposServico.filter(t => !padrao.includes(t.id));
+  const comEscala = new Set(S.db.Escala.map(e => e.tipoId));
+  await salvar('TiposServico', [...TIPOS_PADRAO.map(t => ({ ...t })), ...extras.filter(t => comEscala.has(t.id)).map(t => ({ ...t, ativo: 'Não' }))], extras.filter(t => !comEscala.has(t.id)).map(t => t.id));
+  toast('Serviços padrão restaurados.'); render();
+}
+function editarFeriado() {
+  abrirForm({ titulo: 'Novo feriado', campos: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'descricao', l: 'Descrição', req: true }], aoSalvar: o => salvar('Feriados', [o]) });
+}
+async function feriadosNacionais() {
+  const y = +S.mes.slice(0, 4);
+  
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3),
+    h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+    mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1;
+  const pascoa = `${y}-${pad(mes)}-${pad(dia)}`;
+  const lista = [[`${y}-01-01`, 'Confraternização Universal'], [addDias(pascoa, -48), 'Carnaval'], [addDias(pascoa, -47), 'Carnaval'], [addDias(pascoa, -2), 'Sexta-feira Santa'],
+    [`${y}-04-21`, 'Tiradentes'], [`${y}-05-01`, 'Dia do Trabalho'], [addDias(pascoa, 60), 'Corpus Christi'], [`${y}-09-07`, 'Independência do Brasil'],
+    [`${y}-10-12`, 'Nossa Senhora Aparecida'], [`${y}-11-02`, 'Finados'], [`${y}-11-15`, 'Proclamação da República'], [`${y}-11-20`, 'Dia da Consciência Negra'], [`${y}-12-25`, 'Natal']]
+    .filter(([dt]) => !FERIADO[dt]).map(([data, descricao]) => ({ data, descricao }));
+  if (!lista.length) return toast('Os feriados nacionais de ' + y + ' já estão cadastrados.');
+  await salvar('Feriados', lista); toast(`${lista.length} feriado(s) de ${y} incluído(s).`); render();
+}
+
+const PERFIS = ['admin', 'editor', 'leitor'];
+const OPCOES_PERFIL = [['editor', 'editor – lança e altera dados'], ['leitor', 'leitor – só consulta'], ['admin', 'admin – tudo, inclusive usuários']];
+function editarUsuario(email, padrao = {}) {
+  const atual = email ? S.db.Usuarios.find(u => u.email === email) : null;
+  abrirForm({ titulo: atual ? 'Editar usuário' : (padrao.email ? 'Aprovar pedido de acesso' : 'Novo usuário'), valores: atual || { perfil: 'editor', ...padrao },
+    campos: [{ k: 'email', l: 'E-mail Google', t: 'email', req: true }, { k: 'nome', l: 'Nome (posto/grad e nome de guerra)', req: true }, { k: 'perfil', l: 'Perfil', t: 'select', o: OPCOES_PERFIL, vazio: false },
+      { k: 'areas', l: 'Áreas em que pode lançar e alterar (nenhuma marcada = todas)', t: 'areas', full: true },
+      { k: 'jd', l: 'Justiça e Disciplina (oficiais e Sgte): vê FATD, punições, elogios e Boca Podre', t: 'select', o: [['Não', 'Não'], ['Sim', 'Sim']], vazio: false, full: true }],
+    extra: '<p class="muted" style="margin:12px 0 0">Ao salvar um usuário novo, ele recebe um e-mail com o link do sistema. Ele entra com este e-mail e um código; não precisa dar nenhuma permissão à conta Google.',
+    aoSalvar: async o => {
+      const mail = o.email.trim().toLowerCase();
+      if (atual && mail !== atual.email) throw new Error('Para trocar o e-mail, exclua o usuário e cadastre de novo.');
+      toast('Salvando e compartilhando…');
+      const r = await api('concederAcesso', mail, o.nome, o.perfil, o.areas || '', o.jd === 'Sim' ? 'Sim' : '');
+      S.db.Usuarios = S.db.Usuarios.filter(u => u.email !== mail).concat(r.usuario);
+      const ped = (S.db.Acessos || []).find(a => a.email === mail); if (ped) ped.status = 'Aprovado';
+      toast(r.aviso ? 'Usuário salvo, mas ' + r.aviso + '. Compartilhe manualmente.' : `${o.nome || mail} cadastrado como ${o.perfil}.`, !!r.aviso);
+    } });
+}
+async function retirarCompartilhamentos() {
+  if (!await confirmar('Tirar todos os compartilhamentos da planilha, da pasta do Drive e das planilhas reservadas? Só você continua com acesso direto; o pessoal continua entrando no sistema pelo link, com e-mail e código.')) return;
+  try { const r = await api('retirarCompartilhamentos'); toast(`${r.retirados} compartilhamento(s) retirado(s).`); } catch (e) { toast(e.message, true); }
+}
+function aprovarAcesso(email) { const a = S.db.Acessos.find(x => x.email === email); editarUsuario(null, { email, nome: a.nome, perfil: 'leitor' }); }
+async function recusarAcesso(email) {
+  if (!await confirmar(`Recusar o pedido de acesso de ${email}?`)) return;
+  try { await api('recusarAcesso', email); S.db.Acessos.find(a => a.email === email).status = 'Recusado'; toast('Pedido recusado.'); render(); }
+  catch (e) { toast(e.message, true); }
+}
+async function removerUsuario(email) {
+  if (!await confirmar(`Tirar o acesso de ${email}? A planilha e a pasta do Drive também deixam de ser compartilhadas com esse e-mail.`)) return;
+  try {
+    const r = await api('removerAcesso', email);
+    S.db.Usuarios = S.db.Usuarios.filter(u => u.email !== email);
+    toast(r.aviso ? 'Acesso removido, mas ' + r.aviso + '.' : 'Acesso removido.', !!r.aviso); render();
+  } catch (e) { toast(e.message, true); }
+}
+
+
+function telaSemAcesso({ email, pendente, podePedir, detalhe }) {
+  const app = cfg('nomeCia') || 'Sistema da Companhia';
+  S.semAcesso = { email };
+  document.body.classList.add('sem-acesso');
+  $('#sigla').innerHTML = marcaHTML();
+  $('#org').innerHTML = cabecalhoDoc().filter(l => !/minist[eé]rio/i.test(l)).slice(0, 3).map(esc).join('<br>');
+  $('#crumb').innerHTML = '';
+  $('#app').innerHTML = `<div class="card" style="max-width:640px;margin:24px auto">
+    <h2 style="font-size:22px">Você ainda não tem acesso</h2>
+    <p>Para entrar no ${esc(app)}, o administrador precisa cadastrar o seu e-mail Google:</p>
+    <div class="bar"><code id="meu-email" style="font-size:17px;font-weight:700;padding:8px 12px;background:var(--cinza-5);border-radius:6px;user-select:all">${esc(email || 'e-mail não identificado')}</code>
+      <button class="btn sm" onclick="copiarEmail()">Copiar e-mail</button></div>
+    ${pendente ? '<p class="tag ok" style="white-space:normal;padding:8px 12px">Seu pedido já foi enviado. Avise o administrador para aprovar e recarregue esta página depois.</p>' : `
+    <div class="form" style="margin-top:12px"><label class="full">Posto/graduação e nome de guerra<input type="text" id="pa_nome" placeholder="Ex.: 3º Sgt Fulano"></label></div>
+    <div class="bar" style="margin-top:12px">${podePedir ? '<button class="btn pri" onclick="enviarPedidoAcesso()">Pedir acesso</button>' : ''}
+      <a class="btn" id="pa_zap" href="${HTTPS}wa.me/" target="_blank" onclick="linkWhatsApp(this)">Enviar pelo WhatsApp</a></div>
+    <p class="muted" style="margin-top:12px">${podePedir ? '"Pedir acesso" deixa o pedido no sistema para o administrador aprovar.' : 'Envie o seu e-mail ao administrador pelo WhatsApp ou pessoalmente.'} Depois de aprovado, recarregue esta página.</p>`}
+    ${!email ? `<div class="aviso-leitor" style="margin-top:12px"><b>O sistema não conseguiu ler o seu e-mail Google.</b> Para o administrador: na implantação do Apps Script, o campo <i>Executar como</i> precisa estar em <b>Usuário que acessa o app da Web</b> e <i>Quem pode acessar</i> em <b>Qualquer pessoa com Conta do Google</b> (Implantar → Gerenciar implantações → editar → Nova versão).</div>` : ''}
+    <p class="muted" style="font-size:13px;margin-top:12px">Já foi cadastrado e o e-mail acima não é o seu? O navegador está usando outra conta Google. Abra o link numa <b>janela anônima</b> (Ctrl+Shift+N) e entre só com o e-mail cadastrado.</p>
+    ${detalhe ? `<p class="muted" style="font-size:12px">Detalhe técnico: ${esc(detalhe)}</p>` : ''}</div>`;
+}
+
+function linkWhatsApp(a) {
+  const nome = ($('#pa_nome') ? $('#pa_nome').value : '').trim();
+  a.href = HTTPS + 'wa.me/?text=' + encodeURIComponent(`Solicito acesso ao ${cfg('nomeCia')}.\nNome: ${nome || '(informe posto/grad e nome de guerra)'}\nE-mail Google: ${S.semAcesso.email}`);
+}
+function copiarEmail() {
+  const t = $('#meu-email').textContent;
+  const sel = () => { const r = document.createRange(); r.selectNodeContents($('#meu-email')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('E-mail selecionado: use Ctrl+C para copiar.'); };
+  try { navigator.clipboard.writeText(t).then(() => toast('E-mail copiado.'), sel); } catch (e) { sel(); }
+}
+async function enviarPedidoAcesso() {
+  const nome = $('#pa_nome').value.trim();
+  if (!nome) return toast('Informe o posto/graduação e o nome de guerra.', true);
+  try {
+    await api('pedirAcesso', nome);
+    toast('Pedido enviado ao administrador.');
+    telaSemAcesso({ email: S.user.email, pendente: true, podePedir: true });
+  } catch (e) { toast('Não foi possível registrar o pedido: ' + e.message + '. Use o WhatsApp.', true); }
+}
+function baixarBackup() {
+  const blob = new Blob([JSON.stringify(S.db, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup-sistema-cia-${hoje()}.json`; a.click();
+}
+
+
+const TIPOS_DOC = TIPOS_DOC_MENU().map(i => [i.filtro[1], i.l]);
+function vArquivo() {
+  const tp = S.filtro.docTipo || '';
+  const lista = S.db.Documentos.filter(d => (!tp || d.tipo === tp) && casa('doc', d.titulo, d.autor)).sort((a, b) => b.data.localeCompare(a.data));
+  const pasta = cfg('pastaDriveId');
+  return `<h2>Arquivo</h2><p class="sub">PDFs e documentos editáveis (Google Docs, que baixam como Word) guardados no Google Drive, separados por tipo e ano.</p>
+  <div class="bar">${busca('doc', 'Buscar documento…')}<select onchange="S.filtro.docTipo=this.value;render()" aria-label="Tipo"><option value="">Todos os tipos</option>${TIPOS_DOC.map(([v, l]) => `<option value="${v}" ${v === tp ? 'selected' : ''}>${l}</option>`).join('')}</select>
+  <span class="grow"></span>${pasta ? `<a class="btn" href="${HTTPS}drive.google.com/drive/folders/${esc(pasta)}" target="_blank">Abrir pasta no Drive</a>` : ''}</div>
+  ${tabela(lista, [
+    { l: 'Gerado em', v: d => `${fmt(d.data.slice(0, 10))} <span class="muted">${esc(d.data.slice(11))}</span>` },
+    { l: 'Tipo', v: d => `<span class="tag">${esc((TIPOS_DOC.find(t => t[0] === d.tipo) || [0, d.tipo])[1])}</span>` },
+    { l: 'Documento', v: d => `<b>${esc(d.titulo)}</b>` },
+    { l: 'Formato', v: d => `<span class="tag ${d.formato === 'Google Doc' ? 'info' : ''}">${esc(d.formato === 'Google Doc' ? 'Editável' : 'PDF')}</span>` },
+    { l: 'Por', v: d => `<span class="muted">${esc(d.autor)}</span>` }
+  ], d => d.url ? `<a class="btn sm" href="${esc(d.url)}" target="_blank">Abrir</a>` : '<span class="muted">só na versão instalada</span>')}
+  <p class="muted">Todo documento tem os botões Imprimir, PDF (arquivado aqui) e Editável (Google Doc; no Docs, Arquivo → Fazer download → Word ou PDF). Listas também saem em Excel.</p>`;
+}
+
+const VIEWS_FN = { painel: vPainel, sargenteacao: vSargenteacao, saude: vSaude, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, alteracoes: vAlteracoes, material: vMaterial, arranchamento: vArranchamento,
+  disciplina: () => `<h2>Justiça e disciplina</h2><p class="sub">FATD, punições, elogios, Boca Podre e ficha disciplinar. Só os oficiais e o Sgte (marcação "Justiça e Disciplina" no cadastro do usuário).</p>${vDisciplina()}`, arquivo: vArquivo, config: vConfig, busca: vBusca };
+function vArranchamento() {
+  return `<h2>Arranchamento</h2><p class="sub">Área do Furriel.</p><div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
+    <p class="muted" style="margin-top:0">Esta parte ainda vai ser feita. Mande os modelos usados pelo Furriel (mapa de arranchamento, relação de arranchados, faltas ao rancho, saque de etapa) para montarmos.</p></div>`;
+}
+
+
+function semente() {
+  const d = hoje(), ano = d.slice(0, 4);
+  const PARENTES = ['Esposa', 'Mãe', 'Pai', 'Irmã', 'Esposo'];
+  const mil = [
+    ['Cap', '', 'Moura', 'Ricardo Moura Lima'], ['1º Ten', '', 'Santana', 'Paulo Santana Reis'], ['ST', '', 'Arruda', 'Nelson Arruda Pires'],
+    ['1º Sgt', '', 'Nunes', 'Carlos Nunes Prado'], ['2º Sgt', '', 'Batista', 'Rafael Batista Cruz'], ['2º Sgt', '', 'Queiroz', 'Hélio Queiroz Matos'], ['2º Sgt', '', 'Leal', 'Otávio Leal Bastos'],
+    ['3º Sgt', '', 'Rocha', 'Diego Rocha Alves'], ['3º Sgt', '', 'Peixoto', 'Mateus Peixoto Dias'], ['3º Sgt', '', 'Vieira', 'André Vieira Gomes'], ['3º Sgt', '', 'Paiva', 'Júlio Paiva Torres'],
+    ['Cb', '', 'Lopes', 'João Lopes Silva'], ['Cb', '', 'Macedo', 'Felipe Macedo Ramos'], ['Cb', '', 'Cardoso', 'Tiago Cardoso Neves'], ['Cb', '', 'Brito', 'Renan Brito Sales'], ['Cb', '', 'Fontes', 'Ígor Fontes Lima'], ['Cb', '', 'Aguiar', 'Rui Aguiar Melo'],
+    ['Sd EP', '', 'Souza', 'Gabriel Souza Lima'], ['Sd EP', '', 'Mendes', 'Caio Mendes Rocha'], ['Sd EP', '', 'Barros', 'Vitor Barros Faria'], ['Sd EP', '', 'Teixeira', 'Enzo Teixeira Luz'], ['Sd EP', '', 'Gama', 'Luan Gama Prado'],
+    ['Sd EV', '', 'Monteiro', 'Davi Monteiro Sá'], ['Sd EV', '', 'Campos', 'Pedro Campos Leal'], ['Sd EV', '', 'Ribeiro', 'Hugo Ribeiro Paz'], ['Sd EV', '', 'Farias', 'Ian Farias Rego'],
+    ['Sd EV', '', 'Nogueira', 'Breno Nogueira Cruz'], ['Sd EV', '', 'Pinheiro', 'Kauã Pinheiro Dias'], ['Sd EV', '', 'Coelho', 'Levi Coelho Brandão'], ['Sd EV', '', 'Dantas', 'Murilo Dantas Reis'],
+    ['2º Ten', '', 'Lacerda', 'Vinícius Lacerda Rocha'], ['2º Ten', '', 'Barreto', 'Caio Barreto Lins'], ['3º Sgt', '', 'Moraes', 'Elias Moraes Sá'], ['3º Sgt', '', 'Pacheco', 'Ítalo Pacheco Reis'], ['3º Sgt', '', 'Teles', 'Rômulo Teles Alves']
+  ].map(([postoGrad, numero, nomeGuerra, nomeCompleto], i) => ({
+    id: 'm' + (i + 1), postoGrad, numero, nomeGuerra, nomeCompleto, dataPraca: `${Number(ano) - (i < 3 ? 15 : i < 11 ? 9 : i < 17 ? 4 : postoGrad === 'Sd EV' ? 0 : 1)}-03-01`, arma: i < 3 ? 'Intendência' : i < 11 ? 'QMS Intendência' : '', antiguidade: String(i + 1), idt: String(1000000000 + i * 7919), pelotao: i < 3 ? 'Cmdo' : (i % 2 ? '1º Pel' : 'Pel Sup'), funcao: '', ativo: 'Sim', obs: '',
+    dataNascimento: `${1975 + (i * 7) % 30}-${pad(1 + i % 12)}-${pad(1 + (i * 5) % 28)}`, cpf: '', precCp: '', tipoSanguineo: TIPOS_SANGUE[i % 8], peso: String(62 + (i * 3) % 30),
+    telefone: `(61) 9${String(81000000 + i * 271357).slice(0, 4)}-${String(1000 + i * 37).slice(-4)}`, email: `${norm(nomeGuerra)}@exemplo.com`, endereco: `Quadra ${10 + i}, Conjunto ${'ABCDE'[i % 5]}, Casa ${i + 2} – Brasília-DF (fictício)`,
+    cttEmergencia: `(61) 9${String(92000000 + i * 15731).slice(0, 4)}-${String(2000 + i * 53).slice(-4)}`, nomeCtt: ['Ana', 'Maria', 'José', 'Paula', 'Luís'][i % 5], parentesco: PARENTES[i % 5],
+    cnh: i % 3 ? 'B' : 'AD', motoristaMilitar: i % 4 === 0 ? 'Sim' : 'Não', veiculo: i % 2 ? 'Carro' : ''
+  }));
+  const tipos = TIPOS_PADRAO.map(t => ({ ...t }));
+  const mat = (descricao, tipoMaterial, categoria, q, nrFicha, codMat, conta, valor, localizacao, patr = '') => ({ descricao, tipoMaterial, categoria, quantidade: String(q), unidade: 'un', nrFicha, codMat, contaContabil: conta, acervo: 'N', valor: String(valor), localizacao, patrimonio: patr, estado: 'Bom', ultimaConferencia: addDias(d, -10), obs: '', arquivoUrl: '' });
+  const material = [
+    mat('Fuzil 7,62 M964 (FAL)', 'Permanente', 'Armamento', 4, '010231', '00123001010', '123110105', 3150, 'Reserva de armamento', 'FIC0001001, FIC0001002, FIC0001003, FIC0001004'),
+    mat('Rádio portátil VHF', 'Permanente', 'Comunicações', 6, '030114', '00123004411', '123110105', 2890.5, 'Seção de comunicações', 'FIC0002001, FIC0002002, FIC0002003, FIC0002004, FIC0002005, FIC0002006'),
+    mat('Notebook', 'Permanente', 'Informática', 3, '040982', '00123009321', '123110101', 4100, 'Sala do Cmt Cia', 'FIC0003001, FIC0003002, FIC0003003'),
+    mat('Gerador portátil 3 kVA', 'Permanente', 'Engenharia', 1, '050320', '00123007750', '123110105', 5600, 'Pel Sup', 'FIC0004001'),
+    mat('Barraca de campanha 2 praças', 'Uso duradouro', 'Intendência', 40, '14B0002', '0012301122', '123119910', 389.9, 'Depósito da 1ª Cia'),
+    mat('Colete refletivo', 'Uso duradouro', 'Intendência', 25, '27C0005', '0012304477', '123119910', 32.4, 'Depósito da 1ª Cia'),
+    mat('Lanterna de cabeça', 'Uso duradouro', 'Intendência', 15, '28L0003', '0012305510', '123119910', 74.9, 'Depósito da 1ª Cia'),
+    mat('Pallet plástico', 'Uso duradouro', 'Intendência', 11, '19P0000', '00123014123', '123119910', 109.99, 'Pel Sup'),
+    { ...mat('Resma de papel A4', 'Consumo', 'Intendência', 3, '', '', '', 28.5, 'Depósito da 1ª Cia'), unidade: 'resmas', estoqueMinimo: '10' },
+    { ...mat('Pilha AA', 'Consumo', 'Intendência', 40, '', '', '', 2.2, 'Depósito da 1ª Cia'), unidade: 'unidades', estoqueMinimo: '24' }
+  ].map((m, i) => ({ id: 'mt' + (i + 1), ...m, estado: i === 3 ? 'Em manutenção' : 'Bom' }));
+  const db = {
+    Militares: mil,
+    Impedimentos: [{ id: 'i1', militarId: 'm8', tipo: 'Férias', inicio: addDias(d, -3), fim: addDias(d, 26), obs: '', referencia: ano }, { id: 'sau-s1', militarId: 'm19', tipo: 'Dispensa médica', inicio: d, fim: addDias(d, 2), obs: '', referencia: '' }, { id: 'pun-jd4', militarId: 'm21', tipo: 'Cumprindo punição', inicio: addDias(d, -1), fim: addDias(d, 2), obs: '', referencia: '' },
+      { id: 'i3', militarId: 'm5', tipo: 'Férias', inicio: `${ano}-12-07`, fim: `${ano}-12-21`, obs: '', referencia: ano }, { id: 'i4', militarId: 'm5', tipo: 'Férias', inicio: `${+ano + 1}-01-12`, fim: `${+ano + 1}-01-26`, obs: '', referencia: ano }],
+    TiposServico: tipos,
+    Escala: [],
+    Feriados: [[`${ano}-11-02`, 'Finados'], [`${ano}-11-15`, 'Proclamação da República'], [`${ano}-11-20`, 'Dia da Consciência Negra'], [`${ano}-12-25`, 'Natal']].map(([data, descricao]) => ({ data, descricao })),
+    Missoes: [{ id: 'x1', titulo: 'Apoio logístico ao exercício de campanha', tipo: 'Apoio', local: 'Campo de instrução', inicio: addDias(d, 1), fim: addDias(d, 4), horario: '06h00', responsavelId: 'm2', militaresIds: 'm9,m13,m23,m24', viaturas: 'VTNE 5 t', material: 'Rádios portáteis (2)', descricao: 'Prestar apoio de suprimento conforme ordem do escalão superior.', status: 'Planejada', arquivoUrl: '' }],
+    Aditamentos: [],
+    Material: material,
+    Cautelas: [
+      { id: 'c1', numero: `001/${ano}`, materialId: 'mt2', militarId: 'm6', quantidade: '2', numeracao: 'FIC0002001, FIC0002002', destino: 'Exercício', dataSaida: addDias(d, -12), previsaoDevolucao: addDias(d, -2), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' },
+      { id: 'c2', numero: `001/${ano}`, materialId: 'mt7', militarId: 'm6', quantidade: '4', numeracao: '', destino: 'Exercício', dataSaida: addDias(d, -12), previsaoDevolucao: addDias(d, -2), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' },
+      { id: 'c3', numero: `002/${ano}`, materialId: 'mt3', militarId: 'm2', quantidade: '1', numeracao: 'FIC0003002', destino: 'Sala do S1', dataSaida: addDias(d, -5), previsaoDevolucao: addDias(d, 25), dataDevolucao: '', status: 'Aberta', obs: '', arquivoUrl: '' }],
+    Pedidos: [{ id: 'p2', sentido: 'Recebido', numero: `001/${ano}`, data: addDias(d, -1), de: 'Cmt 1º Pel', para: 'Cmt 1ª Cia', status: 'Pendente', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
+      itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 5, un: 'resmas', obs: '' }, { esp: 'Pilha AA', qtd: 12, un: 'unidades', obs: 'rádios' }, { esp: 'Lanterna de cabeça', qtd: 2, un: 'un', obs: '' }]) },
+      { id: 'p1', sentido: 'Enviado', numero: `001/${ano}`, data: addDias(d, -2), de: 'Cmt Pel Sup da 1ª Cia', para: 'Fiscal Administrativo', status: 'Enviado', obs: '', arquivoUrl: '', autor: 'demo@exemplo.com',
+      itens: JSON.stringify([{ esp: 'Resma de papel A4', qtd: 6, un: 'com 500 unidades cada', obs: '' }, { esp: 'Toner de tinta preta para impressora', qtd: 2, un: 'Unidades', obs: '' }, { esp: 'Caneta esferográfica', qtd: 30, un: 'Unidades', obs: 'azul e preta' }, { esp: 'Desinfetante', qtd: 3, un: 'Litros', obs: '' }]) }],
+    Usuarios: [{ email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, { email: 'sgte.exemplo@exemplo.com', nome: '1º Sgt Nunes (Sgte)', perfil: 'editor', areas: 'sgte', jd: 'Sim' }, { email: 'encmat.exemplo@exemplo.com', nome: 'Cb Lopes (Enc Mat)', perfil: 'editor', areas: 'mat', jd: '' }],
+    Acessos: [{ email: 'sd.gama.exemplo@exemplo.com', nome: 'Sd EP Gama', data: `${d} 07:42`, status: 'Pendente' }],
+    Documentos: [],
+    Locais: [],
+    Alteracoes: [
+      { id: 'al1', militarId: 'm20', data: `${ano}-${pad(Math.max(1, Number(d.slice(5, 7)) - 1))}-10`, ref: 'Adt Nr 015 ao BI Nr 028', titulo: 'APRESENTAÇÃO DE PRAÇA', texto: 'Apresentou-se pronto para o serviço, por término de dispensa médica.', origem: 'manual' },
+      { id: 'al2', militarId: 'm20', data: `${ano}-${d.slice(5, 7)}-05`, ref: 'BI Nr 042', titulo: 'CURSO DE CABO – MATRÍCULA', texto: 'Matriculado no Curso de Formação de Cabos, a contar desta data, devendo apresentar-se à seção de instrução.', origem: 'importado BI Nr 042' }
+    ],
+    FolhasAlt: [],
+    Fotos: [],
+    Saude: [{ id: 's1', tipo: 'Visita médica', militarId: 'm19', data: d, motivo: 'Entorse no tornozelo', local: 'Posto médico', resultado: 'Dispensa médica', dias: '3', inicio: d, bi: '' },
+      { id: 's2', tipo: 'Visita médica', militarId: 'm25', data: addDias(d, -6), motivo: 'Gripe', local: 'Posto médico', resultado: 'Apto', dias: '', inicio: '', bi: '' },
+      { id: 's3', tipo: 'Inspeção de saúde', militarId: 'm13', data: addDias(d, -350), motivo: 'Engajamento / reengajamento', resultado: 'Apto A', validade: addDias(d, 15), bi: 'BI nº 12' },
+      { id: 's4', tipo: 'Acidente', militarId: 'm26', data: addDias(d, -20), motivo: 'Corte na mão durante faxina do depósito', local: 'Depósito da 1ª Cia', emServico: 'Em apuração', documento: 'AO (Atestado de Origem)', numeroDoc: '', proximo: addDias(d, 5), sindicancia: '', situacao: 'Aberto' },
+      { id: 's5', tipo: 'Adido (LTSP)', militarId: 'm28', data: addDias(d, -60), motivo: 'Tratamento ortopédico', proximo: addDias(d, -1), obs: '1ª prorrogação: 30 dias (BI nº 40)', bi: 'BI nº 22', situacao: 'Em tratamento' }],
+    SAT: [{ id: 't1', militarId: 'm19', inicio: `${ano}-01-01`, valor: '180', ref: 'DIEx nº 15 – BI nº 8', situacao: 'Ativo' }, { id: 't2', militarId: 'm8', inicio: `${ano}-02-01`, valor: '220', ref: 'DIEx nº 22', situacao: 'Ativo' }, { id: 't3', militarId: 'm24', inicio: `${ano}-03-01`, valor: '150', ref: 'DIEx nº 31', situacao: 'Ativo' }],
+    Pernoite: [],
+    TempoServico: [{ id: 'ts1', militarId: 'm12', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -300), is: 'Apto A', inicio: addDias(d, -280), fim: addDias(d, 60), situacao: 'Deferido', bi: 'BI nº 30' },
+      { id: 'ts2', militarId: 'm13', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -5), is: '', inicio: addDias(d, 40), fim: '', situacao: 'Em andamento', bi: '' },
+      { id: 'ts0', militarId: 'm13', tipo: 'Engajamento', requerimento: addDias(d, -400), is: 'Apto A', inicio: addDias(d, -365), fim: addDias(d, 39), situacao: 'Deferido', bi: 'BI nº 70' },
+      { id: 'ts3', militarId: 'm18', tipo: 'Engajamento', requerimento: addDias(d, -380), is: 'Apto A', inicio: addDias(d, -360), fim: addDias(d, 200), situacao: 'Deferido', bi: 'BI nº 61' }],
+    Controles: [{ id: 'fatd', responsavelId: 'm23', prazo: addDias(d, 10), situacao: 'Em dia', obs: '' }, { id: 'ferias', responsavelId: 'm16', prazo: addDias(d, -2), situacao: 'Melhorar', obs: 'Montar planilha: quem já tirou e quem mudou o período.' },
+      { id: 'mapa', responsavelId: 'm4', prazo: addDias(d, 5), situacao: 'Melhorar', obs: 'Atualizar o SUCEMNet diariamente.' }, { id: 'chamada', responsavelId: 'm24', prazo: '', situacao: 'Em dia', obs: '' }],
+    QCP: [['Cmdo', 'Comandante da Cia', 'Cap', 'm1'], ['Cmdo', 'Subtenente', 'ST', 'm3'], ['Cmdo', 'Sargenteante', '1º Sgt', 'm4'], ['Pel Sup', 'Cmt Pel Sup', '1º Ten', 'm2'], ['Pel Sup', 'Adjunto do Pel', '2º Sgt', 'm5'],
+      ['1º Pel', 'Cmt 1º Pel', '2º Ten', 'm31'], ['1º Pel', 'Cmt GC', '3º Sgt', 'm8'], ['1º Pel', 'Cmt GC', '3º Sgt', 'm9'], ['1º Pel', 'Cmt GC', '3º Sgt', ''], ['Cmdo', 'Furriel', '3º Sgt', 'm10'], ['Cmdo', 'Enc Mat', 'Cb', 'm12']]
+      .map(([fracao, funcao, postoPrevisto, ocupanteId], i) => ({ id: 'q' + (i + 1), fracao, funcao, postoPrevisto, ocupanteId, ordem: String(i + 1) })),
+    Disciplina: [
+      { id: 'jd1', tipo: 'FATD', numero: `001/${ano}`, dataFato: addDias(d, -12), militarId: 'm20', participante: '3º Sgt Rocha', relato: 'o militar deixou de comparecer à formatura matinal sem motivo justificado.', ciencia: addDias(d, -11), defesaData: addDias(d, -9), defesa: 'Alegou problema com o transporte, sem comprovação.', decisao: 'Punido', dataDecisao: addDias(d, -6), classificacao: 'Leve', enquadramento: '15', punicao: 'Repreensão', dias: '', inicio: '', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
+      { id: 'jd2', tipo: 'FATD', numero: `002/${ano}`, dataFato: addDias(d, -2), militarId: 'm22', participante: '1º Sgt Nunes', relato: 'o militar apresentou-se para o serviço com o uniforme em desalinho e sem a cobertura.', ciencia: addDias(d, -1), origemId: 'jd8' },
+      { id: 'jd3', tipo: 'FATD', numero: `003/${ano}`, dataFato: addDias(d, -1), militarId: 'm24', participante: 'Cb Brito', relato: 'o militar deixou o posto de sentinela antes da rendição.' },
+      { id: 'jd4', tipo: 'FATD', numero: `004/${ano}`, dataFato: addDias(d, -9), militarId: 'm21', participante: '2º Sgt Leal', relato: 'o militar faltou ao serviço de permanência para o qual estava escalado.', ciencia: addDias(d, -8), defesaData: addDias(d, -6), decisao: 'Punido', dataDecisao: addDias(d, -3), classificacao: 'Média', enquadramento: '22', punicao: 'Detenção disciplinar', dias: '4', inicio: addDias(d, -1), autoridade: 'RICARDO MOURA LIMA – Cap', bi: `BI nº ${Number(d.slice(5, 7)) * 4}` },
+      { id: 'jd5', tipo: 'FATD', numero: `012/${Number(ano) - 1}`, historico: 'Sim', dataFato: `${Number(ano) - 1}-08-14`, militarId: 'm20', relato: 'Atraso reiterado.', decisao: 'Punido', dataDecisao: `${Number(ano) - 1}-08-20`, classificacao: 'Leve', punicao: 'Repreensão', bi: 'BI nº 150' },
+      { id: 'jd6', tipo: 'Elogio', data: addDias(d, -4), subtipo: 'Elogio coletivo', militaresIds: 'm9,m13,m23', relato: 'Pela dedicação e eficiência demonstradas no apoio logístico ao exercício de campanha.', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
+      { id: 'jd7', tipo: 'Elogio', data: addDias(d, -40), subtipo: 'Elogio individual', militaresIds: 'm4', relato: 'Pelo zelo e organização na conferência anual do material carga.', autoridade: 'RICARDO MOURA LIMA – Cap', bi: 'BI nº 180' },
+      { id: 'jd8', tipo: 'Anotacao', data: addDias(d, -2), militarId: 'm22', subtipo: 'Apresentação pessoal', relato: 'Uniforme em desalinho e sem cobertura na troca da guarda.', participante: '1º Sgt Nunes' },
+      { id: 'jd9', tipo: 'Anotacao', data: addDias(d, -3), militarId: 'm25', subtipo: 'Atraso', relato: 'Chegou 10 min atrasado para o expediente. Orientado.', participante: '3º Sgt Vieira' },
+      { id: 'jd11', tipo: 'Sindicancia', numero: `001/${ano}`, data: addDias(d, -20), relato: 'Apurar as circunstâncias do acidente com o Sd EV Farias na faxina do depósito.', participante: '1º Ten Santana', militarId: 'm26', prazo: addDias(d, 10), decisao: 'Em andamento', bi: '' },
+      { id: 'jd10', tipo: 'Anotacao', data: addDias(d, -5), militarId: 'm16', subtipo: 'Orientação', relato: 'Orientado sobre o preenchimento do livro de partes do Cb Gda.', participante: 'ST Arruda' }
+    ],
+    Config: Object.entries({ ...PADRAO_CFG, cmtNome: 'RICARDO MOURA LIMA – Cap', sgteNome: 'CARLOS NUNES PRADO – 1º Sgt', detentorNome: 'NELSON ARRUDA PIRES – ST' }).map(([chave, valor]) => ({ chave, valor }))
+  };
+  
+  S.db = db; indexar();
+  db.Escala = gerarEscala(addDias(d, -20), addDias(d, 15), []).novos;
+  return db;
+}
+
+
+
+async function migrarFolgaSoldados() {
+  if (!admin() || cfg('folgaCompartilhada') === 'Sim2') return;
+  const pares = [['Soldados', ['sentinela', 'permanencia']], ['Cabos', ['cb-gda', 'cb-dia']]];
+  const mudar = pares.flatMap(([nome, l]) => { const t = S.db.TiposServico.filter(x => l.includes(x.id) && !x.folga); return t.length === 2 ? t.map(x => ({ ...x, folga: nome })) : []; });
+  try {
+    if (mudar.length) await salvar('TiposServico', mudar);
+    await salvar('Config', [{ chave: 'folgaCompartilhada', valor: 'Sim2' }]);
+    if (mudar.length) { toast('Agora dividem a mesma escala de folga: ' + [...new Set(mudar.map(x => x.folga))].join(' e ') + '.'); render(); }
+  } catch (e) { }
+}
+async function iniciar() {
+  if (!$('#css-doc')) document.head.insertAdjacentHTML('beforeend', `<style id="css-doc">${CSS_DOC}</style>`);
+  $$('[data-ico]').forEach(el => { el.outerHTML = ICO[el.dataset.ico]; });
+  atualizarBotoesTopo();
+  renderMenu();
+  $('#demo-bar').hidden = !!NO_GOOGLE;
+  try { S.view = localStorage.getItem('cia-view') || 'painel'; } catch (e) { }
+  if (!TOKEN) return telaLogin();
+  try {
+    const r = await api('bootstrap');
+    S.user = r.usuario;
+    S.db = Object.fromEntries(TABS.map(t => [t, r.dados[t] || []]));
+    indexar();
+    $('#user').textContent = (S.user.nome || S.user.email || 'Usuário').split(' ')[0];
+    if (S.user.perfil === 'bloqueado') { guardarSessao(''); return telaLogin('Este e-mail não tem mais acesso. Peça ao administrador.'); }
+    render();
+    migrarFolgaSoldados();
+  } catch (e) {
+    if (!TOKEN) return;
+    $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>
+      <div class="bar"><button class="btn pri" onclick="iniciar()">Tentar de novo</button><button class="btn" onclick="sairDoSistema()">Entrar com outro e-mail</button></div></div>`;
+  }
+}
+
+const emailSalvo = () => { try { return localStorage.getItem('cia-email') || ''; } catch (e) { return ''; } };
+function telaLogin(msg) {
+  S.login = S.login || { etapa: 'email', email: emailSalvo() };
+  if (msg) S.login.msg = msg;
+  const L = S.login;
+  document.body.classList.add('sem-acesso');
+  $('#sigla').innerHTML = marcaHTML();
+  $('#org').innerHTML = cabecalhoDoc().filter(l => !/minist[eé]rio/i.test(l)).slice(0, 3).map(esc).join('<br>');
+  $('#crumb').innerHTML = '';
+  $('#user').textContent = 'Entrar';
+  const aviso = L.msg ? `<p class="aviso-leitor">${esc(L.msg)}</p>` : '';
+  let corpo;
+  if (L.etapa === 'pedir') corpo = `<h2 style="font-size:22px">Pedir acesso</h2>
+      <p>O administrador recebe o pedido e libera o seu e-mail. Depois é só entrar com ele.</p>
+      <div class="form"><label class="full">Posto/graduação e nome de guerra<input type="text" id="lg_nome" placeholder="Ex.: 3º Sgt Fulano"></label>
+        <label class="full">Seu e-mail<input type="email" id="lg_email" value="${esc(L.email)}" autocomplete="email"></label></div>
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginPedir()">Enviar pedido</button><button class="btn" onclick="S.login.etapa='email';telaLogin()">Voltar</button></div>`;
+  else if (L.etapa === 'codigo') corpo = `<h2 style="font-size:22px">Digite o código</h2>
+      <p>Mandamos um código de 6 números para <b>${esc(L.email)}</b>. Veja também a pasta de spam.</p>
+      <div class="form"><label class="full">Código<input type="text" id="lg_codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="font-size:22px;letter-spacing:6px;max-width:220px" onkeydown="if(event.key==='Enter')loginEntrar()"></label></div>
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginEntrar()">Entrar</button><button class="btn" onclick="loginCodigo(true)">Mandar outro código</button><button class="btn" onclick="S.login.etapa='email';telaLogin()">Trocar e-mail</button></div>`;
+  else corpo = `<h2 style="font-size:22px">Entrar</h2>
+      <p>Digite o e-mail cadastrado no sistema. Você recebe um código para entrar; <b>não precisa dar nenhuma permissão à sua conta Google</b>.</p>
+      <div class="form"><label class="full">E-mail<input type="email" id="lg_email" value="${esc(L.email)}" autocomplete="email" onkeydown="if(event.key==='Enter')loginCodigo()"></label></div>
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginCodigo()">Receber código</button><button class="btn" onclick="S.login.etapa='pedir';telaLogin()">Ainda não tenho acesso</button></div>
+      ${!NO_GOOGLE ? `<div class="muted" style="margin-top:14px;font-size:13.5px"><b>Demonstração</b> – teste com perfis diferentes:<ul style="margin:6px 0 0;padding-left:18px">${[['demo@exemplo.com', 'administrador (vê tudo)'], ['sgte.exemplo@exemplo.com', 'Sgte: Sargenteação, Saúde e Justiça e Disciplina'], ['encmat.exemplo@exemplo.com', 'Cb Enc Mat: só altera o material']].map(([e, d]) => `<li><a style="cursor:pointer" onclick="$('#lg_email').value='${e}'">${e}</a> – ${d}</li>`).join('')}</ul></div>` : ''}`;
+  $('#app').innerHTML = `<div class="card" style="max-width:520px;margin:24px auto">${aviso}${corpo}</div>`;
+  const f = $('#lg_codigo') || $('#lg_email'); if (f) f.focus();
+}
+async function loginCodigo(reenviar) {
+  const L = S.login, email = reenviar ? L.email : ($('#lg_email').value || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Digite um e-mail válido.', true);
+  L.email = email; L.msg = '';
+  try {
+    toast('Enviando o código…');
+    const r = await api('enviarCodigo', email);
+    if (r.situacao === 'nao-cadastrado') { L.etapa = 'pedir'; L.msg = 'Este e-mail ainda não está cadastrado. Peça acesso ao administrador:'; return telaLogin(); }
+    if (r.situacao === 'aguarde') toast('Um código acabou de ser enviado. Espere 1 minuto para pedir outro.');
+    if (r.demo) L.msg = `Demonstração: o e-mail com o código não é enviado de verdade. O código é ${r.demo}.`;
+    L.etapa = 'codigo'; telaLogin();
+  } catch (e) { toast(e.message, true); }
+}
+async function loginEntrar() {
+  const L = S.login, codigo = ($('#lg_codigo').value || '').replace(/\D/g, '');
+  if (codigo.length !== 6) return toast('O código tem 6 números.', true);
+  try {
+    const r = await api('entrarComCodigo', L.email, codigo, navigator.userAgent.slice(0, 120));
+    guardarSessao(r.token);
+    try { localStorage.setItem('cia-email', r.email); } catch (e) { }
+    S.login = null; document.body.classList.remove('sem-acesso');
+    $('#app').innerHTML = '<div class="loading">Carregando dados da planilha…</div>';
+    iniciar();
+  } catch (e) { toast(e.message, true); }
+}
+async function loginPedir() {
+  const nome = $('#lg_nome').value.trim(), email = ($('#lg_email').value || '').trim().toLowerCase();
+  if (!nome) return toast('Informe o posto/graduação e o nome de guerra.', true);
+  try {
+    const r = await api('pedirAcesso', nome, email);
+    S.login = { etapa: 'email', email, msg: r.situacao === 'ja-cadastrado' ? 'Este e-mail já está cadastrado: é só entrar.' : 'Pedido enviado. Quando o administrador liberar, você recebe um e-mail e entra por aqui.' };
+    telaLogin();
+  } catch (e) { toast(e.message, true); }
+}
+async function sairDoSistema() {
+  try { if (TOKEN) await api('sair', TOKEN); } catch (e) { }
+  guardarSessao(''); S.user = null; S.db = {}; S.login = null;
+  telaLogin('Você saiu deste aparelho.');
+}
+iniciar();

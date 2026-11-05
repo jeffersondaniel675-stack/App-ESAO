@@ -453,14 +453,36 @@ const Demo = {
   ler() { try { return JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { return null; } },
   gravar(db) { try { localStorage.setItem(this.KEY, JSON.stringify(db)); } catch (e) { this.semArmazenamento = true; } this.mem = db; },
   db() { return this.mem || this.ler() || (this.mem = semente()); },
-  async bootstrap() { const db = this.db(); this.gravar(db); return { usuario: { email: 'demo@exemplo.com', nome: 'Usuário demonstração', perfil: 'admin' }, dados: JSON.parse(JSON.stringify(db)) }; },
+  // Demonstração da entrada por código: o "e-mail" com o código aparece na própria tela; cada usuário vê só o que o perfil dele permite.
+  emailDaSessao() { return String(TOKEN || '').startsWith('demo:') ? TOKEN.slice(5) : ''; },
+  async bootstrap() {
+    const db = this.db(); this.gravar(db);
+    const email = this.emailDaSessao(), u = (db.Usuarios || []).find(x => x.email === email);
+    if (!u) return { usuario: { email, perfil: 'bloqueado' }, dados: { Config: db.Config } };
+    const tudo = JSON.parse(JSON.stringify(db)), jd = u.perfil === 'admin' || u.jd === 'Sim';
+    const sauOk = jd || (u.perfil === 'editor' && (!u.areas || ids(u.areas).includes('sgte')));
+    const fora = [...(u.perfil !== 'admin' ? ['Usuarios', 'Acessos'] : []), ...(jd ? [] : ['Disciplina']), ...(sauOk ? [] : ['Saude'])];
+    const dados = Object.fromEntries(Object.entries(tudo).filter(([t]) => !fora.includes(t)));
+    return { usuario: { email: u.email, nome: u.nome, perfil: u.perfil, areas: u.areas || '', jd: u.jd || '' }, dados };
+  },
+  async enviarCodigo(email) {
+    if (!(this.db().Usuarios || []).some(u => u.email === email)) return { situacao: 'nao-cadastrado' };
+    this.codigo = { email, c: String(Math.floor(100000 + Math.random() * 900000)) };
+    return { situacao: 'enviado', demo: this.codigo.c };
+  },
+  async entrarComCodigo(email, codigo) {
+    if (!this.codigo || this.codigo.email !== email) throw new Error('Código vencido. Peça outro.');
+    if (String(codigo) !== this.codigo.c) throw new Error('Código errado. Confira e tente de novo.');
+    this.codigo = null; return { token: 'demo:' + email, email };
+  },
+  async sair() { return true; },
   async salvarLote(t, lista, excluir) {
     const db = this.db(); const k = chaveDe(t); db[t] = (db[t] || []).filter(r => !excluir.includes(String(r[k])));
     const salvos = lista.map(o => { o = { ...o }; if (k === 'id' && !o.id) o.id = uid(); const i = db[t].findIndex(r => String(r[k]) === String(o[k])); if (i >= 0) db[t][i] = { ...db[t][i], ...o }; else db[t].push(o); return o; });
     this.gravar(db); return salvos;
   },
   async quemSou() { return { email: 'demo@exemplo.com' }; },
-  async pedirAcesso() { return { situacao: 'registrado' }; },
+  async pedirAcesso(nome, email) { const db = this.db(); if ((db.Usuarios || []).some(u => u.email === email)) return { situacao: 'ja-cadastrado' }; await this.salvarLote('Acessos', [{ email, nome, data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), status: 'Pendente' }], []); return { situacao: 'registrado' }; },
   async concederAcesso(email, nome, perfil, areas = '', jd = '') {
     const db = this.db();
     if (perfil !== 'admin' && !(db.Usuarios || []).some(u => u.perfil === 'admin' && u.email !== email)) throw new Error('O sistema precisa de pelo menos um administrador. Cadastre outro admin antes.');
@@ -1245,7 +1267,7 @@ function abrirPop(qual, ev) {
       <button onclick="fecharPops();S.sub.config='geral';irPara('config')">Configurações</button>
       <button onclick="fecharPops();alternarTema()">${temaPreto() ? 'Usar tema claro' : 'Usar tema preto'}</button>
       <button onclick="fecharPops();alternarTelaCheia()">${document.fullscreenElement || document.body.classList.contains('cheia') ? 'Sair da tela cheia' : 'Tela cheia'}</button>
-      ${NO_GOOGLE ? '<button onclick="fecharPops();sairDoSistema()">Sair deste aparelho</button>' : ''}
+      <button onclick="fecharPops();sairDoSistema()">Sair deste aparelho</button>
       ${!NO_GOOGLE ? `<button onclick="fecharPops();confirmar('Apagar os dados de demonstração?').then(s=>{if(s){Demo.resetar();iniciar()}})">Recomeçar demonstração</button>` : ''}`;
   }
   el.hidden = false;
@@ -4300,7 +4322,7 @@ async function iniciar() {
   renderMenu();
   $('#demo-bar').hidden = !!NO_GOOGLE;
   try { S.view = localStorage.getItem('cia-view') || 'painel'; } catch (e) { }
-  if (NO_GOOGLE && !TOKEN) return telaLogin();
+  if (!TOKEN) return telaLogin();
   try {
     const r = await api('bootstrap');
     S.user = r.usuario;
@@ -4311,7 +4333,7 @@ async function iniciar() {
     render();
     migrarFolgaSoldados();
   } catch (e) {
-    if (!TOKEN && NO_GOOGLE) return;
+    if (!TOKEN) return;
     $('#app').innerHTML = `<div class="card" style="max-width:640px"><h3>Não foi possível abrir o sistema</h3><p>${esc(e.message)}</p>
       <div class="bar"><button class="btn pri" onclick="iniciar()">Tentar de novo</button><button class="btn" onclick="sairDoSistema()">Entrar com outro e-mail</button></div></div>`;
   }
@@ -4341,7 +4363,8 @@ function telaLogin(msg) {
   else corpo = `<h2 style="font-size:22px">Entrar</h2>
       <p>Digite o e-mail cadastrado no sistema. Você recebe um código para entrar; <b>não precisa dar nenhuma permissão à sua conta Google</b>.</p>
       <div class="form"><label class="full">E-mail<input type="email" id="lg_email" value="${esc(L.email)}" autocomplete="email" onkeydown="if(event.key==='Enter')loginCodigo()"></label></div>
-      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginCodigo()">Receber código</button><button class="btn" onclick="S.login.etapa='pedir';telaLogin()">Ainda não tenho acesso</button></div>`;
+      <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginCodigo()">Receber código</button><button class="btn" onclick="S.login.etapa='pedir';telaLogin()">Ainda não tenho acesso</button></div>
+      ${!NO_GOOGLE ? `<div class="muted" style="margin-top:14px;font-size:13.5px"><b>Demonstração</b> – teste com perfis diferentes:<ul style="margin:6px 0 0;padding-left:18px">${[['demo@exemplo.com', 'administrador (vê tudo)'], ['sgte.exemplo@exemplo.com', 'Sgte: Sargenteação, Saúde e Justiça e Disciplina'], ['encmat.exemplo@exemplo.com', 'Cb Enc Mat: só altera o material']].map(([e, d]) => `<li><a style="cursor:pointer" onclick="$('#lg_email').value='${e}'">${e}</a> – ${d}</li>`).join('')}</ul></div>` : ''}`;
   $('#app').innerHTML = `<div class="card" style="max-width:520px;margin:24px auto">${aviso}${corpo}</div>`;
   const f = $('#lg_codigo') || $('#lg_email'); if (f) f.focus();
 }
@@ -4354,6 +4377,7 @@ async function loginCodigo(reenviar) {
     const r = await api('enviarCodigo', email);
     if (r.situacao === 'nao-cadastrado') { L.etapa = 'pedir'; L.msg = 'Este e-mail ainda não está cadastrado. Peça acesso ao administrador:'; return telaLogin(); }
     if (r.situacao === 'aguarde') toast('Um código acabou de ser enviado. Espere 1 minuto para pedir outro.');
+    if (r.demo) L.msg = `Demonstração: o e-mail com o código não é enviado de verdade. O código é ${r.demo}.`;
     L.etapa = 'codigo'; telaLogin();
   } catch (e) { toast(e.message, true); }
 }
