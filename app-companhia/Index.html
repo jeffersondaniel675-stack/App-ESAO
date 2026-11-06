@@ -2069,7 +2069,9 @@ const nomeServico = (d, re) => { const t = tiposAtivos().find(x => re.test(x.nom
 // ============================================================ modelos da Cia: pernoite, pronto diário e faltas, ficha disciplinar (RDE), Nada Deve, SERMILMOB
 // ---------- categorias e situação do dia (usadas no pernoite e no pronto diário)
 const CATS_PERNOITE = [['ST/SARGENTOS', ['ST', '1º Sgt', '2º Sgt', '3º Sgt']], ['CABOS', ['Cb']], ['SOLDADOS', ['Sd EP', 'Sd EV', 'Sd']]];
-const MOTIVOS_DESTINO = ['DISP MÉD', 'DISPENSADO', 'INSTALAÇÃO', 'CURSO', 'FÉRIAS', 'LICENÇA', 'VIAGEM', 'MISSÃO', 'ADIDO', 'BAIXADO', 'IMPEDIDO', 'OUTROS'];
+const MOTIVOS_DESTINO = ['DISP MÉD', 'DISPENSADO', 'INSTALAÇÃO', 'CURSO', 'A DISP', 'FÉRIAS', 'VIAGEM', 'LICENÇA', 'MISSÃO', 'ADIDO', 'BAIXADO', 'IMPEDIDO'];
+/** Motivos que saem sempre na folha de pernoite, mesmo sem ninguém (como no modelo). */
+const MOTIVOS_FIXOS = ['DISP MÉD', 'DISPENSADO', 'CURSO', 'A DISP', 'FÉRIAS', 'VIAGEM'];
 /** Onde o militar está no dia (para "em diferentes destinos"); '' = pronto. */
 function destinoDoDia(m, d) {
   const adido = (S.db.Saude || []).find(x => x.tipo === 'Adido (LTSP)' && x.militarId === m.id && x.situacao !== 'Encerrado' && x.data <= d);
@@ -2079,7 +2081,7 @@ function destinoDoDia(m, d) {
   const s = situacao(m.id, d);
   if (s.tipo === 'pronto') return '';
   if (s.tipo === 'missao') return 'MISSÃO';
-  return { 'Dispensa médica': 'DISP MÉD', 'Dispensa': 'DISPENSADO', 'Dispensa como recompensa': 'DISPENSADO', 'Dispensa para instalação': 'INSTALAÇÃO', 'Curso/Estágio': 'CURSO', 'Férias': 'FÉRIAS', 'Licença': 'LICENÇA', 'Trânsito': 'VIAGEM', 'Cumprindo punição': 'IMPEDIDO' }[s.texto] || 'OUTROS';
+  return { 'Dispensa médica': 'DISP MÉD', 'Dispensa': 'DISPENSADO', 'Dispensa como recompensa': 'DISPENSADO', 'Dispensa para instalação': 'INSTALAÇÃO', 'Curso/Estágio': 'CURSO', 'Férias': 'FÉRIAS', 'Licença': 'LICENÇA', 'Trânsito': 'VIAGEM', 'Cumprindo punição': 'IMPEDIDO' }[s.texto] || 'A DISP';
 }
 const nomeCurto = m => String(m.nomeGuerra || '').toUpperCase();
 /** Quadro do dia por categoria: quem está de serviço (em forma no pernoite), quantos e quem está fora. */
@@ -2091,35 +2093,34 @@ function quadroDia(d) {
     const destinos = {};
     efetivo.forEach(m => { const k = destinoDoDia(m, d); if (k) (destinos[k] ||= []).push(m); });
     const fora = Object.values(destinos).reduce((s, l) => s + l.length, 0);
-    return { cat, efetivo: efetivo.length, forma, dispensados: Math.max(0, efetivo.length - forma.length), destinos, fora, prontos: efetivo.length - fora };
+    // todos os serviços do dia que essa categoria pode tirar, com quem está escalado (vazio se ninguém da SU)
+    const svs = tiposAtivos().filter(t => ids(t.postos).some(pg => postos.includes(pg)) && (aplica(t, d) || lancamentos(d, t.id).length))
+      .map(t => ({ sv: t.nome, nomes: forma.filter(x => x.sv === t.nome).map(x => nomeCurto(x.m)) }));
+    return { cat, efetivo: efetivo.length, forma, servicos: svs, dispensados: Math.max(0, efetivo.length - forma.length), destinos, fora, prontos: efetivo.length - fora };
   });
 }
 
 // ---------- folha de pernoite no modelo da Cia: EM FORMA (serviço) × dispensados da revista, e EM DIFERENTES DESTINOS
 DOCS.pernoite = d => {
   const q = quadroDia(d), ex = extrasPernoite(d);
-  const titulo = `PERNOITE PARA DIA ${Number(d.slice(8))} DE ${MESES_EXT[Number(d.slice(5, 7)) - 1].toUpperCase()} DE ${d.slice(0, 4)} (${SEMANA[dataDe(d).getDay()].toUpperCase()})`;
-  const cab = [{ v: '', b: 1 }, { v: '', b: 1 }, { v: 'EM FORMA', b: 1 }, { v: 'DISPENSADOS DA REVISTA', b: 1 }, { v: 'SOMA', b: 1 }];
-  const t1 = [cab];
-  q.forEach(c => {
-    const linhas = c.forma.map(x => [x.sv.toUpperCase(), nomeCurto(x.m)]);
-    if (!linhas.length) linhas.push(['—', '']);
-    linhas.forEach(([f, n], i) => t1.push([i === 0 ? { v: c.cat, b: 1 } : '', { v: f, l: 1 }, { v: n, l: 1 }, i === 0 ? String(c.dispensados) : '', i === 0 ? String(c.efetivo) : '']));
-  });
-  if (ex.length) ex.forEach((x, i) => t1.push([i === 0 ? { v: 'OUTRA SU', b: 1 } : '', { v: String(x.sv || '').toUpperCase(), l: 1 }, { v: `${x.nome}${x.su ? ' (' + x.su + ')' : ''}`, l: 1 }, '', '']));
+  const titulo = `PERNOITE PARA DIA ${pad(Number(d.slice(8)))} DE ${MESES_EXT[Number(d.slice(5, 7)) - 1].toUpperCase()} DE ${d.slice(0, 4)} (${SEMANA[dataDe(d).getDay()].toUpperCase()})`;
+  // uma linha por categoria: os serviços um embaixo do outro e, ao lado, os nomes na mesma altura
+  const cel = l => ({ v: l.map(x => x || '\u00a0').join('\n'), l: 1 });
+  const t1 = [['', { v: 'EM FORMA', span: 2 }, 'DISPENSADOS DA REVISTA', 'SOMA']];
+  q.forEach(c => { const l = c.servicos.length ? c.servicos : [{ sv: '—', nomes: [] }];
+    t1.push([{ v: c.cat, b: 1 }, cel(l.map(x => x.sv.toUpperCase())), cel(l.map(x => x.nomes.join(' - '))), String(c.dispensados), String(c.efetivo)]); });
+  if (ex.length) t1.push([{ v: 'OUTRA SU', b: 1 }, cel(ex.map(x => String(x.sv || '').toUpperCase())), cel(ex.map(x => `${x.nome}${x.su ? ' (' + x.su + ')' : ''}`)), '', '']);
   const tot = q.reduce((s, c) => ({ f: s.f + c.forma.length, d: s.d + c.dispensados, e: s.e + c.efetivo, fo: s.fo + c.fora, p: s.p + c.prontos }), { f: 0, d: 0, e: 0, fo: 0, p: 0 });
-  t1.push([{ v: 'SOMA', b: 1 }, '', { v: String(tot.f + ex.length), b: 1 }, { v: String(tot.d), b: 1 }, { v: String(tot.e), b: 1 }]);
-  const t2 = [[{ v: '', b: 1 }, { v: 'EM DIFERENTES DESTINOS', b: 1, span: 2 }, { v: 'PRONTOS', b: 1 }, { v: 'SOMA', b: 1 }]];
-  q.forEach(c => {
-    const ks = MOTIVOS_DESTINO.filter(k => c.destinos[k]);
-    const linhas = ks.length ? ks.map(k => [k + ':', c.destinos[k].map(nomeCurto).join(' - ')]) : [['—', '']];
-    linhas.forEach(([k, n], i) => t2.push([i === 0 ? { v: c.cat, b: 1 } : '', { v: k, l: 1 }, { v: n, l: 1 }, i === 0 ? String(c.prontos) : '', i === 0 ? String(c.efetivo) : '']));
-  });
-  t2.push([{ v: 'SOMA', b: 1 }, '', { v: String(tot.fo), b: 1 }, { v: String(tot.p), b: 1 }, { v: String(tot.e), b: 1 }]);
-  return { tipo: 'Escalas', titulo: `Pernoite ${d}`, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
-    { t: [[{ v: `${cfg('cmtNome')}\n${String(cfg('cmtFuncao')).toUpperCase()}`, b: 1, l: 1 }, { v: titulo, b: 1 }]], sem: 1, w: [25, 75], sz: 10 }, { esp: 1 },
-    { t: t1, h: 1, w: [13, 24, 39, 14, 10], sz: 8.5 }, { esp: 1 }, { t: t2, h: 1, w: [13, 24, 39, 14, 10], sz: 8.5 },
-    { esp: 2 }, { t: [['______________________________', '______________________________', '______________________________'], [{ v: nomeServico(d, /sargento de dia/i), b: 1 }, { v: nomeServico(d, /oficial de dia/i), b: 1 }, { v: cfg('cmtNome'), b: 1 }], [{ v: 'Sargento de Dia', b: 1 }, { v: 'Oficial de Dia', b: 1 }, { v: cfg('cmtFuncao'), b: 1 }]], sem: 1, sz: 9 }] };
+  t1.push([{ v: 'SOMA', b: 1 }, { v: String(tot.f + ex.length), b: 1, span: 2 }, { v: String(tot.d), b: 1 }, { v: String(tot.e), b: 1 }]);
+  const t2 = [['', { v: 'EM DIFERENTES DESTINOS', span: 2 }, 'PRESENTES', 'SOMA']];
+  q.forEach(c => { const ks = MOTIVOS_DESTINO.filter(k => MOTIVOS_FIXOS.includes(k) || c.destinos[k]);
+    t2.push([{ v: c.cat, b: 1 }, cel(ks.map(k => k + ':')), cel(ks.map(k => (c.destinos[k] || []).map(nomeCurto).join(' - '))), String(c.prontos), String(c.efetivo)]); });
+  t2.push([{ v: 'SOMA', b: 1 }, { v: String(tot.fo), b: 1, span: 2 }, { v: String(tot.p), b: 1 }, { v: String(tot.e), b: 1 }]);
+  t2.push([{ v: 'TOTAL\n(ESTADO EFETIVO)', b: 1 }, { v: '', span: 3 }, { v: String(Math.max(0, tot.d - tot.fo)), b: 1 }]);
+  return { tipo: 'Escalas', titulo: `Pernoite ${d}`, blocos: [...blocosCabecalho(),
+    { t: [[{ v: `${String(cfg('cmtNome')).toUpperCase()}\n${String(cfg('cmtFuncao')).toUpperCase()} ${String(cfg('sigla')).toUpperCase()}`, b: 1 }, { v: titulo, b: 1 }]], w: [26, 74], sz: 9 },
+    { t: t1, h: 1, w: [16, 28, 32, 14, 10], sz: 8 }, { esp: 1 }, { t: t2, h: 1, w: [16, 28, 32, 14, 10], sz: 8 },
+    ...blocosAssinatura(cfg('sgteNome'), `Sgtte ${cfg('sigla')}`)] };
 };
 function vPernoite() {
   const d = S.filtro.pernoite || hoje(), q = quadroDia(d), ex = extrasPernoite(d);
