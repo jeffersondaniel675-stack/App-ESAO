@@ -31,6 +31,8 @@ Já vem configurado para o **11º Depósito de Suprimento, Brasília-DF, 1ª Com
 
 ## Exportar e importar
 
+**Importar (Excel / PDF)** – em toda seção que recebe dados há esse botão, ao lado do título. Escolha o que importar (ex.: SAT, protocolo, visitas médicas, elogios, PHPM…) e traga uma planilha (Excel, CSV, ODS ou link do Google Planilhas) ou um PDF que tenha tabela. O sistema reconhece as colunas pelos títulos, você confere, e cada linha vira um registro como se fosse digitado no formulário (militar pelo P/G e nome, datas dd/mm/aaaa, valores com vírgula). Linhas iguais às já cadastradas são puladas; as que têm problema (militar não encontrado, data inválida) são listadas e ficam de fora. No mesmo botão dá para **só guardar** qualquer documento no Arquivo da seção. Militares, férias, inventário, SISCOFIS, pedidos, BI e escala antiga continuam com os importadores próprios, que o botão também abre.
+
 Todo documento (aditamento, escala, quadro de folgas, ordem de missão, cautela, relação carga, pedido, tripão, plano de chamada e plano de férias) tem os botões:
 
 - **Imprimir**: abre a impressão do navegador. Dá para escolher "Salvar como PDF" ali mesmo.

@@ -185,7 +185,7 @@ function uploadArquivo(nome, mime, base64, tipo) {
 
 /** Lê a primeira aba (ou a aba informada) de outra planilha do Drive, para importação. */
 function importarDePlanilha(url, nomeAba) {
-  exigirEscrita_('Material');
+  exigirEscrita_('Documentos');
   const ss = /^https?:/.test(url) ? SpreadsheetApp.openByUrl(url) : SpreadsheetApp.openById(url);
   const sh = nomeAba ? ss.getSheetByName(nomeAba) : ss.getSheets()[0];
   if (!sh) throw new Error('Aba "' + nomeAba + '" não encontrada.');

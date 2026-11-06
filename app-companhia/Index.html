@@ -238,6 +238,8 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .qf-f { display: flex; justify-content: center; align-items: flex-start; gap: 14px; padding-top: 14px; border-top: 2px solid var(--border); align-self: stretch; }
 .qf-c { width: 250px; margin: 0; }
 .qf-l { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.btn-importar { float: right; margin-top: -40px; }
+@media (max-width: 700px) { .btn-importar { float: none; margin: 4px 0 8px; } }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .mes-alt { padding: 8px 0; border-top: 1px solid var(--cinza-5); }
@@ -712,6 +714,8 @@ async function enviarArquivo(file) {
 
 /** Abre um formulário em modal. `aoSalvar(obj)` recebe os valores e deve gravar. */
 function abrirForm({ titulo, campos, valores = {}, aoSalvar, extra = '' }) {
+  // importação: só entrega os campos e o que fazer ao salvar, sem abrir a janela
+  if (window.CAPTURA) { window.CAPTURA.cfg = { titulo, campos, valores, aoSalvar }; return; }
   $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm">
     <h3>${esc(titulo)}</h3><div class="form">${campos.map(c => campoHTML(c, valores[c.k])).join('')}</div>${extra}
     <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri" ${pode() ? '' : 'disabled'}>Salvar</button></div></form></div>`;
@@ -1315,6 +1319,9 @@ function render() {
   // Leitor só consulta: deixa isso claro em todas as telas, para não parecer defeito.
   const avisoLeitor = S.user && S.user.perfil === 'leitor' && NO_GOOGLE ? `<div class="aviso-leitor">Você entrou como <b>leitor</b> (${esc(S.user.email)}): pode consultar e imprimir, mas não alterar. Para lançar e editar, o administrador precisa mudar o seu perfil para <b>editor</b> em Configurações → Usuários.</div>` : '';
   $('#app').innerHTML = avisoLeitor + (VIEWS_FN[S.view] || vPainel)();
+  // botão Importar em toda seção que recebe dados
+  const h2 = $('#app h2');
+  if (h2 && IMPORTAVEIS[S.view] && pode()) h2.insertAdjacentHTML('afterend', '<button class="btn sm btn-importar" onclick="abrirImportar()" title="Trazer dados de uma planilha (Excel, CSV, Google) ou de um PDF com tabela, ou guardar um documento no Arquivo">Importar (Excel / PDF)</button>');
   if (S.menu) renderMenu();
 }
 
@@ -4079,6 +4086,206 @@ async function importarFerias(corpo, mapa) {
   if (!await confirmar(`Lançar ${lanc.length} parcela(s) de férias (referência ${ref})?${faltando.length ? ` ${faltando.length} nome(s) não encontrado(s) no efetivo: ${faltando.slice(0, 5).join(', ')}${faltando.length > 5 ? '…' : ''}.` : ''}`)) return;
   await salvar('Impedimentos', lanc);
   S.imp = null; S.sub.efetivo = 'ferias'; toast(`${lanc.length} parcela(s) de férias lançada(s).`); render();
+}
+
+// ============================================================ importar em qualquer seção: planilha (Excel, CSV, ODS, Google) ou PDF com tabela
+// Usa os campos do próprio formulário da tela ("+ Novo"): cada linha do arquivo vira um registro, como se fosse digitada.
+// Militares, férias, material, SISCOFIS, pedidos, BI e escala antiga continuam com os importadores próprios (aparecem na lista como atalho).
+const IMPORTAVEIS = {
+  efetivo: [{ l: 'Militares / tripão / plano de chamada', ir: ['efetivo', 'imp-x', 'impAlvo', 'Militares'] }, { l: 'Plano de férias', ir: ['efetivo', 'imp-x', 'impAlvo', 'Ferias'] }, { l: 'Afastamentos (dispensas, cursos, licenças…)', novo: () => editarImp() }],
+  escala: [{ l: 'Escala / quadro de folgas antigo', ir: ['escala', 'imp'] }],
+  missoes: [{ l: 'Missões', novo: () => editarMissao() }],
+  alteracoes: [{ l: 'BI do SISBOL (PDF)', ir: ['alteracoes', 'bi'] }, { l: 'Lançamentos de alterações', novo: () => editarAlteracao() }],
+  saude: [{ l: 'Visitas médicas', novo: () => editarSaude(null, 'visita') }, { l: 'Inspeções de saúde', novo: () => editarSaude(null, 'is') }, { l: 'Acidentes (AO / ISO)', novo: () => editarSaude(null, 'acidente') }, { l: 'Adidos (LTSP)', novo: () => editarSaude(null, 'ltsp') }],
+  sargenteacao: [{ l: 'SAT (auxílio-transporte)', novo: () => editarSat() }, { l: 'Tempo de serviço (processos)', novo: () => editarTs() }, { l: 'Faltas na formatura', novo: () => lancarFalta() },
+    { l: 'Protocolo (SPED / DIEx)', novo: () => editarProtocolo() }, { l: 'Processos (exercícios anteriores…)', novo: () => editarProcesso(null, 'sgte') }, { l: 'QCP', novo: () => editarQcp() }],
+  arranchamento: [{ l: 'Processos do Furriel', novo: () => editarProcesso(null, 'furriel') }, { l: 'PHPM (datas de atualização)', novo: () => formPhpmImport() }],
+  disciplina: [{ l: 'Punições anteriores ao sistema', novo: () => formPunicaoImport() }, { l: 'Elogios', novo: () => editarElogio() }, { l: 'Anotações (Boca Podre)', novo: () => editarAnotacao() }, { l: 'Partes do Cmt', novo: () => editarParte() }],
+  material: [{ l: 'Inventário (planilha)', ir: ['material', 'imp', 'impMat', 'planilha'] }, { l: 'Relação do SISCOFIS (PDF)', ir: ['material', 'imp', 'impMat', 'siscofis'] }, { l: 'Pedido de material (PDF)', ir: ['material', 'imp', 'impMat', 'pedido'] }],
+  config: [{ l: 'Feriados', novo: () => editarFeriado() }],
+  arquivo: []
+};
+// Formulários só para importação (o lançamento normal é por outra tela).
+function formPhpmImport() {
+  abrirForm({ titulo: 'PHPM', campos: [{ k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'data', l: 'Última atualização', t: 'date', req: true }, { k: 'obs', l: 'Observação' }],
+    aoSalvar: o => salvar('PHPM', [{ id: o.militarId, data: o.data, obs: o.obs }]) });
+}
+function formPunicaoImport() {
+  abrirForm({ titulo: 'Punição anterior', valores: { tipo: 'FATD', historico: 'Sim', decisao: 'Punido' }, campos: [{ k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'numero', l: 'Nº (FATD ou BI)' },
+    { k: 'dataDecisao', l: 'Data da punição', t: 'date', req: true }, { k: 'punicao', l: 'Punição', t: 'select', o: PUNICOES, req: true }, { k: 'dias', l: 'Dias', t: 'number' },
+    { k: 'classificacao', l: 'Transgressão', t: 'select', o: CLASSIF_TRANSG }, { k: 'enquadramento', l: 'Enquadramento (nº do Anexo I)' }, { k: 'bi', l: 'BI' }, { k: 'relato', l: 'Fato', t: 'textarea' }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, dataFato: o.dataFato || o.dataDecisao }]) });
+}
+/** Roda a função "+ Novo" da tela sem abrir a janela, só para pegar os campos, os valores padrão e o que ela faz ao salvar. */
+function capturarForm(novo) {
+  window.CAPTURA = {};
+  try { novo(); } finally { var c = window.CAPTURA.cfg; window.CAPTURA = null; }
+  return c;
+}
+const ACEITA_IMP = '.xlsx,.xls,.csv,.ods,.pdf';
+function abrirImportar() {
+  const lista = IMPORTAVEIS[S.view] || [], nome = (VIEWS.find(v => v[0] === S.view) || [])[1] || '';
+  S.impG = { alvo: lista.findIndex(x => x.novo) };
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><div class="modal" style="max-width:900px" id="impG">
+    <h3>Importar para ${esc(nome)}</h3>
+    ${lista.length ? `<label class="muted" style="display:block;margin-bottom:10px">O que importar <select id="impG_alvo" onchange="mudarAlvoImp(+this.value)">${lista.map((x, i) => `<option value="${i}" ${i === S.impG.alvo ? 'selected' : ''}>${esc(x.l)}</option>`).join('')}</select></label>` : ''}
+    <div id="impG_corpo"></div>
+    <div class="card" style="margin-top:12px"><b>Só guardar o arquivo</b><p class="muted" style="margin:4px 0 8px">Qualquer documento (PDF, Word, Excel, foto) vai para o Arquivo, na pasta desta seção, sem lançar nada.</p>
+      <input type="file" onchange="guardarNoArquivo(this.files[0])" aria-label="Arquivo para guardar"></div>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Fechar</button></div></div></div>`;
+  mudarAlvoImp(S.impG.alvo);
+}
+function mudarAlvoImp(i) {
+  const x = (IMPORTAVEIS[S.view] || [])[i];
+  S.impG = { alvo: i };
+  if (!x) return $('#impG_corpo') && ($('#impG_corpo').innerHTML = '');
+  if (x.ir) {
+    $('#impG_corpo').innerHTML = `<div class="card"><p style="margin-top:0">Este tem um importador próprio, que já entende o formato do documento.</p><button class="btn pri" onclick="irImportadorProprio(${i})">Abrir o importador de ${esc(x.l.toLowerCase())}</button></div>`;
+    return;
+  }
+  const cfgF = capturarForm(x.novo);
+  S.impG.cfg = cfgF;
+  $('#impG_corpo').innerHTML = `<div class="card"><p style="margin-top:0">Escolha a planilha (<b>Excel, CSV, ODS</b>) ou um <b>PDF com tabela</b>. A primeira linha da tabela deve ter os títulos das colunas; na próxima etapa você confere qual coluna vai para qual campo.</p>
+    <div class="bar"><input type="file" accept="${ACEITA_IMP}" onchange="lerArquivoImp(this.files[0])" aria-label="Planilha ou PDF"><span class="muted">ou</span>
+    <input type="text" id="impG_url" placeholder="Link da planilha Google" style="flex:1;min-width:200px"><button class="btn" onclick="lerGoogleImp()">Ler do Drive</button></div>
+    <p class="muted" style="margin-bottom:0">Campos: ${cfgF.campos.filter(c => c.k && c.t !== 'file').map(c => esc(c.l) + (c.req ? ' *' : '')).join(' · ')}</p></div><div id="impG_mapa"></div>`;
+}
+function irImportadorProprio(i) {
+  const [v, aba, fk, fv] = IMPORTAVEIS[S.view][i].ir;
+  fecharModal(); S.sub[v] = aba; if (fk) S.filtro[fk] = fv; S.imp = null; S.impPdf = null; irPara(v);
+}
+async function guardarNoArquivo(file) {
+  if (!file) return;
+  try {
+    const tipo = { material: 'Material', efetivo: 'Efetivo', missoes: 'Missoes', aditamentos: 'Aditamentos', disciplina: 'Disciplina', alteracoes: 'Alteracoes', saude: 'Saude', escala: 'Escalas', sargenteacao: 'Efetivo', arranchamento: 'Efetivo' }[S.view] || 'Documentos';
+    const url = await enviarArquivo(file);
+    // J&D e Saúde: o registro não vai para a lista geral do Arquivo (os títulos também são reservados)
+    if (!['Disciplina', 'Saude'].includes(tipo)) await salvar('Documentos', [{ data: hoje() + ' ' + new Date().toTimeString().slice(0, 5), tipo, titulo: file.name.replace(/\.[^.]+$/, ''), referencia: '', url, autor: S.user.email || '', formato: 'Importado' }]);
+    toast('Arquivo guardado.'); fecharModal(); render();
+  } catch (e) { toast('Erro ao guardar: ' + e.message, true); }
+}
+
+// ---------- leitura do arquivo em linhas e colunas
+async function lerArquivoImp(file) {
+  if (!file) return;
+  try {
+    let linhas;
+    if (/\.pdf$/i.test(file.name)) { toast('Lendo o PDF…'); linhas = tabelaDoPdf(await itensDoPdf(file)); }
+    else {
+      await carregarSheetJS();
+      const wb = /\.csv$/i.test(file.name) ? XLSX.read(await file.text(), { type: 'string', cellDates: true }) : XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+      linhas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '', dateNF: 'yyyy-mm-dd' });
+    }
+    prepararImp(linhas, file.name);
+  } catch (e) { toast('Erro ao ler o arquivo: ' + e.message, true); }
+}
+async function lerGoogleImp() {
+  const url = $('#impG_url').value.trim();
+  if (!url) return toast('Cole o link da planilha.', true);
+  try { toast('Lendo planilha…'); prepararImp(await api('importarDePlanilha', url), 'Google Drive'); } catch (e) { toast(e.message, true); }
+}
+/**
+ * Tabela de um PDF: junta os pedaços de texto por linha (altura) e separa as colunas pelo espaço entre eles.
+ * A linha de títulos define onde começa cada coluna; nas outras linhas, cada pedaço vai para a coluna em que começa.
+ */
+function tabelaDoPdf(paginas) {
+  const linhas = [];
+  paginas.forEach(itens => {
+    const g = [];
+    itens.forEach(it => { let l = g.find(x => Math.abs(x.y - it.y) < 2.5); if (!l) g.push(l = { y: it.y, itens: [] }); l.itens.push(it); });
+    g.sort((a, b) => b.y - a.y).forEach(l => {
+      l.itens.sort((a, b) => a.x - b.x);
+      const cel = [];
+      l.itens.forEach(i => { const u = cel[cel.length - 1]; if (u && i.x - u.fim < 6) { u.s += (i.x - u.fim > 1 ? ' ' : '') + i.s; u.fim = i.fim; } else cel.push({ x: i.x, fim: i.fim, s: i.s }); });
+      linhas.push(cel);
+    });
+  });
+  if (!linhas.length) return [];
+  const pts = cel => cel.filter(c => S.impG.cfg.campos.some(k => k.k && casaTitulo(c.s, k))).length;
+  let ic = 0; linhas.slice(0, 25).forEach((l, i) => { if (pts(l) > pts(linhas[ic])) ic = i; });
+  const cab = linhas[ic], inicio = cab.map(c => c.x);
+  const col = x => { let k = 0; inicio.forEach((s, j) => { if (x >= s - 4) k = j; }); return k; };
+  return [cab.map(c => c.s), ...linhas.slice(ic + 1).map(cel => { const r = Array(cab.length).fill(''); cel.forEach(c => { const k = col(c.x); r[k] = (r[k] ? r[k] + ' ' : '') + c.s; }); return r; })
+    .filter(r => norm(r.join('')) !== norm(cab.map(c => c.s).join('')))];
+}
+/** O título da coluna corresponde ao campo? (pelo nome do campo, pelo rótulo ou pelo início do rótulo) */
+const SIN_IMP = { ref: ['referencia', 'ref', 'documento', 'diex', 'bi', 'publicacao'], numero: ['n', 'no', 'nr', 'num', 'numero', 'nup'], obs: ['obs', 'observacao', 'observacoes'], bi: ['bi', 'publicacao', 'publicadoem', 'boletim'],
+  data: ['data', 'dia'], inicio: ['inicio', 'de', 'desde', 'datainicio'], fim: ['fim', 'ate', 'termino', 'datafim'], relato: ['relato', 'texto', 'fato', 'descricao', 'motivo'], tipo: ['tipo'], subtipo: ['tipo'] };
+function casaTitulo(h, c) {
+  const n = norm(h); if (!n) return false;
+  const rot = norm(String(c.l).replace(/\(.*?\)/g, '')), k = norm(c.k), partes = String(c.l).replace(/\(.*?\)/g, '').split(/[\/–-]/).map(norm).filter(Boolean);
+  return n === k || n === rot || partes.includes(n) || (SIN_IMP[c.k] || []).includes(n) || (n.length >= 4 && (rot.startsWith(n) || n.startsWith(rot) || partes.some(x => x.length >= 4 && (x.startsWith(n) || n.startsWith(x))))) || (c.t === 'militar' && /^(militar|nome|nomedeguerra|pgnome|postograd|pg)$/.test(n)) || (c.t === 'date' && n === 'data' && /data/.test(rot));
+}
+function prepararImp(linhas, origem) {
+  const campos = S.impG.cfg.campos.filter(c => c.k && c.t !== 'file');
+  linhas = linhas.map(l => l.map(v => v == null ? '' : v instanceof Date ? v.toISOString().slice(0, 10) : String(v)));
+  let ic = 0; const pts = l => l.filter(h => campos.some(c => casaTitulo(h, c))).length;
+  linhas.slice(0, 15).forEach((l, i) => { if (pts(l) > pts(linhas[ic])) ic = i; });
+  linhas = linhas.slice(ic);
+  const cab = linhas[0] || [], mapa = {}, usados = new Set();
+  campos.forEach(c => { const i = cab.findIndex((h, j) => !usados.has(j) && casaTitulo(h, c)); if (i >= 0) { mapa[c.k] = i; usados.add(i); } });
+  // coluna de P/G separada do nome: usada junto com o militar
+  const ipg = cab.findIndex(h => /^(pg|posto|postograd|graduacao|postograduacao)$/.test(norm(h)));
+  Object.assign(S.impG, { linhas, mapa, origem, ipg });
+  desenharMapaImp();
+}
+function desenharMapaImp() {
+  const st = S.impG, campos = st.cfg.campos.filter(c => c.k && c.t !== 'file'), cab = st.linhas[0] || [];
+  const corpo = st.linhas.slice(1).filter(l => l.some(v => String(v).trim()));
+  $('#impG_mapa').innerHTML = `<h3>${corpo.length} linha(s) em "${esc(st.origem)}"</h3><div class="card"><div class="form">
+    ${campos.map(c => `<label><span class="${c.req ? 'req' : ''}">${esc(c.l)}</span><select id="impm_${c.k}"><option value="">${c.req ? '(escolha a coluna)' : '(não importar)'}</option>${cab.map((h, i) => `<option value="${i}" ${st.mapa[c.k] === i ? 'selected' : ''}>${esc(h || 'Coluna ' + (i + 1))}</option>`).join('')}</select></label>`).join('')}
+    </div><div class="bar" style="margin-top:12px"><span class="muted grow">Linhas iguais às que já estão no sistema são puladas.</span><button class="btn pri" onclick="confirmarImp()">Importar ${corpo.length} linha(s)</button></div></div>
+    <h3>Prévia</h3><div class="tw"><table><thead><tr>${cab.map((h, i) => `<th>${esc(h || 'Coluna ' + (i + 1))}</th>`).join('')}</tr></thead><tbody>${corpo.slice(0, 5).map(l => `<tr>${cab.map((_, i) => `<td>${esc(l[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+/** Converte o texto da célula para o tipo do campo; devolve undefined se não reconhecer. */
+function valorImp(c, v, pg) {
+  v = String(v ?? '').trim(); if (!v || v === '-') return '';
+  if (c.t === 'date') { const d = dataImportada(v); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : undefined; }
+  if (c.t === 'number') { const n = num(v.replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); return isNaN(n) ? undefined : String(n); }
+  if (c.t === 'militar') { const m = acharMilitarTexto(v, pg); return m ? m.id : undefined; }
+  if (c.t === 'militares') { const l = v.split(/[;,/\n]| e /).map(s => s.trim()).filter(Boolean).map(s => acharMilitarTexto(s)); return l.every(Boolean) ? l.map(m => m.id).join(',') : undefined; }
+  if (c.t === 'select' && c.o) { const op = c.o.map(o => Array.isArray(o) ? o : [o, o]).find(([a, b]) => norm(a) === norm(v) || norm(b) === norm(v) || norm(b).startsWith(norm(v))); return op ? op[0] : undefined; }
+  return v;
+}
+/** "Sd EP Fulano", "FULANO" ou o nome completo. */
+function acharMilitarTexto(t, pg) {
+  t = String(t).trim();
+  const p = POSTOS.slice().sort((a, b) => b.length - a.length).find(x => norm(t).startsWith(norm(x)) && norm(t).length > norm(x).length);
+  const nome = p ? t.slice(t.toLowerCase().indexOf(p.split(' ').pop().toLowerCase()) + p.split(' ').pop().length).trim() : t;
+  return achaMilitar(nome, p || pg) || S.db.Militares.find(m => norm(m.nomeCompleto) === norm(t)) || S.db.Militares.find(m => norm(t).includes(norm(m.nomeGuerra)) && m.nomeGuerra.length > 3);
+}
+async function confirmarImp() {
+  const st = S.impG, cfgF = st.cfg, campos = cfgF.campos.filter(c => c.k && c.t !== 'file');
+  const mapa = {}; campos.forEach(c => { const v = $('#impm_' + c.k).value; if (v !== '') mapa[c.k] = +v; });
+  const falta = campos.filter(c => c.req && !(c.k in mapa) && !cfgF.valores?.[c.k]);
+  if (falta.length) return toast('Escolha a coluna de: ' + falta.map(c => c.l).join(', '), true);
+  const corpo = st.linhas.slice(1).filter(l => l.some(v => String(v).trim()));
+  // grava em lote: o "salvar" do formulário só junta os registros, que vão de uma vez no fim
+  const buf = {}, erros = [], salvarReal = salvar;
+  salvar = async (t, lista) => { lista.forEach(o => { if (!o[chaveDe(t)] && chaveDe(t) === 'id') o.id = uid(); (buf[t] ||= []).push(o); }); return lista; };
+  try {
+    for (const [n, l] of corpo.entries()) {
+      const o = { ...(cfgF.valores || {}) }, ruins = [];
+      for (const c of campos) {
+        if (!(c.k in mapa)) continue;
+        const v = valorImp(c, l[mapa[c.k]], st.ipg >= 0 ? l[st.ipg] : '');
+        if (v === undefined) ruins.push(`${c.l} "${l[mapa[c.k]]}"`); else if (v !== '') o[c.k] = v;
+      }
+      const sem = campos.filter(c => c.req && !o[c.k]).map(c => c.l);
+      if (ruins.length || sem.length) { erros.push(`linha ${n + 2}: ${[...ruins.map(r => 'não reconheci ' + r), ...sem.map(s => 'falta ' + s)].join('; ')}`); continue; }
+      try { await cfgF.aoSalvar(o); } catch (e) { erros.push(`linha ${n + 2}: ${e.message}`); }
+    }
+  } finally { salvar = salvarReal; }
+  // pula o que já existe igual (mesmos valores nos campos importados)
+  const novos = {}; let pulados = 0;
+  Object.entries(buf).forEach(([t, lista]) => {
+    novos[t] = lista.filter(o => { const igual = (S.db[t] || []).some(r => Object.keys(mapa).every(k => k in o ? String(r[k] ?? '') === String(o[k]) : true) && Object.keys(mapa).some(k => k in o)); if (igual) pulados++; return !igual; });
+  });
+  const total = Object.values(novos).reduce((s, l) => s + l.length, 0);
+  if (!total) return toast(`Nada novo para importar.${pulados ? ` ${pulados} já existia(m).` : ''}${erros.length ? ' ' + erros.slice(0, 3).join(' · ') : ''}`, true);
+  if (!await confirmar(`Importar ${total} registro(s)?${pulados ? ` ${pulados} já existia(m) e será(ão) pulado(s).` : ''}${erros.length ? ` ${erros.length} linha(s) com problema ficarão de fora: ${erros.slice(0, 4).join(' · ')}${erros.length > 4 ? '…' : ''}` : ''}`)) return;
+  for (const [t, lista] of Object.entries(novos)) if (lista.length) await salvar(t, lista);
+  toast(`${total} registro(s) importado(s).`); fecharModal(); render();
 }
 
 // ============================================================ importação de PDF: relação do SISCOFIS e pedido de material
