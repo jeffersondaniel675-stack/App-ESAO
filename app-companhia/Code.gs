@@ -28,12 +28,14 @@ const TABELAS = {
   Acessos: ['email', 'nome', 'data', 'status'],
   Locais: ['id', 'nome', 'ordem'],
   Saude: ['id', 'tipo', 'militarId', 'data', 'motivo', 'local', 'resultado', 'dias', 'inicio', 'validade', 'documento', 'numeroDoc', 'emServico', 'sindicancia', 'bi', 'situacao', 'proximo', 'obs', 'arquivoUrl'],
-  SAT: ['id', 'militarId', 'inicio', 'fim', 'valor', 'ref', 'situacao', 'obs'],
+  SAT: ['id', 'militarId', 'inicio', 'fim', 'valor', 'ref', 'situacao', 'obs', 'diario', 'conducoes'],
+  DA: ['id', 'mes', 'militarId', 'dias', 'codigos', 'obs'],
+  Rancho: ['id', 'marc', 'obs'].concat(['OFICIAIS', 'STSGT', 'CBSD'].reduce(function (l, c) { return l.concat(['C', 'A', 'J', 'N'].map(function (k) { return 'ext' + c + k; })); }, [])),
   Pernoite: ['id', 'extras', 'obs'],
   Faltas: ['id', 'data', 'formatura', 'militarId', 'justificada', 'obs'],
   PHPM: ['id', 'data', 'obs'],
   Funcoes: ['id', 'nome', 'chefe', 'ocupanteId', 'atrib', 'ordem', 'oculto'],
-  Processos: ['id', 'area', 'tipo', 'militarId', 'abertura', 'prazo', 'situacao', 'ref', 'obs', 'arquivoUrl'],
+  Processos: ['id', 'area', 'tipo', 'militarId', 'abertura', 'prazo', 'situacao', 'ref', 'obs', 'arquivoUrl', 'direito', 'periodo', 'biDireito', 'odEpoca', 'anexos', 'mov1', 'mov2', 'mov3', 'mov4', 'mov5', 'mov6', 'mov7'],
   Protocolo: ['id', 'data', 'sentido', 'especie', 'numero', 'origemDestino', 'responsavelId', 'assunto', 'prazo', 'situacao', 'obs', 'arquivoUrl'],
   TempoServico: ['id', 'militarId', 'tipo', 'requerimento', 'is', 'inicio', 'fim', 'situacao', 'bi', 'obs', 'arquivoUrl'],
   Alteracoes: ['id', 'militarId', 'data', 'ref', 'titulo', 'texto', 'origem'],
@@ -50,8 +52,8 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos', 'Sessoes'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
-const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte', Faltas: 'sgte', TempoServico: 'sgte', Funcoes: 'sgte', Protocolo: 'sgte',
-  PHPM: 'furriel', Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
+const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', Pernoite: 'sgte', Faltas: 'sgte', TempoServico: 'sgte', Funcoes: 'sgte', Protocolo: 'sgte',
+  PHPM: 'furriel', Rancho: 'furriel', Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
 const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
 // Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).
 const RESERVADAS_ = { Disciplina: 'jd', Saude: 'sau' };

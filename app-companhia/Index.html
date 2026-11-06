@@ -516,7 +516,7 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'Faltas', 'TempoServico', 'Funcoes', 'Processos', 'Protocolo', 'PHPM'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'Faltas', 'TempoServico', 'Funcoes', 'Processos', 'Protocolo', 'PHPM', 'DA', 'Rancho'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => podeEm(S.view);
 const admin = () => S.user?.perfil === 'admin';
@@ -1161,7 +1161,7 @@ const VIEWS = [
   ['painel', 'Painel', ''],
   ['sargenteacao', 'Sargenteação', 'sgte'], ['efetivo', 'Efetivo', 'sgte'], ['escala', 'Escala de serviço', 'sgte'], ['missoes', 'Missões', 'sgte'], ['aditamentos', 'Aditamentos', 'sgte'], ['alteracoes', 'Alterações', 'sgte'], ['saude', 'Saúde', 'sgte'],
   ['material', 'Material', 'mat'],
-  ['arranchamento', 'Processos e arranchamento', 'furriel'],
+  ['arranchamento', 'Furriel (rancho, SAT, D.A.)', 'furriel'],
   ['disciplina', 'Justiça e disciplina', 'jd'],
   ['arquivo', 'Arquivo', ''], ['config', 'Configurações', '']
 ];
@@ -1180,7 +1180,7 @@ const SUBMENU = {
   saude: [{ l: 'Resumo e prazos', aba: 'resumo' }, { l: 'Livro de visita médica', aba: 'visitas' }, { l: 'Inspeções de saúde', aba: 'is' }, { l: 'Acidentes (AO / ISO)', aba: 'acidentes' }, { l: 'Adidos (LTSP)', aba: 'ltsp' }],
   alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
   disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Sindicâncias', filtro: ['jd', 'sind'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }, { l: 'Partes do Cmt', filtro: ['jd', 'partes'] }],
-  arranchamento: [{ l: 'Processos do Furriel', aba: 'proc' }, { l: 'PHPM (atualização)', aba: 'phpm' }, { l: 'Arranchamento', aba: 'rancho' }],
+  arranchamento: [{ l: 'Processos do Furriel', aba: 'proc' }, { l: 'Arranchamento e vale diário', aba: 'rancho' }, { l: 'SAT (auxílio-transporte)', aba: 'sat' }, { l: 'D.A. do auxílio-transporte', aba: 'da' }, { l: 'PHPM (atualização)', aba: 'phpm' }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Folha de pernoite', aba: 'pernoite' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -2022,7 +2022,7 @@ function calcSat(mes, comMissao) {
     const fora = uteis.filter(d => { const s = situacao(x.militarId, d); return s.tipo === 'imp' || (comMissao && s.tipo === 'missao'); });
     const motivos = {}; fora.forEach(d => { const s = situacao(x.militarId, d).texto; motivos[s] = (motivos[s] || 0) + 1; });
     const direito = x.situacao === 'Suspenso' ? 0 : uteis.length - fora.length;
-    return { x, uteis: uteis.length, fora: fora.length, direito, motivos, valor: num(x.valor) && uteis.length ? num(x.valor) / uteis.length * direito : 0 };
+    return { x, uteis: uteis.length, fora: fora.length, direito, motivos, valor: mensalSat(x) && uteis.length ? mensalSat(x) / uteis.length * direito : 0 };
   });
 }
 function vSat() {
@@ -2030,17 +2030,26 @@ function vSat() {
   return `<div class="bar"><input type="month" value="${mes}" onchange="S.filtro.satMes=this.value;render()" aria-label="Mês">
       <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" ${comMissao ? 'checked' : ''} onchange="S.filtro.satMissao=this.checked;render()"> Descontar também os dias de missão</label>
       <span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarSat()">+ Militar com auxílio</button>' : ''}${botoesDocGrandes('sat', mes, 'sat')}</div>
-    ${tabela(l, [{ l: 'Militar', v: r => `<b>${esc(nomeMil(r.x.militarId))}</b><div class="muted">${esc(r.x.ref || '')}</div>` }, { l: 'Situação', v: r => `<span class="tag ${r.x.situacao === 'Ativo' ? 'ok' : 'warn'}">${esc(r.x.situacao || 'Ativo')}</span>` },
+    <div class="bar">${campoAdtFur()}<span class="muted">Espelho do SAT (aditamento do Furriel) com os marcados: ${selSat().length}</span><button class="btn sm" onclick="S.filtro.satSel=(S.db.SAT||[]).filter(x=>x.situacao==='Ativo').map(x=>x.id).join(',');render()">Marcar ativos</button><button class="btn sm" onclick="S.filtro.satSel='';render()">Limpar</button>
+      <button class="btn" ${selSat().length ? '' : 'disabled'} onclick="emitir('satEspelho','${mes}|'+selSat().join(','))">Espelho do SAT</button></div>
+    ${tabela(l, [{ l: '', v: r => `<input type="checkbox" aria-label="Marcar para o espelho" ${selSat().includes(r.x.id) ? 'checked' : ''} onchange="marcarSat('${r.x.id}',this.checked)">` },
+      { l: 'Militar', v: r => `<b>${esc(nomeMil(r.x.militarId))}</b><div class="muted">${esc(r.x.ref || '')}</div>` },
+      { l: 'Diário / mensal', v: r => diarioSat(r.x) ? `R$ ${reais(diarioSat(r.x))}<div class="muted">R$ ${reais(mensalSat(r.x))} líquido</div>` : '<span class="tag warn">sem valor</span>', c: 'num', s: r => mensalSat(r.x) }, { l: 'Situação', v: r => `<span class="tag ${r.x.situacao === 'Ativo' ? 'ok' : 'warn'}">${esc(r.x.situacao || 'Ativo')}</span>` },
       { l: 'Dias úteis', v: r => r.uteis, c: 'num' }, { l: 'Afastado', v: r => r.fora ? `<b>${r.fora}</b><div class="muted">${esc(Object.entries(r.motivos).map(([k, n]) => `${k}: ${n}`).join(', '))}</div>` : '0', c: 'num', s: r => r.fora },
       { l: 'Com direito', v: r => r.direito, c: 'num' }, { l: 'Valor no mês', v: r => r.valor ? reais(r.valor) : '<span class="muted">—</span>', c: 'num', s: r => r.valor }],
-      pode() ? r => `<button class="btn sm" onclick="editarSat('${r.x.id}')">Editar</button>` : null)}
+      pode() ? r => `<button class="btn sm" onclick="emitir('satSolic','${r.x.id}')">Solicitação</button> <button class="btn sm" onclick="editarSat('${r.x.id}')">Editar</button>` : null)}
     <p class="muted">Os dias afastados vêm do que está lançado no sistema (férias, dispensas, licenças, cursos, punição…), não só dos aditamentos. Confira antes de mandar a relação.</p>`;
 }
+// espelho: novos do mês já vêm marcados
+const selSat = () => S.filtro.satSel !== undefined ? ids(S.filtro.satSel) : (S.db.SAT || []).filter(x => x.situacao === 'Ativo' && String(x.inicio || '').startsWith(S.filtro.satMes || hoje().slice(0, 7))).map(x => x.id);
+function marcarSat(id, on) { const l = selSat().filter(x => x !== id); if (on) l.push(id); S.filtro.satSel = l.join(','); render(); }
 function editarSat(id) {
   const x = id ? S.db.SAT.find(y => y.id === id) : { situacao: 'Ativo', inicio: hoje() };
   abrirForm({ titulo: id ? 'Auxílio-transporte' : 'Militar com auxílio-transporte', valores: x, campos: [
     { k: 'militarId', l: 'Militar', t: 'militar', req: true }, { k: 'situacao', l: 'Situação', t: 'select', o: SIT_SAT, vazio: false },
-    { k: 'inicio', l: 'Recebe desde', t: 'date', req: true }, { k: 'fim', l: 'Até (se cancelado)', t: 'date' }, { k: 'valor', l: 'Valor mensal (R$)', t: 'number' },
+    { k: 'inicio', l: 'Recebe desde', t: 'date', req: true }, { k: 'fim', l: 'Até (se cancelado)', t: 'date' },
+    { k: 'conducoes', l: 'Conduções, uma por linha: empresa; linha; tarifa; embarque; desembarque (ida e volta)', t: 'textarea', full: true, ph: 'Viação X; 0.110; 5,50; Samambaia; Rodoviária' },
+    { k: 'diario', l: 'Valor diário (R$) – vazio = soma das tarifas', t: 'number' }, { k: 'valor', l: 'Valor mensal (R$) – vazio = diário × 22 − cota-parte', t: 'number' },
     { k: 'ref', l: 'Requerimento / DIEx / BI', full: true }, { k: 'obs', l: 'Observações', full: true }],
     aoSalvar: o => salvar('SAT', [o]),
     extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('SAT','${id}',true)">Excluir</button></div>` : '' });
@@ -2358,7 +2367,7 @@ function cardAniversarios() {
 }
 
 // ---------- processos do Furriel e da Sargenteação (acompanhamento do andamento e dos prazos)
-const TIPOS_PROC = { furriel: ['Despesa a anular', 'Auxílio pré-escolar', 'Declaração de beneficiários', 'Pecuniária', 'Vale-rancho', 'Saúde (FUSEx)', 'Atualização da PHPM', 'Outro'], sgte: ['Exercícios anteriores', 'Requerimento', 'Outro'] };
+const TIPOS_PROC = { furriel: ['Despesa a anular', 'Auxílio pré-escolar', 'Auxílio natalidade', 'Declaração de beneficiários', 'Pecuniária', 'Vale-rancho', 'Saúde (FUSEx)', 'Atualização da PHPM', 'Outro'], sgte: ['Exercícios anteriores', 'Requerimento', 'Outro'] };
 const SIT_PROC = ['Aberto', 'Aguardando documento', 'Encaminhado', 'Concluído', 'Indeferido'];
 const procAberto = x => !['Concluído', 'Indeferido'].includes(x.situacao);
 function vProcessos(area) {
@@ -2368,15 +2377,20 @@ function vProcessos(area) {
       <span class="grow"></span>${pode() ? `<button class="btn pri" onclick="editarProcesso(null,'${area}')">+ Processo</button>` : ''}${botoesDocGrandes('processos', area)}</div>
     ${tabela(l, [{ l: 'Tipo', v: x => `<b>${esc(x.tipo)}</b>` }, { l: 'Militar', v: x => esc(x.militarId ? nomeMil(x.militarId) : '') }, { l: 'Aberto em', v: x => fmt(x.abertura), s: x => x.abertura || '' },
       { l: 'Prazo', v: x => x.prazo ? `<span class="${procAberto(x) && x.prazo < d ? 'tag dng' : ''}">${fmt(x.prazo)}</span>` : '', s: x => x.prazo || '9' },
-      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Concluído' ? 'ok' : x.situacao === 'Indeferido' ? 'dng' : 'warn'}">${esc(x.situacao)}</span>` }, { l: 'DIEx / NUP / BI', v: x => esc(x.ref || '') }, { l: 'Obs', v: x => esc(x.obs || '') }],
-      pode() ? x => `<button class="btn sm" onclick="editarProcesso('${x.id}')">Editar</button>` : null)}
+      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Concluído' ? 'ok' : x.situacao === 'Indeferido' ? 'dng' : 'warn'}">${esc(x.situacao)}</span>${etapaProc(x) ? `<div class="muted">${etapaProc(x)}/7 – ${esc(MOV_DEA[etapaProc(x) - 1])}</div>` : ''}` }, { l: 'DIEx / NUP / BI', v: x => esc(x.ref || '') }, { l: 'Obs', v: x => esc(x.obs || '') }],
+      x => `<button class="btn sm" onclick="emitir('procCapa','${x.id}')">Capa</button>${ehDEA(x) ? ` <button class="btn sm" onclick="emitir('procReq','${x.id}')">Requerimento</button> <button class="btn sm" onclick="emitir('procInfo','${x.id}')">Informação</button>` : ''}${pode() ? ` <button class="btn sm" onclick="editarProcesso('${x.id}')">Editar</button>` : ''}`)}
     <p class="muted">Cada processo fica aqui até ser concluído ou indeferido. Prazo vencido aparece em vermelho.</p>`;
 }
 function editarProcesso(id, area) {
   const x = id ? S.db.Processos.find(y => y.id === id) : { area, abertura: hoje(), situacao: 'Aberto', tipo: TIPOS_PROC[area][0] };
   abrirForm({ titulo: id ? 'Processo' : 'Novo processo', valores: x, campos: [{ k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_PROC[x.area || 'furriel'], vazio: false }, { k: 'militarId', l: 'Militar', t: 'militar' },
     { k: 'abertura', l: 'Aberto em', t: 'date', req: true }, { k: 'prazo', l: 'Prazo', t: 'date' }, { k: 'situacao', l: 'Situação', t: 'select', o: SIT_PROC, vazio: false },
-    { k: 'ref', l: 'DIEx / NUP do SPED / BI' }, { k: 'obs', l: 'Andamento / o que falta', t: 'textarea', full: true }, { k: 'arquivoUrl', l: 'Documento digitalizado', t: 'file', full: true }],
+    { k: 'ref', l: 'DIEx / NUP do SPED / BI' }, { k: 'obs', l: 'Andamento / o que falta', t: 'textarea', full: true },
+    { secao: 'Para a capa, o requerimento e a informação' },
+    { k: 'direito', l: 'O que o militar requer (ex.: a gratificação de representação da missão X)', full: true }, { k: 'periodo', l: 'Período do direito (ex.: 03 jan a 23 fev 2025)' }, { k: 'biDireito', l: 'BI que comprova o direito' },
+    { k: 'odEpoca', l: 'Ordenador de Despesas à época (nome, Idt, CPF)', full: true }, { k: 'anexos', l: 'Anexos (um por linha; vazio = lista padrão do exercício anterior)', t: 'textarea', full: true },
+    { secao: 'Movimento do processo (data de cada etapa)' }, ...MOV_DEA.map((l, i) => ({ k: 'mov' + (i + 1), l: `${i + 1}. ${l}`, t: 'date' })),
+    { k: 'arquivoUrl', l: 'Documento digitalizado', t: 'file', full: true }],
     aoSalvar: o => salvar('Processos', [{ ...o, area: x.area || 'furriel' }]),
     extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Processos','${id}',true)">Excluir</button></div>` : '' });
 }
@@ -2465,6 +2479,207 @@ DOCS.parte = id => { const x = disc('Parte').find(y => y.id === id), res = reser
     { p: `**Do:** ${x.participante || ''}`, m: 1, l: 1 }, { p: `**Ao:** ${x.autoridade || ''}`, m: 1, l: 1 }, { p: `**Assunto:** ${x.assunto || ''}`, m: 1, l: 1 }, ...(x.obs ? [{ p: `**Anexo(s):** ${x.obs}`, m: 1, l: 1 }] : []), { esp: 1 },
     ...String(x.relato || '').split('\n').filter(s => s.trim()).map((t, i) => ({ p: `${i + 1}. ${t.trim()}`, ind: 0, mt: 4 })), { esp: 1 },
     { p: localData(x.data), r: 1 }, ...blocosAssinatura(x.participante || cfg('cmtNome'), cfg('cmtFuncao')), ...(res.length ? [{ esp: 2 }, ...res] : [])] };
+};
+
+// ============================================================ Furriel: aditamento do Furriel, SAT completo, D.A., arranchamento e vale diário, exercício anterior
+// ---------- aditamento do Furriel (SAT e D.A. saem nele): visto/autorizo do Cmt da OM, 4 partes e assinatura do Cmt SU
+function blocosAditFurriel({ numero, data, autorizo = 'AUTORIZO:', terceira }) {
+  const sem = t => [{ p: t, c: 1, b: 1, mt: 6 }, { p: '(Sem Alteração)', c: 1 }];
+  return [...blocosCabecalho(), { esp: 1 }, { p: localData(data), r: 1 }, { esp: 1 },
+    { t: [['', { v: `${autorizo}\n\n______________________________\n${cfg('cmtOMNome') || ''}\n${cfg('cmtOMFuncao') || 'Cmt da OM'}`, b: 1 }]], sem: 1, w: [50, 50], sz: 9.5 }, { esp: 1 },
+    { p: `ADITAMENTO Nº ${numero || '____'}/FURRIEL ${String(cfg('sigla')).toUpperCase()}, DIA ${fmt(data)} AO BI Nº ____ DE ____ DE ______________ DE ${data.slice(0, 4)}.`, b: 1 },
+    { p: 'Para conhecimento deste aquartelamento e devida execução, publico o seguinte:', mt: 6 },
+    ...sem('1ª Parte\nSERVIÇOS DIÁRIOS'), ...sem('2ª Parte\nINSTRUÇÃO'),
+    { p: '3ª Parte\nASSUNTOS GERAIS E ADMINISTRATIVOS', c: 1, b: 1, mt: 6 }, ...terceira,
+    ...sem('4ª Parte\nJUSTIÇA E DISCIPLINA'), ...blocosAssinatura(cfg('cmtNome'), `${cfg('cmtFuncao')}`)];
+}
+const numAdtFur = () => S.filtro.adtFur || '';
+const campoAdtFur = () => `<label class="muted">Aditamento nº <input type="text" style="width:80px" value="${esc(numAdtFur())}" onchange="S.filtro.adtFur=this.value" placeholder="___"></label>`;
+
+// ---------- SAT: conduções, valor diário, cota-parte por posto e valor líquido
+const COTAS_SAT_PADRAO = '1º Ten=396,00\n2º Ten=359,70\nST=296,34\n1º Sgt=263,34\n2º Sgt=229,02\n3º Sgt=183,70\nCb=126,06\nSd EP=92,40\nSd=92,40\nSd EV=51,70';
+const diasSat = () => num(cfg('satDias')) || 22;
+const cotaSat = pg => { const l = String(cfg('satCotas') || COTAS_SAT_PADRAO).split('\n').map(x => x.split('=')).find(([k]) => k && k.trim() === pg); return l ? numBR(l[1]) : 0; };
+/** Conduções (uma por linha: empresa; linha; tarifa; embarque; desembarque). */
+const conducoesSat = x => String(x.conducoes || '').split('\n').filter(s => s.trim()).map(s => { const [empresa = '', linha = '', tarifa = '', embarque = '', desembarque = ''] = s.split(';').map(v => v.trim()); return { empresa, linha, tarifa: numBR(tarifa), embarque, desembarque }; });
+const diarioSat = x => num(x.diario) || conducoesSat(x).reduce((s, c) => s + c.tarifa, 0);
+/** Valor líquido mensal: diário × 22 − cota-parte (6% do soldo); "valor" preenchido à mão tem prioridade. */
+const mensalSat = x => num(x.valor) || Math.max(0, diarioSat(x) * diasSat() - cotaSat((MIL[x.militarId] || {}).postoGrad));
+DOCS.satSolic = id => { const x = S.db.SAT.find(y => y.id === id), m = MIL[x.militarId] || {}, c = conducoesSat(x), d = diarioSat(x), cota = cotaSat(m.postoGrad);
+  const lin = [...c.map(k => [{ v: k.empresa, l: 1 }, { v: k.linha, l: 1 }, `R$ ${reais(k.tarifa)}`, { v: k.embarque, l: 1 }, { v: k.desembarque, l: 1 }]), ...Array.from({ length: Math.max(0, 5 - c.length) }, () => ['', '', 'R$', '', ''])];
+  return { tipo: 'Efetivo', ref: x.militarId, titulo: `Solicitacao SAT - ${m.postoGrad} ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: 'MÓDULO PADRÃO DE TARIFA (SOLICITAÇÃO DE AUXÍLIO-TRANSPORTE)', c: 1, b: 1 }, { esp: 1 },
+    { t: [[{ v: 'GRAD E NOME', b: 1, l: 1 }, { v: `${m.postoGrad || ''} ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`, l: 1 }], [{ v: 'PREC/CP', b: 1, l: 1 }, { v: m.precCp || '', l: 1 }],
+      [{ v: 'ENDEREÇO COMPLETO', b: 1, l: 1 }, { v: [m.endereco, m.bairro, m.municipio, m.cep].filter(Boolean).join(' – '), l: 1 }], [{ v: 'LOCAL DE TRABALHO', b: 1, l: 1 }, { v: cfg('siglaOM'), l: 1 }]], w: [25, 75], sz: 9.5 }, { esp: 1 },
+    { t: [['EMPRESA', 'LINHA', 'TARIFA', 'EMBARQUE', 'DESEMBARQUE'], ...lin], h: 1, w: [22, 14, 14, 25, 25], sz: 9.5 }, { esp: 1 },
+    { t: [[{ v: 'TOTAL GASTO DIARIAMENTE (R$)', b: 1, l: 1 }, `R$ ${reais(d)}`], [{ v: `TOTAL GASTO MENSALMENTE (R$) – ${diasSat()} dias`, b: 1, l: 1 }, `R$ ${reais(d * diasSat())}`],
+      [{ v: 'DESCONTO DA COTA-PARTE (R$)', b: 1, l: 1 }, `R$ ${reais(cota)}`], [{ v: 'VALOR LÍQUIDO DO AUXÍLIO-TRANSPORTE (R$)', b: 1, l: 1 }, { v: `R$ ${reais(Math.max(0, d * diasSat() - cota))}`, b: 1 }]], w: [70, 30], sz: 9.5 },
+    { p: '*Declaro, para os devidos fins, que não houve mudança de endereço até a presente data.', sz: 9, mt: 6 }, { esp: 1 },
+    { p: `${cfg('cidade')}, ____ de ______________ de ${hoje().slice(0, 4)}.`, r: 1 }, ...blocosAssinatura('________________________________________', `${m.postoGrad || ''} ${m.nomeGuerra || ''}`, 2),
+    ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao')), { esp: 1 }, { p: `Publicado no BI Nr ____ de _________ de ${hoje().slice(0, 4)}.`, c: 1, sz: 9 }] };
+};
+/** Espelho do SAT: aditamento do Furriel com as solicitações e atualizações (os marcados na tela do SAT). */
+DOCS.satEspelho = arg => { const [mes, l] = arg.split('|'), lista = ids(l).map(id => S.db.SAT.find(x => x.id === id)).filter(Boolean);
+  return { tipo: 'Efetivo', titulo: `Espelho SAT ${mes}`, blocos: blocosAditFurriel({ numero: numAdtFur(), data: hoje(), autorizo: 'VISTO:', terceira: [
+    { p: 'Solicito-vos que sejam publicadas em BI as solicitações e atualizações do Auxílio-Transporte, de acordo com o artigo 7º da Portaria nº 014-DGS, de 30 de junho de 1999, dos militares relacionados abaixo:', mt: 4 }, { esp: 1 },
+    { t: [['ORD', 'GRAD', 'NOME', 'PREC-CP', 'VALOR DIÁRIO', 'VALOR DO SAT'], ...lista.map((x, i) => { const m = MIL[x.militarId] || {}; return [pad(i + 1), String(m.postoGrad || '').toUpperCase(), { v: (m.nomeCompleto || m.nomeGuerra || '').toUpperCase(), l: 1 }, m.precCp || '', `R$ ${reais(diarioSat(x))}`, `R$ ${reais(mensalSat(x))}`]; })], h: 1, w: [7, 10, 39, 16, 14, 14], sz: 9 },
+    { p: 'Em consequência: S1, Cmt SU e interessados tomem conhecimento e providências decorrentes.', mt: 6 }] }) };
+};
+
+// ---------- D.A. (despesa a anular) do auxílio-transporte: dias em que o militar não se deslocou, com o motivo pela legenda
+const LEGENDA_DA = ['VIAGEM', 'SERVIÇO', 'DESC. FÉRIAS', 'DISPENSA', 'DISPENSA MÉDICA', 'MISSÃO', 'DISP. RECOMPENSA', 'BAIXA HOSPITALAR', 'DISP. MÉD. DOMICILIAR', 'LTSP/LTDPF', 'L.E/LTIP', 'DESTINO IGNORADO', 'PRISÃO', 'DETENÇÃO', 'IMPEDIMENTO', 'FERIADO', 'MISSÃO FDS/SERVIÇO FDS', 'PERÍODO APÓS A BAIXA', 'LP'];
+const COD_IMP = { 'Férias': 3, 'Dispensa': 4, 'Dispensa médica': 5, 'Dispensa como recompensa': 7, 'Dispensa para instalação': 4, 'Licença': 19, 'Curso/Estágio': 6, 'Trânsito': 1, 'Outro': 4 };
+/** Código da legenda para o dia (0 = foi ao quartel). Ordem: feriado, saúde, afastamento, punição, missão, serviço. */
+function codigoDA(mid, d) {
+  if (FERIADO[d]) return 16;
+  const sau = (S.db.Saude || []).filter(x => x.militarId === mid);
+  if (sau.some(x => x.tipo === 'Adido (LTSP)' && x.situacao !== 'Encerrado' && x.data <= d)) return 10;
+  if (sau.some(x => x.tipo === 'Visita médica' && x.resultado === 'Baixado (internado)' && (x.inicio || x.data) <= d && (fimDispensa({ ...x, inicio: x.inicio || x.data }) || x.inicio || x.data) >= d)) return 8;
+  const imp = S.db.Impedimentos.find(i => i.militarId === mid && i.inicio <= d && (i.fim || i.inicio) >= d);
+  if (imp) return COD_IMP[imp.tipo] || 4;
+  const pun = S.db.Disciplina && punicaoEmCurso(mid, d);
+  if (pun) return pun.punicao === 'Prisão disciplinar' ? 13 : 14;
+  if (S.db.Missoes.some(m => m.status !== 'Cancelada' && ids(m.militaresIds).concat(m.responsavelId || []).includes(mid) && m.inicio <= d && (m.fim || m.inicio) >= d)) return 6;
+  if (tiposAtivos().some(t => lancamentos(d, t.id).some(e => !emBranco(e) && quemTira(e) === mid))) return 2;
+  // serviço no fim de semana ou feriado da véspera: a folga cai no dia útil seguinte
+  const ontem = addDias(d, -1);
+  if (corDoDia(ontem) === 'V' && tiposAtivos().some(t => lancamentos(ontem, t.id).some(e => !emBranco(e) && quemTira(e) === mid))) return 17;
+  return 0;
+}
+/** D.A. do mês: só dias úteis (de segunda a sexta, contando feriado) dentro do período do auxílio. Ajustes manuais na tabela DA. */
+function calcDA(mes) {
+  const dias = diasDoMes(mes).filter(d => ![0, 6].includes(dataDe(d).getDay()));
+  return (S.db.SAT || []).filter(x => x.situacao === 'Ativo' && MIL[x.militarId]).map(x => {
+    const vale = dias.filter(d => d >= (x.inicio || '0000') && (!x.fim || d <= x.fim));
+    const cods = vale.map(d => [d, codigoDA(x.militarId, d)]).filter(([, c]) => c);
+    const aj = (S.db.DA || []).find(a => a.id === mes + '|' + x.militarId);
+    const n = aj && aj.dias !== '' && aj.dias != null ? num(aj.dias) : cods.length;
+    const leg = aj && aj.codigos ? aj.codigos : [...new Set(cods.map(([, c]) => c))].sort((a, b) => a - b).join('-');
+    return { x, m: MIL[x.militarId], dias: n, legenda: leg, detalhe: cods, diario: diarioSat(x), valor: n * diarioSat(x), ajustado: !!aj, obs: aj ? aj.obs || '' : '' };
+  }).filter(r => r.dias > 0).sort((a, b) => ordemMil(a.m, b.m));
+}
+function vDA() {
+  const mes = S.filtro.daMes || hoje().slice(0, 7), l = calcDA(mes), tot = l.reduce((s, r) => s + r.valor, 0);
+  return `<div class="bar"><input type="month" value="${mes}" onchange="S.filtro.daMes=this.value;render()" aria-label="Mês">${campoAdtFur()}<span class="tag info">${l.length} militar(es) · R$ ${reais(tot)}</span><span class="grow"></span>${botoesDocGrandes('da', mes, 'da')}</div>
+    ${tabela(l, [{ l: 'Militar', v: r => `<b>${esc(nomeMil(r.m))}</b><div class="muted">Prec-CP ${esc(r.m.precCp || '—')}</div>` }, { l: 'Valor diário', v: r => 'R$ ' + reais(r.diario), c: 'num' },
+      { l: 'Dias', v: r => `<b>${r.dias}</b>${r.ajustado ? ' <span class="tag warn">ajustado</span>' : ''}`, c: 'num', s: r => r.dias }, { l: 'D.A.', v: r => 'R$ ' + reais(r.valor), c: 'num', s: r => r.valor },
+      { l: 'Legenda', v: r => `<b>${esc(r.legenda)}</b><div class="muted">${esc(r.detalhe.map(([d, c]) => `${d.slice(8)}: ${LEGENDA_DA[c - 1].toLowerCase()}`).join(' · '))}</div>` }],
+      pode() ? r => `<button class="btn sm" onclick="ajustarDA('${mes}','${r.x.militarId}')">Ajustar</button>` : null)}
+    <p class="muted">Sai sozinho do que está no sistema: serviço em dia útil (2), folga de serviço do fim de semana (17), férias (3), dispensas (4, 5, 7), viagem/trânsito (1), missão e curso (6), feriado (16), adido (10), baixado (8), prisão e detenção (13, 14). Quem não aparece não tem D.A. no mês. Confira e use "Ajustar" para mudar dias ou legenda.</p>
+    <p class="muted" style="font-size:12.5px"><b>Legenda:</b> ${LEGENDA_DA.map((t, i) => `${i + 1} – ${t}`).join('; ')}.</p>`;
+}
+function ajustarDA(mes, mid) {
+  const r = calcDA(mes).find(x => x.x.militarId === mid), aj = (S.db.DA || []).find(a => a.id === mes + '|' + mid) || {};
+  abrirForm({ titulo: `D.A. ${mes} – ${nomeMil(mid)}`, valores: { dias: aj.dias ?? '', codigos: aj.codigos || '', obs: aj.obs || '' }, campos: [
+    { k: 'dias', l: `Nº de dias (o sistema calculou ${r ? r.dias : 0}; vazio = usar o cálculo)`, t: 'number' }, { k: 'codigos', l: `Legenda (ex.: 2-4; vazio = ${r ? r.legenda : ''})` }, { k: 'obs', l: 'Observação', full: true }],
+    aoSalvar: o => salvar('DA', [{ id: mes + '|' + mid, mes, militarId: mid, ...o }]),
+    extra: aj.id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm" onclick="excluir('DA','${aj.id}',true)">Voltar ao cálculo do sistema</button></div>` : '' });
+}
+LISTAS.da = () => { const mes = S.filtro.daMes || hoje().slice(0, 7);
+  return { nome: `DA ${mes}`, cab: ['Prec-CP', 'P/G', 'Nome', 'Valor diário', 'Nº dias', 'D.A.', 'Legenda'], linhas: calcDA(mes).map(r => [r.m.precCp || '', r.m.postoGrad, r.m.nomeCompleto || r.m.nomeGuerra, Number(r.diario.toFixed(2)), r.dias, Number(r.valor.toFixed(2)), r.legenda]) }; };
+DOCS.da = mes => { const l = calcDA(mes), [a, mm] = mes.split('-');
+  return { tipo: 'Efetivo', titulo: `DA ${mes}`, blocos: blocosAditFurriel({ numero: numAdtFur(), data: hoje(), terceira: [
+    { p: `Solicito que seja publicada, conforme documentos anexados, a Despesa a Anular (D.A.) do Auxílio-Transporte, referente ao mês de ${MESES_EXT[mm - 1].toUpperCase()} de ${a}, para os militares relacionados, Código G95, de acordo com a letra "g" do nº 4 das Normas para o Controle da Solicitação e Concessão do Auxílio-Transporte e o Exame de sua Requisição no âmbito do Exército Brasileiro, aprovadas pela Port. nº 098-DGP, de 31 Out 01.`, mt: 4 }, { esp: 1 },
+    { t: [['PREC-CP', 'P/G', 'NOME', 'VALOR DIÁRIO', 'Nº DIAS', 'D.A.', 'MOTIVO (LEGENDA)'], ...l.map(r => [r.m.precCp || '', String(r.m.postoGrad).toUpperCase(), { v: (r.m.nomeCompleto || r.m.nomeGuerra).toUpperCase(), l: 1 }, `R$ ${reais(r.diario)}`, String(r.dias), `R$ ${reais(r.valor)}`, r.legenda]),
+      [{ v: 'TOTAL', b: 1 }, '', '', '', { v: String(l.reduce((s, r) => s + r.dias, 0)), b: 1 }, { v: `R$ ${reais(l.reduce((s, r) => s + r.valor, 0))}`, b: 1 }, '']], h: 1, w: [13, 9, 34, 12, 8, 12, 12], sz: 8.5 },
+    { p: `**LEGENDA:** ${LEGENDA_DA.map((t, i) => `${i + 1} – ${t}`).join('; ')}.`, m: 1, sz: 8, mt: 6 },
+    { p: 'Em consequência, S1, Secretaria, SPP e interessados tomem conhecimento e providências decorrentes.', mt: 6 }] }) };
+};
+
+// ---------- arranchamento: quem come o quê no dia (café, almoço, jantar, ceia), nominal e vale diário
+const REFEICOES = [['C', 'CAFÉ'], ['A', 'ALMOÇO'], ['J', 'JANTAR'], ['N', 'CEIA']];
+const CATS_RANCHO = [['OFICIAIS', ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp']], ['ST/SGT', ['ST', '1º Sgt', '2º Sgt', '3º Sgt']], ['CB/SD', ['Cb', 'Sd EP', 'Sd EV', 'Sd']]];
+const ranchoDe = d => (S.db.Rancho || []).find(x => x.id === d);
+/** Padrão do dia: serviço = café, almoço e jantar; os demais presentes, o que estiver em Configurações para dia útil (padrão: almoço); fim de semana só o serviço. */
+function marcacaoPadrao(d) {
+  const util = corDoDia(d) === 'P', base = String(cfg('ranchoUtil') || 'A').toUpperCase().replace(/[^CAJN]/g, ''), o = {};
+  const serv = new Set(tiposAtivos().flatMap(t => lancamentos(d, t.id).filter(e => !emBranco(e)).map(quemTira)));
+  militaresAtivos().forEach(m => { if (serv.has(m.id)) o[m.id] = 'CAJ'; else if (util && !destinoDoDia(m, d)) o[m.id] = base; });
+  return o;
+}
+const marcacao = d => { const r = ranchoDe(d); if (r) { try { return JSON.parse(r.marc || '{}'); } catch (e) { } } return marcacaoPadrao(d); };
+const contaRancho = d => { const mc = marcacao(d), r = ranchoDe(d) || {};
+  return CATS_RANCHO.map(([cat, postos]) => { const l = militaresAtivos().filter(m => postos.includes(m.postoGrad));
+    return { cat, ...Object.fromEntries(REFEICOES.map(([k]) => [k, l.filter(m => String(mc[m.id] || '').includes(k)).length + num(r['ext' + cat.replace(/\W/g, '') + k])])) }; }); };
+function vRancho() {
+  const d = S.filtro.ranchoDia || addDias(hoje(), 1), mc = marcacao(d), salvo = !!ranchoDe(d), c = contaRancho(d), ceia = REFEICOES.filter(([k]) => k !== 'N' || c.some(x => x.N));
+  return `<div class="bar"><label class="muted">Dia <input type="date" value="${d}" onchange="S.filtro.ranchoDia=this.value;render()"></label><span class="tag ${salvo ? 'ok' : 'info'}">${salvo ? 'marcação gravada' : 'padrão do dia (ainda não gravado)'}</span>
+      <span class="grow"></span>${pode() ? `${salvo ? `<button class="btn" onclick="voltarPadraoRancho('${d}')">Voltar ao padrão</button>` : ''}<button class="btn" onclick="extrasRancho('${d}')">Outra OM / extras</button>` : ''}
+      <button class="btn" onclick="emitir('arranchamento','${d}')">Arranchamento nominal</button><button class="btn pri" onclick="emitir('vale','${d}')">Vale diário</button><button class="btn" onclick="valesSemana('${d}')">Vales da semana</button></div>
+    <div class="tw"><table><thead><tr><th></th>${ceia.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${[...c, { cat: 'TOTAL', ...Object.fromEntries(REFEICOES.map(([k]) => [k, c.reduce((s, x) => s + x[k], 0)])) }].map(x => `<tr><td><b>${x.cat}</b></td>${ceia.map(([k]) => `<td class="num">${x[k]}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <h3>Marcação nominal</h3>
+    <div class="tw"><table><thead><tr><th>Militar</th><th>Situação no dia</th>${REFEICOES.map(([k, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>
+    ${militaresAtivos().map(m => { const dst = destinoDoDia(m, d); return `<tr><td><b>${esc(nomeMil(m))}</b></td><td>${dst ? `<span class="tag warn">${esc(dst)}</span>` : '<span class="muted">presente</span>'}</td>${REFEICOES.map(([k]) => `<td class="num"><input type="checkbox" aria-label="${k}" ${String(mc[m.id] || '').includes(k) ? 'checked' : ''} ${pode() ? `onchange="marcarRancho('${d}','${m.id}','${k}',this.checked)"` : 'disabled'}></td>`).join('')}</tr>`; }).join('')}
+    </tbody></table></div>
+    <p class="muted">Começa pelo padrão: quem está de serviço come café, almoço e jantar; os presentes, ${esc(String(cfg('ranchoUtil') || 'A').replace(/C/, 'café ').replace(/A/, 'almoço ').replace(/J/, 'jantar ').replace(/N/, 'ceia ').trim())} em dia útil (muda em Configurações); quem está de férias, dispensado, em missão ou baixado fica de fora. Ao marcar ou desmarcar, o dia é gravado.</p>`;
+}
+async function marcarRancho(d, mid, k, on) {
+  const mc = marcacao(d); let v = String(mc[mid] || '').replace(k, ''); if (on) v += k;
+  mc[mid] = REFEICOES.map(([x]) => x).filter(x => v.includes(x)).join('');
+  await salvar('Rancho', [{ ...(ranchoDe(d) || {}), id: d, marc: JSON.stringify(mc) }]); render();
+}
+async function voltarPadraoRancho(d) { if (await confirmar('Voltar a marcação deste dia ao padrão?')) { await salvar('Rancho', [], [d]); render(); } }
+function extrasRancho(d) {
+  const r = ranchoDe(d) || {}, campos = CATS_RANCHO.flatMap(([cat]) => REFEICOES.map(([k, l]) => ({ k: 'ext' + cat.replace(/\W/g, '') + k, l: `${cat} – ${l.toLowerCase()}`, t: 'number' })));
+  abrirForm({ titulo: 'Militares de outra OM / extras (quantidade)', valores: r, campos, aoSalvar: o => salvar('Rancho', [{ ...r, ...o, id: d, marc: r.marc || JSON.stringify(marcacao(d)) }]) });
+}
+const furrielNome = () => cfg('furrielNome') || (ocupante(funcoes().find(f => f.id === 'auxfur') || {}) ? nomeMil(ocupante(funcoes().find(f => f.id === 'auxfur'))) : '');
+DOCS.arranchamento = d => { const mc = marcacao(d), l = militaresAtivos().filter(m => mc[m.id]);
+  return { tipo: 'Efetivo', titulo: `Arranchamento ${d}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { p: `ARRANCHAMENTO PARA O DIA ${fmt(d)} (${SEMANA[dataDe(d).getDay()].toUpperCase()}) – ${String(cfg('sigla')).toUpperCase()}`, c: 1, b: 1 }, { esp: 1 },
+    { t: [['P/G – NOME', ...REFEICOES.map(([, x]) => x)], ...l.map(m => [{ v: `${String(m.postoGrad).toUpperCase()} ${m.nomeGuerra.toUpperCase()}`, l: 1 }, ...REFEICOES.map(([k]) => String(mc[m.id]).includes(k) ? 'X' : '')]),
+      [{ v: 'TOTAL', b: 1 }, ...REFEICOES.map(([k]) => ({ v: String(l.filter(m => String(mc[m.id]).includes(k)).length), b: 1 }))]], h: 1, w: [44, 14, 14, 14, 14], sz: 9 },
+    ...blocosAssinatura(furrielNome(), `Furriel ${cfg('sigla')}`)] };
+};
+DOCS.vale = d => { const c = contaRancho(d), soma = k => c.reduce((s, x) => s + x[k], 0), ref = REFEICOES.filter(([k]) => k !== 'N' || soma('N'));
+  return { tipo: 'Efetivo', titulo: `Vale diario ${d}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { t: [[{ v: 'VISTO\n\n_____________\nFisc Adm', b: 1 }, { v: '', }, { v: `${cfg('siglaOM')}\n${cfg('sigla')}`, b: 1 }]], sem: 1, w: [25, 45, 30], sz: 9.5 }, { esp: 1 },
+    { p: `VALE DIÁRIO PARA O DIA ${fmt(d)} (${SEMANA[dataDe(d).getDay()].toUpperCase()})`, c: 1, b: 1 }, { esp: 1 },
+    { t: [['', ...ref.map(([, x]) => x), 'TOTAL'], ...c.map(x => [{ v: x.cat, b: 1 }, ...ref.map(([k]) => String(x[k])), { v: String(ref.reduce((s, [k]) => s + x[k], 0)), b: 1 }]),
+      [{ v: 'TOTAL', b: 1 }, ...ref.map(([k]) => ({ v: String(soma(k)), b: 1 })), { v: String(ref.reduce((s, [k]) => s + soma(k), 0)), b: 1 }]], h: 1, sz: 11 },
+    { esp: 3 }, { t: [['_________________________', '_________________________'], [{ v: furrielNome(), b: 1 }, { v: cfg('cmtNome'), b: 1 }], [{ v: 'Furriel', b: 1 }, { v: 'Cmt SU', b: 1 }]], sem: 1, sz: 9.5 }] };
+};
+DOCS.vales = arg => { const [ini, n] = arg.split('|'); return juntar('Efetivo', `Vales ${ini}`, Array.from({ length: num(n) || 7 }, (_, i) => DOCS.vale(addDias(ini, i)))); };
+function valesSemana(d) { const w = dataDe(d).getDay(), seg = addDias(d, w === 0 ? -6 : 1 - w); emitir('vales', seg + '|7'); }
+
+// ---------- exercício anterior (DEA) e auxílios: capa com o movimento do processo, requerimento e informação
+const MOV_DEA = ['Requerimento', 'Averbação', 'Informação', 'Rec Dívida pelo OD', 'Pub Rec Dívida pelo OD', 'Confecção da Planilha', 'Ass Planilha OD'];
+const ehDEA = x => /exerc[ií]cio/i.test(x.tipo || '');
+const etapaProc = x => MOV_DEA.reduce((n, _, i) => x['mov' + (i + 1)] ? i + 1 : n, 0);
+const ANEXOS_DEA = '01 (um) Requerimento\n01 (uma) cópia autenticada da averbação do requerimento\n01 (uma) Informação do requerimento\n01 (uma) cópia autenticada do BI que comprova o direito\n01 (uma) ficha financeira do ano do direito\n01 (uma) cópia do contracheque atual\n01 (uma) consulta ao credor\n01 (uma) consulta de ordem bancária do ano do direito';
+DOCS.procCapa = id => { const x = S.db.Processos.find(y => y.id === id), m = MIL[x.militarId] || {};
+  return { tipo: 'Efetivo', ref: x.militarId, titulo: `Capa ${x.tipo} - ${m.nomeGuerra || ''}`, blocos: [
+    { t: [[{ v: `NUP\n${x.ref || 'GERAR NO SPED'}`, b: 1 }, '', { v: `ASSUNTO:\n${ehDEA(x) ? 'Pagamento de despesa de exercício anterior' : x.tipo}`, b: 1 }]], sem: 1, w: [30, 30, 40], sz: 10 }, { esp: 1 },
+    ...blocosCabecalho(), { esp: 1 }, { t: [[{ v: 'SPP', b: 1 }, { v: (x.abertura || hoje()).slice(0, 4), b: 1 }]], sem: 1, w: [50, 50], sz: 11 }, { esp: 1 },
+    { p: `**INTERESSADO:** ${m.postoGrad || ''} ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`, m: 1, l: 1 },
+    { p: `**ASSUNTO:** ${ehDEA(x) ? `O militar requer o pagamento, na forma de despesa de exercício anterior, por não ter recebido em época oportuna, ${x.direito || '________________'}${x.periodo ? `, referente ao período ${x.periodo}` : ''}.` : (x.direito || x.tipo)}`, m: 1, mt: 6 },
+    { p: '**ANEXOS:**', m: 1, mt: 6 }, ...String(x.anexos || ANEXOS_DEA).split('\n').filter(Boolean).map(a => ({ p: a, ind: 12, sz: 9.5 })), { esp: 1 },
+    { p: 'MOVIMENTO DO PROCESSO', c: 1, b: 1 },
+    { t: [['DESTINO', 'DATA', 'DESTINO', 'DATA'], ...[0, 1, 2, 3].map(i => [`${i + 1}. ${MOV_DEA[i]}`, fmt(x['mov' + (i + 1)]), MOV_DEA[i + 4] ? `${i + 5}. ${MOV_DEA[i + 4]}` : '', MOV_DEA[i + 4] ? fmt(x['mov' + (i + 5)]) : ''].map((v, j) => j % 2 ? v : { v, l: 1 }))], h: 1, w: [32, 18, 32, 18], sz: 9.5 }] };
+};
+DOCS.procReq = id => { const x = S.db.Processos.find(y => y.id === id), m = MIL[x.militarId] || {};
+  return { tipo: 'Efetivo', ref: x.militarId, titulo: `Requerimento ${x.tipo} - ${m.nomeGuerra || ''}`, blocos: [...blocosCabecalho(), { esp: 1 }, { p: 'REQUERIMENTO', c: 1, b: 1 }, { esp: 1 },
+    { p: `Exmo Sr Comandante do ${cfg('siglaOM')}`, l: 1 }, { esp: 1 },
+    { p: `${m.postoGrad || ''} ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}, Idt ${m.idt || '________'}, Prec-CP ${m.precCp || '________'}, CPF ${m.cpf || '________'}, servindo na ${cfg('sigla')}, vem respeitosamente requerer a V Exa ${ehDEA(x) ? `o pagamento, na forma de despesa de exercício anterior, de ${x.direito || '________________'}${x.periodo ? `, referente ao período ${x.periodo}` : ''}, por não ter recebido em época oportuna` : `${(x.direito || x.tipo).replace(/^./, c => c.toLowerCase())}`}${x.biDireito ? `, conforme publicado no ${x.biDireito}` : ''}.`, ind: 30 },
+    { p: 'É o que solicita.', ind: 30, mt: 6 }, { p: 'Nestes termos, pede deferimento.', ind: 30, mt: 6 }, { esp: 1 },
+    { p: localData(hoje()), r: 1 }, ...blocosAssinatura('________________________________________', `${m.postoGrad || ''} ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`)] };
+};
+DOCS.procInfo = id => { const x = S.db.Processos.find(y => y.id === id), m = MIL[x.militarId] || {}, l = (a, b) => ({ p: `${a}: ${b || '________________'}`, ind: 24, sz: 9.5 });
+  return { tipo: 'Efetivo', ref: x.militarId, titulo: `Informacao ${x.tipo} - ${m.nomeGuerra || ''}`, blocos: [...blocosCabecalho(), { esp: 1 },
+    { t: [[{ v: 'Informação nº ____/SPP', b: 1, l: 1 }, { v: `${localData(hoje())}\n\nDo: Comandante do ${cfg('siglaOM')}\nAo: Sr Ordenador de Despesas\nAssunto: Pagamento de DEA`, l: 1 }]], sem: 1, w: [45, 55], sz: 9.5 }, { esp: 1 },
+    { p: `1. Requerimento datado de ${fmt(x.mov1 || x.abertura) || '___/___/____'}, publicado no BI nº ____, em que o ${m.postoGrad || ''} ${(m.nomeCompleto || '').toUpperCase()} requer o pagamento de exercícios anteriores de ${x.direito || '________________'}${x.periodo ? `, referente ao período ${x.periodo}` : ''}.` },
+    { p: '2. Informações:', mt: 6 }, { p: 'a. Amparo do requerente:', ind: 12 },
+    { p: `1) O direito pretendido está materializado no ${x.biDireito || 'BI nº ____ de ____'}.`, ind: 24 }, { p: '2) A solicitação encontra amparo nas Normas para Pagamento de Despesas de Exercícios Anteriores, no âmbito do Comando do Exército.', ind: 24 },
+    { p: 'b. Estudo fundamentado:', ind: 12 }, { p: '1) Dados pessoais sobre o credor:', ind: 24 },
+    l('a) Nome', (m.nomeCompleto || '').toUpperCase()), l('b) Identidade/Órgão emissor', m.idt ? m.idt + ' – EB' : ''), l('c) Posto, graduação, categoria', m.postoGrad), l('d) Arma, serviço, qualificação', m.arma), l('e) Data de nascimento', fmt(m.dataNascimento)),
+    l('f) Estado civil', m.estadoCivil), l('g) Nº de dependentes no período da dívida', ''), l('h) Data de praça', fmt(m.dataPraca)), l('i) Promoções', String(m.promocoes || '').split('\n').filter(Boolean).length || ''),
+    l('j) CPF', m.cpf), l('l) Prec-CP', m.precCp), l('m) Situação do credor na UG', 'Militar da Ativa'),
+    { p: '2) Dados informativos gerais:', ind: 24, mt: 4 }, l('a) Ordenador de Despesas à época do fato gerador', x.odEpoca), l('b) A ocorrência da DEA é explicada da forma seguinte', 'por não ter sido paga em época oportuna'), l('c) Duplicidade', 'não há'), l('d) Outros dados', 'não há'),
+    { p: 'c. Estudo comparativo: há coerência entre o requerido e o amparo do requerente.', ind: 12, mt: 4 },
+    { p: `d. Tempo de tramitação: o requerimento permaneceu ____ dia(s) nesta OM para fins de informação e organização do processo.`, ind: 12 },
+    ...blocosAssinatura('________________________________________', 'Chefe da Seção de Pessoal'),
+    { p: '3. Resumo ou histórico de como a despesa transformou-se em DEA:', mt: 8 }, { p: '_'.repeat(95) + '\n' + '_'.repeat(95) },
+    { p: '4. Reconhecimento da dívida e parecer:', mt: 8 }, { p: '_'.repeat(95) + '\n' + '_'.repeat(95) }] };
 };
 
 // ============================================================ tempo de serviço: engajamento, reengajamento e prorrogação
@@ -4100,7 +4315,7 @@ const IMPORTAVEIS = {
   saude: [{ l: 'Visitas médicas', novo: () => editarSaude(null, 'visita') }, { l: 'Inspeções de saúde', novo: () => editarSaude(null, 'is') }, { l: 'Acidentes (AO / ISO)', novo: () => editarSaude(null, 'acidente') }, { l: 'Adidos (LTSP)', novo: () => editarSaude(null, 'ltsp') }],
   sargenteacao: [{ l: 'SAT (auxílio-transporte)', novo: () => editarSat() }, { l: 'Tempo de serviço (processos)', novo: () => editarTs() }, { l: 'Faltas na formatura', novo: () => lancarFalta() },
     { l: 'Protocolo (SPED / DIEx)', novo: () => editarProtocolo() }, { l: 'Processos (exercícios anteriores…)', novo: () => editarProcesso(null, 'sgte') }, { l: 'QCP', novo: () => editarQcp() }],
-  arranchamento: [{ l: 'Processos do Furriel', novo: () => editarProcesso(null, 'furriel') }, { l: 'PHPM (datas de atualização)', novo: () => formPhpmImport() }],
+  arranchamento: [{ l: 'Processos do Furriel', novo: () => editarProcesso(null, 'furriel') }, { l: 'SAT (auxílio-transporte)', novo: () => editarSat() }, { l: 'PHPM (datas de atualização)', novo: () => formPhpmImport() }],
   disciplina: [{ l: 'Punições anteriores ao sistema', novo: () => formPunicaoImport() }, { l: 'Elogios', novo: () => editarElogio() }, { l: 'Anotações (Boca Podre)', novo: () => editarAnotacao() }, { l: 'Partes do Cmt', novo: () => editarParte() }],
   material: [{ l: 'Inventário (planilha)', ir: ['material', 'imp', 'impMat', 'planilha'] }, { l: 'Relação do SISCOFIS (PDF)', ir: ['material', 'imp', 'impMat', 'siscofis'] }, { l: 'Pedido de material (PDF)', ir: ['material', 'imp', 'impMat', 'pedido'] }],
   config: [{ l: 'Feriados', novo: () => editarFeriado() }],
@@ -4555,6 +4770,11 @@ const CAMPOS_CFG = [
   { k: 'cmtFuncao', l: 'Função (ex.: Cmt Cia)' },
   { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
   { k: 'rm', l: 'Região Militar (SERMILMOB, ex.: 11ª RM)' },
+  { k: 'cmtOMNome', l: 'Cmt da OM (visto / autorizo nos aditamentos do Furriel)' }, { k: 'cmtOMFuncao', l: 'Função do Cmt da OM (ex.: Cmt 11º D Sup)' },
+  { k: 'furrielNome', l: 'Furriel (nome – P/G, para o arranchamento e o vale; vazio = Aux Furriel do quadro de funções)' },
+  { k: 'ranchoUtil', l: 'Arranchamento padrão em dia útil: C café, A almoço, J jantar, N ceia (ex.: A ou CA)' },
+  { k: 'satDias', l: 'SAT: dias por mês no cálculo (padrão 22)', t: 'number' },
+  { k: 'satCotas', l: 'SAT: cota-parte (6% do soldo) por P/G, uma por linha (ex.: Cb=126,06)', t: 'textarea' },
   { k: 'phpmMeses', l: 'PHPM: atualizar a cada quantos meses', t: 'number' },
   { k: 'nadaDeveSecoes', l: 'Nada Deve: seções / SU / permissionários consultados (uma por linha)', t: 'textarea' },
   { k: 'avisoEngaj', l: 'Avisar o fim do tempo de serviço com quantos dias de antecedência', t: 'number' },
@@ -4822,11 +5042,13 @@ const VIEWS_FN = { painel: vPainel, sargenteacao: vSargenteacao, saude: vSaude, 
   disciplina: () => `<h2>Justiça e disciplina</h2><p class="sub">FATD, punições, elogios, Boca Podre e ficha disciplinar. Só os oficiais e o Sgte (marcação "Justiça e Disciplina" no cadastro do usuário).</p>${vDisciplina()}`, arquivo: vArquivo, config: vConfig, busca: vBusca };
 function vArranchamento() {
   const t = S.sub.arranchamento || 'proc';
-  const cab = `<h2>Furriel</h2><p class="sub">Processos do Furriel (despesa a anular, pré-escolar, beneficiários, pecuniária, vale-rancho, saúde e PHPM) e arranchamento.</p>${abas('arranchamento', [['proc', 'Processos'], ['phpm', 'PHPM'], ['rancho', 'Arranchamento']])}`;
+  const cab = `<h2>Furriel</h2><p class="sub">Arranchamento e vale diário, SAT, D.A. do auxílio-transporte, processos (exercício anterior, pré-escolar, natalidade, pecuniária…) e PHPM.</p>${abas('arranchamento', [['proc', 'Processos'], ['rancho', 'Arranchamento e vale'], ['sat', 'SAT'], ['da', 'D.A.'], ['phpm', 'PHPM']])}`;
   if (t === 'proc') return cab + vProcessos('furriel');
   if (t === 'phpm') return cab + vPhpm();
-  return cab + `<div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
-    <p class="muted" style="margin-top:0">Esta parte ainda vai ser feita. Mande os modelos usados pelo Furriel (mapa de arranchamento, relação de arranchados, faltas ao rancho, saque de etapa) para montarmos.</p></div>`;
+  if (t === 'sat') return cab + vSat();
+  if (t === 'da') return cab + vDA();
+  if (t === 'rancho') return cab + vRancho();
+  return cab + vRancho();
 }
 
 // ============================================================ dados de demonstração (fictícios)
@@ -4901,13 +5123,14 @@ function semente() {
       { id: 's3', tipo: 'Inspeção de saúde', militarId: 'm13', data: addDias(d, -350), motivo: 'Engajamento / reengajamento', resultado: 'Apto A', validade: addDias(d, 15), bi: 'BI nº 12' },
       { id: 's4', tipo: 'Acidente', militarId: 'm26', data: addDias(d, -20), motivo: 'Corte na mão durante faxina do depósito', local: 'Depósito da 1ª Cia', emServico: 'Em apuração', documento: 'AO (Atestado de Origem)', numeroDoc: '', proximo: addDias(d, 5), sindicancia: '', situacao: 'Aberto' },
       { id: 's5', tipo: 'Adido (LTSP)', militarId: 'm28', data: addDias(d, -60), motivo: 'Tratamento ortopédico', proximo: addDias(d, -1), obs: '1ª prorrogação: 30 dias (BI nº 40)', bi: 'BI nº 22', situacao: 'Em tratamento' }],
-    SAT: [{ id: 't1', militarId: 'm19', inicio: `${ano}-01-01`, valor: '180', ref: 'DIEx nº 15 – BI nº 8', situacao: 'Ativo' }, { id: 't2', militarId: 'm8', inicio: `${ano}-02-01`, valor: '220', ref: 'DIEx nº 22', situacao: 'Ativo' }, { id: 't3', militarId: 'm24', inicio: `${ano}-03-01`, valor: '150', ref: 'DIEx nº 31', situacao: 'Ativo' }],
+    SAT: [{ id: 't1', militarId: 'm19', inicio: `${ano}-01-01`, diario: '', conducoes: 'Viação Pioneira; 0.110; 5,50; Samambaia; Rodoviária\nMetrô DF; Linha Verde; 5,50; Rodoviária; Setor Militar\nMetrô DF; Linha Verde; 5,50; Setor Militar; Rodoviária\nViação Pioneira; 0.110; 5,50; Rodoviária; Samambaia', ref: 'DIEx nº 15 – BI nº 8', situacao: 'Ativo' },
+      { id: 't2', militarId: 'm8', inicio: `${ano}-02-01`, diario: '14,00', ref: 'DIEx nº 22', situacao: 'Ativo' }, { id: 't3', militarId: 'm24', inicio: `${hoje().slice(0, 7)}-01`, diario: '11,00', ref: 'DIEx nº 31', situacao: 'Ativo' }],
     Pernoite: [],
     Funcoes: [['cmt', 'm1'], ['sgtte', 'm4'], ['encmat', 'm12'], ['auxsgtte', 'm16'], ['auxalt', 'm17'], ['auxfur', 'm10']].map(([id, o]) => ({ ...FUNCOES_PADRAO.find(f => f.id === id), ocupanteId: o, padrao: '' })),
     Processos: [{ id: 'pr1', area: 'furriel', tipo: 'Auxílio pré-escolar', militarId: 'm14', abertura: addDias(d, -12), prazo: addDias(d, 3), situacao: 'Aguardando documento', ref: '', obs: 'Falta a certidão de nascimento do dependente.' },
       { id: 'pr2', area: 'furriel', tipo: 'Despesa a anular', militarId: 'm22', abertura: addDias(d, -30), prazo: addDias(d, -2), situacao: 'Encaminhado', ref: 'DIEx nº 41', obs: 'Encaminhado à SPP.' },
       { id: 'pr3', area: 'furriel', tipo: 'Vale-rancho', militarId: 'm25', abertura: addDias(d, -3), prazo: '', situacao: 'Aberto', ref: '', obs: '' },
-      { id: 'pr4', area: 'sgte', tipo: 'Exercícios anteriores', militarId: 'm9', abertura: addDias(d, -45), prazo: addDias(d, 15), situacao: 'Encaminhado', ref: 'NUP 00000.000000/0000-00 (fictício)', obs: 'Aguardando a SPP.' }],
+      { id: 'pr4', area: 'sgte', tipo: 'Exercícios anteriores', militarId: 'm9', direito: 'o adicional de compensação por disponibilidade militar', periodo: 'janeiro a março de 2025', biDireito: 'BI nº 40, de 1º de março de 2025', mov1: addDias(d, -45), mov2: addDias(d, -40), mov3: addDias(d, -30), abertura: addDias(d, -45), prazo: addDias(d, 15), situacao: 'Encaminhado', ref: 'NUP 00000.000000/0000-00 (fictício)', obs: 'Aguardando a SPP.' }],
     Protocolo: [{ id: 'pt1', data: addDias(d, -6), sentido: 'Recebido', especie: 'DIEx', numero: '120-S1', origemDestino: 'S1', responsavelId: 'm4', assunto: 'Relação de militares para o curso de cabos', prazo: addDias(d, -1), situacao: 'Pendente', obs: '' },
       { id: 'pt2', data: addDias(d, -2), sentido: 'Recebido', especie: 'DIEx', numero: '88-S4', origemDestino: 'Fisc Adm / S4', responsavelId: 'm12', assunto: 'Inventário anual – prazo de entrega', prazo: addDias(d, 10), situacao: 'Pendente', obs: '' },
       { id: 'pt3', data: addDias(d, -9), sentido: 'Expedido', especie: 'DIEx', numero: '15-1ª Cia', origemDestino: 'S1', responsavelId: 'm16', assunto: 'Escala de serviço do mês', prazo: '', situacao: 'Respondido', obs: '' }],
