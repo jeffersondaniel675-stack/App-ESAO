@@ -373,12 +373,18 @@ function enviarCodigo(email) {
   if (!lerTabela_('Usuarios').some(function (u) { return String(u.email).toLowerCase() === email; })) return { situacao: 'nao-cadastrado' };
   const cache = CacheService.getScriptCache();
   if (cache.get('env:' + email)) return { situacao: 'aguarde' };
-  const codigo = String(Math.floor(100000 + Math.random() * 900000));
-  cache.put('cod:' + email, JSON.stringify({ h: hash_(email + codigo), n: 0 }), 600);
+  // pedir de novo dentro dos 10 minutos manda o MESMO código (no celular a página recarrega ao trocar de app, e um código novo invalidaria o primeiro)
+  const ant = JSON.parse(cache.get('cod:' + email) || 'null');
+  const codigo = ant && ant.c ? ant.c : String(Math.floor(100000 + Math.random() * 900000));
+  cache.put('cod:' + email, JSON.stringify({ h: hash_(email + codigo), n: ant ? ant.n : 0, c: codigo }), 600);
   cache.put('env:' + email, '1', 60);
   const sigla = configMap_().nomeCia || configMap_().sigla || 'Sistema da Companhia';
+  const link = ScriptApp.getService().getUrl() + '?entrar=' + encodeURIComponent(email) + '&codigo=' + codigo;
   MailApp.sendEmail({ to: email, subject: 'Código de acesso: ' + codigo + ' – ' + sigla,
-    body: 'Seu código para entrar no ' + sigla + ' é ' + codigo + '.\n\nVale por 10 minutos. Se não foi você que pediu, ignore este e-mail.' });
+    body: 'Seu código para entrar no ' + sigla + ' é ' + codigo + '.\n\nOu toque neste link para entrar direto:\n' + link + '\n\nVale por 10 minutos. Se não foi você que pediu, ignore este e-mail.',
+    htmlBody: '<div style="font:16px Arial,sans-serif"><p>Seu código para entrar no <b>' + sigla + '</b>:</p><p style="font-size:32px;letter-spacing:6px;font-weight:bold;margin:8px 0">' + codigo + '</p>' +
+      '<p><a href="' + link + '" style="display:inline-block;background:#1351b4;color:#fff;padding:12px 22px;border-radius:24px;text-decoration:none;font-weight:bold">Entrar no sistema</a></p>' +
+      '<p style="color:#555;font-size:13px">Vale por 10 minutos. Se não foi você que pediu, ignore este e-mail.</p></div>' });
   return { situacao: 'enviado' };
 }
 /** Confere o código e abre uma sessão de 30 dias. Cinco erros invalidam o código. */

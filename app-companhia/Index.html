@@ -474,9 +474,12 @@ const Demo = {
     const dados = Object.fromEntries(Object.entries(tudo).filter(([t]) => !fora.includes(t)));
     return { usuario: { email: u.email, nome: u.nome, perfil: u.perfil, areas: u.areas || '', jd: u.jd || '' }, dados };
   },
+  // o código fica no aparelho (no sistema instalado fica no servidor), para sobreviver à página recarregar
+  get codigo() { try { return JSON.parse(localStorage.getItem('demo-codigo') || 'null'); } catch (e) { return null; } },
+  set codigo(v) { try { if (v) localStorage.setItem('demo-codigo', JSON.stringify(v)); else localStorage.removeItem('demo-codigo'); } catch (e) { } },
   async enviarCodigo(email) {
     if (!(this.db().Usuarios || []).some(u => u.email === email)) return { situacao: 'nao-cadastrado' };
-    this.codigo = { email, c: String(Math.floor(100000 + Math.random() * 900000)) };
+    if (!this.codigo || this.codigo.email !== email) this.codigo = { email, c: String(Math.floor(100000 + Math.random() * 900000)) };
     return { situacao: 'enviado', demo: this.codigo.c };
   },
   async entrarComCodigo(email, codigo) {
@@ -5233,7 +5236,20 @@ async function iniciar() {
   renderMenu();
   $('#demo-bar').hidden = !!NO_GOOGLE;
   try { S.view = localStorage.getItem('cia-view') || 'painel'; } catch (e) { }
-  if (!TOKEN) return telaLogin();
+  if (!TOKEN) {
+    // link "Entrar no sistema" do e-mail: ?entrar=<e-mail>&codigo=<código> entra direto (e some da barra de endereço)
+    if (NO_GOOGLE && google.script.url && !S.linkLido) {
+      S.linkLido = true;
+      return google.script.url.getLocation(loc => {
+        const q = (loc && loc.parameter) || {};
+        if (!q.entrar || !q.codigo) return telaLogin();
+        try { google.script.history.replace(null, {}, ''); } catch (e) { }
+        S.login = { etapa: 'codigo', email: String(q.entrar).trim().toLowerCase(), t: Date.now() };
+        telaLogin(); loginEntrar(q.codigo);
+      });
+    }
+    return telaLogin();
+  }
   try {
     const r = await api('bootstrap');
     S.user = r.usuario;
@@ -5251,8 +5267,11 @@ async function iniciar() {
 }
 // ---------- tela de entrada: e-mail cadastrado → código de 6 números no e-mail → entra (sem dar acesso à conta Google)
 const emailSalvo = () => { try { return localStorage.getItem('cia-email') || ''; } catch (e) { return ''; } };
+/** No celular, ao trocar para o app de e-mail e voltar, a página costuma recarregar: a etapa do código fica guardada por 10 minutos. */
+const etapaSalva = () => { try { const x = JSON.parse(localStorage.getItem('cia-login') || 'null'); return x && Date.now() - x.t < 600000 ? x : null; } catch (e) { return null; } };
+const guardarEtapa = L => { try { if (L && L.etapa === 'codigo') localStorage.setItem('cia-login', JSON.stringify({ etapa: 'codigo', email: L.email, t: L.t || Date.now() })); else localStorage.removeItem('cia-login'); } catch (e) { } };
 function telaLogin(msg) {
-  S.login = S.login || { etapa: 'email', email: emailSalvo() };
+  S.login = S.login || etapaSalva() || { etapa: 'email', email: emailSalvo() };
   if (msg) S.login.msg = msg;
   const L = S.login;
   document.body.classList.add('sem-acesso');
@@ -5268,8 +5287,8 @@ function telaLogin(msg) {
         <label class="full">Seu e-mail<input type="email" id="lg_email" value="${esc(L.email)}" autocomplete="email"></label></div>
       <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginPedir()">Enviar pedido</button><button class="btn" onclick="S.login.etapa='email';telaLogin()">Voltar</button></div>`;
   else if (L.etapa === 'codigo') corpo = `<h2 style="font-size:22px">Digite o código</h2>
-      <p>Mandamos um código de 6 números para <b>${esc(L.email)}</b>. Veja também a pasta de spam.</p>
-      <div class="form"><label class="full">Código<input type="text" id="lg_codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="font-size:22px;letter-spacing:6px;max-width:220px" onkeydown="if(event.key==='Enter')loginEntrar()"></label></div>
+      <p>Mandamos um código de 6 números para <b>${esc(L.email)}</b>. Veja também a pasta de spam. <b>No celular</b>, você também pode só tocar no botão <b>"Entrar no sistema"</b> do e-mail.</p>
+      <div class="form"><label class="full">Código<input type="text" id="lg_codigo" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" style="font-size:24px;letter-spacing:6px;max-width:220px" onkeydown="if(event.key==='Enter')loginEntrar()" oninput="codigoDigitado(this)"></label></div>
       <div class="bar" style="margin-top:12px"><button class="btn pri" onclick="loginEntrar()">Entrar</button><button class="btn" onclick="loginCodigo(true)">Mandar outro código</button><button class="btn" onclick="S.login.etapa='email';telaLogin()">Trocar e-mail</button></div>`;
   else corpo = `<h2 style="font-size:22px">Entrar</h2>
       <p>Digite o e-mail cadastrado no sistema. Você recebe um código para entrar; <b>não precisa dar nenhuma permissão à sua conta Google</b>.</p>
@@ -5289,20 +5308,31 @@ async function loginCodigo(reenviar) {
     if (r.situacao === 'nao-cadastrado') { L.etapa = 'pedir'; L.msg = 'Este e-mail ainda não está cadastrado. Peça acesso ao administrador:'; return telaLogin(); }
     if (r.situacao === 'aguarde') toast('Um código acabou de ser enviado. Espere 1 minuto para pedir outro.');
     if (r.demo) L.msg = `Demonstração: o e-mail com o código não é enviado de verdade. O código é ${r.demo}.`;
-    L.etapa = 'codigo'; telaLogin();
+    L.etapa = 'codigo'; L.t = L.t || Date.now(); guardarEtapa(L); telaLogin();
   } catch (e) { toast(e.message, true); }
 }
-async function loginEntrar() {
-  const L = S.login, codigo = ($('#lg_codigo').value || '').replace(/\D/g, '');
+/** Aceita o código colado com espaços ou texto em volta e entra sozinho ao completar os 6 números. */
+function codigoDigitado(el) {
+  const d = String(el.value).replace(/\D/g, '').slice(0, 6);
+  if (el.value !== d) el.value = d;
+  if (d.length === 6 && !S.login?.enviando) loginEntrar();
+}
+async function loginEntrar(codigoLink) {
+  const L = S.login, codigo = String(codigoLink || ($('#lg_codigo') || {}).value || '').replace(/\D/g, '');
   if (codigo.length !== 6) return toast('O código tem 6 números.', true);
+  if (L.enviando) return;
+  L.enviando = true;
   try {
     const r = await api('entrarComCodigo', L.email, codigo, navigator.userAgent.slice(0, 120));
-    guardarSessao(r.token);
+    guardarSessao(r.token); guardarEtapa(null);
+    // navegação anônima ou bloqueio de dados de sites: o aparelho não guarda a entrada
+    let guardou = false; try { guardou = localStorage.getItem(SESSAO_KEY) === r.token; } catch (e) { }
+    if (!guardou) setTimeout(() => toast('Este navegador não deixa o sistema lembrar a sua entrada (aba anônima ou bloqueio de cookies). Você vai precisar do código de novo na próxima vez. Use o Chrome ou o Safari normal.', true), 1500);
     try { localStorage.setItem('cia-email', r.email); } catch (e) { }
     S.login = null; document.body.classList.remove('sem-acesso');
     $('#app').innerHTML = '<div class="loading">Carregando dados da planilha…</div>';
     iniciar();
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { L.enviando = false; toast(e.message, true); }
 }
 async function loginPedir() {
   const nome = $('#lg_nome').value.trim(), email = ($('#lg_email').value || '').trim().toLowerCase();
