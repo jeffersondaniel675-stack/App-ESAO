@@ -10,7 +10,8 @@
 
 const TABELAS = {
   Militares: ['id', 'postoGrad', 'numero', 'nomeGuerra', 'nomeCompleto', 'antiguidade', 'idt', 'pelotao', 'funcao', 'telefone', 'ativo', 'obs',
-    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma', 'servicoAnterior', 'vinculo', 'termino'],
+    'dataNascimento', 'cpf', 'precCp', 'tipoSanguineo', 'peso', 'email', 'endereco', 'cttEmergencia', 'nomeCtt', 'parentesco', 'cnh', 'motoristaMilitar', 'veiculo', 'dataPraca', 'comportamento', 'arma', 'servicoAnterior', 'vinculo', 'termino',
+    'pai', 'mae', 'localNascimento', 'estadoCivil', 'escolaridade', 'idtCivil', 'ra', 'csm', 'cep', 'bairro', 'municipio', 'zona', 'qm', 'biConvocacao', 'biIncorporacao', 'biMatricula', 'promocoes', 'habilitacoes', 'movimentacoes'],
   Impedimentos: ['id', 'militarId', 'tipo', 'inicio', 'fim', 'obs', 'referencia'],
   TiposServico: ['id', 'nome', 'postos', 'ordem', 'ativo', 'grupo', 'dias', 'automatico', 'qtd', 'folga', 'contagem'],
   Escala: ['id', 'data', 'tipoId', 'militarId', 'cor', 'obs', 'troca', 'trocaMotivo'],
@@ -29,13 +30,17 @@ const TABELAS = {
   Saude: ['id', 'tipo', 'militarId', 'data', 'motivo', 'local', 'resultado', 'dias', 'inicio', 'validade', 'documento', 'numeroDoc', 'emServico', 'sindicancia', 'bi', 'situacao', 'proximo', 'obs', 'arquivoUrl'],
   SAT: ['id', 'militarId', 'inicio', 'fim', 'valor', 'ref', 'situacao', 'obs'],
   Pernoite: ['id', 'extras', 'obs'],
+  Faltas: ['id', 'data', 'formatura', 'militarId', 'justificada', 'obs'],
+  Funcoes: ['id', 'nome', 'chefe', 'ocupanteId', 'atrib', 'ordem', 'oculto'],
+  Processos: ['id', 'area', 'tipo', 'militarId', 'abertura', 'prazo', 'situacao', 'ref', 'obs', 'arquivoUrl'],
+  Protocolo: ['id', 'data', 'sentido', 'especie', 'numero', 'origemDestino', 'responsavelId', 'assunto', 'prazo', 'situacao', 'obs', 'arquivoUrl'],
   TempoServico: ['id', 'militarId', 'tipo', 'requerimento', 'is', 'inicio', 'fim', 'situacao', 'bi', 'obs', 'arquivoUrl'],
   Alteracoes: ['id', 'militarId', 'data', 'ref', 'titulo', 'texto', 'origem'],
   Controles: ['id', 'responsavelId', 'prazo', 'situacao', 'obs', 'atualizado'],
   QCP: ['id', 'funcao', 'postoPrevisto', 'fracao', 'ocupanteId', 'ordem'],
   Fotos: ['id', 'dado'],
   FolhasAlt: ['id', 'militarId', 'semestre', 'folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'],
-  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl', 'prazo'],
+  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl', 'prazo', 'assunto'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
@@ -44,7 +49,7 @@ const SOMENTE_ADMIN = ['Usuarios', 'Config'];
 const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos', 'Sessoes'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
-const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte', TempoServico: 'sgte',
+const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte', Faltas: 'sgte', TempoServico: 'sgte', Funcoes: 'sgte', Protocolo: 'sgte',
   Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
 const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
 // Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).
@@ -244,6 +249,7 @@ function criarDoc(tipo, titulo, blocos, referencia) {
   blocos.forEach(function (b) {
     if (b.paisagem || b.cont || b.moldura) return;
     if (b.hr) { body.appendHorizontalRule(); return; }
+    if (b.quebra) { body.appendPageBreak(); return; }
     if (b.pont) {
       // linha pontilhada até o valor (ex.: "1. TEMPO COMPUTADO … 00a 06m 04d")
       const lab = String(b.pont[0]).replace(/\*\*|__/g, ''), val = String(b.pont[1]).replace(/\*\*|__/g, '');

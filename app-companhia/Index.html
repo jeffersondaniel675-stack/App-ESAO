@@ -231,6 +231,13 @@ fieldset.pm legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .pm-t { display: grid; gap: 6px; margin-bottom: 4px; }
 .pm-t label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
 .pm-t input[type=number] { width: 64px; height: 32px; }
+.doc .quebra { break-after: page; page-break-after: always; height: 0; }
+.qf { overflow-x: auto; padding-bottom: 6px; }
+.qf-r { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.qf > .qf-r { min-width: max-content; }
+.qf-f { display: flex; justify-content: center; align-items: flex-start; gap: 14px; padding-top: 14px; border-top: 2px solid var(--border); align-self: stretch; }
+.qf-c { width: 250px; margin: 0; }
+.qf-l { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .pm-l { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pm-l label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .mes-alt { padding: 8px 0; border-top: 1px solid var(--cinza-5); }
@@ -507,7 +514,7 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'TempoServico'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'Faltas', 'TempoServico', 'Funcoes', 'Processos', 'Protocolo'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => podeEm(S.view);
 const admin = () => S.user?.perfil === 'admin';
@@ -1026,6 +1033,7 @@ function htmlDoc(blocos) {
   const corpo = blocos.map(b => {
     if (b.paisagem || b.cont || b.moldura) return '';
     if (b.hr) return '<hr>';
+    if (b.quebra) return '<div class="quebra"></div>';
     if (b.pont) return `<p class="pont" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}"><span>${htmlRico(b.pont[0])}</span><span class="pt"></span><span>${htmlRico(b.pont[1])}</span></p>`;
     if (b.esp) return `<div style="height:${b.esp * 1.25}em"></div>`;
     if (b.img) return `<p class="c"><img src="${b.img}" alt="" style="width:${b.w || 56}pt"></p>`;
@@ -1149,7 +1157,7 @@ const VIEWS = [
   ['painel', 'Painel', ''],
   ['sargenteacao', 'Sargenteação', 'sgte'], ['efetivo', 'Efetivo', 'sgte'], ['escala', 'Escala de serviço', 'sgte'], ['missoes', 'Missões', 'sgte'], ['aditamentos', 'Aditamentos', 'sgte'], ['alteracoes', 'Alterações', 'sgte'], ['saude', 'Saúde', 'sgte'],
   ['material', 'Material', 'mat'],
-  ['arranchamento', 'Arranchamento', 'furriel'],
+  ['arranchamento', 'Processos e arranchamento', 'furriel'],
   ['disciplina', 'Justiça e disciplina', 'jd'],
   ['arquivo', 'Arquivo', ''], ['config', 'Configurações', '']
 ];
@@ -1163,11 +1171,12 @@ const podeVer = v => v === 'saude' ? temSaude() : areaDe(v) !== 'jd' || temArea(
 const podeEm = v => ['admin', 'editor'].includes(S.user?.perfil) && temArea(areaDe(v));
 // Itens da 2ª coluna: `aba` liga a uma aba da tela, `filtro` a um filtro, `acao` roda depois de abrir a tela, `editor` = só para quem edita.
 const SUBMENU = {
-  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
-  sargenteacao: [{ l: 'Controles da Sargenteação', aba: 'controles' }, { l: 'Mapa da Força', aba: 'mapa' }, { l: 'QCP', aba: 'qcp' }, { l: 'Férias, recompensa e instalação', aba: 'ferias' }, { l: 'SAT (auxílio-transporte)', aba: 'sat' }, { l: 'Tempo de serviço (engajamento)', aba: 'tempo' }],
+  efetivo: [{ l: 'Militares', aba: 'mil' }, { l: 'Tripão', aba: 'tripao', editor: true }, { l: 'Plano de chamada', aba: 'chamada' }, { l: 'Plano de férias', aba: 'ferias' }, { l: 'Afastamentos (dispensas, cursos…)', aba: 'imp' }, { l: 'Documentos (Nada Deve, SERMILMOB, licenciamento)', aba: 'docs' }, { l: 'Importar planilha', aba: 'imp-x', editor: true }],
+  sargenteacao: [{ l: 'Controles da Sargenteação', aba: 'controles' }, { l: 'Mapa da Força', aba: 'mapa' }, { l: 'QCP', aba: 'qcp' }, { l: 'Férias, recompensa e instalação', aba: 'ferias' }, { l: 'Pronto diário e faltas', aba: 'pronto' }, { l: 'SAT (auxílio-transporte)', aba: 'sat' }, { l: 'Tempo de serviço (engajamento)', aba: 'tempo' }, { l: 'Funções da Cia (quem faz o quê)', aba: 'funcoes' }, { l: 'Protocolo (SPED / DIEx)', aba: 'protocolo' }, { l: 'Processos (exercícios anteriores…)', aba: 'processos' }],
   saude: [{ l: 'Resumo e prazos', aba: 'resumo' }, { l: 'Livro de visita médica', aba: 'visitas' }, { l: 'Inspeções de saúde', aba: 'is' }, { l: 'Acidentes (AO / ISO)', aba: 'acidentes' }, { l: 'Adidos (LTSP)', aba: 'ltsp' }],
   alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
-  disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Sindicâncias', filtro: ['jd', 'sind'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }],
+  disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Sindicâncias', filtro: ['jd', 'sind'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }, { l: 'Partes do Cmt', filtro: ['jd', 'partes'] }],
+  arranchamento: [{ l: 'Processos do Furriel', aba: 'proc' }, { l: 'Arranchamento', aba: 'rancho' }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Folha de pernoite', aba: 'pernoite' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -1332,7 +1341,8 @@ function vPainel() {
   <div class="cards">
     ${temArea('sgte') ? (() => { const c = controles(), atr = c.filter(atrasado).length, fz = c.filter(x => x.situacao !== 'Em dia').length;
       const ts = linhasTs().filter(r => r.resta !== null && r.resta <= avisoTs()).length;
-      return `${ts ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='tempo';S.filtro.tsVer='aviso';irPara('sargenteacao')"><h4>Tempo de serviço</h4><div class="big">${ts}</div><div class="tag warn">vence(m) em até ${avisoTs()} dias</div></div>` : ''}<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
+      const prot = (S.db.Protocolo || []).filter(x => x.situacao === 'Pendente' && x.prazo && x.prazo < hoje()).length;
+      return `${prot ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='protocolo';irPara('sargenteacao')"><h4>Protocolo</h4><div class="big">${prot}</div><div class="tag dng">documento(s) com prazo vencido</div></div>` : ''}${ts ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='tempo';S.filtro.tsVer='aviso';irPara('sargenteacao')"><h4>Tempo de serviço</h4><div class="big">${ts}</div><div class="tag warn">vence(m) em até ${avisoTs()} dias</div></div>` : ''}<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
     <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
     <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
     <div class="card"><h4>Cautelas abertas</h4><div class="big">${abertas.length}</div><div class="${vencidas.length ? 'tag dng' : 'muted'}">${vencidas.length} vencida(s)</div></div>
@@ -1342,6 +1352,7 @@ function vPainel() {
     <div class="card"><h4>Serviço de hoje</h4><ul class="list">${servico(d) || '<li class="muted">Cadastre os tipos de serviço em Configurações.</li>'}</ul></div>
     <div class="card"><h4>Serviço de amanhã · ${fmt(amanha)}</h4><ul class="list">${servico(amanha)}</ul></div>
     <div class="card"><h4>Impedidos hoje</h4><ul class="list">${imped.map(x => `<li><span>${esc(nomeMil(x.m))}</span>${tagSituacao(x.s)}</li>`).join('') || '<li class="muted">Ninguém impedido.</li>'}</ul></div>
+    ${cardAniversarios()}
     <div class="card"><h4>Missões</h4><ul class="list">${missoes.map(m => `<li><span>${esc(m.titulo)}</span><span class="muted">${fmt(m.inicio)}</span></li>`).join('') || '<li class="muted">Nenhuma nos próximos 7 dias.</li>'}</ul></div>
   </div>
   ${vencidas.length ? `<h3>Cautelas vencidas</h3>${tabelaCautelas(vencidas)}` : ''}`;
@@ -1381,7 +1392,18 @@ const CAMPOS_MIL = [
   { k: 'cnh', l: 'Carteira de motorista (categoria)', t: 'select', o: CNH },
   { k: 'motoristaMilitar', l: 'Motorista militar?', t: 'select', o: ['Sim', 'Não'] },
   { k: 'veiculo', l: 'Veículo próprio (qual)' },
-  { k: 'obs', l: 'Observações', full: true }
+  { k: 'obs', l: 'Observações', full: true },
+  { secao: 'Mobilização (SERMILMOB) e ficha disciplinar' },
+  { k: 'pai', l: 'Nome do pai' }, { k: 'mae', l: 'Nome da mãe' },
+  { k: 'localNascimento', l: 'Local de nascimento (cidade-UF)' }, { k: 'estadoCivil', l: 'Estado civil', t: 'select', o: ['Solteiro', 'Casado', 'Divorciado', 'Viúvo', 'União estável'] },
+  { k: 'escolaridade', l: 'Escolaridade' }, { k: 'idtCivil', l: 'Identidade civil (nº e órgão)' },
+  { k: 'ra', l: 'RA (registro de alistamento)' }, { k: 'csm', l: 'CSM / JSM' },
+  { k: 'cep', l: 'CEP' }, { k: 'bairro', l: 'Bairro' }, { k: 'municipio', l: 'Município' }, { k: 'zona', l: 'Zona residencial', t: 'select', o: ['Urbana', 'Rural'] },
+  { k: 'qm', l: 'QM' },
+  { k: 'biConvocacao', l: 'BI da convocação' }, { k: 'biIncorporacao', l: 'BI da incorporação' }, { k: 'biMatricula', l: 'BI da matrícula' },
+  { k: 'promocoes', l: 'Promoções sucessivas (uma por linha: P/G – data – BI)', t: 'textarea', full: true },
+  { k: 'habilitacoes', l: 'Habilitações / cursos (uma por linha)', t: 'textarea', full: true },
+  { k: 'movimentacoes', l: 'Movimentações (uma por linha)', t: 'textarea', full: true }
 ];
 const CAMPOS_IMP = [
   { k: 'militarId', l: 'Militar', t: 'militar', req: true },
@@ -1472,6 +1494,8 @@ function vEfetivo() {
       { l: 'Situação', v: i => i.fim < d ? '<span class="tag">Encerrado</span>' : i.inicio > d ? '<span class="tag info">Previsto</span>' : '<span class="tag warn">Em curso</span>' },
       { l: 'Obs', v: i => esc(i.obs) }
     ], pode() ? i => `<button class="btn sm" onclick="editarImp('${i.id}')">Editar</button> <button class="btn sm dng" onclick="excluir('Impedimentos','${i.id}')">Excluir</button>` : null)}`;
+  } else if (t === 'docs') {
+    corpo = vDocsMil();
   } else if (t === 'jd') {
     corpo = '<div class="card">A Justiça e Disciplina agora tem lugar próprio no menu.</div>';
   } else {
@@ -1479,7 +1503,7 @@ function vEfetivo() {
     corpo = `<div class="bar"><label class="muted">O que importar <select onchange="S.filtro.impAlvo=this.value;S.imp=null;render()">
       ${[['Militares', 'Militares, tripão ou plano de chamada'], ['Ferias', 'Plano de férias']].map(([v, l]) => `<option value="${v}" ${v === alvo ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>` + vImportar(alvo);
   }
-  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], , ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
+  const abasEf = [['mil', 'Militares'], ...(pode() ? [['tripao', 'Tripão']] : []), ['chamada', 'Plano de chamada'], ['ferias', 'Plano de férias'], ['imp', 'Afastamentos'], ['docs', 'Documentos'], ...(pode() ? [['imp-x', 'Importar planilha']] : [])];
   return `<h2>Efetivo</h2><p class="sub">Militares da subunidade, tripão, plano de chamada, plano de férias e demais afastamentos.</p>${abas('efetivo', abasEf)}${corpo}`;
 }
 async function novaRefFerias() {
@@ -2023,17 +2047,6 @@ DOCS.sat = mes => { S.filtro.satMes = mes; const l = LISTAS.sat(), [a, m] = mes.
 
 // ---------- Folha de pernoite: quem dorme no quartel na noite do dia (escala + militares de outra SU)
 const extrasPernoite = d => { try { return JSON.parse(((S.db.Pernoite || []).find(x => x.id === d) || {}).extras || '[]'); } catch (e) { return []; } };
-function linhasPernoite(d) {
-  const da = tiposAtivos().flatMap(t => lancamentos(d, t.id).filter(e => !emBranco(e)).map(e => ({ nome: nomeMil(quemTira(e)), sv: t.nome, su: cfg('sigla') })));
-  return [...da, ...extrasPernoite(d).map(x => ({ nome: x.nome, sv: x.sv, su: x.su, extra: 1 }))];
-}
-function vPernoite() {
-  const d = S.filtro.pernoite || hoje(), l = linhasPernoite(d), ex = extrasPernoite(d);
-  return `<div class="bar"><label class="muted">Noite de <input type="date" value="${d}" onchange="S.filtro.pernoite=this.value;render()"></label><span class="grow"></span>${pode() ? '<button class="btn" onclick="maisPernoite()">+ Militar de outra SU / extra</button>' : ''}${botoesDocGrandes('pernoite', d)}</div>
-    ${tabela(l.map((x, i) => ({ ...x, i })), [{ l: 'Nº', v: x => x.i + 1, c: 'num' }, { l: 'P/G e nome', v: x => `<b>${esc(x.nome)}</b>` }, { l: 'Serviço / motivo', v: x => esc(x.sv || '') }, { l: 'SU', v: x => `${esc(x.su || '')}${x.extra ? ' <span class="tag info">outra SU / extra</span>' : ''}` }],
-      pode() ? x => x.extra ? `<button class="btn sm dng" onclick="tirarPernoite(${x.i - (l.length - ex.length)})">Tirar</button>` : '' : null)}
-    <p class="muted">Sai da escala do dia (quem tira, com as trocas). Militar de outra SU escalado aqui, ou quem pernoita por outro motivo, entra pelo botão acima. Imprima em 2 vias para o arquivo, com as assinaturas.</p>`;
-}
 async function maisPernoite() {
   const d = S.filtro.pernoite || hoje();
   const nome = ((await dialogo({ msg: 'P/G e nome do militar (ex.: Cb Fulano):', campo: 'text', ok: 'Próximo' })) || '').trim(); if (!nome) return;
@@ -2042,13 +2055,372 @@ async function maisPernoite() {
   await salvar('Pernoite', [{ id: d, extras: JSON.stringify([...extrasPernoite(d), { nome, su, sv }]) }]); render();
 }
 async function tirarPernoite(i) { const d = S.filtro.pernoite || hoje(), ex = extrasPernoite(d); ex.splice(i, 1); await salvar('Pernoite', [{ id: d, extras: JSON.stringify(ex) }]); render(); }
-DOCS.pernoite = d => { const l = linhasPernoite(d);
-  return docPadrao({ tipo: 'Escalas', nome: `Folha de pernoite ${d}`, titulo: `FOLHA DE PERNOITE – ${dataMai(d)}`, paisagem: false,
-    cab: ['Nº', 'P/G e nome', 'Serviço / motivo', 'SU', 'Rubrica'], linhas: [...l.map((x, i) => [pad(i + 1), { v: x.nome, l: 1 }, { v: x.sv || '', l: 1 }, x.su || '', '']), ...Array.from({ length: Math.max(0, 4 - l.length) }, (_, i) => [pad(l.length + i + 1), '', '', '', ''])],
-    w: [6, 34, 30, 12, 18], sz: 9, assin: [[nomeServico(d, /sargento de dia/i), 'Sargento de Dia'], [nomeServico(d, /oficial de dia/i), 'Oficial de Dia'], [cfg('cmtNome'), cfg('cmtFuncao')]] });
-};
 /** Quem tira o serviço (ex.: Sargento de Dia) no dia, para o campo de assinatura. */
 const nomeServico = (d, re) => { const t = tiposAtivos().find(x => re.test(x.nome)); const e = t && lancamentos(d, t.id).find(x => !emBranco(x)); return e ? nomeMil(quemTira(e)) : ''; };
+
+// ============================================================ modelos da Cia: pernoite, pronto diário e faltas, ficha disciplinar (RDE), Nada Deve, SERMILMOB
+// ---------- categorias e situação do dia (usadas no pernoite e no pronto diário)
+const CATS_PERNOITE = [['ST/SARGENTOS', ['ST', '1º Sgt', '2º Sgt', '3º Sgt']], ['CABOS', ['Cb']], ['SOLDADOS', ['Sd EP', 'Sd EV', 'Sd']]];
+const MOTIVOS_DESTINO = ['DISP MÉD', 'DISPENSADO', 'INSTALAÇÃO', 'CURSO', 'FÉRIAS', 'LICENÇA', 'VIAGEM', 'MISSÃO', 'ADIDO', 'BAIXADO', 'IMPEDIDO', 'OUTROS'];
+/** Onde o militar está no dia (para "em diferentes destinos"); '' = pronto. */
+function destinoDoDia(m, d) {
+  const adido = (S.db.Saude || []).find(x => x.tipo === 'Adido (LTSP)' && x.militarId === m.id && x.situacao !== 'Encerrado' && x.data <= d);
+  if (adido) return 'ADIDO';
+  const baixado = (S.db.Saude || []).find(x => { const ini = x.inicio || x.data; return x.tipo === 'Visita médica' && x.militarId === m.id && x.resultado === 'Baixado (internado)' && ini <= d && (fimDispensa({ ...x, inicio: ini }) || ini) >= d; });
+  if (baixado) return 'BAIXADO';
+  const s = situacao(m.id, d);
+  if (s.tipo === 'pronto') return '';
+  if (s.tipo === 'missao') return 'MISSÃO';
+  return { 'Dispensa médica': 'DISP MÉD', 'Dispensa': 'DISPENSADO', 'Dispensa como recompensa': 'DISPENSADO', 'Dispensa para instalação': 'INSTALAÇÃO', 'Curso/Estágio': 'CURSO', 'Férias': 'FÉRIAS', 'Licença': 'LICENÇA', 'Trânsito': 'VIAGEM', 'Cumprindo punição': 'IMPEDIDO' }[s.texto] || 'OUTROS';
+}
+const nomeCurto = m => String(m.nomeGuerra || '').toUpperCase();
+/** Quadro do dia por categoria: quem está de serviço (em forma no pernoite), quantos e quem está fora. */
+function quadroDia(d) {
+  const servicos = tiposAtivos().flatMap(t => lancamentos(d, t.id).filter(e => !emBranco(e)).map(e => ({ sv: t.nome, m: MIL[quemTira(e)] }))).filter(x => x.m);
+  return CATS_PERNOITE.map(([cat, postos]) => {
+    const efetivo = militaresAtivos().filter(m => postos.includes(m.postoGrad));
+    const forma = servicos.filter(x => postos.includes(x.m.postoGrad));
+    const destinos = {};
+    efetivo.forEach(m => { const k = destinoDoDia(m, d); if (k) (destinos[k] ||= []).push(m); });
+    const fora = Object.values(destinos).reduce((s, l) => s + l.length, 0);
+    return { cat, efetivo: efetivo.length, forma, dispensados: Math.max(0, efetivo.length - forma.length), destinos, fora, prontos: efetivo.length - fora };
+  });
+}
+
+// ---------- folha de pernoite no modelo da Cia: EM FORMA (serviço) × dispensados da revista, e EM DIFERENTES DESTINOS
+DOCS.pernoite = d => {
+  const q = quadroDia(d), ex = extrasPernoite(d);
+  const titulo = `PERNOITE PARA DIA ${Number(d.slice(8))} DE ${MESES_EXT[Number(d.slice(5, 7)) - 1].toUpperCase()} DE ${d.slice(0, 4)} (${SEMANA[dataDe(d).getDay()].toUpperCase()})`;
+  const cab = [{ v: '', b: 1 }, { v: '', b: 1 }, { v: 'EM FORMA', b: 1 }, { v: 'DISPENSADOS DA REVISTA', b: 1 }, { v: 'SOMA', b: 1 }];
+  const t1 = [cab];
+  q.forEach(c => {
+    const linhas = c.forma.map(x => [x.sv.toUpperCase(), nomeCurto(x.m)]);
+    if (!linhas.length) linhas.push(['—', '']);
+    linhas.forEach(([f, n], i) => t1.push([i === 0 ? { v: c.cat, b: 1 } : '', { v: f, l: 1 }, { v: n, l: 1 }, i === 0 ? String(c.dispensados) : '', i === 0 ? String(c.efetivo) : '']));
+  });
+  if (ex.length) ex.forEach((x, i) => t1.push([i === 0 ? { v: 'OUTRA SU', b: 1 } : '', { v: String(x.sv || '').toUpperCase(), l: 1 }, { v: `${x.nome}${x.su ? ' (' + x.su + ')' : ''}`, l: 1 }, '', '']));
+  const tot = q.reduce((s, c) => ({ f: s.f + c.forma.length, d: s.d + c.dispensados, e: s.e + c.efetivo, fo: s.fo + c.fora, p: s.p + c.prontos }), { f: 0, d: 0, e: 0, fo: 0, p: 0 });
+  t1.push([{ v: 'SOMA', b: 1 }, '', { v: String(tot.f + ex.length), b: 1 }, { v: String(tot.d), b: 1 }, { v: String(tot.e), b: 1 }]);
+  const t2 = [[{ v: '', b: 1 }, { v: 'EM DIFERENTES DESTINOS', b: 1, span: 2 }, { v: 'PRONTOS', b: 1 }, { v: 'SOMA', b: 1 }]];
+  q.forEach(c => {
+    const ks = MOTIVOS_DESTINO.filter(k => c.destinos[k]);
+    const linhas = ks.length ? ks.map(k => [k + ':', c.destinos[k].map(nomeCurto).join(' - ')]) : [['—', '']];
+    linhas.forEach(([k, n], i) => t2.push([i === 0 ? { v: c.cat, b: 1 } : '', { v: k, l: 1 }, { v: n, l: 1 }, i === 0 ? String(c.prontos) : '', i === 0 ? String(c.efetivo) : '']));
+  });
+  t2.push([{ v: 'SOMA', b: 1 }, '', { v: String(tot.fo), b: 1 }, { v: String(tot.p), b: 1 }, { v: String(tot.e), b: 1 }]);
+  return { tipo: 'Escalas', titulo: `Pernoite ${d}`, blocos: [{ paisagem: true }, ...blocosCabecalho(), { esp: 1 },
+    { t: [[{ v: `${cfg('cmtNome')}\n${String(cfg('cmtFuncao')).toUpperCase()}`, b: 1, l: 1 }, { v: titulo, b: 1 }]], sem: 1, w: [25, 75], sz: 10 }, { esp: 1 },
+    { t: t1, h: 1, w: [13, 24, 39, 14, 10], sz: 8.5 }, { esp: 1 }, { t: t2, h: 1, w: [13, 24, 39, 14, 10], sz: 8.5 },
+    { esp: 2 }, { t: [['______________________________', '______________________________', '______________________________'], [{ v: nomeServico(d, /sargento de dia/i), b: 1 }, { v: nomeServico(d, /oficial de dia/i), b: 1 }, { v: cfg('cmtNome'), b: 1 }], [{ v: 'Sargento de Dia', b: 1 }, { v: 'Oficial de Dia', b: 1 }, { v: cfg('cmtFuncao'), b: 1 }]], sem: 1, sz: 9 }] };
+};
+function vPernoite() {
+  const d = S.filtro.pernoite || hoje(), q = quadroDia(d), ex = extrasPernoite(d);
+  return `<div class="bar"><label class="muted">Pernoite para o dia <input type="date" value="${d}" onchange="S.filtro.pernoite=this.value;render()"></label><span class="grow"></span>${pode() ? '<button class="btn" onclick="maisPernoite()">+ Militar de outra SU / extra</button>' : ''}${botoesDocGrandes('pernoite', d)}</div>
+    <div class="grid-resumo">${q.map(c => `<div class="card"><h3>${c.cat} <span class="tag">${c.efetivo}</span></h3>
+      <p style="margin:0 0 4px"><b>Em forma (serviço):</b> ${c.forma.length ? c.forma.map(x => `${esc(nomeCurto(x.m))} <span class="muted">(${esc(x.sv)})</span>`).join(', ') : '<span class="muted">—</span>'}</p>
+      <p style="margin:0 0 4px"><b>Dispensados da revista:</b> ${c.dispensados}</p>
+      <p style="margin:0"><b>Em diferentes destinos:</b> ${c.fora ? MOTIVOS_DESTINO.filter(k => c.destinos[k]).map(k => `${k}: ${esc(c.destinos[k].map(nomeCurto).join(' - '))}`).join('; ') : '<span class="muted">ninguém</span>'} · <b>prontos ${c.prontos}</b></p></div>`).join('')}</div>
+    ${ex.length ? `<div class="card" style="margin-top:12px"><h3>Outra SU / extras</h3>${ex.map((x, i) => `<div class="bar" style="margin:0"><span class="grow">${esc(x.nome)} – ${esc(x.sv || '')} ${x.su ? `(${esc(x.su)})` : ''}</span>${pode() ? `<button class="btn sm dng" onclick="tirarPernoite(${i})">Tirar</button>` : ''}</div>`).join('')}</div>` : ''}
+    <p class="muted">Sai da escala do dia (com as trocas), dos afastamentos, das missões e da saúde (adidos e baixados). Imprima em 2 vias para o arquivo.</p>`;
+}
+
+// ---------- pronto diário e faltas na formatura
+const FORMATURAS = ['Manhã', 'Tarde', 'Revista do recolher'];
+function vProntoDiario() {
+  const d = S.filtro.prontoData || hoje(), q = quadroDia(d), faltas = (S.db.Faltas || []).filter(f => f.data === d);
+  const tot = q.reduce((s, c) => ({ e: s.e + c.efetivo, p: s.p + c.prontos }), { e: 0, p: 0 });
+  return `<div class="bar"><label class="muted">Dia <input type="date" value="${d}" onchange="S.filtro.prontoData=this.value;render()"></label><span class="tag ok" style="font-size:14px">${tot.p} prontos de ${tot.e}</span><span class="grow"></span>
+      ${pode() ? '<button class="btn pri" onclick="lancarFalta()">+ Falta na formatura</button>' : ''}${botoesDocGrandes('pronto', d)}</div>
+    <div class="tw"><table><thead><tr><th>Categoria</th><th class="num">Efetivo</th><th class="num">Prontos</th><th>Fora (motivo e nomes)</th></tr></thead><tbody>${q.map(c => `<tr><td><b>${c.cat}</b></td><td class="num">${c.efetivo}</td><td class="num">${c.prontos}</td>
+      <td>${c.fora ? MOTIVOS_DESTINO.filter(k => c.destinos[k]).map(k => `<div><b>${k}</b> ${esc(c.destinos[k].map(nomeCurto).join(' - '))}</div>`).join('') : '<span class="muted">—</span>'}</td></tr>`).join('')}</tbody></table></div>
+    <h3>Faltas na formatura</h3>
+    ${tabela(faltas, [{ l: 'Formatura', v: f => esc(f.formatura) }, { l: 'Militar', v: f => `<b>${esc(nomeMil(f.militarId))}</b>` }, { l: 'Justificada?', v: f => `<span class="tag ${f.justificada === 'Sim' ? 'ok' : 'warn'}">${esc(f.justificada || 'Não')}</span>` }, { l: 'Obs', v: f => esc(f.obs || '') }],
+      pode() ? f => `${temArea('jd') && f.justificada !== 'Sim' ? `<button class="btn sm" onclick="faltaParaBoca('${f.id}')">Anotar na Boca Podre</button> ` : ''}<button class="btn sm dng" onclick="excluir('Faltas','${f.id}')">Excluir</button>` : null)}
+    <p class="muted">Falta sem justificativa pode virar anotação na Boca Podre (e, de lá, FATD) com um clique.</p>`;
+}
+function lancarFalta() {
+  abrirForm({ titulo: 'Falta na formatura', valores: { data: S.filtro.prontoData || hoje(), formatura: 'Manhã', justificada: 'Não' }, campos: [
+    { k: 'data', l: 'Data', t: 'date', req: true }, { k: 'formatura', l: 'Formatura', t: 'select', o: FORMATURAS, vazio: false }, { k: 'militarId', l: 'Militar', t: 'militar', req: true },
+    { k: 'justificada', l: 'Justificada?', t: 'select', o: ['Não', 'Sim'], vazio: false }, { k: 'obs', l: 'Observação / justificativa', full: true }], aoSalvar: o => salvar('Faltas', [o]) });
+}
+async function faltaParaBoca(id) {
+  const f = S.db.Faltas.find(x => x.id === id);
+  await salvar('Disciplina', [{ tipo: 'Anotacao', data: f.data, militarId: f.militarId, subtipo: 'Falta leve', relato: `Faltou à formatura (${f.formatura.toLowerCase()}) de ${fmt(f.data)}.${f.obs ? ' ' + f.obs : ''}`, participante: S.user.nome || '' }]);
+  await salvar('Faltas', [{ ...f, obs: (f.obs ? f.obs + ' · ' : '') + 'anotado na Boca Podre' }]);
+  toast('Anotado na Boca Podre.'); render();
+}
+DOCS.pronto = d => { const q = quadroDia(d);
+  return docPadrao({ tipo: 'Efetivo', nome: `Pronto diario ${d}`, titulo: `PRONTO DIÁRIO – ${dataMai(d)}`, paisagem: false, cab: ['Categoria', 'Efetivo', 'Prontos', 'Fora (motivo e nomes)'],
+    linhas: [...q.map(c => [{ v: c.cat, b: 1 }, String(c.efetivo), String(c.prontos), { v: MOTIVOS_DESTINO.filter(k => c.destinos[k]).map(k => `${k}: ${c.destinos[k].map(nomeCurto).join(' - ')}`).join('\n') || '—', l: 1 }]),
+      [{ v: 'TOTAL', b: 1 }, { v: String(q.reduce((s, c) => s + c.efetivo, 0)), b: 1 }, { v: String(q.reduce((s, c) => s + c.prontos, 0)), b: 1 }, '']],
+    w: [18, 12, 12, 58], sz: 9, depois: (S.db.Faltas || []).some(f => f.data === d) ? [{ esp: 1 }, { p: 'FALTAS NA FORMATURA', c: 1, b: 1 }, { t: [['Formatura', 'Militar', 'Justificada', 'Obs'], ...S.db.Faltas.filter(f => f.data === d).map(f => [f.formatura, { v: nomeMil(f.militarId), l: 1 }, f.justificada || 'Não', { v: f.obs || '', l: 1 }])], h: 1, w: [18, 32, 14, 36], sz: 9 }] : [] });
+};
+
+// ---------- ficha disciplinar no modelo do RDE (art. 34): identificação, promoções, punições, anulações, recursos, recompensas
+const linhasBranco = (n, cols) => Array.from({ length: n }, () => Array(cols).fill(''));
+DOCS.fichaDisc = mid => ({ tipo: 'Disciplina', ref: mid, titulo: `Ficha disciplinar - ${MIL[mid].postoGrad} ${MIL[mid].nomeGuerra}`, blocos: blocosFichaDisc(mid) });
+function blocosFichaDisc(mid) {
+  const m = MIL[mid], fat = disc('FATD').filter(f => f.militarId === mid);
+  const pun = fat.filter(f => f.decisao === 'Punido').sort((a, b) => String(a.dataDecisao).localeCompare(b.dataDecisao));
+  const anul = disc('Anulacao').filter(x => x.militarId === mid), rec = disc('Recurso').filter(x => x.militarId === mid);
+  const elo = disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).map(e => [fmt(e.data), { v: e.subtipo, l: 1 }, '', e.bi || '', '']);
+  const disp = S.db.Impedimentos.filter(i => i.militarId === mid && i.tipo === 'Dispensa como recompensa').map(i => [fmt(i.inicio), { v: 'Dispensa do serviço', l: 1 }, String(diasAfast(i)), i.referencia || '', '']);
+  const promo = String(m.promocoes || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const comp = temComportamento(m) ? m.comportamento || (comportamentoSugerido(m) || {}).c || '' : '';
+  const sec = t => ({ p: t, b: 1, l: 1, mt: 8 });
+  return [...blocosCabecalho(), { esp: 1 }, { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, ...(FOTOS[mid] ? [{ img: FOTOS[mid], w: 60 }] : []),
+    sec('1. IDENTIFICAÇÃO DO MILITAR'),
+    { t: [[{ v: `Nome Completo: ${m.nomeCompleto || m.nomeGuerra || ''}`, l: 1 }], [{ v: `Filiação: ${[m.mae, m.pai].filter(Boolean).join(' / ')}`, l: 1 }], [{ v: `NR / IDENT: ${m.idt || ''}`, l: 1 }], [{ v: `CP: ${m.precCp || ''}`, l: 1 }],
+      [{ v: 'Promoções Sucessivas', b: 1, l: 1 }], ...[...promo, ...Array(Math.max(0, 6 - promo.length)).fill('')].map(p => [{ v: `Posto/Grad - Data: ${p}`, l: 1 }])], sz: 9 },
+    sec('2. PUNIÇÕES DISCIPLINARES'),
+    { t: [['DATA', 'PUNIÇÃO (art. 24 do RDE)', 'Nr de DIAS', 'ENQUADRAMENTO (Anexo I do RDE)', 'BI e OM', 'COMPORTAMENTO', 'RUBRICA Cmt OM/SU'],
+      ...pun.map(f => [fmt(f.dataDecisao), { v: f.punicao, l: 1 }, f.dias || '', f.enquadramento ? `Nr ${f.enquadramento}` : '', f.bi || '', comp, '']), ...linhasBranco(Math.max(2, 6 - pun.length), 7)], h: 1, w: [11, 20, 8, 18, 15, 14, 14], sz: 8 },
+    sec('3. ANULAÇÃO OU CANCELAMENTO DE PUNIÇÕES DISCIPLINARES'),
+    { t: [['DATA', 'PUNIÇÃO ANULADA OU CANCELADA (arts. 43 e 58 do RDE)', 'DATA DA PUNIÇÃO', 'BI e OM DA ANULAÇÃO OU CANCELAMENTO', 'COMPORTAMENTO', 'RUBRICA Cmt OM/SU'],
+      ...anul.map(a => { const f = fat.find(x => x.id === a.origemId) || {}; return [fmt(a.data), { v: `${a.subtipo || 'Anulação'}: ${f.punicao || ''}`, l: 1 }, fmt(f.dataDecisao), a.bi || '', comp, '']; }), ...linhasBranco(Math.max(2, 3 - anul.length), 6)], h: 1, w: [11, 27, 13, 21, 14, 14], sz: 8 },
+    sec('4. RECURSOS DISCIPLINARES'),
+    { t: [['DATA', 'RECURSO (art. 52 do RDE)', 'RESUMO DA SOLUÇÃO', 'BI e OM', 'RUBRICA Cmt OM/SU'], ...rec.map(r => [fmt(r.data), { v: r.subtipo || 'Recurso', l: 1 }, { v: r.obs || '', l: 1 }, r.bi || '', '']), ...linhasBranco(Math.max(2, 3 - rec.length), 5)], h: 1, w: [11, 22, 37, 16, 14], sz: 8 },
+    sec('5. RECOMPENSAS'),
+    { t: [['DATA', 'RECOMPENSA (art. 64 do RDE)', 'Nr de DIAS', 'BI e OM', 'RUBRICA Cmt OM/SU'], ...elo, ...disp, ...linhasBranco(Math.max(2, 5 - elo.length - disp.length), 5)], h: 1, w: [12, 40, 10, 22, 16], sz: 8 },
+    sec('6. PRESCRIÇÕES DIVERSAS'),
+    { p: 'a) O preenchimento deverá ser feito em tinta azul ou preta, ou ainda, por digitação ou datilografia.', sz: 9 },
+    { p: 'b) Esta Ficha deverá acompanhar o militar em suas movimentações, de acordo com o § 6º do art. 34 do RDE.', sz: 9 }];
+}
+/** Vários documentos num só (um por página). */
+const juntar = (tipo, titulo, docs) => ({ tipo, titulo, blocos: docs.flatMap((d, i) => [...(i ? [{ quebra: 1 }] : []), ...d.blocos.filter(b => !b.paisagem && !b.cont && !b.moldura)]) });
+DOCS.fichasDisc = lista => juntar('Disciplina', `Fichas disciplinares ${hoje()}`, (lista ? ids(lista) : militaresAtivos().map(m => m.id)).map(id => DOCS.fichaDisc(id)));
+function editarAnulacao(id, mid) {
+  const x = id ? disc('Anulacao').find(y => y.id === id) : { tipo: 'Anulacao', data: hoje(), militarId: mid, subtipo: 'Anulação' };
+  const puns = disc('FATD').filter(f => f.militarId === (x.militarId || mid) && f.decisao === 'Punido').map(f => [f.id, `${fmt(f.dataDecisao)} – ${f.punicao}`]);
+  abrirForm({ titulo: 'Anulação ou cancelamento de punição', valores: x, campos: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'subtipo', l: 'Tipo', t: 'select', o: ['Anulação', 'Cancelamento'], vazio: false },
+    { k: 'origemId', l: 'Punição', t: 'select', o: puns, req: true }, { k: 'bi', l: 'BI e OM da anulação / cancelamento' }, { k: 'obs', l: 'Observação', full: true }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Anulacao', militarId: x.militarId || mid }]) });
+}
+function editarRecurso(id, mid) {
+  const x = id ? disc('Recurso').find(y => y.id === id) : { tipo: 'Recurso', data: hoje(), militarId: mid, subtipo: 'Pedido de reconsideração de ato' };
+  abrirForm({ titulo: 'Recurso disciplinar', valores: x, campos: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'subtipo', l: 'Recurso (art. 52 do RDE)', t: 'select', o: ['Pedido de reconsideração de ato', 'Queixa', 'Representação'], vazio: false },
+    { k: 'obs', l: 'Resumo da solução', t: 'textarea' }, { k: 'bi', l: 'BI e OM' }], aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Recurso', militarId: x.militarId || mid }]) });
+}
+
+// ---------- Nada Deve: consulta de débitos nas seções / SU / permissionários
+const SECOES_NADA_PADRAO = '1ª Seção\n2ª Seção\n3ª Seção\n4ª Seção\nFiscalização Administrativa\nAlmoxarifado\nReserva de material da Cia\nSeção de Saúde\nFurriel\nSargenteação\nRancho\nCantina\nGabinete Odontológico';
+const secoesNada = () => String(cfg('nadaDeveSecoes') || SECOES_NADA_PADRAO).split('\n').map(s => s.trim()).filter(Boolean);
+/** O que o próprio sistema já sabe que o militar deve: cautela aberta e pedido pendente. */
+const pendenciasMil = mid => [...gruposCautela().filter(g => g.aberta && g.militarId === mid).map(g => `cautela nº ${g.numero} em aberto`)];
+DOCS.nadaDeve = mid => { const m = MIL[mid];
+  return { tipo: 'Efetivo', ref: mid, titulo: `Nada deve - ${m.postoGrad} ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 }, { p: 'NADA DEVE', c: 1, b: 1 }, { esp: 1 },
+    { p: 'Solicito-vos informar se o militar abaixo relacionado possui algum débito com essa Seção / SU / Permissionário:' }, { esp: 1 },
+    { p: `**Posto/Grad:** ${m.postoGrad || ''}     **Nome Completo:** ${(m.nomeCompleto || m.nomeGuerra || '').toUpperCase()}`, m: 1, l: 1 }, { esp: 1 },
+    { t: [['SUBUNIDADES / PERMISSIONÁRIOS', 'DATA', 'DÉBITO (R$)', 'VISTO'], ...secoesNada().map(s => [{ v: s, l: 1 }, '', '', ''])], h: 1, w: [46, 16, 18, 20], sz: 9.5 }, { esp: 1 },
+    { p: `A partir desta data, a ${cfg('nomeCia') || cfg('sigla')} não mais se responsabilizará com os débitos futuros deste militar com as Seções / Subunidades / Permissionários acima.` }, { esp: 1 },
+    { p: `${cfg('cidade')}, ___ de _______________________ de ______ .`, r: 1 }, ...blocosAssinatura(cfg('cmtNome'), cfg('cmtFuncao'))] };
+};
+DOCS.nadaDeveLote = lista => juntar('Efetivo', `Nada deve ${hoje()}`, ids(lista).map(id => DOCS.nadaDeve(id)));
+
+// ---------- SERMILMOB: informações básicas para cadastramento / atualização / licenciamento
+const ESTADOS_CIVIS = ['Solteiro', 'Casado', 'Divorciado', 'Viúvo', 'União estável'];
+DOCS.sermil = arg => {
+  const [mid, motivo = 'Licenciamento'] = String(arg).split('|'), m = MIL[mid], x = k => (m[k] || '');
+  const ts = m.dataPraca ? amdTxt(amd(diasCorridos(m.dataPraca, hoje()))) : '';
+  const marca = k => motivo === k ? 'X' : '  ';
+  const licenc = (S.db.TempoServico || []).find(p => p.militarId === mid && p.tipo === 'Licenciamento');
+  const campo = (n, l, v) => [{ v: `${n} - ${l}: ${v || ''}`, l: 1 }];
+  return { tipo: 'Efetivo', ref: mid, titulo: `SERMILMOB ${motivo} - ${m.postoGrad} ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 }, { p: 'Seção Mobilizadora de Guarnição', c: 1 }, { esp: 1 },
+    { p: 'INFORMAÇÕES BÁSICAS PARA O CADASTRAMENTO/ATUALIZAÇÃO NO SERMILMOB', c: 1, b: 1 }, { esp: 1 },
+    { p: `(${marca('Alistamento')}) Alistamento          (${marca('Atualização')}) Atualização          (${marca('Licenciamento')}) Licenciamento`, c: 1 }, { esp: 1 },
+    { t: [[{ v: 'DADOS BÁSICOS', b: 1 }], campo('01', 'RA (Registro de Alistamento)', x('ra')), campo('02', 'CSM/JSM', x('csm')), campo('03', 'Nome Completo', x('nomeCompleto').toUpperCase()), campo('04', 'Nome do Pai', x('pai')), campo('05', 'Nome da Mãe', x('mae')),
+      campo('06', 'Data de Nascimento', fmt(m.dataNascimento)), campo('07', 'Sexo', x('sexo') || 'MASCULINO'), campo('08', 'Local de Nascimento', x('localNascimento')), campo('09', 'País', 'BRASIL'), campo('10', 'Estado Civil', x('estadoCivil')),
+      campo('11', 'Escolaridade', x('escolaridade')), campo('12', 'Ocupação (Oficial do EB/Praça do EB)', x('postoGrad').toUpperCase()), campo('13', 'CPF', x('cpf')), campo('14', 'Identidade Civil', x('idtCivil')), campo('15', 'Tipo Sanguíneo / Fator RH', x('tipoSanguineo'))], sz: 9.5 },
+    { esp: 1 },
+    { t: [[{ v: 'ENDEREÇO', b: 1 }], campo('16', 'CEP', x('cep')), campo('17', 'Endereço', x('endereco')), campo('18', 'Bairro', x('bairro')), campo('19', 'Zona Residencial (Rural ou Urbana)', x('zona')), campo('20', 'Município', x('municipio')),
+      campo('21', 'País de Residência', 'BRASIL'), campo('22', 'e-mail', x('email')), campo('23', 'Telefone', x('telefone'))], sz: 9.5 },
+    { esp: 1 },
+    { t: [[{ v: 'MILITAR / MOBILIZAÇÃO', b: 1 }], campo('24', 'Idt Militar', x('idt')), campo('25', 'Posto / Graduação', x('postoGrad').toUpperCase()), campo('26', 'QM', x('qm')), campo('27', 'RM', cfg('rm')), campo('28', 'OM', cfg('siglaOM')),
+      campo('29', 'QCP (Claro)', ''), campo('30', 'Tempo de Serviço', ts), campo('31', 'Comportamento', x('comportamento') || (comportamentoSugerido(m) || {}).c || ''), campo('32', 'Parecer para Promoção', ''),
+      campo('33', 'Habilitações', x('habilitacoes').replace(/\n/g, '; ')), campo('34', 'Movimentações', x('movimentacoes').replace(/\n/g, '; ')), campo('35', 'Promoções', x('promocoes').replace(/\n/g, '; '))], sz: 9.5 },
+    { esp: 1 },
+    { t: [[{ v: 'ANOTAÇÕES – Publicações em BI', b: 1 }], campo('36', 'Convocação', x('biConvocacao')), campo('37', 'Incorporação', x('biIncorporacao')), campo('38', 'Matrícula', x('biMatricula')), campo('39', 'Designação, etc', ''),
+      campo('40', 'Licenciamento', licenc ? licenc.bi : ''), campo('41', 'Cópia das Alterações (Pesquisadas)', '')], sz: 9.5 },
+    { esp: 1 }, { p: `${cfg('cidade')}, ____ de ______________ de ${hoje().slice(0, 4)}.`, r: 1 }, ...blocosAssinatura(cfg('sgteNome'), 'Sargenteante')] };
+};
+
+// ---------- kit de licenciamento: SERMILMOB + Nada Deve + Ficha Disciplinar, de um ou de vários militares
+function kitLicenciamento(lista) {
+  const mids = ids(lista);
+  if (!mids.length) return toast('Escolha pelo menos um militar.', true);
+  $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:560px"><h3>Documentos de licenciamento</h3>
+    <p style="margin-top:0">${mids.length} militar(es): ${esc(mids.map(nomeMil).join(', '))}</p>
+    ${mids.some(id => pendenciasMil(id).length) ? `<div class="aviso-leitor">Atenção: ${esc(mids.filter(id => pendenciasMil(id).length).map(id => `${nomeMil(id)} (${pendenciasMil(id).join(', ')})`).join('; '))}.</div>` : ''}
+    <div class="pm-l" style="flex-direction:column;align-items:flex-start;gap:8px">${[['sermil', 'Cadastramento SERMILMOB (licenciamento)'], ['nada', 'Nada Deve'], ...(temArea('jd') ? [['ficha', 'Ficha Disciplinar']] : [])].map(([k, l]) => `<label><input type="checkbox" name="kit" value="${k}" checked> ${l}</label>`).join('')}</div>
+    <p class="muted">Sai um documento por página, na ordem de cada militar. A folha de alterações sai à parte, em Alterações.</p>
+    <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Gerar</button></div></form></div>`;
+  $('#frm').onsubmit = ev => { ev.preventDefault(); const k = $$('input[name=kit]:checked').map(x => x.value); fecharModal(); emitir('kitLic', JSON.stringify({ mids, k })); };
+}
+DOCS.kitLic = arg => { const { mids, k } = JSON.parse(arg);
+  return juntar('Efetivo', `Licenciamento ${hoje()}`, mids.flatMap(id => [k.includes('sermil') && DOCS.sermil(id + '|Licenciamento'), k.includes('nada') && DOCS.nadaDeve(id), k.includes('ficha') && DOCS.fichaDisc(id)].filter(Boolean)));
+};
+
+// ---------- Efetivo → Documentos: Nada Deve, SERMILMOB, ficha disciplinar e kit de licenciamento de um ou vários militares
+DOCS.sermilLote = arg => { const [l, motivo] = arg.split('|'); return juntar('Efetivo', `SERMILMOB ${motivo} ${hoje()}`, ids(l).map(id => DOCS.sermil(id + '|' + motivo))); };
+const selDocs = () => ids(S.filtro.docsSel).filter(id => MIL[id]);
+function marcarDoc(id, on) { const l = selDocs().filter(x => x !== id); if (on) l.push(id); S.filtro.docsSel = l.join(','); render(); }
+function vDocsMil() {
+  const sel = selDocs(), motivo = S.filtro.sermilMot || 'Atualização', lista = militaresAtivos().filter(m => casa('docs', nomeMil(m), m.nomeCompleto, m.pelotao));
+  const faltam = m => [!m.nomeCompleto && 'nome completo', !m.pai && !m.mae && 'filiação', !m.cpf && 'CPF', !m.dataNascimento && 'nascimento', !m.endereco && 'endereço'].filter(Boolean);
+  const pend = sel.filter(id => pendenciasMil(id).length);
+  return `<div class="bar">${busca('docs', 'Buscar militar…')}<button class="btn sm" onclick="S.filtro.docsSel='${lista.map(m => m.id).join(',')}';render()">Marcar todos</button><button class="btn sm" onclick="S.filtro.docsSel='';render()">Limpar</button><span class="grow"></span><b>${sel.length} marcado(s)</b></div>
+    <div class="card"><div class="bar" style="margin:0">
+      <button class="btn" ${sel.length ? '' : 'disabled'} onclick="emitir('nadaDeveLote','${sel.join(',')}')">Nada Deve</button>
+      <label class="muted">SERMILMOB <select onchange="S.filtro.sermilMot=this.value;render()">${['Alistamento', 'Atualização', 'Licenciamento'].map(x => `<option ${x === motivo ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+      <button class="btn" ${sel.length ? '' : 'disabled'} onclick="emitir('sermilLote','${sel.join(',')}|${motivo}')">Cadastramento SERMILMOB</button>
+      ${temArea('jd') ? `<button class="btn" ${sel.length ? '' : 'disabled'} onclick="emitir('fichasDisc','${sel.join(',')}')">Ficha disciplinar</button>` : ''}
+      <button class="btn pri" ${sel.length ? '' : 'disabled'} onclick="kitLicenciamento('${sel.join(',')}')">Kit de licenciamento</button></div>
+      ${pend.length ? `<div class="aviso-leitor" style="margin:10px 0 0">Pendências no sistema: ${esc(pend.map(id => `${nomeMil(id)} (${pendenciasMil(id).join(', ')})`).join('; '))}.</div>` : ''}</div>
+    ${tabela(lista, [{ l: '', v: m => `<input type="checkbox" aria-label="Marcar ${esc(nomeMil(m))}" ${sel.includes(m.id) ? 'checked' : ''} onchange="marcarDoc('${m.id}',this.checked)">` },
+      { l: 'Militar', v: m => `<b>${esc(nomeMil(m))}</b><div class="muted">${esc(m.nomeCompleto || '')}</div>` },
+      { l: 'Dados para os documentos', v: m => faltam(m).length ? `<span class="tag warn">falta ${esc(faltam(m).join(', '))}</span>` : '<span class="tag ok">completo</span>' }],
+      pode() ? m => `<button class="btn sm" onclick="editarMil('${m.id}')">Cadastro</button>` : null)}
+    <p class="muted">Sai um documento por página. Os dados vêm do cadastro do militar (seção "Mobilização"); a planilha da mobilizadora pode ser importada em "Importar planilha".</p>`;
+}
+
+// ============================================================ funções da Cia (quem faz o quê), aniversariantes, processos, protocolo SPED e partes do Cmt
+// Atribuições conforme a distribuição do Cmt Cia. A lista padrão aparece sem gravar nada; o que for editado fica na tabela Funcoes.
+const FUNCOES_PADRAO = [
+  ['cmt', 'Cmt Cia', '', 'Parte pessoal\nParte de inteligência\nRetirada de faltas\nFormaturas da Cia\nAtualização do tripão\nSolicitação de material de consumo e permanente para as dependências e Pel'],
+  ['sgtte', 'Sargenteante', 'cmt', 'SISBOL\nSPED\nExercícios anteriores\nTrâmites de FATD\nCoordenar os auxiliares'],
+  ['encmat', 'Enc Mat', 'cmt', 'Inventário e relação carga\nCautelas\nPedidos de material ao Fisc Adm / S4\nControle das dependências'],
+  ['auxsgtte', 'Aux Sgtte', 'sgtte', 'SISBOL\nSPED\nExercícios anteriores\nTrâmites de FATD'],
+  ['auxalt', 'Aux Alterações', 'sgtte', 'Alterações\nSUCEMNet / Mapa da Força / pronto diário\nEscala de serviço\nAniversariantes'],
+  ['auxfur', 'Aux Furriel', 'sgtte', 'Despesa a anular\nPré-escolar\nDeclaração de beneficiário\nPecuniária\nVale-rancho\nSaúde e PHPM']
+].map(([id, nome, chefe, atrib], i) => ({ id, nome, chefe, atrib, ordem: i + 1, padrao: 1 }));
+/** Lista padrão com o que foi gravado por cima, mais as funções criadas pelo usuário; as apagadas ficam ocultas. */
+const funcoes = () => {
+  const g = S.db.Funcoes || [];
+  return [...FUNCOES_PADRAO.map(f => ({ ...f, ...(g.find(x => x.id === f.id) || {}) })), ...g.filter(x => !FUNCOES_PADRAO.some(f => f.id === x.id))]
+    .filter(f => f.oculto !== 'Sim').sort((a, b) => num(a.ordem) - num(b.ordem));
+};
+/** Quem ocupa: o que foi marcado, senão o militar com essa função no cadastro. */
+const ocupante = f => f.ocupanteId && MIL[f.ocupanteId] ? MIL[f.ocupanteId] : militaresAtivos().find(m => m.funcao && norm(m.funcao) === norm(f.nome));
+function vFuncoes() {
+  const l = funcoes(), filhos = id => l.filter(f => (f.chefe || '') === id && f.id !== id);
+  const card = f => { const m = ocupante(f);
+    return `<div class="card qf-c"><div class="bar" style="margin:0 0 6px"><b class="grow">${esc(f.nome)}</b>${pode() ? `<button class="btn sm" onclick="editarFuncao('${f.id}')">Editar</button>` : ''}</div>
+      <div>${m ? `<b>${esc(nomeMil(m))}</b>` : '<span class="tag warn">sem militar</span>'}</div>
+      <ul class="qf-l">${String(f.atrib || '').split('\n').filter(Boolean).map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`; };
+  const ramo = f => `<div class="qf-r">${card(f)}${filhos(f.id).length ? `<div class="qf-f">${filhos(f.id).map(ramo).join('')}</div>` : ''}</div>`;
+  const raizes = l.filter(f => !f.chefe || !l.some(x => x.id === f.chefe));
+  return `<div class="bar"><span class="muted grow">Quem faz o quê na Cia. O militar sai do campo "Função" do cadastro, ou escolha em Editar.</span>${pode() ? '<button class="btn" onclick="editarFuncao()">+ Função</button>' : ''}${botoesDocGrandes('funcoes', '')}</div>
+    <div class="qf">${raizes.map(ramo).join('')}</div>`;
+}
+function editarFuncao(id) {
+  const f = id ? funcoes().find(x => x.id === id) : { id: 'f' + Date.now().toString(36), ordem: funcoes().length + 1, chefe: 'sgtte' };
+  abrirForm({ titulo: id ? 'Função: ' + f.nome : 'Nova função', valores: f, campos: [{ k: 'nome', l: 'Função', req: true }, { k: 'ocupanteId', l: 'Militar (vazio = pelo cadastro)', t: 'militar' },
+    { k: 'chefe', l: 'Subordinada a', t: 'select', o: funcoes().filter(x => x.id !== f.id).map(x => [x.id, x.nome]) }, { k: 'ordem', l: 'Ordem', t: 'number' },
+    { k: 'atrib', l: 'Atribuições (uma por linha)', t: 'textarea', full: true }],
+    aoSalvar: o => salvar('Funcoes', [{ id: f.id, nome: o.nome, ocupanteId: o.ocupanteId, chefe: o.chefe, ordem: o.ordem, atrib: o.atrib, oculto: '' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="ocultarFuncao('${id}')">Tirar esta função</button></div>` : '' });
+}
+async function ocultarFuncao(id) {
+  if (!await confirmar('Tirar esta função do quadro?')) return;
+  const f = funcoes().find(x => x.id === id); fecharModal();
+  await salvar('Funcoes', [{ id, nome: f.nome, chefe: f.chefe, ordem: f.ordem, atrib: f.atrib, ocupanteId: f.ocupanteId || '', oculto: 'Sim' }]); render();
+}
+DOCS.funcoes = () => docPadrao({ tipo: 'Efetivo', nome: `Quadro de funcoes ${hoje()}`, titulo: `QUADRO DE FUNÇÕES DA ${String(cfg('sigla')).toUpperCase()}`, cab: ['Função', 'Militar', 'Subordinada a', 'Atribuições'],
+  linhas: funcoes().map(f => [{ v: f.nome, b: 1, l: 1 }, { v: ocupante(f) ? nomeMil(ocupante(f)) : '', l: 1 }, (funcoes().find(x => x.id === f.chefe) || {}).nome || '', { v: String(f.atrib || '').split('\n').filter(Boolean).map(a => '- ' + a).join('\n'), l: 1 }]),
+  w: [16, 22, 14, 48], sz: 9, assin: [[cfg('cmtNome'), cfg('cmtFuncao')]] });
+
+// ---------- aniversariantes
+const aniversariantes = mes => militaresAtivos().filter(m => m.dataNascimento && Number(m.dataNascimento.slice(5, 7)) === Number(mes)).sort((a, b) => a.dataNascimento.slice(8).localeCompare(b.dataNascimento.slice(8)));
+const idade = (nasc, d) => Number(d.slice(0, 4)) - Number(nasc.slice(0, 4)) - (d.slice(5) < nasc.slice(5) ? 1 : 0);
+DOCS.aniversarios = mes => { const ano = hoje().slice(0, 4);
+  return docPadrao({ tipo: 'Efetivo', nome: `Aniversariantes ${ano}-${mes}`, titulo: `ANIVERSARIANTES DE ${MESES_EXT[mes - 1].toUpperCase()} DE ${ano}`, cab: ['Dia', 'P/G', 'Nome de guerra', 'Pel / Seç', 'Idade'],
+    linhas: aniversariantes(mes).map(m => [m.dataNascimento.slice(8), m.postoGrad, { v: m.nomeGuerra, l: 1 }, m.pelotao || '', String(idade(m.dataNascimento, `${ano}-${pad(mes)}-${m.dataNascimento.slice(8)}`))]), w: [10, 14, 36, 24, 16], sz: 10 });
+};
+function cardAniversarios() {
+  const d = hoje(), mes = Number(d.slice(5, 7)), l = aniversariantes(mes);
+  return `<div class="card"><h4>Aniversariantes de ${MESES_EXT[mes - 1].toLowerCase()}</h4>
+    <ul class="list">${l.map(m => `<li><span>${m.dataNascimento.slice(5) === d.slice(5) ? '🎂 ' : ''}${esc(nomeMil(m))}</span><span class="${m.dataNascimento.slice(5) === d.slice(5) ? 'tag ok' : 'muted'}">${m.dataNascimento.slice(5) === d.slice(5) ? 'hoje' : 'dia ' + m.dataNascimento.slice(8)}</span></li>`).join('') || '<li class="muted">Ninguém faz aniversário este mês (ou falta a data de nascimento no cadastro).</li>'}</ul>${l.length ? `<button class="btn sm" style="margin-top:8px" onclick="emitir('aniversarios',${mes})">Imprimir a relação</button>` : ''}</div>`;
+}
+
+// ---------- processos do Furriel e da Sargenteação (acompanhamento do andamento e dos prazos)
+const TIPOS_PROC = { furriel: ['Despesa a anular', 'Auxílio pré-escolar', 'Declaração de beneficiários', 'Pecuniária', 'Vale-rancho', 'Saúde (FUSEx)', 'PHPM', 'Outro'], sgte: ['Exercícios anteriores', 'Requerimento', 'Outro'] };
+const SIT_PROC = ['Aberto', 'Aguardando documento', 'Encaminhado', 'Concluído', 'Indeferido'];
+const procAberto = x => !['Concluído', 'Indeferido'].includes(x.situacao);
+function vProcessos(area) {
+  const ver = S.filtro['proc' + area] || 'abertos', d = hoje();
+  const l = (S.db.Processos || []).filter(x => (x.area || 'furriel') === area && (ver === 'todos' || procAberto(x)) && casa('proc' + area + 'q', nomeMil(x.militarId), x.tipo, x.ref, x.obs)).sort((a, b) => String(a.prazo || '9').localeCompare(b.prazo || '9'));
+  return `<div class="bar">${busca('proc' + area + 'q', 'Buscar militar, tipo, DIEx…')}<select onchange="S.filtro['proc${area}']=this.value;render()" aria-label="Quais"><option value="abertos">Em andamento</option><option value="todos" ${ver === 'todos' ? 'selected' : ''}>Todos</option></select>
+      <span class="grow"></span>${pode() ? `<button class="btn pri" onclick="editarProcesso(null,'${area}')">+ Processo</button>` : ''}${botoesDocGrandes('processos', area)}</div>
+    ${tabela(l, [{ l: 'Tipo', v: x => `<b>${esc(x.tipo)}</b>` }, { l: 'Militar', v: x => esc(x.militarId ? nomeMil(x.militarId) : '') }, { l: 'Aberto em', v: x => fmt(x.abertura), s: x => x.abertura || '' },
+      { l: 'Prazo', v: x => x.prazo ? `<span class="${procAberto(x) && x.prazo < d ? 'tag dng' : ''}">${fmt(x.prazo)}</span>` : '', s: x => x.prazo || '9' },
+      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Concluído' ? 'ok' : x.situacao === 'Indeferido' ? 'dng' : 'warn'}">${esc(x.situacao)}</span>` }, { l: 'DIEx / NUP / BI', v: x => esc(x.ref || '') }, { l: 'Obs', v: x => esc(x.obs || '') }],
+      pode() ? x => `<button class="btn sm" onclick="editarProcesso('${x.id}')">Editar</button>` : null)}
+    <p class="muted">Cada processo fica aqui até ser concluído ou indeferido. Prazo vencido aparece em vermelho.</p>`;
+}
+function editarProcesso(id, area) {
+  const x = id ? S.db.Processos.find(y => y.id === id) : { area, abertura: hoje(), situacao: 'Aberto', tipo: TIPOS_PROC[area][0] };
+  abrirForm({ titulo: id ? 'Processo' : 'Novo processo', valores: x, campos: [{ k: 'tipo', l: 'Tipo', t: 'select', o: TIPOS_PROC[x.area || 'furriel'], vazio: false }, { k: 'militarId', l: 'Militar', t: 'militar' },
+    { k: 'abertura', l: 'Aberto em', t: 'date', req: true }, { k: 'prazo', l: 'Prazo', t: 'date' }, { k: 'situacao', l: 'Situação', t: 'select', o: SIT_PROC, vazio: false },
+    { k: 'ref', l: 'DIEx / NUP do SPED / BI' }, { k: 'obs', l: 'Andamento / o que falta', t: 'textarea', full: true }, { k: 'arquivoUrl', l: 'Documento digitalizado', t: 'file', full: true }],
+    aoSalvar: o => salvar('Processos', [{ ...o, area: x.area || 'furriel' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Processos','${id}',true)">Excluir</button></div>` : '' });
+}
+DOCS.processos = area => docPadrao({ tipo: 'Efetivo', nome: `Processos ${area} ${hoje()}`, titulo: `PROCESSOS EM ANDAMENTO – ${area === 'furriel' ? 'FURRIEL' : 'SARGENTEAÇÃO'}`, paisagem: true, cab: ['Tipo', 'Militar', 'Aberto em', 'Prazo', 'Situação', 'DIEx / NUP / BI', 'Andamento'],
+  linhas: (S.db.Processos || []).filter(x => (x.area || 'furriel') === area && procAberto(x)).map(x => [{ v: x.tipo, l: 1 }, { v: x.militarId ? nomeMil(x.militarId) : '', l: 1 }, fmt(x.abertura), fmt(x.prazo), x.situacao, x.ref || '', { v: x.obs || '', l: 1 }]),
+  w: [15, 18, 9, 9, 11, 15, 23], sz: 8.5 });
+
+// ---------- protocolo de documentos (SPED / DIEx): o que chegou, o que saiu e o prazo de resposta
+const ESPECIES_DOC = ['DIEx', 'Ofício', 'Requerimento', 'Parte', 'Mensagem', 'Nota', 'Outro'];
+const SIT_PROT = ['Pendente', 'Respondido', 'Arquivado'];
+function vProtocolo() {
+  const ver = S.filtro.protVer || 'pend', d = hoje();
+  const l = (S.db.Protocolo || []).filter(x => (ver === 'todos' || x.situacao === 'Pendente') && casa('protq', x.numero, x.assunto, x.origemDestino)).sort((a, b) => String(b.data).localeCompare(a.data));
+  const venc = (S.db.Protocolo || []).filter(x => x.situacao === 'Pendente' && x.prazo && x.prazo < d).length;
+  return `<div class="bar">${busca('protq', 'Buscar nº, assunto, origem…')}<select onchange="S.filtro.protVer=this.value;render()" aria-label="Quais"><option value="pend">Pendentes</option><option value="todos" ${ver === 'todos' ? 'selected' : ''}>Todos</option></select>
+      ${venc ? `<span class="tag dng">${venc} com prazo vencido</span>` : ''}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarProtocolo()">+ Documento</button>' : ''}${botoesDocGrandes('protocolo', '')}</div>
+    ${tabela(l, [{ l: 'Data', v: x => fmt(x.data), s: x => x.data }, { l: '', v: x => `<span class="tag ${x.sentido === 'Recebido' ? 'info' : ''}">${esc(x.sentido)}</span>` }, { l: 'Documento', v: x => `<b>${esc(x.especie)} ${esc(x.numero || '')}</b><div class="muted">${esc(x.assunto || '')}</div>` },
+      { l: 'De / Para', v: x => esc(x.origemDestino || '') }, { l: 'Responsável', v: x => esc(x.responsavelId ? nomeMil(x.responsavelId) : '') },
+      { l: 'Prazo', v: x => x.prazo ? `<span class="${x.situacao === 'Pendente' && x.prazo < d ? 'tag dng' : ''}">${fmt(x.prazo)}</span>` : '', s: x => x.prazo || '9' },
+      { l: 'Situação', v: x => `<span class="tag ${x.situacao === 'Pendente' ? 'warn' : 'ok'}">${esc(x.situacao)}</span>` }],
+      pode() ? x => `<button class="btn sm" onclick="editarProtocolo('${x.id}')">Editar</button>` : null)}
+    <p class="muted">Registre o NUP do SPED ou o nº do DIEx. O que tiver prazo aparece no Painel quando vencer.</p>`;
+}
+function editarProtocolo(id) {
+  const x = id ? S.db.Protocolo.find(y => y.id === id) : { data: hoje(), sentido: 'Recebido', especie: 'DIEx', situacao: 'Pendente' };
+  abrirForm({ titulo: id ? 'Documento do protocolo' : 'Registrar documento', valores: x, campos: [{ k: 'data', l: 'Data', t: 'date', req: true }, { k: 'sentido', l: 'Recebido ou expedido', t: 'select', o: ['Recebido', 'Expedido'], vazio: false },
+    { k: 'especie', l: 'Espécie', t: 'select', o: ESPECIES_DOC, vazio: false }, { k: 'numero', l: 'Nº / NUP do SPED' }, { k: 'origemDestino', l: 'De (recebido) / Para (expedido)' }, { k: 'responsavelId', l: 'Responsável', t: 'militar' },
+    { k: 'assunto', l: 'Assunto', full: true }, { k: 'prazo', l: 'Prazo de resposta', t: 'date' }, { k: 'situacao', l: 'Situação', t: 'select', o: SIT_PROT, vazio: false },
+    { k: 'obs', l: 'Observações / resposta', t: 'textarea', full: true }, { k: 'arquivoUrl', l: 'Documento digitalizado', t: 'file', full: true }],
+    aoSalvar: o => salvar('Protocolo', [o]), extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Protocolo','${id}',true)">Excluir</button></div>` : '' });
+}
+DOCS.protocolo = () => docPadrao({ tipo: 'Efetivo', nome: `Protocolo pendente ${hoje()}`, titulo: 'DOCUMENTOS PENDENTES (PROTOCOLO)', paisagem: true, cab: ['Data', 'R/E', 'Espécie e nº', 'Assunto', 'De / Para', 'Responsável', 'Prazo'],
+  linhas: (S.db.Protocolo || []).filter(x => x.situacao === 'Pendente').sort((a, b) => String(a.prazo || '9').localeCompare(b.prazo || '9')).map(x => [fmt(x.data), x.sentido === 'Recebido' ? 'R' : 'E', { v: `${x.especie} ${x.numero || ''}`, l: 1 }, { v: x.assunto || '', l: 1 }, { v: x.origemDestino || '', l: 1 }, x.responsavelId ? nomeMil(x.responsavelId) : '', fmt(x.prazo)]),
+  w: [9, 5, 16, 30, 16, 14, 10], sz: 8.5 });
+
+// ---------- partes do Cmt Cia (pessoal e de inteligência): ficam na planilha reservada da Justiça e Disciplina
+const TIPOS_PARTE = ['Parte pessoal', 'Parte de inteligência', 'Outra'];
+function vPartes() {
+  const l = disc('Parte').filter(x => casa('parteq', x.numero, x.assunto, x.relato, x.subtipo)).sort((a, b) => String(b.data).localeCompare(a.data));
+  return `<div class="bar">${busca('parteq', 'Buscar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarParte()">+ Parte</button>' : ''}</div>
+    ${tabela(l, [{ l: 'Nº', v: x => esc(x.numero) }, { l: 'Data', v: x => fmt(x.data), s: x => x.data }, { l: 'Tipo', v: x => esc(x.subtipo) }, { l: 'Assunto', v: x => `<b>${esc(x.assunto || '')}</b>` }, { l: 'Ao', v: x => esc(x.autoridade || '') }],
+      x => `${botoesDoc('parte', x.id, 'Imprimir')} ${pode() ? `<button class="btn sm" onclick="editarParte('${x.id}')">Editar</button>` : ''}`)}
+    <p class="muted">As partes ficam junto da Justiça e Disciplina: só os oficiais e o Sgte veem.</p>`;
+}
+function editarParte(id) {
+  const ano = hoje().slice(0, 4);
+  const x = id ? disc('Parte').find(y => y.id === id) : { tipo: 'Parte', numero: proximoNumero(disc('Parte').map(p => p.numero), ano), data: hoje(), subtipo: 'Parte pessoal', participante: cfg('cmtNome'), autoridade: '' };
+  abrirForm({ titulo: id ? 'Parte nº ' + x.numero : 'Nova parte', valores: x, campos: [{ k: 'numero', l: 'Nº', req: true }, { k: 'data', l: 'Data', t: 'date', req: true }, { k: 'subtipo', l: 'Tipo', t: 'select', o: TIPOS_PARTE, vazio: false },
+    { k: 'militarId', l: 'Militar a que se refere (se houver)', t: 'militar' }, { k: 'participante', l: 'Do' }, { k: 'autoridade', l: 'Ao (ex.: Sr Cmt do 11º D Sup)' },
+    { k: 'assunto', l: 'Assunto', full: true }, { k: 'relato', l: 'Texto (um parágrafo por linha)', t: 'textarea', full: true }, { k: 'obs', l: 'Anexos' }],
+    aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Parte' }]),
+    extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
+}
+DOCS.parte = id => { const x = disc('Parte').find(y => y.id === id);
+  return { tipo: 'Disciplina', ref: id, titulo: `Parte ${x.numero} - ${x.assunto || x.subtipo}`, blocos: [...blocosCabecalho(), { esp: 1 }, { p: `PARTE Nº ${x.numero}`, c: 1, b: 1 }, { esp: 1 },
+    { p: `**Do:** ${x.participante || ''}`, m: 1, l: 1 }, { p: `**Ao:** ${x.autoridade || ''}`, m: 1, l: 1 }, { p: `**Assunto:** ${x.assunto || ''}`, m: 1, l: 1 }, ...(x.obs ? [{ p: `**Anexo(s):** ${x.obs}`, m: 1, l: 1 }] : []), { esp: 1 },
+    ...String(x.relato || '').split('\n').filter(s => s.trim()).map((t, i) => ({ p: `${i + 1}. ${t.trim()}`, ind: 0, mt: 4 })), { esp: 1 },
+    { p: localData(x.data), r: 1 }, ...blocosAssinatura(x.participante || cfg('cmtNome'), cfg('cmtFuncao'))] };
+};
 
 // ============================================================ tempo de serviço: engajamento, reengajamento e prorrogação
 const TIPOS_TS = ['Engajamento', 'Reengajamento', 'Prorrogação de tempo de serviço', 'Licenciamento'];
@@ -2081,7 +2453,7 @@ function vTempoServico() {
       { l: 'Tempo de serviço', v: r => r.tempo || '<span class="muted">sem data de praça</span>' }, { l: 'Término do tempo atual', v: r => fmt(r.fim) || '<span class="muted">—</span>', s: r => r.fim || '9' },
       { l: 'Falta', v: tagResta, s: r => r.resta ?? 99999 },
       { l: 'Processo', v: r => r.andamento ? `${esc(r.andamento.tipo)}<div class="muted">${[r.andamento.requerimento && 'req. ' + fmt(r.andamento.requerimento), r.andamento.is && 'IS ' + r.andamento.is, r.andamento.bi].filter(Boolean).map(esc).join(' · ') || 'iniciado'}</div>` : r.resta !== null && r.resta <= avisoTs() ? '<span class="tag warn">iniciar</span>' : '' }],
-      pode() ? r => `<button class="btn sm" onclick="editarTs(null,'${r.m.id}')">+ Processo</button> <button class="btn sm" onclick="historicoTs('${r.m.id}')">Histórico</button>` : null)}
+      pode() ? r => `<button class="btn sm" onclick="editarTs(null,'${r.m.id}')">+ Processo</button> <button class="btn sm" onclick="historicoTs('${r.m.id}')">Histórico</button> <button class="btn sm" onclick="kitLicenciamento('${r.m.id}')" title="SERMILMOB, Nada Deve e Ficha Disciplinar">Licenciamento</button>` : null)}
     <p class="muted">Temporários: quem está marcado assim no cadastro (ou cabo e soldado sem vínculo informado). O término vem do último engajamento ou prorrogação <b>deferido</b>; sem ele, o Sd EV conta 12 meses da praça. O aviso começa ${avisoTs()} dias antes (muda em Configurações). Guarde na pasta os requerimentos, a IS e a cópia do BI.</p>`;
 }
 function editarTs(id, mid) {
@@ -2163,7 +2535,11 @@ const atrasado = c => c.situacao !== 'Em dia' && c.prazo && c.prazo < hoje();
 function vSargenteacao() {
   const t = S.sub.sargenteacao || 'controles';
   const cab = `<h2>Sargenteação</h2><p class="sub">Controles da Sargenteação no modelo da orientação técnica, mapa da força, QCP e controle de férias, recompensas e instalação.</p>
-    ${abas('sargenteacao', [['controles', 'Controles'], ['mapa', 'Mapa da Força'], ['qcp', 'QCP'], ['ferias', 'Férias e dispensas'], ['sat', 'SAT'], ['tempo', 'Tempo de serviço']])}`;
+    ${abas('sargenteacao', [['controles', 'Controles'], ['mapa', 'Mapa da Força'], ['qcp', 'QCP'], ['ferias', 'Férias e dispensas'], ['pronto', 'Pronto e faltas'], ['sat', 'SAT'], ['tempo', 'Tempo de serviço'], ['funcoes', 'Funções'], ['protocolo', 'Protocolo'], ['processos', 'Processos']])}`;
+  if (t === 'pronto') return cab + vProntoDiario();
+  if (t === 'funcoes') return cab + vFuncoes();
+  if (t === 'protocolo') return cab + vProtocolo();
+  if (t === 'processos') return cab + vProcessos('sgte');
   if (t === 'sat') return cab + vSat();
   if (t === 'tempo') return cab + vTempoServico();
   if (t === 'mapa') return cab + vMapaForca();
@@ -2641,7 +3017,7 @@ const tagComp = c => `<span class="tag ${c === 'Excepcional' || c === 'Ótimo' ?
 function vDisciplina() {
   if (!pode()) return '<div class="card">Justiça e disciplina: só administradores e editores têm acesso.</div>';
   const t = S.filtro.jd || 'resumo';
-  const abasJd = `<div class="tabs" style="margin-top:-6px">${[['resumo', 'Resumo'], ['fatd', 'FATD'], ['pun', 'Punições'], ['elo', 'Elogios'], ['boca', 'Boca Podre'], ['sind', 'Sindicâncias'], ['ficha', 'Ficha do militar']]
+  const abasJd = `<div class="tabs" style="margin-top:-6px">${[['resumo', 'Resumo'], ['fatd', 'FATD'], ['pun', 'Punições'], ['elo', 'Elogios'], ['boca', 'Boca Podre'], ['sind', 'Sindicâncias'], ['ficha', 'Ficha do militar'], ['partes', 'Partes do Cmt']]
     .map(([k, l]) => `<button class="${t === k ? 'on' : ''}" onclick="S.filtro.jd='${k}';render()">${l}</button>`).join('')}</div>`;
   let corpo = '';
   if (t === 'resumo') {
@@ -2699,9 +3075,11 @@ function vDisciplina() {
     ], a => `${disc('FATD').some(x => x.origemId === a.id) ? '' : `<button class="btn sm" onclick="fatdDaAnotacao('${a.id}')">Abrir FATD</button> `}<button class="btn sm" onclick="editarAnotacao('${a.id}')">Editar</button>`)}`;
   } else if (t === 'sind') {
     corpo = vSindicancias();
+  } else if (t === 'partes') {
+    corpo = vPartes();
   } else {
     const mid = S.filtro.jdMil && MIL[S.filtro.jdMil] ? S.filtro.jdMil : '';
-    corpo = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.jdMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label><span class="grow"></span>${mid ? botoesDoc('fichaDisc', mid, 'Imprimir ficha') : ''}</div>` + (mid ? fichaDisciplinar(mid) : '<div class="card muted">Escolha o militar para ver a ficha disciplinar: comportamento, punições, elogios e anotações.</div>');
+    corpo = `<div class="bar"><label class="muted">Militar <select onchange="S.filtro.jdMil=this.value;render()"><option value=""></option>${militaresAtivos().map(m => `<option value="${m.id}" ${m.id === mid ? 'selected' : ''}>${esc(nomeMil(m))}</option>`).join('')}</select></label><span class="grow"></span>${mid ? botoesDoc('fichaDisc', mid, 'Imprimir ficha') : ''}<button class="btn" onclick="emitir('fichasDisc','')" title="Uma ficha por página, de todo o efetivo ativo">Fichas de todos</button></div>` + (mid ? fichaDisciplinar(mid) : '<div class="card muted">Escolha o militar para ver a ficha disciplinar: comportamento, punições, elogios e anotações.</div>');
   }
   return abasJd + corpo;
 }
@@ -2717,16 +3095,18 @@ function eventosDisc(mid) {
   disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).forEach(e => ev.push({ d: e.data, t: e.subtipo, x: [e.relato, e.bi].filter(Boolean).join(' · '), c: 'ok', id: e.id, k: 'elo' }));
   disc('Sindicancia').filter(x => x.militarId === mid).forEach(x => ev.push({ d: x.data, t: `Sindicância nº ${x.numero}`, x: [x.relato, x.decisao, x.bi].filter(Boolean).join(' · '), c: 'info', id: x.id, k: 'sind' }));
   disc('Anotacao').filter(a => a.militarId === mid).forEach(a => ev.push({ d: a.data, t: 'Boca Podre: ' + a.subtipo, x: a.relato, c: '', id: a.id, k: 'boca' }));
+  disc('Anulacao').filter(a => a.militarId === mid).forEach(a => ev.push({ d: a.data, t: `${a.subtipo || 'Anulação'} de punição`, x: [(disc('FATD').find(f => f.id === a.origemId) || {}).punicao, a.bi].filter(Boolean).join(' · '), c: 'info', id: a.id, k: 'anul' }));
+  disc('Recurso').filter(a => a.militarId === mid).forEach(a => ev.push({ d: a.data, t: a.subtipo || 'Recurso', x: [a.obs, a.bi].filter(Boolean).join(' · '), c: 'info', id: a.id, k: 'rec' }));
   return ev.sort((a, b) => b.d.localeCompare(a.d));
 }
 function fichaDisciplinar(mid) {
   const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid);
-  const abrir = e => e.k === 'sind' ? `editarSindicancia('${e.id}')` : e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
+  const abrir = e => e.k === 'anul' ? `editarAnulacao('${e.id}')` : e.k === 'rec' ? `editarRecurso('${e.id}')` : e.k === 'sind' ? `editarSindicancia('${e.id}')` : e.k === 'fatd' ? `editarFatd('${e.id}')` : e.k === 'elo' ? `editarElogio('${e.id}')` : `editarAnotacao('${e.id}')`;
   return `<div class="card"><div class="bar" style="align-items:flex-start">${fotoHTML(mid, pode())}<div class="grow"><h3 style="margin:0">${esc(nomeMil(m))}</h3><div class="muted">${esc(m.nomeCompleto || '')}${m.pelotao ? ' · ' + esc(m.pelotao) : ''}${m.dataPraca ? ' · praça em ' + fmt(m.dataPraca) : ''}</div></div>
     ${temComportamento(m) ? `<div style="text-align:right"><div>Comportamento: ${tagComp(m.comportamento || '')} <span class="muted">(cadastro)</span></div><div style="margin-top:4px">Sugerido: ${tagComp(sug.c)} <button class="btn sm" onclick="usarComportamento('${mid}','${sug.c}')">Usar</button></div></div>` : '<span class="muted">Sem classificação de comportamento (só cabos e soldados).</span>'}</div>
     ${sug ? `<p class="muted" style="font-size:12.5px">${esc(sug.motivo)} Conferir sempre com o RDE.</p>` : ''}
     <div class="bar"><span class="tag dng">${disc('FATD').filter(f => f.militarId === mid && f.decisao === 'Punido').length} punição(ões)</span><span class="tag ok">${disc('Elogio').filter(e => ids(e.militaresIds).includes(mid)).length} elogio(s)</span><span class="tag">${disc('Anotacao').filter(a => a.militarId === mid).length} anotação(ões)</span><span class="grow"></span>
-      <button class="btn sm" onclick="editarFatd(null,{militarId:'${mid}'})">+ FATD</button><button class="btn sm" onclick="editarElogio(null,'${mid}')">+ Elogio</button><button class="btn sm" onclick="editarAnotacao(null,'${mid}')">+ Anotação</button></div>
+      <button class="btn sm" onclick="editarFatd(null,{militarId:'${mid}'})">+ FATD</button><button class="btn sm" onclick="editarElogio(null,'${mid}')">+ Elogio</button><button class="btn sm" onclick="editarAnotacao(null,'${mid}')">+ Anotação</button><button class="btn sm" onclick="editarAnulacao(null,'${mid}')">+ Anulação</button><button class="btn sm" onclick="editarRecurso(null,'${mid}')">+ Recurso</button></div>
     ${ev.length ? `<ul class="linha-tempo">${ev.map(e => `<li><span class="quando">${fmt(e.d)}</span><span class="tag ${e.c}">${esc(e.t)}</span> ${e.x ? `<span class="muted">${esc(e.x)}</span>` : ''} <a onclick="${abrir(e)}">abrir</a></li>`).join('')}</ul>` : '<p class="muted">Nada registrado.</p>'}</div>`;
 }
 async function usarComportamento(mid, c) {
@@ -2861,16 +3241,6 @@ DOCS.fatd = id => {
       : `( ) Justificado – arquivar     ( ) Punir: ${linha}` },
     { esp: 1 }, { p: localData(f.dataDecisao || hoje()), r: 1 }, ...blocosAssinatura(f.autoridade || cfg('cmtNome'), cfg('cmtFuncao'))] };
 };
-DOCS.fichaDisc = mid => {
-  const m = MIL[mid], sug = comportamentoSugerido(m), ev = eventosDisc(mid).slice().reverse();
-  return { tipo: 'Disciplina', ref: mid, titulo: `Ficha disciplinar - ${m.nomeGuerra}`, blocos: [...blocosCabecalho(), { esp: 1 },
-    { p: 'FICHA DISCIPLINAR', c: 1, b: 1 }, { esp: 1 }, ...(FOTOS[mid] ? [{ img: FOTOS[mid], w: 70 }] : []),
-    { t: [[{ v: 'Militar', b: 1, l: 1 }, { v: `${nomeMil(m)}${m.nomeCompleto ? ' – ' + m.nomeCompleto : ''}`, l: 1 }], ...(sug ? [[{ v: 'Comportamento', b: 1, l: 1 }, { v: (m.comportamento || '—') + ` (sugerido pelo sistema: ${sug.c})`, l: 1 }]] : [])], w: [22, 78], sz: 9.5 },
-    { esp: 1 },
-    { t: [['Data', 'Registro', 'Detalhe'], ...(ev.length ? ev.map(e => [fmt(e.d), { v: e.t, l: 1 }, { v: e.x || '', l: 1 }]) : [['', 'Nada registrado', '']])], h: 1, w: [13, 30, 57], sz: 9 },
-    { esp: 1 }, { p: localData(hoje()), r: 1 }] };
-};
-
 // ============================================================ aditamentos (modelo do ADT: 1ª parte em tabelas por dia, externos e internos)
 const PARTES = [['1ª PARTE', 'SERVIÇOS DIÁRIOS'], ['2ª PARTE', 'INSTRUÇÃO'], ['3ª PARTE', 'ASSUNTOS GERAIS E ADMINISTRATIVOS'], ['4ª PARTE', 'JUSTIÇA E DISCIPLINA']];
 const SEM_ALT = 'sem alteração';
@@ -3544,8 +3914,11 @@ const IMPORT = {
     sin: { postoGrad: ['posto', 'postograd', 'pg', 'grad', 'graduacao', 'postograduacao'], nomeGuerra: ['nomedeguerra', 'nomeguerra', 'guerra', 'nomedeguera'], nomeCompleto: ['nomecompleto', 'nome'], idt: ['idt', 'idtmilitar', 'identidade', 'idtmil'],
       numero: ['numero', 'nr', 'num'], pelotao: ['pelotao', 'pel', 'secao', 'fracao', 'su', 'cia'], telefone: ['telefone', 'celular', 'fone', 'tel', 'contato'], funcao: ['funcao', 'cargo'], antiguidade: ['antiguidade', 'ant', 'ord', 'ordem'],
       dataNascimento: ['datadenascimento', 'nascimento', 'datanascimento', 'dtnasc', 'datanasc'], cpf: ['cpf'], precCp: ['preccp', 'prec'], tipoSanguineo: ['tiposanguineo', 'tiposangue', 'ts', 'fatorrh'], peso: ['pesokg', 'peso'], email: ['email'],
-      endereco: ['endereco', 'enderecoresidencial'], cttEmergencia: ['cttemergencia', 'contatodeemergencia', 'contatoemergencia', 'telemergencia'], nomeCtt: ['nomectt', 'nomedoctt', 'nomedocontato', 'nomecontato'], parentesco: ['parentesco'],
-      cnh: ['carteiramotorista', 'cnh', 'categoriacnh', 'catcnh'], motoristaMilitar: ['motoristamilitar'], veiculo: ['possuiveiculoproprioqual', 'possuiveiuloproprioqual', 'veiculoproprio', 'veiculo'], obs: ['obs', 'algumaobs', 'observacao', 'observacoes', 'situacao'] } },
+      endereco: ['endereco', 'enderecoresidencial', 'enderecocompl', 'enderecocompleto'], cttEmergencia: ['cttemergencia', 'contatodeemergencia', 'contatoemergencia', 'telemergencia'], nomeCtt: ['nomectt', 'nomedoctt', 'nomedocontato', 'nomecontato'], parentesco: ['parentesco'],
+      cnh: ['carteiramotorista', 'cnh', 'categoriacnh', 'catcnh'], motoristaMilitar: ['motoristamilitar'], veiculo: ['possuiveiculoproprioqual', 'possuiveiuloproprioqual', 'veiculoproprio', 'veiculo'], obs: ['obs', 'algumaobs', 'observacao', 'observacoes', 'situacao'],
+      pai: ['nomedopai', 'pai', 'nomepai'], mae: ['nomedamae', 'mae', 'nomemae'], localNascimento: ['localdenascimento', 'localnascimento', 'naturalidade', 'naturaldeuf'], estadoCivil: ['estadocivil'],
+      escolaridade: ['escolaridade', 'grauinstrucao'], idtCivil: ['idtcivil', 'identidadecivil', 'rg'], cep: ['cep'], bairro: ['bairro'], zona: ['zona', 'zonaresidencial'], municipio: ['municipio', 'cidade'],
+      ra: ['ra', 'registrodealistamento'], csm: ['csm', 'jsm', 'csmjsm'], qm: ['qm', 'qualificacaomilitar'] } },
   Ferias: { chaves: [], campos: [{ k: 'postoGrad', l: 'Posto/Graduação' }, { k: 'nome', l: 'Nome (de guerra)', req: true }, { k: 'periodo', l: 'Período (ex.: 30 dias)' }, { k: 'parcelas', l: 'Dia/mês (data de início ou parcelas)', req: true }],
     sin: { postoGrad: ['pg', 'posto', 'grad'], nome: ['nome', 'nomedeguerra'], periodo: ['periodo', 'dias'], parcelas: ['diames', 'data', 'parcelas', 'inicio'] } }
 };
@@ -3936,6 +4309,8 @@ const CAMPOS_CFG = [
   { k: 'cmtNome', l: 'Nome do comandante (ex.: FULANO DE TAL – Cap)' },
   { k: 'cmtFuncao', l: 'Função (ex.: Cmt Cia)' },
   { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
+  { k: 'rm', l: 'Região Militar (SERMILMOB, ex.: 11ª RM)' },
+  { k: 'nadaDeveSecoes', l: 'Nada Deve: seções / SU / permissionários consultados (uma por linha)', t: 'textarea' },
   { k: 'avisoEngaj', l: 'Avisar o fim do tempo de serviço com quantos dias de antecedência', t: 'number' },
   { secao: 'Material' },
   { k: 'cautelaSetor', l: 'Setor que entrega o material na cautela (ex.: Depósito da 1ª Cia)' },
@@ -4200,7 +4575,10 @@ function vArquivo() {
 const VIEWS_FN = { painel: vPainel, sargenteacao: vSargenteacao, saude: vSaude, efetivo: vEfetivo, escala: vEscala, missoes: vMissoes, aditamentos: vAditamentos, alteracoes: vAlteracoes, material: vMaterial, arranchamento: vArranchamento,
   disciplina: () => `<h2>Justiça e disciplina</h2><p class="sub">FATD, punições, elogios, Boca Podre e ficha disciplinar. Só os oficiais e o Sgte (marcação "Justiça e Disciplina" no cadastro do usuário).</p>${vDisciplina()}`, arquivo: vArquivo, config: vConfig, busca: vBusca };
 function vArranchamento() {
-  return `<h2>Arranchamento</h2><p class="sub">Área do Furriel.</p><div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
+  const t = S.sub.arranchamento || 'proc';
+  const cab = `<h2>Furriel</h2><p class="sub">Processos do Furriel (despesa a anular, pré-escolar, beneficiários, pecuniária, vale-rancho, saúde e PHPM) e arranchamento.</p>${abas('arranchamento', [['proc', 'Processos'], ['rancho', 'Arranchamento']])}`;
+  if (t === 'proc') return cab + vProcessos('furriel');
+  return cab + `<div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
     <p class="muted" style="margin-top:0">Esta parte ainda vai ser feita. Mande os modelos usados pelo Furriel (mapa de arranchamento, relação de arranchados, faltas ao rancho, saque de etapa) para montarmos.</p></div>`;
 }
 
@@ -4222,8 +4600,13 @@ function semente() {
     dataNascimento: `${1975 + (i * 7) % 30}-${pad(1 + i % 12)}-${pad(1 + (i * 5) % 28)}`, cpf: '', precCp: '', tipoSanguineo: TIPOS_SANGUE[i % 8], peso: String(62 + (i * 3) % 30),
     telefone: `(61) 9${String(81000000 + i * 271357).slice(0, 4)}-${String(1000 + i * 37).slice(-4)}`, email: `${norm(nomeGuerra)}@exemplo.com`, endereco: `Quadra ${10 + i}, Conjunto ${'ABCDE'[i % 5]}, Casa ${i + 2} – Brasília-DF (fictício)`,
     cttEmergencia: `(61) 9${String(92000000 + i * 15731).slice(0, 4)}-${String(2000 + i * 53).slice(-4)}`, nomeCtt: ['Ana', 'Maria', 'José', 'Paula', 'Luís'][i % 5], parentesco: PARENTES[i % 5],
-    cnh: i % 3 ? 'B' : 'AD', motoristaMilitar: i % 4 === 0 ? 'Sim' : 'Não', veiculo: i % 2 ? 'Carro' : ''
+    cnh: i % 3 ? 'B' : 'AD', motoristaMilitar: i % 4 === 0 ? 'Sim' : 'Não', veiculo: i % 2 ? 'Carro' : '',
+    pai: `${['Antônio', 'Francisco', 'Sebastião', 'Raimundo', 'Manoel'][i % 5]} ${nomeCompleto.split(' ').pop()} (fictício)`, mae: `${['Maria', 'Ana', 'Francisca', 'Antônia', 'Rita'][i % 5]} ${nomeCompleto.split(' ')[1]} (fictício)`,
+    localNascimento: ['Brasília-DF', 'Goiânia-GO', 'Anápolis-GO', 'Formosa-GO', 'Unaí-MG'][i % 5], estadoCivil: i % 3 ? 'Solteiro' : 'Casado', escolaridade: i < 11 ? 'Superior completo' : 'Médio completo',
+    cep: `7${String(2000000 + i * 1371).slice(0, 4)}-000`, bairro: ['Samambaia', 'Ceilândia', 'Taguatinga', 'Gama', 'Guará'][i % 5], municipio: 'Brasília-DF', zona: 'Urbana',
+    promocoes: i >= 11 && i < 17 ? `Sd EP – ${Number(ano) - 3}-03-01\nCb – ${Number(ano) - 1}-08-01` : ''
   }));
+  mil[4].dataNascimento = `1990-${d.slice(5)}`;
   const tipos = TIPOS_PADRAO.map(t => ({ ...t }));
   const mat = (descricao, tipoMaterial, categoria, q, nrFicha, codMat, conta, valor, localizacao, patr = '') => ({ descricao, tipoMaterial, categoria, quantidade: String(q), unidade: 'un', nrFicha, codMat, contaContabil: conta, acervo: 'N', valor: String(valor), localizacao, patrimonio: patr, estado: 'Bom', ultimaConferencia: addDias(d, -10), obs: '', arquivoUrl: '' });
   const material = [
@@ -4273,6 +4656,15 @@ function semente() {
       { id: 's5', tipo: 'Adido (LTSP)', militarId: 'm28', data: addDias(d, -60), motivo: 'Tratamento ortopédico', proximo: addDias(d, -1), obs: '1ª prorrogação: 30 dias (BI nº 40)', bi: 'BI nº 22', situacao: 'Em tratamento' }],
     SAT: [{ id: 't1', militarId: 'm19', inicio: `${ano}-01-01`, valor: '180', ref: 'DIEx nº 15 – BI nº 8', situacao: 'Ativo' }, { id: 't2', militarId: 'm8', inicio: `${ano}-02-01`, valor: '220', ref: 'DIEx nº 22', situacao: 'Ativo' }, { id: 't3', militarId: 'm24', inicio: `${ano}-03-01`, valor: '150', ref: 'DIEx nº 31', situacao: 'Ativo' }],
     Pernoite: [],
+    Funcoes: [['cmt', 'm1'], ['sgtte', 'm4'], ['encmat', 'm12'], ['auxsgtte', 'm16'], ['auxalt', 'm17'], ['auxfur', 'm10']].map(([id, o]) => ({ ...FUNCOES_PADRAO.find(f => f.id === id), ocupanteId: o, padrao: '' })),
+    Processos: [{ id: 'pr1', area: 'furriel', tipo: 'Auxílio pré-escolar', militarId: 'm14', abertura: addDias(d, -12), prazo: addDias(d, 3), situacao: 'Aguardando documento', ref: '', obs: 'Falta a certidão de nascimento do dependente.' },
+      { id: 'pr2', area: 'furriel', tipo: 'Despesa a anular', militarId: 'm22', abertura: addDias(d, -30), prazo: addDias(d, -2), situacao: 'Encaminhado', ref: 'DIEx nº 41', obs: 'Encaminhado à SPP.' },
+      { id: 'pr3', area: 'furriel', tipo: 'Vale-rancho', militarId: 'm25', abertura: addDias(d, -3), prazo: '', situacao: 'Aberto', ref: '', obs: '' },
+      { id: 'pr4', area: 'sgte', tipo: 'Exercícios anteriores', militarId: 'm9', abertura: addDias(d, -45), prazo: addDias(d, 15), situacao: 'Encaminhado', ref: 'NUP 00000.000000/0000-00 (fictício)', obs: 'Aguardando a SPP.' }],
+    Protocolo: [{ id: 'pt1', data: addDias(d, -6), sentido: 'Recebido', especie: 'DIEx', numero: '120-S1', origemDestino: 'S1', responsavelId: 'm4', assunto: 'Relação de militares para o curso de cabos', prazo: addDias(d, -1), situacao: 'Pendente', obs: '' },
+      { id: 'pt2', data: addDias(d, -2), sentido: 'Recebido', especie: 'DIEx', numero: '88-S4', origemDestino: 'Fisc Adm / S4', responsavelId: 'm12', assunto: 'Inventário anual – prazo de entrega', prazo: addDias(d, 10), situacao: 'Pendente', obs: '' },
+      { id: 'pt3', data: addDias(d, -9), sentido: 'Expedido', especie: 'DIEx', numero: '15-1ª Cia', origemDestino: 'S1', responsavelId: 'm16', assunto: 'Escala de serviço do mês', prazo: '', situacao: 'Respondido', obs: '' }],
+    Faltas: [{ id: 'fa1', data: addDias(d, -1), formatura: 'Manhã', militarId: 'm27', justificada: 'Não', obs: '' }],
     TempoServico: [{ id: 'ts1', militarId: 'm12', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -300), is: 'Apto A', inicio: addDias(d, -280), fim: addDias(d, 60), situacao: 'Deferido', bi: 'BI nº 30' },
       { id: 'ts2', militarId: 'm13', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -5), is: '', inicio: addDias(d, 40), fim: '', situacao: 'Em andamento', bi: '' },
       { id: 'ts0', militarId: 'm13', tipo: 'Engajamento', requerimento: addDias(d, -400), is: 'Apto A', inicio: addDias(d, -365), fim: addDias(d, 39), situacao: 'Deferido', bi: 'BI nº 70' },
@@ -4283,6 +4675,7 @@ function semente() {
       ['1º Pel', 'Cmt 1º Pel', '2º Ten', 'm31'], ['1º Pel', 'Cmt GC', '3º Sgt', 'm8'], ['1º Pel', 'Cmt GC', '3º Sgt', 'm9'], ['1º Pel', 'Cmt GC', '3º Sgt', ''], ['Cmdo', 'Furriel', '3º Sgt', 'm10'], ['Cmdo', 'Enc Mat', 'Cb', 'm12']]
       .map(([fracao, funcao, postoPrevisto, ocupanteId], i) => ({ id: 'q' + (i + 1), fracao, funcao, postoPrevisto, ocupanteId, ordem: String(i + 1) })),
     Disciplina: [
+      { id: 'pa1', tipo: 'Parte', numero: `001/${ano}`, data: addDias(d, -4), subtipo: 'Parte pessoal', participante: 'RICARDO MOURA LIMA – Cap (fictício)', autoridade: 'Sr Cmt do 11º D Sup', assunto: 'Apresentação de militar após dispensa', relato: 'Participo-vos que o Sd EV Campos apresentou-se nesta SU após o término da dispensa médica.\nO militar encontra-se pronto para o serviço.', obs: '' },
       { id: 'jd1', tipo: 'FATD', numero: `001/${ano}`, dataFato: addDias(d, -12), militarId: 'm20', participante: '3º Sgt Rocha', relato: 'o militar deixou de comparecer à formatura matinal sem motivo justificado.', ciencia: addDias(d, -11), defesaData: addDias(d, -9), defesa: 'Alegou problema com o transporte, sem comprovação.', decisao: 'Punido', dataDecisao: addDias(d, -6), classificacao: 'Leve', enquadramento: '15', punicao: 'Repreensão', dias: '', inicio: '', autoridade: 'RICARDO MOURA LIMA – Cap', bi: '' },
       { id: 'jd2', tipo: 'FATD', numero: `002/${ano}`, dataFato: addDias(d, -2), militarId: 'm22', participante: '1º Sgt Nunes', relato: 'o militar apresentou-se para o serviço com o uniforme em desalinho e sem a cobertura.', ciencia: addDias(d, -1), origemId: 'jd8' },
       { id: 'jd3', tipo: 'FATD', numero: `003/${ano}`, dataFato: addDias(d, -1), militarId: 'm24', participante: 'Cb Brito', relato: 'o militar deixou o posto de sentinela antes da rendição.' },
