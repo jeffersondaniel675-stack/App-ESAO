@@ -31,6 +31,7 @@ const TABELAS = {
   SAT: ['id', 'militarId', 'inicio', 'fim', 'valor', 'ref', 'situacao', 'obs'],
   Pernoite: ['id', 'extras', 'obs'],
   Faltas: ['id', 'data', 'formatura', 'militarId', 'justificada', 'obs'],
+  PHPM: ['id', 'data', 'obs'],
   Funcoes: ['id', 'nome', 'chefe', 'ocupanteId', 'atrib', 'ordem', 'oculto'],
   Processos: ['id', 'area', 'tipo', 'militarId', 'abertura', 'prazo', 'situacao', 'ref', 'obs', 'arquivoUrl'],
   Protocolo: ['id', 'data', 'sentido', 'especie', 'numero', 'origemDestino', 'responsavelId', 'assunto', 'prazo', 'situacao', 'obs', 'arquivoUrl'],
@@ -50,7 +51,7 @@ const SOMENTE_LEITURA = ['Log', 'Usuarios', 'Acessos', 'Sessoes'];
 const PERFIS = ['admin', 'editor', 'leitor'];
 // Áreas de trabalho: o editor só altera as tabelas das áreas marcadas no seu usuário (nenhuma marcada = todas).
 const AREA_TAB_ = { Militares: 'sgte', Impedimentos: 'sgte', TiposServico: 'sgte', Escala: 'sgte', Feriados: 'sgte', Missoes: 'sgte', Aditamentos: 'sgte', Alteracoes: 'sgte', FolhasAlt: 'sgte', Controles: 'sgte', QCP: 'sgte', Fotos: 'sgte', Saude: 'sgte', SAT: 'sgte', Pernoite: 'sgte', Faltas: 'sgte', TempoServico: 'sgte', Funcoes: 'sgte', Protocolo: 'sgte',
-  Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
+  PHPM: 'furriel', Material: 'mat', Cautelas: 'mat', Pedidos: 'mat', Locais: 'mat', Disciplina: 'jd' };
 const NOME_AREA_ = { sgte: 'Sargenteante', mat: 'Encarregado de Material', furriel: 'Furriel', jd: 'Justiça e Disciplina' };
 // Tabelas que ficam numa planilha separada, compartilhada só com quem tem "Justiça e Disciplina" (e os admins).
 const RESERVADAS_ = { Disciplina: 'jd', Saude: 'sau' };
@@ -389,19 +390,24 @@ function entrarComCodigo(email, codigo, aparelho) {
   }
   cache.remove('cod:' + email);
   const token = Utilities.getUuid() + Utilities.getUuid();
-  const expira = Utilities.formatDate(new Date(Date.now() + DIAS_SESSAO_ * 864e5), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+  const expira = expiraEm_(DIAS_SESSAO_);
   USUARIO_ATUAL_ = email;
   gravar_('Sessoes', [{ token: hash_(token), email: email, criada: agora_(), expira: expira, aparelho: String(aparelho || '').slice(0, 120) }], []);
   registrarLog_('entrar', 'Sessoes', email);
   return { token: token, email: email };
 }
 /** E-mail da sessão válida (com cache de 6 h para não ler a aba a cada clique). */
+/** Data e hora daqui a n dias, no formato gravado na tabela Sessoes. */
+function expiraEm_(n) { return Utilities.formatDate(new Date(Date.now() + n * 864e5), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'); }
+/** Confere a sessão. Enquanto a pessoa usa, o prazo se renova: volta a valer 30 dias a partir do último uso. */
 function sessao_(token) {
   if (!token) return '';
   const h = hash_(token), cache = CacheService.getScriptCache(), c = cache.get('ses:' + h);
   if (c) return c;
   const s = lerTabela_('Sessoes').filter(function (x) { return x.token === h; })[0];
   if (!s || s.expira < agora_()) return '';
+  // renova no máximo uma vez por dia (a consulta à planilha só acontece quando o cache de 6 h vence)
+  if (s.expira < expiraEm_(DIAS_SESSAO_ - 1)) gravar_('Sessoes', [{ token: h, email: s.email, criada: s.criada, expira: expiraEm_(DIAS_SESSAO_), aparelho: s.aparelho }], []);
   cache.put('ses:' + h, s.email, 21600);
   return s.email;
 }

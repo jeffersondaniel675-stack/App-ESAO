@@ -514,7 +514,7 @@ const Demo = {
 const api = (fn, ...args) => NO_GOOGLE ? gas(fn, ...args) : Demo[fn](...args);
 
 // ============================================================ estado
-const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'Faltas', 'TempoServico', 'Funcoes', 'Processos', 'Protocolo'];
+const TABS = ['Militares', 'Impedimentos', 'TiposServico', 'Escala', 'Feriados', 'Missoes', 'Aditamentos', 'Material', 'Cautelas', 'Pedidos', 'Usuarios', 'Acessos', 'Config', 'Documentos', 'Locais', 'Disciplina', 'Alteracoes', 'FolhasAlt', 'Controles', 'QCP', 'Saude', 'SAT', 'Pernoite', 'Faltas', 'TempoServico', 'Funcoes', 'Processos', 'Protocolo', 'PHPM'];
 const S = { user: null, db: {}, view: 'painel', sub: {}, mes: hoje().slice(0, 7), filtro: {} };
 const pode = () => podeEm(S.view);
 const admin = () => S.user?.perfil === 'admin';
@@ -1176,7 +1176,7 @@ const SUBMENU = {
   saude: [{ l: 'Resumo e prazos', aba: 'resumo' }, { l: 'Livro de visita médica', aba: 'visitas' }, { l: 'Inspeções de saúde', aba: 'is' }, { l: 'Acidentes (AO / ISO)', aba: 'acidentes' }, { l: 'Adidos (LTSP)', aba: 'ltsp' }],
   alteracoes: [{ l: 'Folha de alterações', aba: 'folha' }, { l: 'Lançamentos', aba: 'lanc' }, { l: 'Importar BI (SISBOL)', aba: 'bi', editor: true }],
   disciplina: [{ l: 'Resumo', filtro: ['jd', 'resumo'] }, { l: 'FATD', filtro: ['jd', 'fatd'] }, { l: 'Punições', filtro: ['jd', 'pun'] }, { l: 'Elogios', filtro: ['jd', 'elo'] }, { l: 'Boca Podre', filtro: ['jd', 'boca'] }, { l: 'Sindicâncias', filtro: ['jd', 'sind'] }, { l: 'Ficha do militar', filtro: ['jd', 'ficha'] }, { l: 'Partes do Cmt', filtro: ['jd', 'partes'] }],
-  arranchamento: [{ l: 'Processos do Furriel', aba: 'proc' }, { l: 'Arranchamento', aba: 'rancho' }],
+  arranchamento: [{ l: 'Processos do Furriel', aba: 'proc' }, { l: 'PHPM (atualização)', aba: 'phpm' }, { l: 'Arranchamento', aba: 'rancho' }],
   escala: [{ l: 'Escala do mês', aba: 'mes' }, { l: 'Quadro de folgas', aba: 'folgas' }, { l: 'Folha de pernoite', aba: 'pernoite' }, { l: 'Importar planilha antiga', aba: 'imp', editor: true }],
   missoes: [{ l: 'Planejadas e em andamento', filtro: ['missaoStatus', 'ativas'] }, { l: 'Concluídas', filtro: ['missaoStatus', 'Concluída'] }, { l: 'Todas as missões', filtro: ['missaoStatus', 'todas'] }, { l: 'Nova missão', acao: () => editarMissao(), editor: true }],
   aditamentos: [{ l: 'Aditamentos lançados', acao: () => { S.adEdit = null; render(); }, ativo: () => !S.adEdit }, { l: 'Novo aditamento', acao: () => novoAditamento(), editor: true, ativo: () => S.adEdit && !S.adEdit.id }],
@@ -1343,6 +1343,7 @@ function vPainel() {
       const ts = linhasTs().filter(r => r.resta !== null && r.resta <= avisoTs()).length;
       const prot = (S.db.Protocolo || []).filter(x => x.situacao === 'Pendente' && x.prazo && x.prazo < hoje()).length;
       return `${prot ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='protocolo';irPara('sargenteacao')"><h4>Protocolo</h4><div class="big">${prot}</div><div class="tag dng">documento(s) com prazo vencido</div></div>` : ''}${ts ? `<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='tempo';S.filtro.tsVer='aviso';irPara('sargenteacao')"><h4>Tempo de serviço</h4><div class="big">${ts}</div><div class="tag warn">vence(m) em até ${avisoTs()} dias</div></div>` : ''}<div class="card" style="cursor:pointer" onclick="S.sub.sargenteacao='controles';irPara('sargenteacao')"><h4>Controles da Sargenteação</h4><div class="big">${c.length - fz}<span class="muted" style="font-size:16px"> / ${c.length} em dia</span></div><div class="${atr ? 'tag dng' : 'muted'}">${atr} com prazo vencido</div></div>`; })() : ''}
+    ${temArea('furriel') && militaresAtivos().some(m => ['vencida', 'sem'].includes(sitPhpm(m.id))) ? `<div class="card" style="cursor:pointer" onclick="S.sub.arranchamento='phpm';irPara('arranchamento')"><h4>PHPM</h4><div class="big">${militaresAtivos().filter(m => ['vencida', 'sem'].includes(sitPhpm(m.id))).length}</div><div class="tag dng">desatualizada(s) ou sem registro</div></div>` : ''}
     <div class="card"><h4>Efetivo</h4><div class="big">${prontos}<span class="muted" style="font-size:16px"> / ${mil.length} prontos</span></div><div class="muted">${imped.length} impedido(s) · ${emMissao} em missão</div></div>
     <div class="card"><h4>Missões (próx. 7 dias)</h4><div class="big">${missoes.length}</div><div class="muted">${S.db.Missoes.filter(m => m.status === 'Em andamento').length} em andamento</div></div>
     <div class="card"><h4>Cautelas abertas</h4><div class="big">${abertas.length}</div><div class="${vencidas.length ? 'tag dng' : 'muted'}">${vencidas.length} vencida(s)</div></div>
@@ -2245,6 +2246,8 @@ DOCS.sermil = arg => {
 };
 
 // ---------- kit de licenciamento: SERMILMOB + Nada Deve + Ficha Disciplinar, de um ou de vários militares
+/** Já tem processo de pecuniária em andamento? (valor que o militar recebe ao sair) */
+const temPecuniaria = mid => (S.db.Processos || []).some(x => x.militarId === mid && x.tipo === 'Pecuniária' && procAberto(x));
 function kitLicenciamento(lista) {
   const mids = ids(lista);
   if (!mids.length) return toast('Escolha pelo menos um militar.', true);
@@ -2252,9 +2255,13 @@ function kitLicenciamento(lista) {
     <p style="margin-top:0">${mids.length} militar(es): ${esc(mids.map(nomeMil).join(', '))}</p>
     ${mids.some(id => pendenciasMil(id).length) ? `<div class="aviso-leitor">Atenção: ${esc(mids.filter(id => pendenciasMil(id).length).map(id => `${nomeMil(id)} (${pendenciasMil(id).join(', ')})`).join('; '))}.</div>` : ''}
     <div class="pm-l" style="flex-direction:column;align-items:flex-start;gap:8px">${[['sermil', 'Cadastramento SERMILMOB (licenciamento)'], ['nada', 'Nada Deve'], ...(temArea('jd') ? [['ficha', 'Ficha Disciplinar']] : [])].map(([k, l]) => `<label><input type="checkbox" name="kit" value="${k}" checked> ${l}</label>`).join('')}</div>
+    <label style="display:flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="kit_pec" ${mids.every(temPecuniaria) ? '' : 'checked'}> Abrir o processo de <b>pecuniária</b> no Furriel ${mids.some(temPecuniaria) ? `<span class="muted">(já aberto para ${esc(mids.filter(temPecuniaria).map(nomeMil).join(', '))})</span>` : ''}</label>
     <p class="muted">Sai um documento por página, na ordem de cada militar. A folha de alterações sai à parte, em Alterações.</p>
     <div class="acts"><button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Gerar</button></div></form></div>`;
-  $('#frm').onsubmit = ev => { ev.preventDefault(); const k = $$('input[name=kit]:checked').map(x => x.value); fecharModal(); emitir('kitLic', JSON.stringify({ mids, k })); };
+  $('#frm').onsubmit = async ev => { ev.preventDefault(); const k = $$('input[name=kit]:checked').map(x => x.value), pec = $('#kit_pec').checked; fecharModal();
+    const novos = pec ? mids.filter(id => !temPecuniaria(id)) : [];
+    if (novos.length) { await salvar('Processos', novos.map(id => ({ area: 'furriel', tipo: 'Pecuniária', militarId: id, abertura: hoje(), situacao: 'Aberto', ref: '', obs: 'Aberto no licenciamento.' }))); toast(`Processo de pecuniária aberto no Furriel para ${novos.length} militar(es).`); }
+    if (k.length) emitir('kitLic', JSON.stringify({ mids, k })); };
 }
 DOCS.kitLic = arg => { const { mids, k } = JSON.parse(arg);
   return juntar('Efetivo', `Licenciamento ${hoje()}`, mids.flatMap(id => [k.includes('sermil') && DOCS.sermil(id + '|Licenciamento'), k.includes('nada') && DOCS.nadaDeve(id), k.includes('ficha') && DOCS.fichaDisc(id)].filter(Boolean)));
@@ -2343,7 +2350,7 @@ function cardAniversarios() {
 }
 
 // ---------- processos do Furriel e da Sargenteação (acompanhamento do andamento e dos prazos)
-const TIPOS_PROC = { furriel: ['Despesa a anular', 'Auxílio pré-escolar', 'Declaração de beneficiários', 'Pecuniária', 'Vale-rancho', 'Saúde (FUSEx)', 'PHPM', 'Outro'], sgte: ['Exercícios anteriores', 'Requerimento', 'Outro'] };
+const TIPOS_PROC = { furriel: ['Despesa a anular', 'Auxílio pré-escolar', 'Declaração de beneficiários', 'Pecuniária', 'Vale-rancho', 'Saúde (FUSEx)', 'Atualização da PHPM', 'Outro'], sgte: ['Exercícios anteriores', 'Requerimento', 'Outro'] };
 const SIT_PROC = ['Aberto', 'Aguardando documento', 'Encaminhado', 'Concluído', 'Indeferido'];
 const procAberto = x => !['Concluído', 'Indeferido'].includes(x.situacao);
 function vProcessos(area) {
@@ -2368,6 +2375,34 @@ function editarProcesso(id, area) {
 DOCS.processos = area => docPadrao({ tipo: 'Efetivo', nome: `Processos ${area} ${hoje()}`, titulo: `PROCESSOS EM ANDAMENTO – ${area === 'furriel' ? 'FURRIEL' : 'SARGENTEAÇÃO'}`, paisagem: true, cab: ['Tipo', 'Militar', 'Aberto em', 'Prazo', 'Situação', 'DIEx / NUP / BI', 'Andamento'],
   linhas: (S.db.Processos || []).filter(x => (x.area || 'furriel') === area && procAberto(x)).map(x => [{ v: x.tipo, l: 1 }, { v: x.militarId ? nomeMil(x.militarId) : '', l: 1 }, fmt(x.abertura), fmt(x.prazo), x.situacao, x.ref || '', { v: x.obs || '', l: 1 }]),
   w: [15, 18, 9, 9, 11, 15, 23], sz: 8.5 });
+
+// ---------- PHPM: pasta do militar, que precisa estar sempre atualizada. Guarda a data da última atualização de cada um.
+const mesesPhpm = () => num(cfg('phpmMeses')) || 12;
+const phpmDe = mid => (S.db.PHPM || []).find(x => x.id === mid) || {};
+/** 'ok' | 'vence' (nos próximos 30 dias) | 'vencida' | 'sem' */
+function sitPhpm(mid) {
+  const x = phpmDe(mid); if (!x.data) return 'sem';
+  const lim = addDias(x.data, Math.round(mesesPhpm() * 30.4)), d = hoje();
+  return lim < d ? 'vencida' : lim < addDias(d, 30) ? 'vence' : 'ok';
+}
+const TAG_PHPM = { ok: ['ok', 'em dia'], vence: ['warn', 'vence em 30 dias'], vencida: ['dng', 'desatualizada'], sem: ['dng', 'sem registro'] };
+function vPhpm() {
+  const ver = S.filtro.phpmVer || 'pend', l = militaresAtivos().filter(m => (ver === 'todos' || sitPhpm(m.id) !== 'ok') && casa('phpmq', nomeMil(m)));
+  const n = k => militaresAtivos().filter(m => sitPhpm(m.id) === k).length;
+  return `<div class="cards">${['ok', 'vence', 'vencida', 'sem'].map(k => `<div class="card"><h4>${TAG_PHPM[k][1]}</h4><div class="big"><span class="tag ${TAG_PHPM[k][0]}" style="font-size:26px;padding:2px 14px">${n(k)}</span></div></div>`).join('')}</div>
+    <div class="bar">${busca('phpmq', 'Buscar militar…')}<select onchange="S.filtro.phpmVer=this.value;render()" aria-label="Quais"><option value="pend">Só as que precisam atualizar</option><option value="todos" ${ver === 'todos' ? 'selected' : ''}>Todo o efetivo</option></select><span class="grow"></span>${botoesDocGrandes('phpm', '')}</div>
+    ${tabela(l, [{ l: 'Militar', v: m => `<b>${esc(nomeMil(m))}</b>` }, { l: 'Última atualização', v: m => fmt(phpmDe(m.id).data) || '<span class="muted">—</span>', s: m => phpmDe(m.id).data || '' },
+      { l: 'Situação', v: m => `<span class="tag ${TAG_PHPM[sitPhpm(m.id)][0]}">${TAG_PHPM[sitPhpm(m.id)][1]}</span>` }, { l: 'Obs', v: m => esc(phpmDe(m.id).obs || '') }],
+      pode() ? m => `<button class="btn sm pri" onclick="phpmHoje('${m.id}')">Atualizada hoje</button> <button class="btn sm" onclick="editarPhpm('${m.id}')">Editar</button>` : null)}
+    <p class="muted">Conta ${mesesPhpm()} meses desde a última atualização (muda em Configurações). Atualize também quando houver mudança: casamento, filho, endereço, beneficiário.</p>`;
+}
+async function phpmHoje(mid) { await salvar('PHPM', [{ ...phpmDe(mid), id: mid, data: hoje() }]); toast('PHPM de ' + nomeMil(mid) + ' atualizada.'); render(); }
+function editarPhpm(mid) {
+  abrirForm({ titulo: 'PHPM – ' + nomeMil(mid), valores: { ...phpmDe(mid), id: mid }, campos: [{ k: 'data', l: 'Última atualização', t: 'date' }, { k: 'obs', l: 'Observação (o que mudou, o que falta)', full: true }],
+    aoSalvar: o => salvar('PHPM', [{ ...o, id: mid }]) });
+}
+DOCS.phpm = () => docPadrao({ tipo: 'Efetivo', nome: `PHPM ${hoje()}`, titulo: 'CONTROLE DE ATUALIZAÇÃO DA PHPM', cab: ['Nº', 'P/G', 'Nome de guerra', 'Última atualização', 'Situação', 'Obs'],
+  linhas: militaresAtivos().map((m, i) => [pad(i + 1), m.postoGrad, { v: m.nomeGuerra, l: 1 }, fmt(phpmDe(m.id).data), TAG_PHPM[sitPhpm(m.id)][1], { v: phpmDe(m.id).obs || '', l: 1 }]), w: [6, 10, 26, 16, 18, 24], sz: 9 });
 
 // ---------- protocolo de documentos (SPED / DIEx): o que chegou, o que saiu e o prazo de resposta
 const ESPECIES_DOC = ['DIEx', 'Ofício', 'Requerimento', 'Parte', 'Mensagem', 'Nota', 'Outro'];
@@ -2402,7 +2437,7 @@ const TIPOS_PARTE = ['Parte pessoal', 'Parte de inteligência', 'Outra'];
 function vPartes() {
   const l = disc('Parte').filter(x => casa('parteq', x.numero, x.assunto, x.relato, x.subtipo)).sort((a, b) => String(b.data).localeCompare(a.data));
   return `<div class="bar">${busca('parteq', 'Buscar…')}<span class="grow"></span>${pode() ? '<button class="btn pri" onclick="editarParte()">+ Parte</button>' : ''}</div>
-    ${tabela(l, [{ l: 'Nº', v: x => esc(x.numero) }, { l: 'Data', v: x => fmt(x.data), s: x => x.data }, { l: 'Tipo', v: x => esc(x.subtipo) }, { l: 'Assunto', v: x => `<b>${esc(x.assunto || '')}</b>` }, { l: 'Ao', v: x => esc(x.autoridade || '') }],
+    ${tabela(l, [{ l: 'Nº', v: x => esc(x.numero) }, { l: 'Data', v: x => fmt(x.data), s: x => x.data }, { l: 'Tipo', v: x => `${esc(x.subtipo)}${reservadoParte(x) ? ' <span class="tag dng">RESERVADO</span>' : ''}` }, { l: 'Assunto', v: x => `<b>${esc(x.assunto || '')}</b>` }, { l: 'Ao', v: x => esc(x.autoridade || '') }],
       x => `${botoesDoc('parte', x.id, 'Imprimir')} ${pode() ? `<button class="btn sm" onclick="editarParte('${x.id}')">Editar</button>` : ''}`)}
     <p class="muted">As partes ficam junto da Justiça e Disciplina: só os oficiais e o Sgte veem.</p>`;
 }
@@ -2415,11 +2450,13 @@ function editarParte(id) {
     aoSalvar: o => salvar('Disciplina', [{ ...o, tipo: 'Parte' }]),
     extra: id ? `<div class="acts" style="justify-content:flex-start"><button type="button" class="btn sm dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button></div>` : '' });
 }
-DOCS.parte = id => { const x = disc('Parte').find(y => y.id === id);
-  return { tipo: 'Disciplina', ref: id, titulo: `Parte ${x.numero} - ${x.assunto || x.subtipo}`, blocos: [...blocosCabecalho(), { esp: 1 }, { p: `PARTE Nº ${x.numero}`, c: 1, b: 1 }, { esp: 1 },
+/** Parte de inteligência sai marcada RESERVADO no alto e no fim do documento. */
+const reservadoParte = x => x.subtipo === 'Parte de inteligência';
+DOCS.parte = id => { const x = disc('Parte').find(y => y.id === id), res = reservadoParte(x) ? [{ p: 'RESERVADO', c: 1, b: 1, sz: 13 }] : [];
+  return { tipo: 'Disciplina', ref: id, titulo: `Parte ${x.numero} - ${x.assunto || x.subtipo}`, blocos: [...res, ...blocosCabecalho(), { esp: 1 }, { p: `PARTE Nº ${x.numero}`, c: 1, b: 1 }, { esp: 1 },
     { p: `**Do:** ${x.participante || ''}`, m: 1, l: 1 }, { p: `**Ao:** ${x.autoridade || ''}`, m: 1, l: 1 }, { p: `**Assunto:** ${x.assunto || ''}`, m: 1, l: 1 }, ...(x.obs ? [{ p: `**Anexo(s):** ${x.obs}`, m: 1, l: 1 }] : []), { esp: 1 },
     ...String(x.relato || '').split('\n').filter(s => s.trim()).map((t, i) => ({ p: `${i + 1}. ${t.trim()}`, ind: 0, mt: 4 })), { esp: 1 },
-    { p: localData(x.data), r: 1 }, ...blocosAssinatura(x.participante || cfg('cmtNome'), cfg('cmtFuncao'))] };
+    { p: localData(x.data), r: 1 }, ...blocosAssinatura(x.participante || cfg('cmtNome'), cfg('cmtFuncao')), ...(res.length ? [{ esp: 2 }, ...res] : [])] };
 };
 
 // ============================================================ tempo de serviço: engajamento, reengajamento e prorrogação
@@ -4310,6 +4347,7 @@ const CAMPOS_CFG = [
   { k: 'cmtFuncao', l: 'Função (ex.: Cmt Cia)' },
   { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
   { k: 'rm', l: 'Região Militar (SERMILMOB, ex.: 11ª RM)' },
+  { k: 'phpmMeses', l: 'PHPM: atualizar a cada quantos meses', t: 'number' },
   { k: 'nadaDeveSecoes', l: 'Nada Deve: seções / SU / permissionários consultados (uma por linha)', t: 'textarea' },
   { k: 'avisoEngaj', l: 'Avisar o fim do tempo de serviço com quantos dias de antecedência', t: 'number' },
   { secao: 'Material' },
@@ -4576,8 +4614,9 @@ const VIEWS_FN = { painel: vPainel, sargenteacao: vSargenteacao, saude: vSaude, 
   disciplina: () => `<h2>Justiça e disciplina</h2><p class="sub">FATD, punições, elogios, Boca Podre e ficha disciplinar. Só os oficiais e o Sgte (marcação "Justiça e Disciplina" no cadastro do usuário).</p>${vDisciplina()}`, arquivo: vArquivo, config: vConfig, busca: vBusca };
 function vArranchamento() {
   const t = S.sub.arranchamento || 'proc';
-  const cab = `<h2>Furriel</h2><p class="sub">Processos do Furriel (despesa a anular, pré-escolar, beneficiários, pecuniária, vale-rancho, saúde e PHPM) e arranchamento.</p>${abas('arranchamento', [['proc', 'Processos'], ['rancho', 'Arranchamento']])}`;
+  const cab = `<h2>Furriel</h2><p class="sub">Processos do Furriel (despesa a anular, pré-escolar, beneficiários, pecuniária, vale-rancho, saúde e PHPM) e arranchamento.</p>${abas('arranchamento', [['proc', 'Processos'], ['phpm', 'PHPM'], ['rancho', 'Arranchamento']])}`;
   if (t === 'proc') return cab + vProcessos('furriel');
+  if (t === 'phpm') return cab + vPhpm();
   return cab + `<div class="card"><span class="tag warn">Em construção</span><h3 style="margin:10px 0 4px">Arranchamento</h3>
     <p class="muted" style="margin-top:0">Esta parte ainda vai ser feita. Mande os modelos usados pelo Furriel (mapa de arranchamento, relação de arranchados, faltas ao rancho, saque de etapa) para montarmos.</p></div>`;
 }
@@ -4664,6 +4703,7 @@ function semente() {
     Protocolo: [{ id: 'pt1', data: addDias(d, -6), sentido: 'Recebido', especie: 'DIEx', numero: '120-S1', origemDestino: 'S1', responsavelId: 'm4', assunto: 'Relação de militares para o curso de cabos', prazo: addDias(d, -1), situacao: 'Pendente', obs: '' },
       { id: 'pt2', data: addDias(d, -2), sentido: 'Recebido', especie: 'DIEx', numero: '88-S4', origemDestino: 'Fisc Adm / S4', responsavelId: 'm12', assunto: 'Inventário anual – prazo de entrega', prazo: addDias(d, 10), situacao: 'Pendente', obs: '' },
       { id: 'pt3', data: addDias(d, -9), sentido: 'Expedido', especie: 'DIEx', numero: '15-1ª Cia', origemDestino: 'S1', responsavelId: 'm16', assunto: 'Escala de serviço do mês', prazo: '', situacao: 'Respondido', obs: '' }],
+    PHPM: [['m1', -100], ['m4', -400], ['m8', -340], ['m12', -20], ['m16', -200]].map(([id, n]) => ({ id, data: addDias(d, n), obs: '' })),
     Faltas: [{ id: 'fa1', data: addDias(d, -1), formatura: 'Manhã', militarId: 'm27', justificada: 'Não', obs: '' }],
     TempoServico: [{ id: 'ts1', militarId: 'm12', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -300), is: 'Apto A', inicio: addDias(d, -280), fim: addDias(d, 60), situacao: 'Deferido', bi: 'BI nº 30' },
       { id: 'ts2', militarId: 'm13', tipo: 'Prorrogação de tempo de serviço', requerimento: addDias(d, -5), is: '', inicio: addDias(d, 40), fim: '', situacao: 'Em andamento', bi: '' },
