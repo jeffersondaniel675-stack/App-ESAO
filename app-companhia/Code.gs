@@ -235,8 +235,10 @@ function criarDoc(tipo, titulo, blocos, referencia) {
   body.setMarginTop(40).setMarginBottom(40).setMarginLeft(56).setMarginRight(40);
   const largura = body.getPageWidth() - body.getMarginLeft() - body.getMarginRight();
   const AL = DocumentApp.HorizontalAlignment;
+  // fonte do documento: { fonte: 'Times New Roman' } nos blocos (padrão Arial)
+  const FONTE = (blocos.filter(function (b) { return b.fonte; })[0] || {}).fonte || 'Arial';
   const estilo = function (par, o, sz) {
-    par.setFontFamily('Arial').setFontSize(o.sz || sz || 10).setSpacingAfter(0).setSpacingBefore(o.mt || 0).setLineSpacing(1.1);
+    par.setFontFamily(FONTE).setFontSize(o.sz || sz || 10).setSpacingAfter(0).setSpacingBefore(o.mt || 0).setLineSpacing(1.1);
     par.setAlignment(o.c ? AL.CENTER : o.r ? AL.RIGHT : o.l ? AL.LEFT : AL.JUSTIFY);
     if (par.getText()) par.editAsText().setBold(!!o.b).setItalic(!!o.i);
   };
@@ -250,7 +252,7 @@ function criarDoc(tipo, titulo, blocos, referencia) {
     trechos.forEach(function (r) { if (r[2]) t.setBold(r[0], r[1], true); if (r[3]) t.setUnderline(r[0], r[1], true); });
   };
   blocos.forEach(function (b) {
-    if (b.paisagem || b.cont || b.moldura) return;
+    if (b.paisagem || b.cont || b.moldura || b.fonte) return;
     if (b.hr) { body.appendHorizontalRule(); return; }
     if (b.quebra) { body.appendPageBreak(); return; }
     if (b.pont) {

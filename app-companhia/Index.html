@@ -1035,7 +1035,7 @@ const CSS_DOC = `.doc { font: 10pt/1.25 Arial, "Liberation Sans", Helvetica, san
 
 function htmlDoc(blocos) {
   const corpo = blocos.map(b => {
-    if (b.paisagem || b.cont || b.moldura) return '';
+    if (b.paisagem || b.cont || b.moldura || b.fonte) return '';
     if (b.hr) return '<hr>';
     if (b.quebra) return '<div class="quebra"></div>';
     if (b.pont) return `<p class="pont" style="${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}"><span>${htmlRico(b.pont[0])}</span><span class="pt"></span><span>${htmlRico(b.pont[1])}</span></p>`;
@@ -1052,7 +1052,8 @@ function htmlDoc(blocos) {
     const cls = [b.c ? 'c' : b.r ? 'r' : b.l ? 'l' : 'j', b.b ? 'b' : '', b.i ? 'i' : ''].join(' ');
     return `<p class="${cls}" style="${b.junto ? 'break-after:avoid;page-break-after:avoid;' : ''}${b.mt ? `margin-top:${b.mt}pt;` : ''}${b.ind ? `padding-left:${b.ind}pt;` : ''}${b.sz ? `font-size:${b.sz}pt` : ''}">${(b.m ? htmlRico(b.p) : esc(b.p)) || '\u00a0'}</p>`;
   }).join('');
-  return '<div class="doc">' + (blocos.some(b => b.moldura) ? `<div class="moldura">${corpo}</div>` : corpo) + '</div>';
+  const fonte = (blocos.find(b => b.fonte) || {}).fonte;
+  return `<div class="doc"${fonte ? ` style="font-family:'${fonte}', 'Liberation Serif', serif"` : ''}>` + (blocos.some(b => b.moldura) ? `<div class="moldura">${corpo}</div>` : corpo) + '</div>';
 }
 /**
  * Página do documento. Com o bloco { cont: { esq: [linhas], dir: [linhas] } }, da 2ª página em diante sai um cabeçalho de
@@ -2205,7 +2206,7 @@ function blocosFichaDisc(mid) {
     { p: 'b) Esta Ficha deverá acompanhar o militar em suas movimentações, de acordo com o § 6º do art. 34 do RDE.', sz: 9 }];
 }
 /** Vários documentos num só (um por página). */
-const juntar = (tipo, titulo, docs) => ({ tipo, titulo, blocos: docs.flatMap((d, i) => [...(i ? [{ quebra: 1 }] : []), ...d.blocos.filter(b => !b.paisagem && !b.cont && !b.moldura)]) });
+const juntar = (tipo, titulo, docs) => ({ tipo, titulo, blocos: docs.flatMap((d, i) => [...(i ? [{ quebra: 1 }] : []), ...d.blocos.filter(b => !b.paisagem && !b.cont && !b.moldura && !b.fonte)]) });
 DOCS.fichasDisc = lista => juntar('Disciplina', `Fichas disciplinares ${hoje()}`, (lista ? ids(lista) : militaresAtivos().map(m => m.id)).map(id => DOCS.fichaDisc(id)));
 function editarAnulacao(id, mid) {
   const x = id ? disc('Anulacao').find(y => y.id === id) : { tipo: 'Anulacao', data: hoje(), militarId: mid, subtipo: 'Anulação' };
@@ -2483,15 +2484,24 @@ DOCS.parte = id => { const x = disc('Parte').find(y => y.id === id), res = reser
 
 // ============================================================ Furriel: aditamento do Furriel, SAT completo, D.A., arranchamento e vale diário, exercício anterior
 // ---------- aditamento do Furriel (SAT e D.A. saem nele): visto/autorizo do Cmt da OM, 4 partes e assinatura do Cmt SU
-function blocosAditFurriel({ numero, data, autorizo = 'AUTORIZO:', terceira }) {
-  const sem = t => [{ p: t, c: 1, b: 1, mt: 6 }, { p: '(Sem Alteração)', c: 1 }];
-  return [...blocosCabecalho(), { esp: 1 }, { p: localData(data), r: 1 }, { esp: 1 },
-    { t: [['', { v: `${autorizo}\n\n______________________________\n${cfg('cmtOMNome') || ''}\n${cfg('cmtOMFuncao') || 'Cmt da OM'}`, b: 1 }]], sem: 1, w: [50, 50], sz: 9.5 }, { esp: 1 },
-    { p: `ADITAMENTO Nº ${numero || '____'}/FURRIEL ${String(cfg('sigla')).toUpperCase()}, DIA ${fmt(data)} AO BI Nº ____ DE ____ DE ______________ DE ${data.slice(0, 4)}.`, b: 1 },
-    { p: 'Para conhecimento deste aquartelamento e devida execução, publico o seguinte:', mt: 6 },
-    ...sem('1ª Parte\nSERVIÇOS DIÁRIOS'), ...sem('2ª Parte\nINSTRUÇÃO'),
-    { p: '3ª Parte\nASSUNTOS GERAIS E ADMINISTRATIVOS', c: 1, b: 1, mt: 6 }, ...terceira,
-    ...sem('4ª Parte\nJUSTIÇA E DISCIPLINA'), ...blocosAssinatura(cfg('cmtNome'), `${cfg('cmtFuncao')}`)];
+/** "FULANO DE TAL – Cap" → **FULANO DE TAL** – CAP (nome em negrito, posto normal, como nos modelos) */
+const nomePosto = t => { const [n, pg] = String(t || '').split(/\s+[–-]\s+/); return `**${String(n || '').toUpperCase()}**${pg ? ' – ' + pg.toUpperCase() : ''}`; };
+const assinaturaModelo = (nome, funcao, esp = 3) => [{ esp }, { p: nomePosto(nome), c: 1, m: 1 }, { p: String(funcao || '').toUpperCase(), c: 1, b: 1 }];
+/** Nome completo com o nome de guerra em negrito (como nas relações do Furriel). */
+const nomeGuerraNegrito = m => { const g = String(m.nomeGuerra || '').split(/\s+/).map(norm).filter(Boolean), nc = String(m.nomeCompleto || m.nomeGuerra || '').toUpperCase();
+  return nc.split(/\s+/).map(w => g.includes(norm(w)) ? `**${w}**` : w).join(' ').replace(/\*\* \*\*/g, ' '); };
+const boletim = () => cfg('boletim') || 'BI';
+/** Data como nos aditamentos do Furriel: "Quartel em Brasília-DF, 27 de JULHO de 2026." */
+const localDataMes = iso => { const d = dataDe(iso); return `${cfg('cidade')}, ${pad(d.getDate())} de ${MESES_EXT[d.getMonth()].toUpperCase()} de ${d.getFullYear()}.`; };
+// ---------- aditamento do Furriel (SAT e D.A. saem nele), no modelo: letra Times, autorizo/visto do Cmt da OM à direita, partes centralizadas
+function blocosAditFurriel({ numero, data, autorizo = 'AUTORIZO:', terceira, quarta = true, fecho = [] }) {
+  const parte = (n, t, sem = true) => [{ esp: 1 }, { p: `${n} Parte`, c: 1, b: 1 }, { p: t, c: 1, b: 1 }, ...(sem ? [{ p: '(Sem Alteração)', c: 1 }] : [])];
+  return [{ fonte: 'Times New Roman' }, ...blocosCabecalho(), { esp: 1 }, { p: localDataMes(data), c: 1, sz: 11 }, { esp: 1 },
+    { p: autorizo, r: 1, b: 1, sz: 10 }, { esp: 2 }, { p: nomePosto(cfg('cmtOMNome') || '______________________________'), r: 1, m: 1, sz: 10 }, { p: String(cfg('cmtOMFuncao') || 'Cmt da OM').toUpperCase(), r: 1, b: 1, sz: 10 }, { esp: 1 },
+    { p: `ADITAMENTO Nº ${numero || '____'}/FURRIEL ${cfg('sigla')}, DIA ${fmt(data)} AO ${boletim()} Nº ____ DE ____ DE ______________ DE ${data.slice(0, 4)}.`, sz: 11 }, { esp: 2 },
+    { p: 'Para conhecimento deste aquartelamento e devida execução, publico o seguinte:', c: 1, b: 1, sz: 10 },
+    ...parte('1ª', 'SERVIÇOS DIÁRIOS'), ...parte('2ª', 'INSTRUÇÃO'), ...parte('3ª', 'ASSUNTOS GERAIS E ADMINISTRATIVOS', false), { esp: 1 }, ...terceira,
+    ...(quarta ? [...parte('4ª', 'JUSTIÇA E DISCIPLINA'), ...assinaturaModelo(cfg('cmtNome'), `${cfg('cmtFuncao')} ${cfg('sigla')}`)] : []), ...fecho];
 }
 const numAdtFur = () => S.filtro.adtFur || '';
 const campoAdtFur = () => `<label class="muted">Aditamento nº <input type="text" style="width:80px" value="${esc(numAdtFur())}" onchange="S.filtro.adtFur=this.value" placeholder="___"></label>`;
@@ -2521,9 +2531,9 @@ DOCS.satSolic = id => { const x = S.db.SAT.find(y => y.id === id), m = MIL[x.mil
 /** Espelho do SAT: aditamento do Furriel com as solicitações e atualizações (os marcados na tela do SAT). */
 DOCS.satEspelho = arg => { const [mes, l] = arg.split('|'), lista = ids(l).map(id => S.db.SAT.find(x => x.id === id)).filter(Boolean);
   return { tipo: 'Efetivo', titulo: `Espelho SAT ${mes}`, blocos: blocosAditFurriel({ numero: numAdtFur(), data: hoje(), autorizo: 'VISTO:', terceira: [
-    { p: 'Solicito-vos que sejam publicadas em BI as solicitações e atualizações do Auxílio-Transporte, de acordo com o artigo 7º da Portaria nº 014-DGS, de 30 de junho de 1999, dos militares relacionados abaixo:', mt: 4 }, { esp: 1 },
-    { t: [['ORD', 'GRAD', 'NOME', 'PREC-CP', 'VALOR DIÁRIO', 'VALOR DO SAT'], ...lista.map((x, i) => { const m = MIL[x.militarId] || {}; return [pad(i + 1), String(m.postoGrad || '').toUpperCase(), { v: (m.nomeCompleto || m.nomeGuerra || '').toUpperCase(), l: 1 }, m.precCp || '', `R$ ${reais(diarioSat(x))}`, `R$ ${reais(mensalSat(x))}`]; })], h: 1, w: [7, 10, 39, 16, 14, 14], sz: 9 },
-    { p: 'Em consequência: S1, Cmt SU e interessados tomem conhecimento e providências decorrentes.', mt: 6 }] }) };
+    { p: `Solicito-vos que seja publicada em ${boletim()} as solicitações e atualizações do Auxílio Transporte de acordo com o artigo 7º da Portaria nº 014-DGS, de 30 de junho de 1999, dos militares relacionados abaixo:`, sz: 11 }, { esp: 1 },
+    { t: [['ORD', 'GRAD', 'NOME', 'PREC CP', 'VALOR DIÁRIO', 'VALOR DA SAT'], ...lista.map((x, i) => { const m = MIL[x.militarId] || {}; return [pad(i + 1), String(m.postoGrad || '').toUpperCase(), { v: nomeGuerraNegrito(m), m: 1 }, m.precCp || '', `R$ ${reais(diarioSat(x))}`, `R$ ${reais(mensalSat(x))}`]; })], h: 1, w: [7, 10, 39, 16, 14, 14], sz: 9 },
+    { esp: 1 }, { p: 'Em consequência: S1, Cmt SU e interessados tomem conhecimento e providências decorrentes.', c: 1, sz: 10 }] }) };
 };
 
 // ---------- D.A. (despesa a anular) do auxílio-transporte: dias em que o militar não se deslocou, com o motivo pela legenda
@@ -2578,14 +2588,15 @@ function ajustarDA(mes, mid) {
 LISTAS.da = () => { const mes = S.filtro.daMes || hoje().slice(0, 7);
   return { nome: `DA ${mes}`, cab: ['Prec-CP', 'P/G', 'Nome', 'Valor diário', 'Nº dias', 'D.A.', 'Legenda'], linhas: calcDA(mes).map(r => [r.m.precCp || '', r.m.postoGrad, r.m.nomeCompleto || r.m.nomeGuerra, Number(r.diario.toFixed(2)), r.dias, Number(r.valor.toFixed(2)), r.legenda]) }; };
 DOCS.da = mes => { const l = calcDA(mes), [a, mm] = mes.split('-');
-  return { tipo: 'Efetivo', titulo: `DA ${mes}`, blocos: blocosAditFurriel({ numero: numAdtFur(), data: hoje(), terceira: [
-    { p: `Solicito que seja publicada, conforme documentos anexados, a Despesa a Anular (D.A.) do Auxílio-Transporte, referente ao mês de ${MESES_EXT[mm - 1].toUpperCase()} de ${a}, para os militares relacionados, Código G95, de acordo com a letra "g" do nº 4 das Normas para o Controle da Solicitação e Concessão do Auxílio-Transporte e o Exame de sua Requisição no âmbito do Exército Brasileiro, aprovadas pela Port. nº 098-DGP, de 31 Out 01.`, mt: 4 }, { esp: 1 },
-    { t: [['PREC-CP', 'P/G', 'NOME', 'VALOR DIÁRIO', 'Nº DIAS', 'D.A.', 'MOTIVO (LEGENDA)'], ...l.map(r => [r.m.precCp || '', String(r.m.postoGrad).toUpperCase(), { v: (r.m.nomeCompleto || r.m.nomeGuerra).toUpperCase(), l: 1 }, `R$ ${reais(r.diario)}`, String(r.dias), `R$ ${reais(r.valor)}`, r.legenda]),
-      [{ v: 'TOTAL', b: 1 }, '', '', '', { v: String(l.reduce((s, r) => s + r.dias, 0)), b: 1 }, { v: `R$ ${reais(l.reduce((s, r) => s + r.valor, 0))}`, b: 1 }, '']], h: 1, w: [13, 9, 34, 12, 8, 12, 12], sz: 8.5 },
-    { p: `**LEGENDA:** ${LEGENDA_DA.map((t, i) => `${i + 1} – ${t}`).join('; ')}.`, m: 1, sz: 8, mt: 6 },
-    { p: 'Em consequência, S1, Secretaria, SPP e interessados tomem conhecimento e providências decorrentes.', mt: 6 }] }) };
+  return { tipo: 'Efetivo', titulo: `DA ${mes}`, blocos: blocosAditFurriel({ numero: numAdtFur(), data: hoje(), quarta: false, terceira: [
+    { p: `Solicito que seja publicada, conforme documentos anexados, a Despesa a Anular (D.A.) do Auxílio Transporte, referente ao mês ${MESES_EXT[mm - 1].toUpperCase()} de ${a}, para os militares relacionados, Código G95, de acordo com a letra “g” do nº 4, das Normas para o Controle da Solicitação e Concessão do Auxílio Transporte e o Exame de sua Requisição no âmbito do Exército Brasileiro, aprovadas pela Port. nº 098-DGP, de 31 Out 01.`, sz: 11 }, { esp: 1 },
+    { t: [['PREC/CP', 'P/G', 'NOME', 'VALOR DIÁRIO', 'Nº DIAS', 'D.A', 'MOTIVO LEGENDA'], ...l.map(r => [r.m.precCp || '', String(r.m.postoGrad).toUpperCase(), { v: nomeGuerraNegrito(r.m), m: 1 }, `R$ ${reais(r.diario)}`, String(r.dias), `R$ ${reais(r.valor)}`, String(r.legenda).replace(/-/g, ' - ')])],
+      h: 1, w: [14, 9, 37, 11, 7, 11, 11], sz: 8.5 }, { esp: 2 },
+    { p: 'LEGENDA:', l: 1, sz: 10 }, { p: LEGENDA_DA.map((t, i) => `${i + 1} – ${t}`).join('; '), l: 1, sz: 10 }],
+    fecho: [...assinaturaModelo(cfg('cmtNome'), `${cfg('cmtFuncao')} ${cfg('sigla')}`), { esp: 2 },
+      { p: 'Em consequência, S/1, Secretaria, SPP e interessados tomem conhecimento e providências decorrentes.', c: 1, sz: 10 }, { p: '_'.repeat(70), c: 1, sz: 10 },
+      { p: `Publicado no ${boletim()} Nr ........, de ........./ .............../ ........, item ...........`, c: 1, sz: 10 }] }) };
 };
-
 // ---------- arranchamento: quem come o quê no dia (café, almoço, jantar, ceia), nominal e vale diário
 const REFEICOES = [['C', 'CAFÉ'], ['A', 'ALMOÇO'], ['J', 'JANTAR'], ['N', 'CEIA']];
 const CATS_RANCHO = [['OFICIAIS', ['Gen', 'Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp']], ['ST/SGT', ['ST', '1º Sgt', '2º Sgt', '3º Sgt']], ['CB/SD', ['Cb', 'Sd EP', 'Sd EV', 'Sd']]];
@@ -4806,6 +4817,7 @@ const CAMPOS_CFG = [
   { k: 'sgteNome', l: 'Sargenteante (nome – P/G, para as assinaturas)' },
   { k: 'rm', l: 'Região Militar (SERMILMOB, ex.: 11ª RM)' },
   { k: 'cmtOMNome', l: 'Cmt da OM (visto / autorizo nos aditamentos do Furriel)' }, { k: 'cmtOMFuncao', l: 'Função do Cmt da OM (ex.: Cmt 11º D Sup)' },
+  { k: 'boletim', l: 'Boletim em que o Furriel publica (BI, BAR…)' },
   { k: 'furrielNome', l: 'Furriel (nome – P/G, para o arranchamento e o vale; vazio = Aux Furriel do quadro de funções)' },
   { k: 'ranchoUtil', l: 'Arranchamento padrão em dia útil: C café, A almoço, J jantar, N ceia (ex.: A ou CA)' },
   { k: 'satDias', l: 'SAT: dias por mês no cálculo (padrão 22)', t: 'number' },
