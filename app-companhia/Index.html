@@ -3383,7 +3383,7 @@ function editarFatd(id, base = {}) {
   $('#modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fecharModal()"><form class="modal" id="frm" style="max-width:820px">
     <h3>${hist ? 'Punição anterior ao sistema' : id ? 'FATD nº ' + esc(f.numero) : 'Nova FATD'}</h3>
     ${id && !hist ? `<p style="margin-top:0"><span class="tag ${situacaoFatd(f).c}">${esc(situacaoFatd(f).t)}</span></p>` : hist ? '<p class="muted" style="margin-top:0">Só para a ficha e o cálculo do comportamento.</p>' : ''}
-    ${sec(1, 'Fato', `${campoHTML({ k: 'numero', l: hist ? 'Nº (FATD ou BI)' : 'Nº da FATD', req: true }, f.numero)}${campoHTML({ k: 'dataFato', l: 'Data do fato', t: 'date', req: true }, f.dataFato)}
+    ${sec(1, 'Fato', `${campoHTML({ k: 'numero', l: hist ? 'Nº (FATD ou BI)' : 'Nº da FATD', req: true }, f.numero)}${campoHTML({ k: 'dataFato', l: 'Data do fato', t: 'date', req: true }, f.dataFato)}${hist ? '' : campoHTML({ k: 'horaFato', l: 'Hora do fato', t: 'time' }, f.horaFato) + campoHTML({ k: 'localFato', l: 'Local do fato' }, f.localFato)}
       ${campoHTML({ k: 'militarId', l: 'Militar', t: 'militar', req: true }, f.militarId)}${campoHTML({ k: 'participante', l: 'Quem relatou (participante)' }, f.participante)}
       ${campoHTML({ k: 'relato', l: 'Relato do fato', t: 'textarea', req: !hist }, f.relato)}`)}
     ${hist ? '' : sec(2, 'Ciência e defesa', `${campoHTML({ k: 'ciencia', l: 'Ciência do militar (entrega da FATD)', t: 'date' }, f.ciencia)}
@@ -3394,8 +3394,11 @@ function editarFatd(id, base = {}) {
       ${campoHTML({ k: 'dataDecisao', l: 'Data da decisão', t: 'date' }, f.dataDecisao)}
       ${campoHTML({ k: 'classificacao', l: 'Transgressão', t: 'select', o: CLASSIF_TRANSG }, f.classificacao)}${campoHTML({ k: 'enquadramento', l: 'Enquadramento (nº do Anexo I do RDE)' }, f.enquadramento)}
       ${campoHTML({ k: 'punicao', l: 'Punição', t: 'select', o: PUNICOES }, f.punicao)}${campoHTML({ k: 'dias', l: 'Dias (impedimento, detenção, prisão)', t: 'number' }, f.dias)}
-      ${campoHTML({ k: 'inicio', l: 'Início do cumprimento', t: 'date' }, f.inicio)}${campoHTML({ k: 'autoridade', l: 'Autoridade que aplicou' }, f.autoridade || cfg('cmtNome'))}`)}
-    ${sec(hist ? 3 : 4, 'Publicação', `${campoHTML({ k: 'bi', l: 'Publicado em (ex.: BI nº 45 / ADT nº 12)' }, f.bi)}${campoHTML({ k: 'obs', l: 'Observações' }, f.obs)}`)}
+      ${campoHTML({ k: 'inicio', l: 'Início do cumprimento', t: 'date' }, f.inicio)}${campoHTML({ k: 'autoridade', l: 'Autoridade que aplicou' }, f.autoridade || cfg('cmtNome'))}
+      ${hist ? '' : campoHTML({ k: 'justificacao', l: 'Causas de justificação (incisos do art. 18, ex.: I)', ajuda: JUSTIF_RDE.map((t, i) => `${ROMANOS[i]} – ${t}`).join(' · ') }, f.justificacao)
+        + campoHTML({ k: 'atenuantes', l: 'Atenuantes (incisos do art. 19, ex.: I, V)', ajuda: ATENUANTES_RDE.map((t, i) => `${ROMANOS[i]} – ${t}`).join(' · ') }, f.atenuantes)
+        + campoHTML({ k: 'agravantes', l: 'Agravantes (incisos do art. 20, ex.: III)', ajuda: AGRAVANTES_RDE.map((t, i) => `${ROMANOS[i]} – ${t}`).join(' · ') }, f.agravantes)}`)}
+    ${sec(hist ? 3 : 4, 'Publicação', `${campoHTML({ k: 'bi', l: 'Publicado em (ex.: BI nº 45 / ADT nº 12)' }, f.bi)}${hist ? '' : campoHTML({ k: 'cienciaDecisao', l: 'Ciência da decisão pelo militar', t: 'date' }, f.cienciaDecisao)}${campoHTML({ k: 'obs', l: 'Observações' }, f.obs)}`)}
     <div class="acts">${id ? `<button type="button" class="btn dng" onclick="excluir('Disciplina','${id}',true)">Excluir</button><span class="grow"></span>` : ''}<button type="button" class="btn" onclick="fecharModal()">Cancelar</button><button class="btn pri">Salvar</button></div></form></div>`;
   const ajustar = () => {
     const pun = $('#f_decisao').value === 'Punido', p = $('#f_punicao').value;
@@ -3412,7 +3415,7 @@ function editarFatd(id, base = {}) {
     try {
       const v = k => $('#f_' + k) ? $('#f_' + k).value.trim() : (f[k] || '');
       const o = { ...f, tipo: 'FATD' };
-      ['numero', 'dataFato', 'militarId', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'obs'].forEach(k => { o[k] = v(k); });
+      ['numero', 'dataFato', 'horaFato', 'localFato', 'militarId', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'justificacao', 'atenuantes', 'agravantes', 'bi', 'cienciaDecisao', 'obs'].forEach(k => { o[k] = v(k); });
       if (!o.numero || !o.dataFato || !o.militarId) throw new Error('Preencha número, data do fato e militar.');
       if (o.decisao === 'Punido') {
         if (!o.punicao) throw new Error('Escolha a punição.');
@@ -3481,25 +3484,57 @@ async function marcarPublicados(a) {
   if (lista.length) await salvar('Disciplina', lista.map(x => ({ ...x, bi: ref })));
 }
 
+// RDE (Dec 4.346/2002): causas de justificação (art. 18), atenuantes (art. 19) e agravantes (art. 20)
+const ROMANOS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const JUSTIF_RDE = ['motivo de força maior plenamente comprovado', 'em preservação da ordem pública ou do interesse coletivo', 'legítima defesa própria ou de outrem', 'obediência a ordem superior, desde que a ordem não seja manifestamente ilegal',
+  'uso imperativo de meios violentos a fim de compelir o subordinado a cumprir rigorosamente o seu dever, em caso de perigo, necessidade urgente, calamidade pública ou manutenção da ordem e da disciplina', 'ignorância plenamente comprovada, desde que não atente contra os sentimentos normais de patriotismo, humanidade e probidade'];
+const ATENUANTES_RDE = ['bom comportamento', 'relevância de serviços prestados', 'ter sido a transgressão cometida para evitar mal maior', 'ter sido a transgressão cometida em defesa própria, de seus direitos ou de outrem, não se configurando causa de justificação', 'falta de prática do serviço'];
+const AGRAVANTES_RDE = ['mau comportamento', 'prática simultânea ou conexão de duas ou mais transgressões', 'reincidência de transgressão, mesmo punida verbalmente', 'conluio de duas ou mais pessoas', 'ser praticada a transgressão durante a execução de serviço',
+  'ser cometida a transgressão em presença de subordinado', 'ter abusado o transgressor de sua autoridade hierárquica', 'ser praticada a transgressão com premeditação', 'ter sido praticada a transgressão em presença de tropa', 'ter sido praticada a transgressão em presença de público'];
+/** "I, III" → ['I', 'III'] */
+const incisos = v => String(v || '').toUpperCase().split(/[^IVX]+/).filter(x => ROMANOS.includes(x));
+const marca = on => on ? '(X)' : '(  )';
 DOCS.fatd = id => {
-  const f = disc('FATD').find(x => x.id === id), m = MIL[f.militarId] || {};
-  const linha = '_______________________________________';
+  const f = disc('FATD').find(x => x.id === id), m = MIL[f.militarId] || {}, linha = '_'.repeat(95), dec = f.decisao;
+  const sec = t => ({ p: t, b: 1, l: 1, mt: 8, junto: 1 });
+  const lista = (titulo, itens, sel) => [{ p: titulo, b: 1, sz: 9, mt: 4 }, ...itens.map((t, i) => ({ p: `${marca(sel.includes(ROMANOS[i]))} ${ROMANOS[i]} – ${t};`, sz: 8.5, ind: 12 }))];
+  const part = militaresAtivos().find(x => norm(f.participante || '').includes(norm(x.nomeGuerra)) && x.nomeGuerra.length > 2);
   return { tipo: 'Disciplina', ref: f.id, titulo: `FATD ${String(f.numero).replace('/', '-')} - ${m.nomeGuerra || ''}`, blocos: [...blocosCabecalho(), { esp: 1 },
-    { p: `FORMULÁRIO DE APURAÇÃO DE TRANSGRESSÃO DISCIPLINAR Nº ${f.numero}`, c: 1, b: 1 }, { esp: 1 },
-    { p: '1. IDENTIFICAÇÃO DO MILITAR', b: 1, l: 1 },
-    { t: [[{ v: 'Posto/Grad', b: 1, l: 1 }, { v: m.postoGrad || '', l: 1 }, { v: 'Idt', b: 1, l: 1 }, { v: m.idt || '', l: 1 }], [{ v: 'Nome', b: 1, l: 1 }, { v: m.nomeCompleto || m.nomeGuerra || '', l: 1, span: 3 }], [{ v: 'Subunidade', b: 1, l: 1 }, { v: `${cfg('sigla')}${m.pelotao ? ' – ' + m.pelotao : ''}`, l: 1, span: 3 }]], w: [16, 34, 12, 38], sz: 9.5 },
-    { p: '2. RELATO DO FATO', b: 1, l: 1, mt: 8 },
-    { p: `Em ${fmtMil(f.dataFato)}, ${f.relato || ''}` }, { p: `Participante: ${f.participante || linha}`, mt: 4 },
-    { p: '3. CIÊNCIA', b: 1, l: 1, mt: 8 },
-    { p: `Recebi a 1ª via deste formulário em ${f.ciencia ? fmtMil(f.ciencia) : '____/____/______'}, ciente de que tenho o prazo de ${PRAZO_DEFESA} (três) dias úteis para apresentar, por escrito, as minhas justificativas ou razões de defesa.` },
-    ...blocosAssinatura('_______________________________', 'Assinatura do militar', 2),
-    { p: '4. JUSTIFICATIVAS / RAZÕES DE DEFESA', b: 1, l: 1, mt: 8 },
-    { p: f.defesa || `${linha}${linha}\n${linha}${linha}\n${linha}${linha}` },
-    { p: '5. DECISÃO DA AUTORIDADE', b: 1, l: 1, mt: 8 },
-    { p: f.decisao === 'Justificada' ? 'Considero justificado o fato e determino o arquivamento deste formulário.'
-      : f.decisao === 'Punido' ? `Aplico ao militar a punição de ${f.punicao.toLowerCase()}${num(f.dias) ? ` de ${f.dias} (${f.dias}) dia(s)` : ''}, por transgressão ${String(f.classificacao || '').toLowerCase()}${f.enquadramento ? `, enquadrada no nº ${f.enquadramento} do Anexo I do RDE` : ''}${f.inicio ? `, a contar de ${fmtMil(f.inicio)}` : ''}.`
-      : `( ) Justificado – arquivar     ( ) Punir: ${linha}` },
-    { esp: 1 }, { p: localData(f.dataDecisao || hoje()), r: 1 }, ...blocosAssinatura(f.autoridade || cfg('cmtNome'), cfg('cmtFuncao'))] };
+    { p: 'FORMULÁRIO DE APURAÇÃO DE TRANSGRESSÃO DISCIPLINAR', c: 1, b: 1 }, { p: `Nº ${f.numero} – ${cfg('sigla')}`, c: 1, b: 1 },
+    sec('1. IDENTIFICAÇÃO DO MILITAR ARROLADO'),
+    { t: [[{ v: 'Nome completo', b: 1, l: 1 }, { v: (m.nomeCompleto || m.nomeGuerra || '').toUpperCase(), l: 1, span: 3 }], [{ v: 'Posto/Grad', b: 1, l: 1 }, { v: m.postoGrad || '', l: 1 }, { v: 'Nº / Nome de guerra', b: 1, l: 1 }, { v: `${m.numero ? m.numero + ' – ' : ''}${m.nomeGuerra || ''}`, l: 1 }],
+      [{ v: 'Identidade', b: 1, l: 1 }, { v: m.idt || '', l: 1 }, { v: 'SU / Fração', b: 1, l: 1 }, { v: `${cfg('sigla')}${m.pelotao ? ' – ' + m.pelotao : ''}`, l: 1 }],
+      [{ v: 'Comportamento', b: 1, l: 1 }, { v: temComportamento(m) ? m.comportamento || (comportamentoSugerido(m) || {}).c || '' : '—', l: 1 }, { v: 'OM', b: 1, l: 1 }, { v: cfg('siglaOM'), l: 1 }]], w: [18, 32, 20, 30], sz: 9 },
+    sec('2. IDENTIFICAÇÃO DO PARTICIPANTE'),
+    { t: [[{ v: 'P/G e nome', b: 1, l: 1 }, { v: f.participante || '', l: 1 }, { v: 'Identidade', b: 1, l: 1 }, { v: part ? part.idt || '' : '', l: 1 }]], w: [18, 42, 14, 26], sz: 9 },
+    sec('3. RELATO DO FATO'),
+    { t: [[{ v: 'Data', b: 1 }, { v: fmt(f.dataFato) }, { v: 'Hora', b: 1 }, { v: f.horaFato || '' }, { v: 'Local', b: 1 }, { v: f.localFato || '', l: 1 }]], w: [8, 14, 8, 10, 10, 50], sz: 9 },
+    { p: `Participo-vos que ${f.relato || linha}` , mt: 4 },
+    ...blocosAssinatura('________________________________________', `Participante: ${f.participante || ''}`, 2),
+    sec('4. CIÊNCIA DO MILITAR ARROLADO'),
+    { p: `Declaro que recebi a 1ª via deste formulário em ${f.ciencia ? fmt(f.ciencia) : '____/____/______'}, às ____h____, e que tomei conhecimento de que disponho do prazo de ${PRAZO_DEFESA} (três) dias úteis, a contar desta data, para apresentar, por escrito, minhas justificativas ou razões de defesa, conforme o art. 35 do Regulamento Disciplinar do Exército (RDE).`, sz: 9.5 },
+    { t: [['________________________________', '________________________________'], [{ v: 'Militar arrolado', b: 1 }, { v: 'Quem entregou (P/G e nome)', b: 1 }]], sem: 1, sz: 9 },
+    { p: 'Em caso de recusa em assinar, a entrega é atestada por duas testemunhas:', sz: 8.5, mt: 4 },
+    { t: [['1) ______________________________ Idt ____________', '2) ______________________________ Idt ____________']], sem: 1, sz: 8.5 },
+    sec('5. JUSTIFICATIVAS OU RAZÕES DE DEFESA'),
+    { p: `${marca(!!f.defesa)} Apresento as justificativas / razões de defesa abaixo     ${marca(false)} Não desejo apresentar justificativas / razões de defesa`, sz: 9 },
+    { p: f.defesa || `${linha}\n${linha}\n${linha}\n${linha}`, mt: 4 },
+    { p: `${f.defesaData ? localData(f.defesaData) : `${cfg('cidade')}, ____ de ______________ de ______.`}`, r: 1, mt: 4 },
+    ...blocosAssinatura('________________________________________', 'Militar arrolado', 2),
+    sec('6. DECISÃO DA AUTORIDADE'),
+    ...lista('a. Causas de justificação (art. 18 do RDE):', JUSTIF_RDE, incisos(f.justificacao)),
+    ...lista('b. Circunstâncias atenuantes (art. 19 do RDE):', ATENUANTES_RDE, incisos(f.atenuantes)),
+    ...lista('c. Circunstâncias agravantes (art. 20 do RDE):', AGRAVANTES_RDE, incisos(f.agravantes)),
+    { p: 'd. Solução:', b: 1, sz: 9, mt: 4 },
+    { p: `${marca(dec === 'Justificada')} Justifico a transgressão e determino o arquivamento deste formulário.`, sz: 9.5, ind: 12 },
+    { p: `${marca(dec === 'Punido')} Classifico a transgressão como ${CLASSIF_TRANSG.map(c => `${marca(f.classificacao === c)} ${c.toLowerCase()}`).join('  ')}, enquadrada no nº ${f.enquadramento || '______'} do Anexo I do RDE, e aplico ao militar a punição disciplinar de:`, sz: 9.5, ind: 12 },
+    { p: PUNICOES.map(x => `${marca(dec === 'Punido' && f.punicao === x)} ${x}`).join('   '), sz: 9.5, ind: 24 },
+    { p: `Nº de dias: ${dec === 'Punido' && num(f.dias) ? `${f.dias} (${f.dias})` : '______'}     Início do cumprimento: ${dec === 'Punido' && f.inicio ? fmt(f.inicio) : '____/____/______'}`, sz: 9.5, ind: 24 },
+    { p: `Comportamento após a punição: ${temComportamento(m) ? (comportamentoSugerido(m) || {}).c || '______' : 'não se aplica (oficial / ST / Sgt)'}     Publicação: ${f.bi || '______________'}`, sz: 9.5, ind: 12, mt: 2 },
+    { p: localData(f.dataDecisao || hoje()), r: 1, mt: 6 }, ...blocosAssinatura(f.autoridade || cfg('cmtNome'), cfg('cmtFuncao'), 2),
+    sec('7. CIÊNCIA DA DECISÃO'),
+    { p: `Tomei ciência da decisão em ${f.cienciaDecisao ? fmt(f.cienciaDecisao) : '____/____/______'}, ciente de que posso recorrer nos prazos do art. 52 do RDE.`, sz: 9.5 },
+    ...blocosAssinatura('________________________________________', 'Militar arrolado', 2)] };
 };
 // ============================================================ aditamentos (modelo do ADT: 1ª parte em tabelas por dia, externos e internos)
 const PARTES = [['1ª PARTE', 'SERVIÇOS DIÁRIOS'], ['2ª PARTE', 'INSTRUÇÃO'], ['3ª PARTE', 'ASSUNTOS GERAIS E ADMINISTRATIVOS'], ['4ª PARTE', 'JUSTIÇA E DISCIPLINA']];

@@ -43,7 +43,7 @@ const TABELAS = {
   QCP: ['id', 'funcao', 'postoPrevisto', 'fracao', 'ocupanteId', 'ordem'],
   Fotos: ['id', 'dado'],
   FolhasAlt: ['id', 'militarId', 'semestre', 'folhaNr', 'tc', 'arreg', 'arregPeriodo', 'arregObs', 'naoArreg', 'tnc', 'tscmm', 'tsnr', 'ttes'],
-  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl', 'prazo', 'assunto'],
+  Disciplina: ['id', 'tipo', 'numero', 'militarId', 'militaresIds', 'subtipo', 'data', 'dataFato', 'participante', 'relato', 'ciencia', 'defesaData', 'defesa', 'decisao', 'dataDecisao', 'classificacao', 'enquadramento', 'punicao', 'dias', 'inicio', 'autoridade', 'bi', 'historico', 'origemId', 'obs', 'arquivoUrl', 'prazo', 'assunto', 'horaFato', 'localFato', 'justificacao', 'atenuantes', 'agravantes', 'cienciaDecisao'],
   Log: ['quando', 'usuario', 'acao', 'tabela', 'registro']
 };
 
