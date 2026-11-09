@@ -210,6 +210,10 @@ Anexos (termos de cautela digitalizados, fotos, ordens de missão) e os Google D
 
 Abra o `Index.html` direto no navegador: ele entra em **modo demonstração**, com dados fictícios guardados só naquele navegador. Serve para conhecer as telas antes de instalar.
 
+## Velocidade
+
+Para abrir rápido, o sistema guarda uma cópia de cada aba no cache do Google por 30 minutos. Toda gravação feita pelo sistema atualiza a cópia na hora, e editar a planilha à mão também (a aba editada é relida). Só as abas das planilhas reservadas (Justiça e Disciplina, Saúde), se editadas à mão, podem levar até 30 minutos para aparecer. A primeira abertura depois de um tempo parado é a mais lenta.
+
 ## Limites a conhecer
 
 - Feito para o tamanho de uma subunidade (centenas de militares e alguns milhares de lançamentos). Cada abertura carrega todos os dados de uma vez, então **a planilha não pode crescer sem fim**.

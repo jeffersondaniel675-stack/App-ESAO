@@ -102,6 +102,7 @@ function onOpen() {
 
 /** Cria as abas que faltam, os cabeçalhos, a pasta no Drive e os dados iniciais. Rode uma vez pelo editor. */
 function setup() {
+  limparCacheTudo_();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   PropertiesService.getScriptProperties().setProperty('PLANILHA_ID', ss.getId());
 
@@ -332,8 +333,14 @@ function criarDoc(tipo, titulo, blocos, referencia) {
 
 // ---------------------------------------------------------------- permissões
 
+var USUARIO_LIDO_ = null;
 function usuario_() {
   const email = emailAtual_();
+  if (USUARIO_LIDO_ && USUARIO_LIDO_.email === email) return USUARIO_LIDO_;
+  USUARIO_LIDO_ = usuarioDaPlanilha_(email);
+  return USUARIO_LIDO_;
+}
+function usuarioDaPlanilha_(email) {
   const usuarios = lerTabela_('Usuarios');
   if (!usuarios.length) return { email: email, nome: email, perfil: 'admin' };
   const u = usuarios.filter(function (x) { return String(x.email).toLowerCase() === email; })[0];
@@ -601,9 +608,14 @@ function exigirEscrita_(tabela) {
 
 // ---------------------------------------------------------------- acesso à planilha
 
+// Planilhas abertas nesta execução: abrir uma planilha custa caro, então cada uma é aberta uma vez só.
+var PLANILHAS_ = {};
 function planilha_() {
-  const id = PropertiesService.getScriptProperties().getProperty('PLANILHA_ID');
-  return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!PLANILHAS_.principal) {
+    const id = PropertiesService.getScriptProperties().getProperty('PLANILHA_ID');
+    PLANILHAS_.principal = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  }
+  return PLANILHAS_.principal;
 }
 
 /** Devolve a aba da tabela, criando-a ou acrescentando colunas novas quando o sistema for atualizado. */
@@ -613,6 +625,7 @@ function planilhaPara_(tabela) { return RESERVADAS_[tabela] ? reservada_(RESERVA
 /** Grava uma chave em Config direto na aba (sem o bloqueio de gravar_, para usar dentro de outra gravação). */
 function configDireto_(chave, valor) {
   const sh = planilha_().getSheetByName('Config'), v = sh.getDataRange().getValues();
+  limparCache_('Config');
   for (var i = 1; i < v.length; i++) if (v[i][0] === chave) { sh.getRange(i + 1, 2).setValue(valor); return; }
   sh.appendRow([chave, valor]);
 }
@@ -637,7 +650,7 @@ const tabelasDo_ = function (g) { return Object.keys(RESERVADAS_).filter(functio
 function reservada_(g) {
   g = g || 'jd';
   const G = GRUPOS_[g], id = configMap_()[G.planilha];
-  if (id) return SpreadsheetApp.openById(id);
+  if (id) return PLANILHAS_[id] || (PLANILHAS_[id] = SpreadsheetApp.openById(id));
   if (usuario_().perfil !== 'admin') throw new Error('A parte de ' + G.nome + ' ainda não foi preparada: o administrador precisa abrir essa parte uma vez.');
   const nova = SpreadsheetApp.create('Reservado - ' + G.nome + ' - ' + (configMap_().sigla || 'Cia'));
   const velhas = [];
@@ -696,22 +709,63 @@ function texto_(v) {
 }
 
 function lerTabela_(tabela) {
+  const doCache = SEM_CACHE_.indexOf(tabela) < 0 ? lerCache_(tabela) : null;
+  if (doCache) return doCache;
   const sh = planilhaPara_(tabela).getSheetByName(tabela);
   if (!sh || sh.getLastRow() < 1) return [];
   const valores = sh.getDataRange().getValues();
   const cab = valores.shift();
-  return valores
+  const linhas = valores
     .filter(function (l) { return l[0] !== '' && l[0] !== null; })
     .map(function (l) {
       const o = {};
       cab.forEach(function (h, i) { if (h) o[h] = texto_(l[i]); });
       return o;
     });
+  if (SEM_CACHE_.indexOf(tabela) < 0) guardarCache_(tabela, linhas);
+  return linhas;
 }
+
+// ---------------------------------------------------------------- cache das tabelas
+// Cada aba fica guardada no cache do script por 30 minutos, em pedaços (o cache aceita até 100 KB por item).
+// Toda gravação pelo sistema limpa o cache da aba; editar a planilha à mão também (onEdit). Abas de outra planilha
+// (reservadas) editadas à mão aparecem no máximo em 30 minutos.
+const CACHE_TTL_ = 1800, PEDACO_ = 30000;
+const SEM_CACHE_ = ['Log'];
+function lerCache_(tabela) {
+  try {
+    const cache = CacheService.getScriptCache(), n = cache.get('tabn:' + tabela);
+    if (n === null || n === undefined) return null;
+    const chaves = []; for (var i = 0; i < Number(n); i++) chaves.push('tab:' + tabela + ':' + i);
+    const partes = chaves.length ? cache.getAll(chaves) : {};
+    var txt = '';
+    for (var j = 0; j < chaves.length; j++) { if (partes[chaves[j]] === undefined || partes[chaves[j]] === null) return null; txt += partes[chaves[j]]; }
+    return JSON.parse(txt || '[]');
+  } catch (e) { return null; }
+}
+function guardarCache_(tabela, linhas) {
+  try {
+    const txt = JSON.stringify(linhas);
+    if (txt.length > 3000000) return;
+    const itens = {}; var n = 0;
+    for (var i = 0; i < txt.length; i += PEDACO_) itens['tab:' + tabela + ':' + (n++)] = txt.slice(i, i + PEDACO_);
+    CacheService.getScriptCache().putAll(itens, CACHE_TTL_);
+    CacheService.getScriptCache().put('tabn:' + tabela, String(n), CACHE_TTL_);
+  } catch (e) { }
+}
+function limparCache_(tabela) {
+  try { CacheService.getScriptCache().remove('tabn:' + tabela); } catch (e) { }
+  if (tabela === 'Config') CONFIG_ = null;
+  if (tabela === 'Usuarios') USUARIO_LIDO_ = null;
+}
+function limparCacheTudo_() { Object.keys(TABELAS).forEach(limparCache_); }
+/** Edição feita direto na planilha: o sistema esquece a cópia guardada daquela aba. */
+function onEdit(e) { try { limparCache_(e.range.getSheet().getName()); } catch (x) { } }
 
 function gravar_(tabela, lista, excluir) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
+  limparCache_(tabela);
   try {
     const sh = aba_(tabela);
     const valores = sh.getDataRange().getValues();
@@ -746,16 +800,19 @@ function gravar_(tabela, lista, excluir) {
       rng.setNumberFormat('@');
       rng.setValues(linhas.map(function (l) { return l.map(texto_); }));
     }
+    limparCache_(tabela);
     return salvos;
   } finally {
     lock.releaseLock();
   }
 }
 
+var CONFIG_ = null;
 function configMap_() {
+  if (CONFIG_) return CONFIG_;
   const m = {};
   lerTabela_('Config').forEach(function (c) { m[c.chave] = c.valor; });
-  return m;
+  return (CONFIG_ = m);
 }
 
 function pasta_() {
@@ -845,6 +902,7 @@ function arquivarAntigos(ate, simular) {
       dest.setFrozenRows(1);
       p.sh.getRange(2, 1, p.valores.length, p.cab.length).clearContent();
       if (fica.length) p.sh.getRange(2, 1, fica.length, p.cab.length).setValues(fica);
+      limparCache_(t);
     });
     const vazia = arq.getSheetByName('Sheet1') || arq.getSheetByName('Página1') || arq.getSheetByName('Planilha1');
     if (vazia) arq.deleteSheet(vazia);
