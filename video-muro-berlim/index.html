@@ -1,0 +1,110 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:#0b0b0c}canvas{display:block}
+</style></head><body><canvas id="c" width="1080" height="1920"></canvas><script>
+const W=1080,H=1920,c=document.getElementById('c'),x=c.getContext('2d');
+const RED='#d7262e',PAPER='#ece6da',CON='#8d8a84';
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const prog=(t,a,b)=>clamp((t-a)/(b-a));
+const eo=p=>1-Math.pow(1-p,3), eio=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const eback=p=>{const k=1.7;return 1+(k+1)*Math.pow(p-1,3)+k*Math.pow(p-1,2)};
+function rnd(s){return()=>{s=(s*16807)%2147483647;return s/2147483647}}
+// wall segments
+const N=9,SW=W/N, r=rnd(42);
+const segs=[...Array(N)].map((_,i)=>({i,delay:r()*0.9,vx:(r()-.5)*900,vy:-(400+r()*700),rot:(r()-.5)*3,
+  hue:[RED,'#f2c230','#3aa0d8','#ffffff','#5bbf6a'][Math.floor(r()*5)],marks:[...Array(4)].map(()=>[r(),r(),r()])}));
+const grain=[...Array(1600)].map(()=>[r()*W,r()*H,r()]);
+const WALL_TOP=1050, WALL_H=560;
+function seg(s,t,ox,oy,rot,crack){
+  x.save();x.translate(ox+SW/2,oy+WALL_H);x.rotate(rot);x.translate(-SW/2,-WALL_H);
+  const g=x.createLinearGradient(0,0,SW,0);g.addColorStop(0,'#7c7972');g.addColorStop(.5,'#a19d95');g.addColorStop(1,'#6f6c66');
+  x.fillStyle=g;x.fillRect(4,24,SW-8,WALL_H-24);
+  x.fillStyle='#b3afa6';x.beginPath();x.roundRect(0,0,SW,34,17);x.fill(); // pipe on top
+  // graffiti marks
+  x.globalAlpha=.85;s.marks.forEach(([a,b,cc],k)=>{x.strokeStyle=k%2?s.hue:'#1a1a1a';x.lineWidth=6+cc*10;x.lineCap='round';
+    x.beginPath();x.moveTo(15+a*(SW-30),260+b*240);x.quadraticCurveTo(SW/2,200+cc*300,15+b*(SW-30),300+a*220);x.stroke()});
+  x.globalAlpha=1;
+  if(crack>0){x.strokeStyle='#1b1a18';x.lineWidth=4;x.beginPath();const cr=rnd(s.i+7);let px=SW*(.3+cr()*.4),py=40;x.moveTo(px,py);
+    const steps=Math.floor(crack*10);for(let k=0;k<steps;k++){px+= (cr()-.5)*60;py+=WALL_H/10;x.lineTo(px,py)}x.stroke()}
+  x.restore();
+}
+function text(str,y,{size=64,weight=800,color=PAPER,a=1,dy=0,font='Inter',ls=0,align='center',maxW=900,lh=1.18}={}){
+  if(a<=0)return;x.save();x.globalAlpha=a;x.fillStyle=color;x.font=`${weight} ${size}px ${font}`;x.textAlign=align;x.textBaseline='middle';
+  if(x.letterSpacing!==undefined)x.letterSpacing=ls+'px';
+  const words=str.split(' '),lines=[];let cur='';words.forEach(w=>{const tt=cur?cur+' '+w:w;if(x.measureText(tt).width>maxW&&cur){lines.push(cur);cur=w}else cur=tt});lines.push(cur);
+  lines.forEach((l,i)=>x.fillText(l,align==='center'?W/2:90,y+dy+i*size*lh));x.restore();
+}
+const fadeIO=(t,a,b,f=.45)=>Math.min(eo(prog(t,a,a+f)),1-prog(t,b-f,b));
+function frame(t){
+  x.setTransform(1,0,0,1,0,0);
+  // camera shake on collapse
+  const shake=t>11.6&&t<12.6?(1-prog(t,11.6,12.6))*14:0;
+  x.translate(Math.sin(t*93)*shake,Math.cos(t*71)*shake);
+  // sky: night, then light after fall
+  const dawn=eo(prog(t,11.8,15.5));
+  const sky=x.createLinearGradient(0,0,0,H);sky.addColorStop(0,`rgb(${12+dawn*30},${12+dawn*24},${16+dawn*20})`);sky.addColorStop(1,'#0b0b0c');
+  x.fillStyle=sky;x.fillRect(-40,-40,W+80,H+80);
+  // light burst behind wall
+  if(t>10.5){const lb=eo(prog(t,10.5,13.5))*(1-prog(t,19,20.5)*.6);const rg=x.createRadialGradient(W/2,WALL_TOP+250,0,W/2,WALL_TOP+250,1100);
+    rg.addColorStop(0,`rgba(255,214,150,${.85*lb})`);rg.addColorStop(.4,`rgba(230,120,60,${.35*lb})`);rg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=rg;x.fillRect(0,0,W,H)}
+  // ground
+  x.fillStyle='#17161a';x.fillRect(-40,WALL_TOP+WALL_H,W+80,H);
+  // wall
+  const zoom=1+eio(prog(t,8,11.4))*.08;
+  x.save();x.translate(W/2,WALL_TOP+WALL_H);x.scale(zoom,zoom);x.translate(-W/2,-(WALL_TOP+WALL_H));
+  segs.forEach(s=>{
+    const rise=eback(prog(t,.9+s.delay,1.9+s.delay));let oy=WALL_TOP+(1-rise)*(WALL_H+40);
+    if(t<.9+s.delay)return;
+    const crack=prog(t,10.4+s.delay*.4,11.5);
+    const ft=Math.max(0,t-11.6-s.delay*.25);let ox=s.i*SW,rot=0;
+    if(ft>0){ox+=s.vx*ft;oy+=s.vy*ft+1400*ft*ft;rot=s.rot*ft}
+    if(oy<H+300)seg(s,t,ox,oy,rot,crack);
+  });x.restore();
+  // dust particles after fall
+  if(t>11.6){const dr=rnd(9);for(let k=0;k<160;k++){const ft=t-11.6,px=dr()*W+(dr()-.5)*300*ft,py=WALL_TOP+WALL_H-dr()*400-ft*60*dr();
+    x.fillStyle=`rgba(220,200,170,${clamp(.5-ft*.09)*dr()})`;x.beginPath();x.arc(px,py,2+dr()*6,0,7);x.fill()}}
+  // crowd silhouettes crossing
+  if(t>12.6){const cp=prog(t,12.6,19);const cr=rnd(3);for(let k=0;k<26;k++){const sp=.6+cr()*.8,bx=((cr()*W*1.4)+cp*sp*700)%(W*1.4)-150,s=0.8+cr()*.6,by=WALL_TOP+WALL_H+40+cr()*120;
+    x.fillStyle=`rgba(5,5,7,${clamp((t-12.6)*1.2)})`;x.beginPath();x.arc(bx,by-120*s,22*s,0,7);x.fill();x.beginPath();x.roundRect(bx-26*s,by-95*s,52*s,110*s,20*s);x.fill();
+    if(k%5==0){x.fillRect(bx+18*s,by-200*s,4*s,110*s);x.fillStyle='#000';x.fillRect(bx+22*s,by-200*s,46*s,10*s);x.fillStyle=RED;x.fillRect(bx+22*s,by-190*s,46*s,10*s);x.fillStyle='#f2c230';x.fillRect(bx+22*s,by-180*s,46*s,10*s)}}}
+  // ---- TEXT ----
+  const kick=(a)=>(1-eo(prog(t,a,a+.5)))*30;
+  // scene 1
+  let a=fadeIO(t,.2,4.1);
+  text('13 DE AGOSTO DE 1961',300,{size:40,weight:600,color:RED,a,dy:kick(.2),ls:6});
+  text('Berlim acorda dividida.',420,{size:84,weight:800,a,dy:kick(.4)});
+  text('Da noite para o dia, arame farpado e concreto cortam a cidade ao meio.',650,{size:44,weight:400,a:a*.85,dy:kick(.7),maxW:860});
+  // scene 2
+  a=fadeIO(t,4.2,8.1);
+  const yr=Math.round(1961+28*eio(prog(t,4.4,7.4)));
+  text(String(yr),360,{size:220,weight:900,a,dy:kick(4.2),ls:-4});
+  text('155 km de muro. 28 anos.',560,{size:64,weight:800,a,dy:kick(4.5)});
+  text('Famílias separadas. Mais de 140 pessoas morreram tentando atravessar.',690,{size:44,weight:400,a:a*.85,dy:kick(4.8),maxW:860});
+  // scene 3
+  a=fadeIO(t,8.2,11.6,.3);
+  text('9 DE NOVEMBRO DE 1989',300,{size:40,weight:600,color:RED,a,dy:kick(8.2),ls:6});
+  text('Um anúncio confuso na TV:',420,{size:50,weight:400,a,dy:kick(8.4)});
+  text('“Imediatamente, sem demora.”',570,{size:82,weight:800,a,dy:kick(8.8),maxW:920});
+  text('— Günter Schabowski, porta-voz da Alemanha Oriental',780,{size:34,weight:500,a:a*.7,dy:kick(9.3),maxW:860});
+  // scene 4
+  a=fadeIO(t,12.2,15.8);
+  text('O MURO CAIU.',380,{size:120,weight:900,a,dy:kick(12.2),ls:2});
+  text('Naquela noite, milhares atravessaram a fronteira — com martelos, lágrimas e champanhe.',560,{size:46,weight:400,a:a*.9,dy:kick(12.8),maxW:880});
+  // scene 5
+  a=fadeIO(t,16,19.4);
+  text('3 DE OUTUBRO DE 1990',330,{size:40,weight:600,color:RED,a,dy:kick(16),ls:6});
+  text('A Alemanha volta a ser uma só.',470,{size:80,weight:800,a,dy:kick(16.3),maxW:900});
+  // end card
+  const e=prog(t,19.4,20.4);
+  if(e>0){x.fillStyle=`rgba(11,11,12,${eo(e)*.92})`;x.fillRect(-40,-40,W+80,H+80);
+    text('A QUEDA DO',800,{size:64,weight:600,a:eo(e),dy:kick(19.6),ls:12});
+    text('MURO DE BERLIM',900,{size:104,weight:900,a:eo(e),dy:kick(19.8)});
+    x.globalAlpha=eo(prog(t,20.2,20.9));x.fillStyle=RED;x.fillRect(W/2-120*eo(prog(t,20.2,20.9)),990,240*eo(prog(t,20.2,20.9)),8);x.globalAlpha=1;
+    text('1961 — 1989',1080,{size:44,weight:500,color:'#b9b3a8',a:eo(prog(t,20.4,21)),ls:8});}
+  // grain + vignette
+  const gr=rnd(1+Math.floor(t*30));x.fillStyle='rgba(255,255,255,0.05)';grain.forEach(()=>{x.fillRect(gr()*W,gr()*H,2,2)});
+  const vg=x.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.65)');x.fillStyle=vg;x.fillRect(-40,-40,W+80,H+80);
+  // global fade in/out
+  const fo=Math.max(1-prog(t,0,.4),prog(t,22.3,23));if(fo>0){x.fillStyle=`rgba(0,0,0,${fo})`;x.fillRect(-40,-40,W+80,H+80)}
+}
+window.seek=frame;document.fonts.load('800 40px Inter').then(()=>{window.ready=true;frame(0)});
+</script></body></html>
