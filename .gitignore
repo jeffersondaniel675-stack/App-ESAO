@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 data/db.json.bak
+
+# reversa-unpacker
+.reversa_tools/
+.config/dotnet-tools.json
