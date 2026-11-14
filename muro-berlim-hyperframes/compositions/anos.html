@@ -1,0 +1,28 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; font-family: Inter, sans-serif; color: #ece6da; }
+    .kicker { position: absolute; left: 200px; font-weight: 700; font-size: 30px; letter-spacing: .2em; color: #e0373f; }
+    .title { position: absolute; left: 200px; width: 1300px; font-weight: 900; font-size: 88px; line-height: 1.05; letter-spacing: -.02em; }
+    .body { position: absolute; left: 200px; width: 1000px; font-weight: 400; font-size: 38px; line-height: 1.3; color: #d8d1c4; }
+    .w { display: inline-block; }
+    #anos-num { position: absolute; left: 190px; top: 120px; font-family: "League Gothic", sans-serif; font-size: 360px; line-height: 1; color: #ece6da; }
+    #anos-title { left: 720px; top: 190px; width: 1000px; font-size: 72px; }
+    #anos-body { left: 720px; top: 290px; width: 900px; }
+  </style>
+  <div id="root" data-composition-id="anos" data-width="1920" data-height="1080">
+    <div id="anos-num">1961</div>
+    <h2 id="anos-title" class="title">155 km de muro. <span style="color:#e0373f">28 anos.</span></h2>
+    <p id="anos-body" class="body">Famílias separadas. Mais de 140 pessoas morreram tentando atravessar.</p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const num = document.querySelector("#anos-num");
+    const year = { v: 1961 };
+    tl.fromTo("#anos-num", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.1);
+    tl.fromTo(year, { v: 1961 }, { v: 1989, duration: 2.6, ease: "power2.inOut", onUpdate: () => { num.textContent = Math.round(year.v); } }, 0.3);
+    tl.fromTo("#anos-title", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.7, ease: "expo.out" }, 0.5);
+    tl.fromTo("#anos-body", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 1.1);
+    tl.to("#anos-num, #anos-title, #anos-body", { opacity: 0, filter: "blur(8px)", duration: 0.22, stagger: 0.05, ease: "power3.in" }, 4.05);
+    window.__timelines["anos"] = tl;
+  </script>
+</template>

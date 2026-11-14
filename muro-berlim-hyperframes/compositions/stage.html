@@ -1,0 +1,156 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0e0e10; }
+    #stage-sky { position: absolute; inset: 0; background: linear-gradient(#1c1a20, #0e0e10 70%); }
+    #stage-glow { position: absolute; left: 260px; top: 180px; width: 1400px; height: 1000px; opacity: 0;
+      background: radial-gradient(closest-side, rgba(255,214,150,.9), rgba(230,120,60,.35) 45%, rgba(0,0,0,0)); }
+    #stage-ground { position: absolute; left: 0; right: 0; top: 980px; bottom: 0; background: #17161a; }
+    #stage-world { position: absolute; inset: 0; }
+    #stage-wall { position: absolute; left: 0; top: 600px; width: 1920px; height: 380px; }
+    .seg { position: absolute; top: 0; width: 160px; height: 380px; }
+    .pipe { position: absolute; left: 0; top: 0; width: 160px; height: 30px; border-radius: 15px; background: #b3afa6; }
+    .slab { position: absolute; left: 4px; top: 20px; width: 152px; height: 360px; background: linear-gradient(90deg, #7c7972, #a19d95 50%, #6f6c66); }
+    .marks { position: absolute; inset: 0; }
+    #stage-crowd { position: absolute; left: 0; right: 0; top: 880px; height: 200px; }
+    .person { position: absolute; left: 0; opacity: 0; width: 60px; height: 160px; transform-origin: bottom center; }
+    .person .head { position: absolute; left: 14px; top: 0; width: 32px; height: 32px; border-radius: 50%; background: #050507; }
+    .person .body { position: absolute; left: 4px; top: 36px; width: 52px; height: 120px; border-radius: 22px 22px 8px 8px; background: #050507; }
+    .flag { position: absolute; left: 50px; top: -80px; width: 64px; height: 42px; border-left: 4px solid #050507; }
+    .flag i { display: block; height: 14px; }
+    #stage-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,.7)); }
+  </style>
+  <div id="root" data-composition-id="stage" data-width="1920" data-height="1080" data-layout-allow-overflow>
+    <div id="stage-sky"></div>
+    <div id="stage-glow"></div>
+    <div id="stage-ground"></div>
+    <div id="stage-world">
+      <div id="stage-wall">
+      <div class="seg" id="stage-seg-0" style="left:0px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M83 268 Q80 163 111 269" stroke="#1a1a1a" stroke-width="10"/><path d="M64 181 Q80 305 40 246" stroke="#d7262e" stroke-width="17"/><path d="M82 235 Q80 161 84 267" stroke="#1a1a1a" stroke-width="10"/><path d="M28 280 Q80 290 122 206" stroke="#d7262e" stroke-width="16"/>
+          <polyline class="crack" id="stage-crack-0" points="77,30 64,68 52,106 36,144 27,182 8,220 23,258 25,296 42,334 54,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-1" style="left:160px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M76 222 Q80 157 73 261" stroke="#1a1a1a" stroke-width="9"/><path d="M16 154 Q80 309 17 192" stroke="#3aa0d8" stroke-width="17"/><path d="M135 276 Q80 224 118 327" stroke="#1a1a1a" stroke-width="13"/><path d="M116 250 Q80 179 96 305" stroke="#3aa0d8" stroke-width="10"/>
+          <polyline class="crack" id="stage-crack-1" points="73,30 61,68 53,106 61,144 54,182 31,220 33,258 16,296 13,334 5,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-2" style="left:320px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M145 219 Q80 250 71 339" stroke="#1a1a1a" stroke-width="14"/><path d="M39 237 Q80 309 86 218" stroke="#d7262e" stroke-width="17"/><path d="M39 259 Q80 190 104 218" stroke="#1a1a1a" stroke-width="11"/><path d="M72 270 Q80 146 113 256" stroke="#d7262e" stroke-width="9"/>
+          <polyline class="crack" id="stage-crack-2" points="99,30 114,68 94,106 70,144 52,182 59,220 53,258 40,296 41,334 42,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-3" style="left:480px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M102 296 Q80 203 135 290" stroke="#1a1a1a" stroke-width="12"/><path d="M72 297 Q80 203 136 256" stroke="#f2c230" stroke-width="12"/><path d="M143 201 Q80 269 56 337" stroke="#1a1a1a" stroke-width="15"/><path d="M128 269 Q80 221 112 320" stroke="#f2c230" stroke-width="13"/>
+          <polyline class="crack" id="stage-crack-3" points="100,30 101,68 92,106 84,144 74,182 72,220 75,258 83,296 61,334 60,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-4" style="left:640px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M138 170 Q80 196 31 330" stroke="#1a1a1a" stroke-width="11"/><path d="M53 216 Q80 159 68 234" stroke="#3aa0d8" stroke-width="9"/><path d="M62 264 Q80 297 108 245" stroke="#1a1a1a" stroke-width="16"/><path d="M16 226 Q80 274 77 193" stroke="#3aa0d8" stroke-width="15"/>
+          <polyline class="crack" id="stage-crack-4" points="82,30 63,68 58,106 40,144 55,182 50,220 29,258 34,296 25,334 13,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-5" style="left:800px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M145 181 Q80 242 40 338" stroke="#1a1a1a" stroke-width="14"/><path d="M82 276 Q80 135 118 267" stroke="#f2c230" stroke-width="8"/><path d="M61 186 Q80 170 43 244" stroke="#1a1a1a" stroke-width="10"/><path d="M36 303 Q80 255 140 215" stroke="#f2c230" stroke-width="14"/>
+          <polyline class="crack" id="stage-crack-5" points="85,30 86,68 86,106 79,144 69,182 63,220 59,258 55,296 46,334 39,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-6" style="left:960px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M85 181 Q80 284 39 270" stroke="#1a1a1a" stroke-width="16"/><path d="M135 304 Q80 269 141 327" stroke="#f2c230" stroke-width="15"/><path d="M45 232 Q80 149 81 225" stroke="#1a1a1a" stroke-width="9"/><path d="M129 280 Q80 307 121 321" stroke="#f2c230" stroke-width="17"/>
+          <polyline class="crack" id="stage-crack-6" points="71,30 77,68 86,106 105,144 87,182 96,220 120,258 144,296 126,334 119,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-7" style="left:1120px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M119 190 Q80 153 47 309" stroke="#1a1a1a" stroke-width="9"/><path d="M59 269 Q80 193 112 241" stroke="#d7262e" stroke-width="11"/><path d="M140 242 Q80 200 90 334" stroke="#1a1a1a" stroke-width="12"/><path d="M98 300 Q80 209 138 286" stroke="#d7262e" stroke-width="12"/>
+          <polyline class="crack" id="stage-crack-7" points="78,30 57,68 70,106 52,144 56,182 61,220 53,258 48,296 34,334 50,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-8" style="left:1280px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M103 174 Q80 270 34 291" stroke="#1a1a1a" stroke-width="15"/><path d="M42 158 Q80 202 21 222" stroke="#ffffff" stroke-width="12"/><path d="M111 304 Q80 217 141 301" stroke="#1a1a1a" stroke-width="12"/><path d="M20 253 Q80 186 99 196" stroke="#ffffff" stroke-width="11"/>
+          <polyline class="crack" id="stage-crack-8" points="80,30 73,68 67,106 85,144 102,182 123,220 125,258 103,296 115,334 103,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-9" style="left:1440px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M58 291 Q80 303 131 240" stroke="#1a1a1a" stroke-width="17"/><path d="M74 227 Q80 287 77 258" stroke="#5bbf6a" stroke-width="16"/><path d="M17 156 Q80 206 19 194" stroke="#1a1a1a" stroke-width="12"/><path d="M86 215 Q80 219 68 272" stroke="#5bbf6a" stroke-width="12"/>
+          <polyline class="crack" id="stage-crack-9" points="90,30 94,68 100,106 82,144 95,182 111,220 134,258 131,296 110,334 107,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-10" style="left:1600px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M119 210 Q80 171 63 310" stroke="#1a1a1a" stroke-width="10"/><path d="M23 299 Q80 236 137 201" stroke="#5bbf6a" stroke-width="13"/><path d="M136 269 Q80 280 112 328" stroke="#1a1a1a" stroke-width="16"/><path d="M33 226 Q80 121 77 212" stroke="#5bbf6a" stroke-width="8"/>
+          <polyline class="crack" id="stage-crack-10" points="68,30 55,68 52,106 63,144 74,182 61,220 58,258 72,296 79,334 78,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      <div class="seg" id="stage-seg-11" style="left:1760px">
+        <div class="pipe"></div><div class="slab"></div>
+        <svg class="marks" viewBox="0 0 160 380" fill="none" stroke-linecap="round" stroke-opacity=".85"><path d="M45 211 Q80 158 64 225" stroke="#1a1a1a" stroke-width="9"/><path d="M96 169 Q80 231 30 284" stroke="#ffffff" stroke-width="13"/><path d="M63 170 Q80 217 31 246" stroke="#1a1a1a" stroke-width="12"/><path d="M65 213 Q80 296 66 248" stroke="#ffffff" stroke-width="16"/>
+          <polyline class="crack" id="stage-crack-11" points="52,30 32,68 20,106 30,144 47,182 48,220 23,258 38,296 32,334 14,372" stroke="#1b1a18" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        </svg>
+      </div>
+      </div>
+      <div id="stage-crowd">
+      <div class="person" id="stage-p-0" style="bottom:72px;--s:1.14"><div class="head"></div><div class="body"></div><div class="flag"><i style="background:#000"></i><i style="background:#d7262e"></i><i style="background:#f2c230"></i></div></div>
+      <div class="person" id="stage-p-1" style="bottom:63px;--s:1.18"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-2" style="bottom:47px;--s:1.05"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-3" style="bottom:70px;--s:1.17"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-4" style="bottom:66px;--s:0.91"><div class="head"></div><div class="body"></div><div class="flag"><i style="background:#000"></i><i style="background:#d7262e"></i><i style="background:#f2c230"></i></div></div>
+      <div class="person" id="stage-p-5" style="bottom:59px;--s:0.94"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-6" style="bottom:77px;--s:1.05"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-7" style="bottom:49px;--s:1.24"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-8" style="bottom:87px;--s:0.87"><div class="head"></div><div class="body"></div><div class="flag"><i style="background:#000"></i><i style="background:#d7262e"></i><i style="background:#f2c230"></i></div></div>
+      <div class="person" id="stage-p-9" style="bottom:30px;--s:1.21"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-10" style="bottom:75px;--s:1.27"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-11" style="bottom:38px;--s:0.98"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-12" style="bottom:72px;--s:0.96"><div class="head"></div><div class="body"></div><div class="flag"><i style="background:#000"></i><i style="background:#d7262e"></i><i style="background:#f2c230"></i></div></div>
+      <div class="person" id="stage-p-13" style="bottom:64px;--s:1.16"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-14" style="bottom:70px;--s:1.12"><div class="head"></div><div class="body"></div></div>
+      <div class="person" id="stage-p-15" style="bottom:51px;--s:0.89"><div class="head"></div><div class="body"></div></div>
+      </div>
+    </div>
+    <div id="stage-vignette"></div>
+  </div>
+  <script>
+    // All times are local to this scene (its host starts at 0).
+    const FALL = [{"d":0.07,"fd":0.16,"x":-332,"r":58},{"d":0.17,"fd":0.02,"x":438,"r":7},{"d":0.09,"fd":0.3,"x":-136,"r":43},{"d":0.41,"fd":0,"x":181,"r":-18},{"d":0.35,"fd":0.09,"x":105,"r":-47},{"d":0.1,"fd":0.22,"x":-82,"r":-78},{"d":0.04,"fd":0.16,"x":-293,"r":1},{"d":0.43,"fd":0.19,"x":8,"r":-71},{"d":0.55,"fd":0.01,"x":-28,"r":22},{"d":0.88,"fd":0.29,"x":-86,"r":-27},{"d":0.72,"fd":0.24,"x":-208,"r":-46},{"d":0.14,"fd":0.12,"x":-416,"r":-36}];
+    const PEOPLE = [{"x0":-479,"x1":1267},{"x0":-386,"x1":2098},{"x0":-992,"x1":1597},{"x0":-558,"x1":1618},{"x0":-662,"x1":1565},{"x0":-912,"x1":1102},{"x0":-604,"x1":1744},{"x0":-693,"x1":1397},{"x0":-696,"x1":1681},{"x0":-865,"x1":1300},{"x0":-795,"x1":1083},{"x0":-702,"x1":1132},{"x0":-1135,"x1":1241},{"x0":-605,"x1":1511},{"x0":-497,"x1":1869},{"x0":-461,"x1":1976}];
+    const tl = gsap.timeline({ paused: true });
+    // 1. The wall rises, panel by panel (13 Aug 1961).
+    FALL.forEach((f, i) => {
+      tl.fromTo("#stage-seg-" + i, { y: 420 }, { y: 0, duration: 0.9, ease: "back.out(1.3)" }, 0.15 + f.d);
+    });
+    // 2. Slow push toward the wall during the announcement.
+    tl.fromTo("#stage-world", { scale: 1 }, { scale: 1.06, transformOrigin: "50% 90%", duration: 3.2, ease: "power2.inOut" }, 10.2);
+    // 3. Cracks spread, light leaks from behind.
+    FALL.forEach((f, i) => {
+      tl.fromTo("#stage-crack-" + i, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.0 - f.d * 0.4, ease: "power1.in" }, 12.4 + f.d * 0.4);
+    });
+    tl.fromTo("#stage-glow", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1.15, duration: 3, ease: "power2.out" }, 12.6);
+    tl.fromTo("#stage-sky", { opacity: 1 }, { opacity: 0.55, duration: 3, ease: "power2.inOut" }, 13.6);
+    // 4. The fall (13.6 s): panels topple outward, camera shakes.
+    FALL.forEach((f, i) => {
+      tl.fromTo("#stage-seg-" + i,
+        { x: 0, y: 0, rotation: 0 },
+        { x: f.x, y: 760, rotation: f.r, transformOrigin: "50% 100%", duration: 1.25, ease: "power2.in", immediateRender: false },
+        13.6 + f.fd);
+    });
+    const shake = [[14,-9],[-12,8],[10,6],[-8,-6],[6,4],[-3,-2],[0,0]];
+    shake.forEach(([x, y], k) => tl.fromTo("#stage-wall", { x: k ? shake[k-1][0] : 0, y: k ? shake[k-1][1] : 0 }, { x, y, duration: 0.09, ease: "none", immediateRender: false }, 13.6 + k * 0.09));
+    // 5. People cross where the wall stood.
+    PEOPLE.forEach((p, k) => {
+      tl.fromTo("#stage-p-" + k, { x: p.x0 }, { x: p.x1, duration: 9, ease: "none" }, 14.4 + (k % 4) * 0.15);
+      tl.fromTo("#stage-p-" + k, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 14.4 + (k % 4) * 0.15);
+    });
+    tl.fromTo("#stage-glow", { opacity: 1 }, { opacity: 0.55, duration: 2, ease: "power2.inOut", immediateRender: false }, 19);
+    window.__timelines["stage"] = tl;
+  </script>
+</template>

@@ -1,0 +1,32 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; font-family: Inter, sans-serif; color: #ece6da; }
+    .kicker { position: absolute; left: 200px; font-weight: 700; font-size: 30px; letter-spacing: .2em; color: #e0373f; }
+    .title { position: absolute; left: 200px; width: 1300px; font-weight: 900; font-size: 88px; line-height: 1.05; letter-spacing: -.02em; }
+    .body { position: absolute; left: 200px; width: 1000px; font-weight: 400; font-size: 38px; line-height: 1.3; color: #d8d1c4; }
+    .w { display: inline-block; }
+    #fim-shade { position: absolute; inset: 0; background: #0b0b0c; }
+    #fim-pre { position: absolute; left: 0; right: 0; top: 380px; text-align: center; font-weight: 700; font-size: 44px; letter-spacing: .3em; }
+    #fim-title { position: absolute; left: 0; right: 0; top: 440px; text-align: center; font-family: "League Gothic", sans-serif; font-size: 190px; line-height: 1; color: #fff4e2; }
+    #fim-rule { position: absolute; left: 840px; top: 650px; width: 240px; height: 8px; background: #d7262e; transform-origin: 50% 50%; }
+    #fim-dates { position: absolute; left: 0; right: 0; top: 690px; text-align: center; font-weight: 400; font-size: 36px; letter-spacing: .25em; color: #b9b3a8; }
+  </style>
+  <div id="root" data-composition-id="fim" data-width="1920" data-height="1080">
+    <div id="fim-shade"></div>
+    <div id="fim-pre">A QUEDA DO</div>
+    <h2 id="fim-title">MURO DE BERLIM</h2>
+    <div id="fim-rule"></div>
+    <div id="fim-dates">1961 — 1989</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#fim-shade", { opacity: 0 }, { opacity: 0.92, duration: 0.5, ease: "power2.inOut" }, 0);
+    tl.fromTo("#fim-pre", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.35);
+    tl.fromTo("#fim-title", { opacity: 0, scale: 1.08, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.5);
+    tl.fromTo("#fim-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, 1.0);
+    tl.fromTo("#fim-dates", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 1.25);
+    tl.fromTo("#fim-shade", { opacity: 0.92 }, { opacity: 1, duration: 0.01, immediateRender: false }, 3.3);
+    tl.to("#fim-pre, #fim-title, #fim-rule, #fim-dates", { opacity: 0, duration: 0.5, ease: "power2.in" }, 3.3);
+    window.__timelines["fim"] = tl;
+  </script>
+</template>
