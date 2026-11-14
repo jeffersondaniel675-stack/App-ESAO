@@ -1,0 +1,2 @@
+Fonte: https://github.com/JuliusBrussee/caveman (commit b4ee71d), skills/caveman/SKILL.md
+Copyright 2026 Julius Brussee. Licença Apache-2.0 (ver LICENSE).
